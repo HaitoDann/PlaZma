@@ -6,6 +6,23 @@
 <title>PlaZma — Programme</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<!-- ══ FIREBASE SDK ══ -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey:            "AIzaSyAKwNEbNa6f40oSMwGp6dcDY1ZY6hUN1Ks",
+  authDomain:        "plazma-esport.firebaseapp.com",
+  projectId:         "plazma-esport",
+  storageBucket:     "plazma-esport.firebasestorage.app",
+  messagingSenderId: "534325929279",
+  appId:             "1:534325929279:web:b507a46c601fa6625edf8a"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+</script>
+
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -21,6 +38,9 @@
   --text:  #e8e6f4;
   --text2: #8b82b0;
   --text3: #45405e;
+  --green: #22c55e;
+  --yellow: #f59e0b;
+  --red: #ef4444;
 }
 
 body {
@@ -32,10 +52,30 @@ body {
   padding: 32px 20px 80px;
 }
 
+/* ── LOADING SCREEN ── */
+.loading-screen {
+  position: fixed; inset: 0; background: var(--bg); z-index: 999;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+  transition: opacity .5s;
+}
+.loading-screen.hidden { opacity: 0; pointer-events: none; }
+.loading-logo {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 48px; font-weight: 800; letter-spacing: 4px;
+  background: linear-gradient(135deg, #fff, var(--v4)); -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; background-clip: text;
+}
+.loading-bar { width: 200px; height: 3px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+.loading-fill {
+  height: 100%; background: linear-gradient(90deg, var(--v2), var(--v4)); border-radius: 2px;
+  animation: loadbar 1.5s ease infinite;
+}
+@keyframes loadbar { 0%{transform:translateX(-100%)} 100%{transform:translateX(350%)} }
+.loading-text { font-size: 10px; color: var(--text3); letter-spacing: 2px; text-transform: uppercase; }
+
 /* ── TOOLBAR ── */
 .toolbar {
   display: flex; align-items: center; gap: 10px;
-  margin-bottom: 28px; flex-wrap: wrap; justify-content: center;
+  margin-bottom: 16px; flex-wrap: wrap; justify-content: center;
 }
 .toolbar label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); }
 
@@ -58,6 +98,44 @@ input[type="week"]:focus { border-color: var(--v3); }
 }
 .btn-export:hover { background: var(--v3); box-shadow: 0 0 40px rgba(124,58,237,.6); transform: translateY(-1px); }
 .btn-export:disabled { opacity: .4; cursor: default; transform: none; }
+
+/* ── SYNC BAR ── */
+.sync-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;
+  margin-bottom: 20px;
+}
+.sync-indicator {
+  display: flex; align-items: center; gap: 7px; padding: 6px 12px;
+  border-radius: 7px; background: var(--surface2); border: 1px solid var(--border2);
+}
+.sync-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; transition: background .3s;
+}
+.sync-dot.connected { background: var(--green); box-shadow: 0 0 6px rgba(34,197,94,.5); }
+.sync-dot.syncing   { background: var(--yellow); animation: pulse .8s infinite; }
+.sync-dot.error     { background: var(--red); }
+.sync-dot.offline   { background: var(--text3); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.sync-text { font-size: 10px; font-weight: 600; letter-spacing: .5px; }
+.sync-time { font-size: 9px; color: var(--text3); }
+
+.btn-save-fb {
+  background: rgba(109,40,217,.18); border: 1px solid rgba(109,40,217,.35);
+  color: var(--v4); padding: 7px 18px; border-radius: 7px;
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+  cursor: pointer; font-family: 'Barlow', sans-serif; transition: all .2s;
+}
+.btn-save-fb:hover { background: rgba(109,40,217,.3); }
+.btn-save-fb.saved { background: rgba(34,197,94,.15); border-color: rgba(34,197,94,.3); color: var(--green); }
+.btn-mini-row { display: flex; gap: 5px; align-items: center; }
+.btn-mini {
+  background: var(--surface2); border: 1px solid var(--border2); color: var(--text3);
+  padding: 6px 12px; border-radius: 6px; font-size: 9px; font-weight: 600; letter-spacing: .5px;
+  text-transform: uppercase; cursor: pointer; font-family: 'Barlow', sans-serif; transition: color .15s;
+}
+.btn-mini:hover { color: var(--text2); }
+.btn-mini.red { border-color: rgba(239,68,68,.12); color: rgba(239,68,68,.3); }
+.btn-mini.red:hover { color: #ef4444; }
 
 /* ── CARD ── */
 .card {
@@ -87,7 +165,6 @@ input[type="week"]:focus { border-color: var(--v3); }
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
   background: linear-gradient(90deg, var(--v1) 0%, var(--v3) 35%, transparent 70%);
 }
-
 .header-left { display: flex; flex-direction: column; gap: 6px; position: relative; }
 .logo-row { display: flex; align-items: center; gap: 14px; }
 .logo-badge {
@@ -108,7 +185,6 @@ input[type="week"]:focus { border-color: var(--v3); }
 .header-sub { display: flex; align-items: center; gap: 10px; padding-left: 60px; }
 .header-sub-text { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--text3); }
 .header-sub-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--v1); }
-
 .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; position: relative; }
 .week-label-sm { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--text3); }
 .week-label-val {
@@ -211,18 +287,52 @@ input[type="week"]:focus { border-color: var(--v3); }
 .field input:focus, .field select:focus { border-color: var(--v3); }
 .field select option { background: var(--surface); }
 .modal-actions { display: flex; gap: 10px; margin-top: 22px; }
-.btn-save   { flex:1; background: var(--v2); color:#fff; }
-.btn-cancel { flex:1; background: var(--surface); color: var(--text2); border:1px solid var(--border2); }
-.btn-save:hover { background: var(--v3); }
-.btn-cancel:hover { border-color: var(--v3); color: var(--v4); }
+.btn-modal-save   { flex:1; background: var(--v2); color:#fff; border: none; }
+.btn-modal-cancel { flex:1; background: var(--surface); color: var(--text2); border:1px solid var(--border2); }
+.btn-modal-save:hover   { background: var(--v3); }
+.btn-modal-cancel:hover { border-color: var(--v3); color: var(--v4); }
+
+/* hub link */
+.hub-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 10px; color: var(--text3); text-decoration: none;
+  letter-spacing: 1px; transition: color .15s; margin-bottom: 14px;
+}
+.hub-link:hover { color: var(--v4); }
 </style>
 </head>
 <body>
 
+<!-- LOADING SCREEN -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-logo">PlaZma</div>
+  <div class="loading-bar"><div class="loading-fill"></div></div>
+  <div class="loading-text" id="loadingText">Connexion Firebase…</div>
+</div>
+
+<!-- Hub link -->
+<a href="index.html" class="hub-link">← Hub PlaZma</a>
+
+<!-- TOOLBAR -->
 <div class="toolbar">
   <label>Semaine</label>
   <input type="week" id="weekPicker">
   <button class="btn btn-export" id="exportBtn">⬇ Exporter PNG</button>
+</div>
+
+<!-- SYNC BAR -->
+<div class="sync-bar">
+  <div class="sync-indicator">
+    <div class="sync-dot offline" id="syncDot"></div>
+    <span class="sync-text" id="syncText" style="color:var(--text3)">En attente…</span>
+    <span class="sync-time" id="syncTime"></span>
+  </div>
+  <button class="btn-save-fb" id="saveFbBtn" onclick="save()">💾 Sauvegarder</button>
+  <div class="btn-mini-row">
+    <div class="btn-mini" onclick="exportBackup()">📦 Backup</div>
+    <div class="btn-mini" onclick="importBackup()">📥 Import</div>
+    <div class="btn-mini red" onclick="resetData()">🗑 Reset</div>
+  </div>
 </div>
 
 <div class="card" id="card">
@@ -254,6 +364,7 @@ input[type="week"]:focus { border-color: var(--v3); }
   </div>
 </div>
 
+<!-- MODAL -->
 <div class="overlay" id="overlay">
   <div class="modal">
     <div class="modal-title" id="modalTitle">Modifier le créneau</div>
@@ -261,13 +372,19 @@ input[type="week"]:focus { border-color: var(--v3); }
     <div class="field"><label>Horaires</label><input type="text" id="mTime" placeholder="ex: 19h00 – 22h00"></div>
     <div class="field"><label>Note</label><input type="text" id="mNote" placeholder="ex: Scrims vs Team X"></div>
     <div class="modal-actions">
-      <button class="btn btn-cancel" id="cancelBtn">Annuler</button>
-      <button class="btn btn-save" id="saveBtn">Sauvegarder</button>
+      <button class="btn btn-modal-cancel" id="cancelBtn">Annuler</button>
+      <button class="btn btn-modal-save" id="saveSlotBtn">Sauvegarder</button>
     </div>
   </div>
 </div>
 
 <script>
+// ═══════════════════════════════════════════════════════════
+// FIRESTORE CONFIG
+// ═══════════════════════════════════════════════════════════
+const COL    = 'plazma';
+const DOC_ID = 'schedule';
+
 const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 
 const TYPES = [
@@ -278,11 +395,11 @@ const TYPES = [
   { id:"coaching", label:"Coaching Indiv", color:"#ec4899", bg:"rgba(236,72,153,.10)"  },
   { id:"review",   label:"Review",         color:"#a855f7", bg:"rgba(168,85,247,.10)"  },
   { id:"flexq",    label:"FlexQ",          color:"#f59e0b", bg:"rgba(245,158,11,.10)"  },
-  { id:"atelier",  label:"Atelier",         color:"#2dd4bf", bg:"rgba(45,212,191,.10)"  },
+  { id:"atelier",  label:"Atelier",        color:"#2dd4bf", bg:"rgba(45,212,191,.10)"  },
   { id:"autre",    label:"Autre",          color:"#94a3b8", bg:"rgba(148,163,184,.07)" },
 ];
 
-const DEFAULT = {
+const DEFAULT_SCHEDULE = {
   Lundi:    [{ type:"scrim",    time:"19h00 – 22h00", note:"Scrims inter-équipes" }],
   Mardi:    [{ type:"soloq",   time:"18h00 – 21h00", note:"SoloQ individuel" }],
   Mercredi: [{ type:"review",  time:"19h00 – 20h30", note:"Review match précédent" },
@@ -293,8 +410,11 @@ const DEFAULT = {
   Dimanche: [{ type:"repos",   time:"",              note:"Jour de repos" }],
 };
 
-let schedule = JSON.parse(JSON.stringify(DEFAULT));
+let schedule = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
 
+// ═══════════════════════════════════════════════════════════
+// UTILS SEMAINE
+// ═══════════════════════════════════════════════════════════
 function getWeekNum(d) {
   d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   const day = d.getUTCDay() || 7;
@@ -316,9 +436,11 @@ function weekLabel(val) {
   const fmt = d => d.toLocaleDateString('fr-FR', { day:'2-digit', month:'short' });
   return `Semaine ${wk}  ·  ${fmt(mon)} – ${fmt(sun)} ${yr}`;
 }
+function getType(id) { return TYPES.find(t => t.id === id) || TYPES[8]; }
 
-function getType(id) { return TYPES.find(t => t.id === id) || TYPES[6]; }
-
+// ═══════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════
 function renderGrid() {
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
@@ -346,6 +468,7 @@ function renderGrid() {
       schedule[day] = schedule[day] || [];
       schedule[day].push({ type:'scrim', time:'', note:'' });
       renderGrid();
+      save();
     });
     col.appendChild(add);
     grid.appendChild(col);
@@ -355,6 +478,7 @@ function renderGrid() {
       e.stopPropagation();
       schedule[btn.dataset.day].splice(parseInt(btn.dataset.idx), 1);
       renderGrid();
+      save();
     });
   });
 }
@@ -365,6 +489,9 @@ function renderLegend() {
   ).join('');
 }
 
+// ═══════════════════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════════════════
 let _mDay, _mIdx;
 function openModal(day, idx) {
   _mDay = day; _mIdx = idx;
@@ -377,9 +504,13 @@ function openModal(day, idx) {
   ).join('');
   document.getElementById('overlay').classList.add('open');
 }
-document.getElementById('cancelBtn').addEventListener('click', () => document.getElementById('overlay').classList.remove('open'));
-document.getElementById('overlay').addEventListener('click', e => { if (e.target === document.getElementById('overlay')) document.getElementById('overlay').classList.remove('open'); });
-document.getElementById('saveBtn').addEventListener('click', () => {
+document.getElementById('cancelBtn').addEventListener('click', () =>
+  document.getElementById('overlay').classList.remove('open'));
+document.getElementById('overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('overlay'))
+    document.getElementById('overlay').classList.remove('open');
+});
+document.getElementById('saveSlotBtn').addEventListener('click', () => {
   schedule[_mDay][_mIdx] = {
     type: document.getElementById('mType').value,
     time: document.getElementById('mTime').value,
@@ -387,12 +518,119 @@ document.getElementById('saveBtn').addEventListener('click', () => {
   };
   document.getElementById('overlay').classList.remove('open');
   renderGrid();
+  save();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('overlay').classList.remove('open');
 });
 
+// ═══════════════════════════════════════════════════════════
+// FIREBASE SYNC
+// ═══════════════════════════════════════════════════════════
+function getState() { return { schedule }; }
+function applyState(s) { if (s && s.schedule) schedule = s.schedule; }
+
+function setSyncState(state, text, time = '') {
+  const dot = document.getElementById('syncDot');
+  const txt = document.getElementById('syncText');
+  const tim = document.getElementById('syncTime');
+  if (!dot) return;
+  dot.className = 'sync-dot ' + state;
+  txt.textContent = text;
+  txt.style.color = state === 'connected' ? 'var(--green)' : state === 'syncing' ? 'var(--yellow)' : state === 'error' ? 'var(--red)' : 'var(--text3)';
+  tim.textContent = time;
+}
+
+function hideLoading() {
+  const ls = document.getElementById('loadingScreen');
+  if (ls) { ls.classList.add('hidden'); setTimeout(() => ls.style.display = 'none', 500); }
+}
+
+function save() {
+  setSyncState('syncing', 'Sauvegarde…');
+  db.collection(COL).doc(DOC_ID)
+    .set(getState())
+    .then(() => {
+      setSyncState('connected', 'Synchronisé');
+      flashSave(true);
+    })
+    .catch(e => {
+      setSyncState('error', 'Erreur Firebase');
+      flashSave(false);
+      console.error(e);
+    });
+}
+
+function startSync() {
+  setSyncState('syncing', 'Connexion…');
+  db.collection(COL).doc(DOC_ID)
+    .onSnapshot(
+      doc => {
+        if (doc.metadata.hasPendingWrites) return;
+        if (doc.exists) {
+          applyState(doc.data());
+          renderGrid();
+          const now = new Date();
+          setSyncState('connected', 'Synchronisé', now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }));
+        } else {
+          setSyncState('connected', 'Prêt', '');
+        }
+        hideLoading();
+      },
+      err => {
+        console.error('Firestore error:', err);
+        setSyncState('error', 'Erreur connexion');
+        hideLoading();
+      }
+    );
+}
+
+function flashSave(ok) {
+  const btn = document.getElementById('saveFbBtn');
+  if (!btn) return;
+  btn.classList.add('saved');
+  btn.textContent = ok ? '✓ Sauvegardé' : '⚠ Erreur';
+  if (!ok) btn.style.color = '#ef4444';
+  setTimeout(() => {
+    btn.classList.remove('saved');
+    btn.textContent = '💾 Sauvegarder';
+    btn.style.color = '';
+  }, 1600);
+}
+
+function exportBackup() {
+  const b = new Blob([JSON.stringify(getState(), null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(b);
+  a.download = 'plazma-schedule-backup-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+}
+function importBackup() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.addEventListener('change', async () => {
+    try {
+      applyState(JSON.parse(await input.files[0].text()));
+      save(); renderGrid();
+    } catch(e) { alert('Fichier invalide'); }
+  });
+  input.click();
+}
+function resetData() {
+  if (!confirm('Effacer le planning sur Firebase et repartir du planning par défaut ?')) return;
+  schedule = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
+  db.collection(COL).doc(DOC_ID).delete().then(() => { renderGrid(); setSyncState('connected', 'Réinitialisé', ''); });
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXPORT PNG (inchangé)
+// ═══════════════════════════════════════════════════════════
 const picker = document.getElementById('weekPicker');
 picker.value = currentWeekValue();
 document.getElementById('weekLabel').textContent = weekLabel(picker.value);
-picker.addEventListener('change', () => { document.getElementById('weekLabel').textContent = weekLabel(picker.value); });
+picker.addEventListener('change', () => {
+  document.getElementById('weekLabel').textContent = weekLabel(picker.value);
+});
 
 document.getElementById('exportBtn').addEventListener('click', async () => {
   const btn = document.getElementById('exportBtn');
@@ -410,8 +648,21 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
   link.click();
 });
 
-renderGrid();
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
 renderLegend();
+startSync();
+
+// Timeout de sécurité 8s
+setTimeout(() => {
+  const ls = document.getElementById('loadingScreen');
+  if (ls && !ls.classList.contains('hidden')) {
+    hideLoading();
+    setSyncState('error', 'Firebase inaccessible');
+    renderGrid();
+  }
+}, 8000);
 </script>
 </body>
 </html>
