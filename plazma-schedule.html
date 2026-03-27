@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlaZma — Programme</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #07070f;
+  --bg2:      #0c0b18;
+  --surface:  #10101e;
+  --surface2: #141428;
+  --border:   #1c1b33;
+  --border2:  #252444;
+  --v1: #6d28d9; --v2: #7c3aed; --v3: #8b5cf6;
+  --v4: #a78bfa; --v5: #c4b5fd;
+  --text:  #e8e6f4;
+  --text2: #8b82b0;
+  --text3: #45405e;
+}
+
+body {
+  background: var(--bg);
+  font-family: 'Barlow', sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 32px 20px 80px;
+}
+
+/* ── TOOLBAR ── */
+.toolbar {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 28px; flex-wrap: wrap; justify-content: center;
+}
+.toolbar label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); }
+
+input[type="week"] {
+  background: var(--surface2); border: 1px solid var(--border2);
+  color: var(--text); padding: 8px 14px; border-radius: 7px;
+  font-size: 13px; font-family: 'Barlow', sans-serif;
+  outline: none; color-scheme: dark; transition: border-color .2s;
+}
+input[type="week"]:focus { border-color: var(--v3); }
+
+.btn {
+  padding: 9px 22px; border-radius: 7px;
+  font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+  cursor: pointer; border: none; font-family: 'Barlow', sans-serif; transition: all .2s;
+}
+.btn-export {
+  background: var(--v2); color: #fff;
+  box-shadow: 0 0 28px rgba(124,58,237,.4);
+}
+.btn-export:hover { background: var(--v3); box-shadow: 0 0 40px rgba(124,58,237,.6); transform: translateY(-1px); }
+.btn-export:disabled { opacity: .4; cursor: default; transform: none; }
+
+/* ── CARD ── */
+.card {
+  width: 100%; max-width: 1020px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(109,40,217,.08), 0 40px 100px rgba(0,0,0,.6);
+}
+
+/* HEADER */
+.card-header {
+  position: relative; overflow: hidden;
+  padding: 30px 36px 26px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 20px;
+}
+.card-header::before {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 55% 180% at 0% 50%, rgba(109,40,217,.18) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 140% at 100% 0%, rgba(139,92,246,.08) 0%, transparent 60%);
+}
+.card-header::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--v1) 0%, var(--v3) 35%, transparent 70%);
+}
+
+.header-left { display: flex; flex-direction: column; gap: 6px; position: relative; }
+.logo-row { display: flex; align-items: center; gap: 14px; }
+.logo-badge {
+  width: 46px; height: 46px;
+  background: linear-gradient(135deg, var(--v1), var(--v3));
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 17px; font-weight: 800; letter-spacing: 1px; color: #fff; flex-shrink: 0;
+  box-shadow: 0 0 24px rgba(124,58,237,.5);
+}
+.club-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 46px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase; line-height: .95;
+  background: linear-gradient(135deg, #fff 0%, var(--v4) 40%, var(--v3) 75%, #fff 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(139,92,246,.4));
+}
+.header-sub { display: flex; align-items: center; gap: 10px; padding-left: 60px; }
+.header-sub-text { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--text3); }
+.header-sub-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--v1); }
+
+.header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; position: relative; }
+.week-label-sm { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--text3); }
+.week-label-val {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px; font-weight: 700; color: var(--v4); letter-spacing: 1px; white-space: nowrap;
+}
+.season-tag {
+  margin-top: 6px;
+  background: rgba(109,40,217,.15); border: 1px solid rgba(109,40,217,.3);
+  border-radius: 4px; padding: 3px 10px;
+  font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--v4);
+}
+
+/* GRID */
+.grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+.day-col {
+  padding: 16px 10px; border-right: 1px solid var(--border);
+  background: var(--bg2); min-height: 180px; transition: background .15s;
+}
+.day-col:last-child { border-right: none; }
+.day-col:hover { background: #0e0d1c; }
+.day-head { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.day-name-full { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text2); }
+
+/* SLOTS */
+.slot {
+  border-radius: 7px; padding: 9px 9px 9px 12px; margin-bottom: 7px;
+  cursor: pointer; transition: transform .12s, filter .12s;
+  position: relative; border-left: 3px solid; background: var(--surface);
+}
+.slot:hover { transform: translateX(2px); filter: brightness(1.18); }
+.slot-badge {
+  display: inline-block;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 2px 6px; border-radius: 3px; margin-bottom: 5px;
+}
+.slot-time { font-size: 10px; color: var(--text3); margin-bottom: 4px; letter-spacing: .5px; }
+.slot-note { font-size: 11px; color: var(--text2); line-height: 1.4; font-weight: 400; }
+.slot-del {
+  position: absolute; top: 5px; right: 6px;
+  background: none; border: none; color: var(--border2);
+  font-size: 11px; cursor: pointer; opacity: 0;
+  transition: opacity .15s, color .15s; line-height: 1; padding: 0;
+}
+.slot:hover .slot-del { opacity: 1; }
+.slot-del:hover { color: #f87171 !important; }
+.add-slot {
+  width: 100%; background: none; border: 1px dashed var(--border);
+  color: var(--text3); font-size: 16px; border-radius: 7px;
+  padding: 5px; cursor: pointer; transition: all .15s; line-height: 1; margin-top: 2px;
+}
+.add-slot:hover { border-color: var(--v3); color: var(--v3); }
+
+/* LEGEND */
+.legend-bar {
+  border-top: 1px solid var(--border); background: var(--surface);
+  padding: 14px 36px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.legend-items { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.leg { display: flex; align-items: center; }
+.leg-pill {
+  padding: 3px 9px; border-radius: 4px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+}
+.footer-brand {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: var(--text3);
+}
+
+/* ── MODAL ── */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(7,7,15,.88); backdrop-filter: blur(8px);
+  z-index: 300; align-items: center; justify-content: center;
+}
+.overlay.open { display: flex; }
+.modal {
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 14px; padding: 28px; width: 380px; max-width: 93vw;
+  box-shadow: 0 0 80px rgba(0,0,0,.7), 0 0 40px rgba(109,40,217,.15);
+}
+.modal-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 16px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--v4); margin-bottom: 22px;
+}
+.field { margin-bottom: 15px; }
+.field label {
+  display: block; font-size: 9px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--text3); margin-bottom: 7px;
+}
+.field input, .field select {
+  width: 100%; background: var(--surface); border: 1px solid var(--border2);
+  color: var(--text); padding: 9px 12px; border-radius: 7px;
+  font-size: 13px; font-family: 'Barlow', sans-serif; outline: none; transition: border-color .2s;
+}
+.field input:focus, .field select:focus { border-color: var(--v3); }
+.field select option { background: var(--surface); }
+.modal-actions { display: flex; gap: 10px; margin-top: 22px; }
+.btn-save   { flex:1; background: var(--v2); color:#fff; }
+.btn-cancel { flex:1; background: var(--surface); color: var(--text2); border:1px solid var(--border2); }
+.btn-save:hover { background: var(--v3); }
+.btn-cancel:hover { border-color: var(--v3); color: var(--v4); }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <label>Semaine</label>
+  <input type="week" id="weekPicker">
+  <button class="btn btn-export" id="exportBtn">⬇ Exporter PNG</button>
+</div>
+
+<div class="card" id="card">
+  <div class="card-header">
+    <div class="header-left">
+      <div class="logo-row">
+        <div class="logo-badge">PZ</div>
+        <div class="club-name">PlaZma</div>
+      </div>
+      <div class="header-sub">
+        <div class="header-sub-dot"></div>
+        <div class="header-sub-text">Esport Club</div>
+        <div class="header-sub-dot"></div>
+        <div class="header-sub-text">League of Legends</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="week-label-sm">Programme d'entraînement</div>
+      <div class="week-label-val" id="weekLabel">—</div>
+      <div class="season-tag">Saison 2026</div>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="legend-bar">
+    <div class="legend-items" id="legend"></div>
+    <div class="footer-brand">plazma-esport.fr</div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Modifier le créneau</div>
+    <div class="field"><label>Type</label><select id="mType"></select></div>
+    <div class="field"><label>Horaires</label><input type="text" id="mTime" placeholder="ex: 19h00 – 22h00"></div>
+    <div class="field"><label>Note</label><input type="text" id="mNote" placeholder="ex: Scrims vs Team X"></div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" id="cancelBtn">Annuler</button>
+      <button class="btn btn-save" id="saveBtn">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+
+const TYPES = [
+  { id:"scrim",    label:"Scrim",          color:"#3b82f6", bg:"rgba(59,130,246,.10)"  },
+  { id:"soloq",    label:"SoloQ",          color:"#ef4444", bg:"rgba(239,68,68,.10)"   },
+  { id:"repos",    label:"Repos",          color:"#22c55e", bg:"rgba(34,197,94,.10)"   },
+  { id:"match",    label:"Match Offi",     color:"#f97316", bg:"rgba(249,115,22,.10)"  },
+  { id:"coaching", label:"Coaching Indiv", color:"#ec4899", bg:"rgba(236,72,153,.10)"  },
+  { id:"review",   label:"Review",         color:"#a855f7", bg:"rgba(168,85,247,.10)"  },
+  { id:"flexq",    label:"FlexQ",          color:"#f59e0b", bg:"rgba(245,158,11,.10)"  },
+  { id:"atelier",  label:"Atelier",         color:"#2dd4bf", bg:"rgba(45,212,191,.10)"  },
+  { id:"autre",    label:"Autre",          color:"#94a3b8", bg:"rgba(148,163,184,.07)" },
+];
+
+const DEFAULT = {
+  Lundi:    [{ type:"scrim",    time:"19h00 – 22h00", note:"Scrims inter-équipes" }],
+  Mardi:    [{ type:"soloq",   time:"18h00 – 21h00", note:"SoloQ individuel" }],
+  Mercredi: [{ type:"review",  time:"19h00 – 20h30", note:"Review match précédent" },
+             { type:"scrim",   time:"21h00 – 23h00", note:"Scrims" }],
+  Jeudi:    [{ type:"coaching",time:"19h00 – 20h00", note:"Coaching joueur mid" }],
+  Vendredi: [{ type:"scrim",   time:"20h00 – 23h00", note:"Scrims ranked" }],
+  Samedi:   [{ type:"match",   time:"15h00 – 18h00", note:"Match officiel" }],
+  Dimanche: [{ type:"repos",   time:"",              note:"Jour de repos" }],
+};
+
+let schedule = JSON.parse(JSON.stringify(DEFAULT));
+
+function getWeekNum(d) {
+  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - day);
+  const y1 = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - y1) / 86400000) + 1) / 7);
+}
+function currentWeekValue() {
+  const n = new Date();
+  return `${n.getFullYear()}-W${String(getWeekNum(n)).padStart(2,'0')}`;
+}
+function weekLabel(val) {
+  const [yr, wk] = val.split('-W').map(Number);
+  if (!yr || !wk) return val;
+  const base = new Date(yr, 0, 1 + (wk - 1) * 7);
+  const day = base.getDay();
+  const mon = new Date(base); mon.setDate(base.getDate() - (day === 0 ? 6 : day - 1));
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  const fmt = d => d.toLocaleDateString('fr-FR', { day:'2-digit', month:'short' });
+  return `Semaine ${wk}  ·  ${fmt(mon)} – ${fmt(sun)} ${yr}`;
+}
+
+function getType(id) { return TYPES.find(t => t.id === id) || TYPES[6]; }
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  DAYS.forEach(day => {
+    const col = document.createElement('div');
+    col.className = 'day-col';
+    col.innerHTML = `<div class="day-head"><div class="day-name-full">${day}</div></div>`;
+    (schedule[day] || []).forEach((slot, idx) => {
+      const t = getType(slot.type);
+      const el = document.createElement('div');
+      el.className = 'slot';
+      el.style.cssText = `background:${t.bg}; border-left-color:${t.color};`;
+      el.innerHTML = `
+        <button class="slot-del" data-day="${day}" data-idx="${idx}">✕</button>
+        <div class="slot-badge" style="background:${t.color}22; color:${t.color}">${t.label}</div>
+        ${slot.time ? `<div class="slot-time">⏱ ${slot.time}</div>` : ''}
+        <div class="slot-note">${slot.note}</div>
+      `;
+      el.addEventListener('click', e => { if (!e.target.classList.contains('slot-del')) openModal(day, idx); });
+      col.appendChild(el);
+    });
+    const add = document.createElement('button');
+    add.className = 'add-slot'; add.textContent = '+';
+    add.addEventListener('click', () => {
+      schedule[day] = schedule[day] || [];
+      schedule[day].push({ type:'scrim', time:'', note:'' });
+      renderGrid();
+    });
+    col.appendChild(add);
+    grid.appendChild(col);
+  });
+  document.querySelectorAll('.slot-del').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      schedule[btn.dataset.day].splice(parseInt(btn.dataset.idx), 1);
+      renderGrid();
+    });
+  });
+}
+
+function renderLegend() {
+  document.getElementById('legend').innerHTML = TYPES.map(t =>
+    `<div class="leg"><div class="leg-pill" style="background:${t.color}22;color:${t.color}">${t.label}</div></div>`
+  ).join('');
+}
+
+let _mDay, _mIdx;
+function openModal(day, idx) {
+  _mDay = day; _mIdx = idx;
+  const s = schedule[day][idx];
+  document.getElementById('modalTitle').textContent = `Modifier — ${day}`;
+  document.getElementById('mTime').value = s.time || '';
+  document.getElementById('mNote').value = s.note || '';
+  document.getElementById('mType').innerHTML = TYPES.map(t =>
+    `<option value="${t.id}" ${t.id===s.type?'selected':''}>${t.label}</option>`
+  ).join('');
+  document.getElementById('overlay').classList.add('open');
+}
+document.getElementById('cancelBtn').addEventListener('click', () => document.getElementById('overlay').classList.remove('open'));
+document.getElementById('overlay').addEventListener('click', e => { if (e.target === document.getElementById('overlay')) document.getElementById('overlay').classList.remove('open'); });
+document.getElementById('saveBtn').addEventListener('click', () => {
+  schedule[_mDay][_mIdx] = {
+    type: document.getElementById('mType').value,
+    time: document.getElementById('mTime').value,
+    note: document.getElementById('mNote').value,
+  };
+  document.getElementById('overlay').classList.remove('open');
+  renderGrid();
+});
+
+const picker = document.getElementById('weekPicker');
+picker.value = currentWeekValue();
+document.getElementById('weekLabel').textContent = weekLabel(picker.value);
+picker.addEventListener('change', () => { document.getElementById('weekLabel').textContent = weekLabel(picker.value); });
+
+document.getElementById('exportBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('exportBtn');
+  btn.disabled = true; btn.textContent = 'Export…';
+  document.querySelectorAll('.slot-del, .add-slot').forEach(el => el.style.visibility = 'hidden');
+  await new Promise(r => setTimeout(r, 80));
+  const canvas = await html2canvas(document.getElementById('card'), {
+    scale: 2, backgroundColor: '#0c0b18', useCORS: true, logging: false,
+  });
+  document.querySelectorAll('.slot-del, .add-slot').forEach(el => el.style.visibility = '');
+  btn.disabled = false; btn.textContent = '⬇ Exporter PNG';
+  const link = document.createElement('a');
+  link.download = `plazma-${picker.value}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+});
+
+renderGrid();
+renderLegend();
+</script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PlaZma Hub</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0b1020, #161b33);
+      color: white;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      padding: 50px 20px 20px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 3rem;
+      color: #a855f7;
+    }
+
+    header p {
+      color: #cbd5e1;
+      margin-top: 10px;
+      font-size: 1.1rem;
+    }
+
+    .hub {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 24px;
+      text-decoration: none;
+      color: white;
+      transition: transform 0.2s ease, background 0.2s ease;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      background: rgba(168, 85, 247, 0.15);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      color: #d8b4fe;
+      font-size: 1.3rem;
+    }
+
+    .card p {
+      margin: 0;
+      color: #cbd5e1;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px 20px 50px;
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>PlaZma Hub</h1>
+    <p>Portail central de l’équipe</p>
+  </header>
+
+  <main class="hub">
+    <a class="card" href="plazma-perf.html">
+      <h2>Performance</h2>
+      <p>Suivi, progression, objectifs et performance des joueurs.</p>
+    </a>
+
+    <a class="card" href="plazma-schedule.html">
+      <h2>Planning</h2>
+      <p>Calendrier des scrims, entraînements et échéances importantes.</p>
+    </a>
+
+    <a class="card" href="plazma-dashboard.html">
+      <h2>Dashboard</h2>
+      <p>Tableau de bord.</p>
+    </a>
+
+    <a class="card" href="plazma-analysis.html">
+      <h2>Analyse</h2>
+      <p>VOD review, notes d’analyse et axes d’amélioration.</p>
+    </a>
+  </main>
+
+  <footer>
+    © PlaZma - Hub interne
+  </footer>
+</body>
+</html>
