@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PlaZma — Compte Rendu Scrim</title>
+<title>PlaZma — Scouting Adverse</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -18,8 +18,8 @@ const db=firebase.firestore();
 :root{
   --bg:#07070f;--bg2:#0c0b18;--surface:#10101e;--surface2:#141428;
   --border:#1c1b33;--border2:#252444;
-  --v1:#6d28d9;--v2:#7c3aed;--v3:#8b5cf6;--v4:#a78bfa;--v5:#c4b5fd;
-  --green:#22c55e;--red:#ef4444;--orange:#f97316;--cyan:#06b6d4;--yellow:#f59e0b;--blue:#3b82f6;
+  --v1:#6d28d9;--v2:#7c3aed;--v3:#8b5cf6;--v4:#a78bfa;
+  --green:#22c55e;--red:#ef4444;--orange:#f97316;--cyan:#06b6d4;--yellow:#f59e0b;--blue:#3b82f6;--pink:#ec4899;
   --text:#e8e6f4;--text2:#8b82b0;--text3:#45405e;
 }
 body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 20px 80px}
@@ -55,7 +55,7 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 .btn-export{background:var(--v2);color:#fff;box-shadow:0 0 28px rgba(124,58,237,.4)}
 .btn-export:hover{background:var(--v3);transform:translateY(-1px)}
 .btn-export:disabled{opacity:.4;cursor:default;transform:none}
-.card{width:100%;max-width:900px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 0 0 1px rgba(109,40,217,.08),0 40px 100px rgba(0,0,0,.6)}
+.card{width:100%;max-width:960px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 0 0 1px rgba(109,40,217,.08),0 40px 100px rgba(0,0,0,.6)}
 .card-header{position:relative;overflow:hidden;padding:26px 32px 22px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between}
 .card-header::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 55% 180% at 0% 50%,rgba(109,40,217,.18) 0%,transparent 65%)}
 .card-header::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--v1) 0%,var(--v3) 35%,transparent 70%)}
@@ -63,54 +63,61 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 .logo-badge{width:40px;height:40px;background:linear-gradient(135deg,var(--v1),var(--v3));border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:#fff;box-shadow:0 0 20px rgba(124,58,237,.5)}
 .club-name{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:800;letter-spacing:4px;text-transform:uppercase;background:linear-gradient(135deg,#fff 0%,var(--v4) 40%,var(--v3) 75%,#fff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 16px rgba(139,92,246,.4))}
 .doc-type{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--v4);margin-top:4px}
-.season-tag{background:rgba(109,40,217,.15);border:1px solid rgba(109,40,217,.3);border-radius:4px;padding:3px 10px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--v4)}
-.meta-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
+.threat-badge{padding:4px 14px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border:1px solid;cursor:pointer;transition:all .2s}
+.meta-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
 .meta-cell{background:var(--surface);padding:14px 16px}
 .meta-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
 .meta-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-size:13px;font-family:'Barlow',sans-serif;padding:3px 0;outline:none;transition:border-color .2s}
 .meta-input:focus{border-bottom-color:var(--v3)}
 .meta-input option{background:var(--surface)}
-.score-tracker{background:var(--surface);margin:0;padding:20px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:0}
-.score-team{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1}
-.score-team-name{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
-.score-num{font-family:'Barlow Condensed',sans-serif;font-size:72px;font-weight:800;line-height:1;cursor:pointer;background:transparent;border:none;outline:none;width:100px;text-align:center;border-bottom:2px solid var(--border2);transition:border-color .2s}
-.score-num:focus{border-bottom-color:var(--v3)}
-.score-vs{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700;color:var(--border2);padding:0 20px;margin-top:24px;letter-spacing:2px}
 .card-body{padding:28px 32px;display:flex;flex-direction:column;gap:24px}
 .section-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .section-dot{width:6px;height:6px;border-radius:50%}
-.game-table{width:100%;border-collapse:separate;border-spacing:0}
-.game-table thead tr{background:var(--surface2)}
-.game-table th{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);padding:10px 12px;text-align:left;font-weight:600;border-bottom:1px solid var(--border)}
-.game-table td{padding:0;border-bottom:1px solid var(--border)}
-.game-table tbody tr:hover td{background:rgba(255,255,255,.01)}
-.table-input{width:100%;background:transparent;border:none;color:var(--text2);font-size:12px;font-family:'Barlow',sans-serif;padding:10px 12px;outline:none;transition:background .2s}
-.table-input:focus{background:rgba(139,92,246,.05)}
-.table-select{width:100%;background:transparent;border:none;color:var(--text2);font-size:12px;font-family:'Barlow',sans-serif;padding:10px 12px;outline:none;cursor:pointer}
-.table-select option{background:var(--surface)}
-.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.ta-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px}
-.ta-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px}
-.fiche-textarea{width:100%;background:transparent;border:none;color:var(--text2);font-size:12px;font-family:'Barlow',sans-serif;line-height:1.7;resize:none;outline:none;min-height:90px}
+.roster-table{width:100%;border-collapse:separate;border-spacing:0}
+.roster-table thead tr{background:var(--surface2)}
+.roster-table th{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);padding:10px 12px;text-align:left;font-weight:600;border-bottom:1px solid var(--border)}
+.roster-table td{border-bottom:1px solid var(--border)}
+.roster-table tbody tr:last-child td{border-bottom:none}
+.td-input{width:100%;background:transparent;border:none;color:var(--text2);font-size:12px;font-family:'Barlow',sans-serif;padding:10px 12px;outline:none;transition:background .2s}
+.td-input:focus{background:rgba(139,92,246,.05)}
+.role-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.danger-bar{display:flex;gap:4px;padding:8px 12px}
+.danger-dot{width:12px;height:12px;border-radius:3px;cursor:pointer;transition:all .15s;opacity:.25}
+.danger-dot.on{opacity:1}
+.draft-split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.draft-block{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px}
+.draft-block-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:12px}
+.champ-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;min-height:32px}
+.champ-tag{background:var(--surface2);border:1px solid var(--border2);border-radius:5px;padding:3px 8px;font-size:11px;color:var(--text2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px}
+.champ-tag:hover{border-color:var(--v3);color:var(--text)}
+.champ-tag .del{color:var(--text3);font-size:10px}
+.champ-tag .del:hover{color:var(--red)}
+.add-champ{display:flex;gap:6px;align-items:center}
+.add-champ-input{flex:1;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-size:11px;font-family:'Barlow',sans-serif;padding:5px 9px;border-radius:5px;outline:none;transition:border-color .2s}
+.add-champ-input:focus{border-color:var(--v3)}
+.add-champ-btn{background:var(--v1);color:#fff;border:none;border-radius:5px;padding:5px 10px;cursor:pointer;font-size:13px;transition:background .15s}
+.add-champ-btn:hover{background:var(--v2)}
+.swot-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.swot-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;border-left:3px solid}
+.swot-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.fiche-textarea{width:100%;background:transparent;border:none;color:var(--text2);font-size:12px;font-family:'Barlow',sans-serif;line-height:1.7;resize:none;outline:none;min-height:80px}
 .fiche-textarea::placeholder{color:var(--text3)}
-.moments-list{display:flex;flex-direction:column;gap:8px}
-.moment-row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:9px 12px}
-.moment-icon{font-size:14px;flex-shrink:0}
-.moment-type{background:transparent;border:none;color:var(--text3);font-size:10px;font-family:'Barlow',sans-serif;letter-spacing:1px;text-transform:uppercase;width:90px;outline:none;flex-shrink:0}
-.moment-type option{background:var(--surface)}
-.moment-input{flex:1;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-size:12px;font-family:'Barlow',sans-serif;padding:2px 0;outline:none}
-.moment-time{background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text3);font-size:11px;font-family:'Barlow Condensed',sans-serif;width:55px;text-align:right;padding:2px 0;outline:none}
-.draft-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:start}
-.draft-side{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px}
-.draft-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:12px}
-.pick-row{display:flex;gap:6px;margin-bottom:6px;align-items:center}
-.pick-num{font-size:9px;color:var(--text3);font-family:'Barlow Condensed',sans-serif;font-weight:600;width:16px;flex-shrink:0}
-.pick-input{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-size:11px;font-family:'Barlow',sans-serif;padding:5px 8px;border-radius:5px;outline:none;transition:border-color .2s}
-.pick-input:focus{border-color:var(--v3)}
-.draft-vs{display:flex;align-items:center;justify-content:center;padding-top:36px}
-.draft-vs-txt{font-family:'Barlow Condensed',sans-serif;font-size:20px;color:var(--border2);font-weight:700}
+.plan-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.plan-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px}
+.plan-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.cp-table{width:100%;border-collapse:separate;border-spacing:0}
+.cp-table thead tr{background:var(--surface2)}
+.cp-table th{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);padding:9px 12px;text-align:left;font-weight:600;border-bottom:1px solid var(--border)}
+.cp-table td{border-bottom:1px solid var(--border)}
+.cp-table tbody tr:last-child td{border-bottom:none}
+.threat-section{display:flex;align-items:center;gap:20px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px}
+.threat-label{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--v4);min-width:120px}
+.threat-gauge{flex:1;display:flex;gap:6px}
+.gauge-step{flex:1;height:20px;border-radius:4px;cursor:pointer;transition:all .2s;opacity:.2;border:1px solid transparent}
+.gauge-step.active{opacity:1}
+.threat-text{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;min-width:80px;text-align:right}
 .note-globale{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;display:flex;align-items:center;gap:24px}
-.note-val{font-family:'Barlow Condensed',sans-serif;font-size:56px;font-weight:800;color:var(--v4);line-height:1;background:transparent;border:none;border-bottom:2px solid var(--border2);outline:none;width:80px;text-align:center;transition:border-color .2s}
+.note-val{font-family:'Barlow Condensed',sans-serif;font-size:56px;font-weight:800;color:var(--v4);line-height:1;background:transparent;border:none;border-bottom:2px solid var(--border2);outline:none;width:80px;text-align:center}
 .note-val:focus{border-bottom-color:var(--v3)}
 .note-sep{font-family:'Barlow Condensed',sans-serif;font-size:32px;color:var(--text3);font-weight:700}
 .note-right{flex:1}
@@ -119,7 +126,6 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 .note-comment:focus{border-bottom-color:var(--v3)}
 .card-footer{border-top:1px solid var(--border);background:var(--surface);padding:12px 32px;display:flex;align-items:center;justify-content:space-between}
 .footer-brand{font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
-.footer-date{font-size:10px;color:var(--text3);letter-spacing:1px}
 </style>
 </head>
 <body>
@@ -157,113 +163,153 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
         <div class="logo-badge">PZ</div>
         <div class="club-name">PlaZma</div>
       </div>
-      <div class="doc-type">Compte Rendu de Scrim</div>
+      <div class="doc-type">Fiche de Scouting Adverse</div>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-      <div class="season-tag">League of Legends · Saison 2026</div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3)">Niveau de menace</div>
+      <div style="display:flex;gap:6px">
+        <div class="threat-badge" id="tb_low" style="color:var(--green);border-color:rgba(34,197,94,.3)" onclick="setThreat('low')">Faible</div>
+        <div class="threat-badge" id="tb_med" style="color:var(--yellow);border-color:rgba(245,158,11,.3)" onclick="setThreat('med')">Moyen</div>
+        <div class="threat-badge" id="tb_high" style="color:var(--red);border-color:rgba(239,68,68,.3)" onclick="setThreat('high')">Élevé</div>
+      </div>
     </div>
   </div>
 
   <div class="meta-bar">
-    <div class="meta-cell"><div class="meta-label">Date</div><input class="meta-input" id="m_date" type="date"></div>
-    <div class="meta-cell"><div class="meta-label">Équipe adverse</div><input class="meta-input" id="m_adv" type="text" placeholder="Nom de l'équipe"></div>
-    <div class="meta-cell"><div class="meta-label">Type de scrim</div>
-      <select class="meta-input" id="m_type">
-        <option>Préparation match</option><option>Entraînement standard</option>
-        <option>Test de composition</option><option>Ranked scrim</option>
-      </select>
-    </div>
-    <div class="meta-cell"><div class="meta-label">Responsable CR</div><input class="meta-input" id="m_resp" type="text" placeholder="Coach / Joueur"></div>
-  </div>
-
-  <div class="score-tracker">
-    <div class="score-team">
-      <div class="score-team-name">PlaZma</div>
-      <input class="score-num" id="s_plazma" type="text" value="0" style="color:var(--green)" maxlength="2">
-    </div>
-    <div class="score-vs">VS</div>
-    <div class="score-team">
-      <div class="score-team-name" id="advLabel">Adversaire</div>
-      <input class="score-num" id="s_adv" type="text" value="0" style="color:var(--red)" maxlength="2">
-    </div>
+    <div class="meta-cell"><div class="meta-label">Équipe adverse</div><input class="meta-input" id="m_team" type="text" placeholder="Nom de l'équipe"></div>
+    <div class="meta-cell"><div class="meta-label">Coach / Manager</div><input class="meta-input" id="m_coach" type="text" placeholder="Nom"></div>
+    <div class="meta-cell"><div class="meta-label">Rang estimé</div><input class="meta-input" id="m_rank" type="text" placeholder="ex: Platine ~ Émeraude"></div>
+    <div class="meta-cell"><div class="meta-label">Prochain tournoi</div><input class="meta-input" id="m_tournoi" type="text" placeholder="ex: Nexus Tour Phase 1"></div>
+    <div class="meta-cell"><div class="meta-label">Analyste</div><input class="meta-input" id="m_analyst" type="text" placeholder="Qui rédige la fiche"></div>
   </div>
 
   <div class="card-body">
 
+    <!-- ROSTER -->
     <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--blue)"></div>Détail des games</div>
-      <table class="game-table">
+      <div class="section-title"><div class="section-dot" style="background:var(--blue)"></div>Roster adverse</div>
+      <table class="roster-table">
         <thead><tr>
-          <th style="width:50px">Game</th><th style="width:70px">Résultat</th>
-          <th style="width:80px">Durée</th><th style="width:110px">Side</th>
-          <th>Notre compo (5 champs)</th><th>Compo adverse</th><th style="width:80px">K/D</th>
+          <th style="width:90px">Rôle</th><th>Pseudo</th><th>Champion pool</th>
+          <th style="width:90px">Rang</th><th style="width:70px">WR</th>
+          <th style="width:120px">Dangerosité</th><th>Commentaire</th>
         </tr></thead>
-        <tbody id="gameTable"></tbody>
+        <tbody id="rosterBody"></tbody>
       </table>
     </div>
 
+    <!-- TENDANCES DRAFT -->
     <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--yellow)"></div>Analyse de draft (Game 1)</div>
-      <div class="draft-grid">
-        <div class="draft-side">
-          <div class="draft-title" style="color:var(--v4)">🔵 PlaZma — Picks / Bans</div>
-          <div style="font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Bans</div>
-          <div class="pick-row"><div class="pick-num">B1</div><input class="pick-input" id="pb1"><div class="pick-num">B2</div><input class="pick-input" id="pb2"><div class="pick-num">B3</div><input class="pick-input" id="pb3"></div>
-          <div class="pick-row"><div class="pick-num">B4</div><input class="pick-input" id="pb4"><div class="pick-num">B5</div><input class="pick-input" id="pb5"></div>
-          <div style="font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin:10px 0 8px">Picks</div>
-          <div class="pick-row"><div class="pick-num">P1</div><input class="pick-input" id="pp1" placeholder="Top…"></div>
-          <div class="pick-row"><div class="pick-num">P2</div><input class="pick-input" id="pp2" placeholder="Jungle…"></div>
-          <div class="pick-row"><div class="pick-num">P3</div><input class="pick-input" id="pp3" placeholder="Mid…"></div>
-          <div class="pick-row"><div class="pick-num">P4</div><input class="pick-input" id="pp4" placeholder="ADC…"></div>
-          <div class="pick-row"><div class="pick-num">P5</div><input class="pick-input" id="pp5" placeholder="Support…"></div>
+      <div class="section-title"><div class="section-dot" style="background:var(--v3)"></div>Tendances de draft</div>
+      <div class="draft-split">
+        <div class="draft-block">
+          <div class="draft-block-title" style="color:var(--v4)">🏆 Picks prioritaires (souvent joués)</div>
+          <div class="champ-tags" id="tagsPrio"></div>
+          <div class="add-champ">
+            <input class="add-champ-input" id="inputPrio" placeholder="Ajouter un champion…" onkeydown="if(event.key==='Enter')addTag('Prio')">
+            <button class="add-champ-btn" onclick="addTag('Prio')">+</button>
+          </div>
         </div>
-        <div class="draft-vs"><div class="draft-vs-txt">VS</div></div>
-        <div class="draft-side">
-          <div class="draft-title" style="color:var(--red)">🔴 Adversaire — Picks / Bans</div>
-          <div style="font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Bans</div>
-          <div class="pick-row"><div class="pick-num">B1</div><input class="pick-input" id="ab1"><div class="pick-num">B2</div><input class="pick-input" id="ab2"><div class="pick-num">B3</div><input class="pick-input" id="ab3"></div>
-          <div class="pick-row"><div class="pick-num">B4</div><input class="pick-input" id="ab4"><div class="pick-num">B5</div><input class="pick-input" id="ab5"></div>
-          <div style="font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin:10px 0 8px">Picks</div>
-          <div class="pick-row"><div class="pick-num">P1</div><input class="pick-input" id="ap1" placeholder="Top…"></div>
-          <div class="pick-row"><div class="pick-num">P2</div><input class="pick-input" id="ap2" placeholder="Jungle…"></div>
-          <div class="pick-row"><div class="pick-num">P3</div><input class="pick-input" id="ap3" placeholder="Mid…"></div>
-          <div class="pick-row"><div class="pick-num">P4</div><input class="pick-input" id="ap4" placeholder="ADC…"></div>
-          <div class="pick-row"><div class="pick-num">P5</div><input class="pick-input" id="ap5" placeholder="Support…"></div>
+        <div class="draft-block">
+          <div class="draft-block-title" style="color:var(--red)">🚫 Bans habituels (à anticiper)</div>
+          <div class="champ-tags" id="tagsBans"></div>
+          <div class="add-champ">
+            <input class="add-champ-input" id="inputBans" placeholder="Ajouter un champion…" onkeydown="if(event.key==='Enter')addTag('Bans')">
+            <button class="add-champ-btn" onclick="addTag('Bans')">+</button>
+          </div>
+        </div>
+        <div class="draft-block">
+          <div class="draft-block-title" style="color:var(--yellow)">⚠️ Faiblesse vs certains types</div>
+          <div class="champ-tags" id="tagsWeak"></div>
+          <div class="add-champ">
+            <input class="add-champ-input" id="inputWeak" placeholder="Ex: split-push, poke comp…" onkeydown="if(event.key==='Enter')addTag('Weak')">
+            <button class="add-champ-btn" onclick="addTag('Weak')">+</button>
+          </div>
+        </div>
+        <div class="draft-block">
+          <div class="draft-block-title" style="color:var(--green)">✅ Nos counter-picks recommandés</div>
+          <div class="champ-tags" id="tagsCp"></div>
+          <div class="add-champ">
+            <input class="add-champ-input" id="inputCp" placeholder="Champion fort contre eux…" onkeydown="if(event.key==='Enter')addTag('Cp')">
+            <button class="add-champ-btn" onclick="addTag('Cp')">+</button>
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- SWOT -->
     <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--orange)"></div>Moments clés à retenir</div>
-      <div class="moments-list" id="momentsList"></div>
-    </div>
-
-    <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--v3)"></div>Analyse post-scrim</div>
-      <div class="three-col">
-        <div class="ta-card" style="border-left:3px solid var(--green)">
-          <div class="ta-title" style="color:var(--green)">✦ Ce qui a bien fonctionné</div>
-          <textarea class="fiche-textarea" id="t_bien" placeholder="Phases de jeu maîtrisées, stratégies efficaces…"></textarea>
+      <div class="section-title"><div class="section-dot" style="background:var(--yellow)"></div>Analyse Forces / Faiblesses</div>
+      <div class="swot-grid">
+        <div class="swot-card" style="border-color:var(--green)">
+          <div class="swot-title" style="color:var(--green)">✦ Leurs forces</div>
+          <textarea class="fiche-textarea" id="sw_forces" placeholder="Points forts identifiés (teamfight, early game, communication…)"></textarea>
         </div>
-        <div class="ta-card" style="border-left:3px solid var(--red)">
-          <div class="ta-title" style="color:var(--red)">✦ Erreurs récurrentes</div>
-          <textarea class="fiche-textarea" id="t_erreurs" placeholder="Erreurs collectives et individuelles répétées…"></textarea>
+        <div class="swot-card" style="border-color:var(--red)">
+          <div class="swot-title" style="color:var(--red)">✦ Leurs faiblesses</div>
+          <textarea class="fiche-textarea" id="sw_weak" placeholder="Vulnérabilités exploitables (poke, split, objectifs…)"></textarea>
         </div>
-        <div class="ta-card" style="border-left:3px solid var(--yellow)">
-          <div class="ta-title" style="color:var(--yellow)">✦ Axes de travail</div>
-          <textarea class="fiche-textarea" id="t_axes" placeholder="Points à prioriser en entraînement…"></textarea>
+        <div class="swot-card" style="border-color:var(--v3)">
+          <div class="swot-title" style="color:var(--v3)">✦ Stratégie typique</div>
+          <textarea class="fiche-textarea" id="sw_strat" placeholder="Style de jeu habituel, win condition préférée…"></textarea>
+        </div>
+        <div class="swot-card" style="border-color:var(--cyan)">
+          <div class="swot-title" style="color:var(--cyan)">✦ Comment les contrer</div>
+          <textarea class="fiche-textarea" id="sw_counter" placeholder="Notre approche optimale face à eux…"></textarea>
         </div>
       </div>
     </div>
 
+    <!-- PLAN D'APPROCHE -->
     <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--v4)"></div>Bilan global</div>
+      <div class="section-title"><div class="section-dot" style="background:var(--orange)"></div>Plan d'approche par phase</div>
+      <div class="plan-grid">
+        <div class="plan-card" style="border-left:3px solid var(--green)">
+          <div class="plan-title" style="color:var(--green)">🌅 Early Game (0–15 min)</div>
+          <textarea class="fiche-textarea" id="pl_early" placeholder="Priorités de laning, jungle path, 2v2…" style="min-height:80px"></textarea>
+        </div>
+        <div class="plan-card" style="border-left:3px solid var(--yellow)">
+          <div class="plan-title" style="color:var(--yellow)">⚔️ Mid Game / Teamfight</div>
+          <textarea class="fiche-textarea" id="pl_mid" placeholder="Contrôle des objectifs, rotations, fights à éviter…" style="min-height:80px"></textarea>
+        </div>
+        <div class="plan-card" style="border-left:3px solid var(--v4)">
+          <div class="plan-title" style="color:var(--v4)">🏆 Win Condition</div>
+          <textarea class="fiche-textarea" id="pl_win" placeholder="Comment on gagne cette partie…" style="min-height:80px"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTRA PICKS TABLE -->
+    <div>
+      <div class="section-title"><div class="section-dot" style="background:var(--pink)"></div>Tableau de contre-picks par rôle</div>
+      <table class="cp-table">
+        <thead><tr>
+          <th style="width:90px">Rôle</th><th>Leur pick habituel</th>
+          <th>Notre contre-pick</th><th>Raison / Avantage</th>
+        </tr></thead>
+        <tbody id="cpBody"></tbody>
+      </table>
+    </div>
+
+    <!-- JAUGE MENACE -->
+    <div>
+      <div class="section-title"><div class="section-dot" style="background:var(--red)"></div>Jauge de menace globale</div>
+      <div class="threat-section">
+        <div class="threat-label">Niveau de menace</div>
+        <div class="threat-gauge" id="threatGauge"></div>
+        <div class="threat-text" id="threatText" style="color:var(--text3)">—</div>
+      </div>
+    </div>
+
+    <!-- CONCLUSION -->
+    <div>
+      <div class="section-title"><div class="section-dot" style="background:var(--v4)"></div>Conclusion & probabilité de victoire estimée</div>
       <div class="note-globale">
-        <input class="note-val" id="f_note" type="text" value="—" maxlength="2">
-        <div class="note-sep">/ 10</div>
+        <input class="note-val" id="f_note" type="text" value="—" maxlength="3">
+        <div class="note-sep">%</div>
         <div class="note-right">
-          <div class="note-label-big">Performance collective</div>
-          <input class="note-comment" id="f_comment" type="text" placeholder="Résumé de la session, niveau adversaire, progrès observés…">
+          <div class="note-label-big">Estimation de victoire</div>
+          <input class="note-comment" id="f_comment" type="text" placeholder="Résumé de l'analyse, niveau perçu, confiance dans notre préparation…">
         </div>
       </div>
     </div>
@@ -272,57 +318,127 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 
   <div class="card-footer">
     <div class="footer-brand">PlaZma Esport · plazma-esport.fr</div>
-    <div class="footer-date" id="footerDate"></div>
+    <div style="font-size:10px;color:var(--text3);letter-spacing:1px" id="footerDate"></div>
   </div>
 </div>
 
 <script>
-const COL='plazma', DOC_ID='scrim';
-const GAME_IDS=['result','dur','side','compo','acompo','kd'];
+const COL='plazma', DOC_ID='scouting';
+const ROLES=[
+  {role:'Top',    color:'#f97316'},
+  {role:'Jungle', color:'#22c55e'},
+  {role:'Mid',    color:'#3b82f6'},
+  {role:'ADC',    color:'#ef4444'},
+  {role:'Support',color:'#a855f7'},
+];
 
-// ── BUILD GAME TABLE ──────────────────────────────────────────
-function buildGameTable(){
-  const tbody=document.getElementById('gameTable');
+// tag state
+const tagData={Prio:[],Bans:[],Weak:[],Cp:[]};
+// danger state per role [0-4]
+const dangerState=[0,0,0,0,0];
+// gauge state [0-10]
+let gaugeVal=0;
+// threat badge
+let threatLevel='';
+
+// ── BUILD ROSTER ──────────────────────────────────────────────
+function buildRoster(){
+  const tbody=document.getElementById('rosterBody');
   tbody.innerHTML='';
-  for(let g=1;g<=5;g++){
+  ROLES.forEach((r,i)=>{
     const tr=document.createElement('tr');
     tr.innerHTML=`
-      <td><div style="padding:10px 12px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--text3)">G${g}</div></td>
-      <td><select class="table-select" id="g${g}_result" onchange="styleResult(this);debounceSave()">
-        <option value="">—</option><option>Victoire</option><option>Défaite</option>
-      </select></td>
-      <td><input class="table-input" id="g${g}_dur" type="text" placeholder="30:00" oninput="debounceSave()"></td>
-      <td><select class="table-select" id="g${g}_side" onchange="debounceSave()"><option value="">—</option><option>Blue Side</option><option>Red Side</option></select></td>
-      <td><input class="table-input" id="g${g}_compo" type="text" placeholder="Top / Jgl / Mid / ADC / Sup" oninput="debounceSave()"></td>
-      <td><input class="table-input" id="g${g}_acompo" type="text" placeholder="Top / Jgl / Mid / ADC / Sup" oninput="debounceSave()"></td>
-      <td><input class="table-input" id="g${g}_kd" type="text" placeholder="K - D" oninput="debounceSave()"></td>`;
+      <td><div style="padding:9px 12px"><span class="role-badge" style="background:${r.color}22;color:${r.color}">${r.role}</span></div></td>
+      <td><input class="td-input" id="ro${i}_pseudo" type="text" placeholder="Pseudo…" oninput="debounceSave()"></td>
+      <td><input class="td-input" id="ro${i}_pool" type="text" placeholder="Champ1, Champ2, Champ3" oninput="debounceSave()"></td>
+      <td><input class="td-input" id="ro${i}_rank" type="text" placeholder="Gold IV…" oninput="debounceSave()"></td>
+      <td><input class="td-input" id="ro${i}_wr" type="text" placeholder="55%" oninput="debounceSave()"></td>
+      <td>
+        <div class="danger-bar" id="danger${i}">
+          <div class="danger-dot" style="background:var(--green)"  data-v="1" onclick="setDanger(${i},1)"></div>
+          <div class="danger-dot" style="background:var(--yellow)" data-v="2" onclick="setDanger(${i},2)"></div>
+          <div class="danger-dot" style="background:var(--orange)" data-v="3" onclick="setDanger(${i},3)"></div>
+          <div class="danger-dot" style="background:var(--red)"    data-v="4" onclick="setDanger(${i},4)"></div>
+        </div>
+      </td>
+      <td><input class="td-input" id="ro${i}_comm" type="text" placeholder="Commentaire…" oninput="debounceSave()"></td>`;
     tbody.appendChild(tr);
-  }
-}
-function styleResult(sel){
-  sel.style.color=sel.value==='Victoire'?'var(--green)':sel.value==='Défaite'?'var(--red)':'var(--text2)';
-  sel.style.fontWeight=sel.value?'700':'400';
-  sel.style.fontFamily=sel.value?'\'Barlow Condensed\',sans-serif':'\'Barlow\',sans-serif';
-  sel.style.fontSize=sel.value?'13px':'12px';
-  sel.style.letterSpacing=sel.value?'1px':'0';
+  });
 }
 
-// ── BUILD MOMENTS LIST ────────────────────────────────────────
-function buildMoments(){
-  const list=document.getElementById('momentsList');
-  list.innerHTML='';
-  for(let m=1;m<=5;m++){
-    const row=document.createElement('div');
-    row.className='moment-row';
-    row.innerHTML=`<div class="moment-icon">⚡</div>
-      <select class="moment-type" id="mo${m}_type" onchange="debounceSave()">
-        <option>Teamfight</option><option>Objectif</option><option>Erreur</option>
-        <option>Belle action</option><option>Rotation</option><option>Draft</option>
-      </select>
-      <input class="moment-input" id="mo${m}_desc" placeholder="Description du moment clé…" oninput="debounceSave()">
-      <input class="moment-time" id="mo${m}_time" type="text" placeholder="min" oninput="debounceSave()">`;
-    list.appendChild(row);
+function setDanger(idx,val){
+  dangerState[idx]=dangerState[idx]===val?0:val;
+  applyDangerUI(idx);
+  debounceSave();
+}
+function applyDangerUI(idx){
+  const dots=document.querySelectorAll('#danger'+idx+' .danger-dot');
+  dots.forEach(d=>d.classList.toggle('on',parseInt(d.dataset.v)<=dangerState[idx]));
+}
+
+// ── BUILD CP TABLE ────────────────────────────────────────────
+function buildCPTable(){
+  const tbody=document.getElementById('cpBody');
+  tbody.innerHTML='';
+  ROLES.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><div style="padding:9px 12px"><span class="role-badge" style="background:${r.color}22;color:${r.color}">${r.role}</span></div></td>
+      <td><input class="td-input" id="cp${i}_their" type="text" placeholder="Leur champion habituel…" oninput="debounceSave()"></td>
+      <td><input class="td-input" id="cp${i}_our" type="text" placeholder="Notre pick recommandé…" oninput="debounceSave()"></td>
+      <td><input class="td-input" id="cp${i}_why" type="text" placeholder="Avantage en lane, teamfight…" oninput="debounceSave()"></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── BUILD GAUGE ───────────────────────────────────────────────
+const GAUGE_COLORS=['#22c55e','#22c55e','#22c55e','#84cc16','#eab308','#f97316','#f97316','#ef4444','#ef4444','#ef4444'];
+const GAUGE_LABELS={0:'—',1:'Très faible',2:'Faible',3:'Modéré',4:'Moyen',5:'Moyen+',6:'Préoccupant',7:'Dangereux',8:'Très dangereux',9:'Critique',10:'Critique'};
+function buildGauge(){
+  const g=document.getElementById('threatGauge');g.innerHTML='';
+  for(let i=1;i<=10;i++){
+    const s=document.createElement('div');
+    s.className='gauge-step';
+    s.style.background=GAUGE_COLORS[i-1];
+    s.style.borderColor=GAUGE_COLORS[i-1];
+    s.dataset.v=i;
+    s.addEventListener('click',()=>{gaugeVal=gaugeVal===i?0:i;applyGaugeUI();debounceSave();});
+    g.appendChild(s);
   }
+  applyGaugeUI();
+}
+function applyGaugeUI(){
+  document.querySelectorAll('.gauge-step').forEach(s=>s.classList.toggle('active',parseInt(s.dataset.v)<=gaugeVal));
+  const tt=document.getElementById('threatText');
+  tt.textContent=gaugeVal>0?gaugeVal+'/10 — '+GAUGE_LABELS[gaugeVal]:'—';
+  tt.style.color=gaugeVal>0?GAUGE_COLORS[gaugeVal-1]:'var(--text3)';
+}
+
+// ── THREAT BADGES ─────────────────────────────────────────────
+function setThreat(level){
+  threatLevel=threatLevel===level?'':level;
+  applyThreatUI();
+  debounceSave();
+}
+function applyThreatUI(){
+  ['low','med','high'].forEach(l=>{
+    const b=document.getElementById('tb_'+l);
+    if(b){b.style.opacity=threatLevel===l||threatLevel===''?'1':'.35';b.style.fontWeight=threatLevel===l?'800':'600';}
+  });
+}
+
+// ── TAGS ──────────────────────────────────────────────────────
+function addTag(type){
+  const input=document.getElementById('input'+type);
+  const val=input.value.trim();if(!val)return;
+  tagData[type].push(val);renderTags(type);input.value='';debounceSave();
+}
+function removeTag(type,i){tagData[type].splice(i,1);renderTags(type);debounceSave();}
+function renderTags(type){
+  const c=document.getElementById('tags'+type);if(!c)return;
+  c.innerHTML=tagData[type].map((t,i)=>
+    `<div class="champ-tag">${t}<span class="del" onclick="removeTag('${type}',${i})"> ✕</span></div>`
+  ).join('');
 }
 
 // ── GET / APPLY STATE ─────────────────────────────────────────
@@ -330,31 +446,42 @@ function v(id){const e=document.getElementById(id);return e?e.value:'';}
 function sv(id,val){const e=document.getElementById(id);if(e)e.value=val||'';}
 
 function getState(){
-  const games={};
-  for(let g=1;g<=5;g++) GAME_IDS.forEach(k=>{games[`g${g}_${k}`]=v(`g${g}_${k}`);});
-  const moments={};
-  for(let m=1;m<=5;m++){moments[`mo${m}_type`]=v(`mo${m}_type`);moments[`mo${m}_desc`]=v(`mo${m}_desc`);moments[`mo${m}_time`]=v(`mo${m}_time`);}
+  const roster={};
+  ROLES.forEach((_,i)=>{
+    ['pseudo','pool','rank','wr','comm'].forEach(k=>{roster[`ro${i}_${k}`]=v(`ro${i}_${k}`);});
+    roster[`danger${i}`]=dangerState[i];
+  });
+  const cp={};
+  ROLES.forEach((_,i)=>['their','our','why'].forEach(k=>{cp[`cp${i}_${k}`]=v(`cp${i}_${k}`);}));
   return{
-    m_date:v('m_date'),m_adv:v('m_adv'),m_type:v('m_type'),m_resp:v('m_resp'),
-    s_plazma:v('s_plazma'),s_adv:v('s_adv'),
-    pb1:v('pb1'),pb2:v('pb2'),pb3:v('pb3'),pb4:v('pb4'),pb5:v('pb5'),
-    pp1:v('pp1'),pp2:v('pp2'),pp3:v('pp3'),pp4:v('pp4'),pp5:v('pp5'),
-    ab1:v('ab1'),ab2:v('ab2'),ab3:v('ab3'),ab4:v('ab4'),ab5:v('ab5'),
-    ap1:v('ap1'),ap2:v('ap2'),ap3:v('ap3'),ap4:v('ap4'),ap5:v('ap5'),
-    t_bien:v('t_bien'),t_erreurs:v('t_erreurs'),t_axes:v('t_axes'),
+    m_team:v('m_team'),m_coach:v('m_coach'),m_rank:v('m_rank'),m_tournoi:v('m_tournoi'),m_analyst:v('m_analyst'),
+    sw_forces:v('sw_forces'),sw_weak:v('sw_weak'),sw_strat:v('sw_strat'),sw_counter:v('sw_counter'),
+    pl_early:v('pl_early'),pl_mid:v('pl_mid'),pl_win:v('pl_win'),
     f_note:v('f_note'),f_comment:v('f_comment'),
-    ...games,...moments
+    tagData:{...tagData},dangerState:[...dangerState],gaugeVal,threatLevel,
+    ...roster,...cp
   };
 }
 
 function applyState(s){
   if(!s)return;
-  Object.keys(s).forEach(k=>{sv(k,s[k]);});
-  // Restore result colors
-  for(let g=1;g<=5;g++){const sel=document.getElementById(`g${g}_result`);if(sel)styleResult(sel);}
-  // Restore adv label
-  const adv=document.getElementById('m_adv');
-  if(adv&&adv.value) document.getElementById('advLabel').textContent=adv.value;
+  // simple fields
+  ['m_team','m_coach','m_rank','m_tournoi','m_analyst',
+   'sw_forces','sw_weak','sw_strat','sw_counter',
+   'pl_early','pl_mid','pl_win','f_note','f_comment'].forEach(k=>sv(k,s[k]));
+  // roster
+  ROLES.forEach((_,i)=>{
+    ['pseudo','pool','rank','wr','comm'].forEach(k=>sv(`ro${i}_${k}`,s[`ro${i}_${k}`]));
+    if(s[`danger${i}`]!=null){dangerState[i]=s[`danger${i}`];applyDangerUI(i);}
+  });
+  // cp
+  ROLES.forEach((_,i)=>['their','our','why'].forEach(k=>sv(`cp${i}_${k}`,s[`cp${i}_${k}`])));
+  // tags
+  if(s.tagData){Object.assign(tagData,s.tagData);['Prio','Bans','Weak','Cp'].forEach(renderTags);}
+  // gauge
+  if(s.gaugeVal!=null){gaugeVal=s.gaugeVal;applyGaugeUI();}
+  // threat
+  if(s.threatLevel!=null){threatLevel=s.threatLevel;applyThreatUI();}
 }
 
 // ── FIREBASE ──────────────────────────────────────────────────
@@ -392,26 +519,21 @@ function debounceSave(){clearTimeout(_st);_st=setTimeout(save,1000);}
 function exportBackup(){
   const b=new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(b);
-  a.download='plazma-scrim-backup-'+new Date().toISOString().split('T')[0]+'.json';a.click();
+  a.download='plazma-scouting-backup-'+new Date().toISOString().split('T')[0]+'.json';a.click();
 }
 function importBackup(){
   const input=document.createElement('input');input.type='file';input.accept='.json';
   input.addEventListener('change',async()=>{try{applyState(JSON.parse(await input.files[0].text()));save();}catch(e){alert('Fichier invalide');}});
   input.click();
 }
-function resetData(){if(!confirm('Effacer ce compte rendu ?'))return;db.collection(COL).doc(DOC_ID).delete().then(()=>location.reload());}
+function resetData(){if(!confirm('Effacer cette fiche scouting ?'))return;db.collection(COL).doc(DOC_ID).delete().then(()=>location.reload());}
 
-// ── SYNC ADV LABEL ────────────────────────────────────────────
-document.getElementById('m_adv').addEventListener('input',e=>{
-  document.getElementById('advLabel').textContent=e.target.value||'Adversaire';
-});
-
-// ── GLOBAL INPUT LISTENER ─────────────────────────────────────
+// Global input listener
 document.addEventListener('input',e=>{
-  if(e.target.matches('.meta-input,.score-num,.note-val,.note-comment,.pick-input,.fiche-textarea')) debounceSave();
+  if(e.target.matches('.meta-input,.td-input,.note-val,.note-comment,.fiche-textarea')) debounceSave();
 });
 
-// ── EXPORT PNG ────────────────────────────────────────────────
+// Export PNG
 document.getElementById('exportBtn').addEventListener('click',async()=>{
   const btn=document.getElementById('exportBtn');
   btn.disabled=true;btn.textContent='Export…';
@@ -420,13 +542,15 @@ document.getElementById('exportBtn').addEventListener('click',async()=>{
   const canvas=await html2canvas(document.getElementById('card'),{scale:2,backgroundColor:'#0c0b18',useCORS:true,logging:false});
   document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(b=>b.style.visibility='');
   btn.disabled=false;btn.textContent='⬇ Exporter PNG';
-  const link=document.createElement('a');link.download='plazma-scrim.png';link.href=canvas.toDataURL('image/png');link.click();
+  const link=document.createElement('a');link.download='plazma-scouting.png';link.href=canvas.toDataURL('image/png');link.click();
 });
 
-// ── INIT ──────────────────────────────────────────────────────
-document.getElementById('footerDate').textContent=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
-buildGameTable();
-buildMoments();
+// INIT
+document.getElementById('footerDate').textContent='Fiche créée le '+new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+buildRoster();
+buildCPTable();
+buildGauge();
+applyThreatUI();
 startSync();
 setTimeout(()=>{const ls=document.getElementById('loadingScreen');if(ls&&!ls.classList.contains('hidden')){hideLoading();setSyncState('error','Firebase inaccessible');}},8000);
 </script>
