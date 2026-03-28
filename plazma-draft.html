@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlaZma — Préparation Draft</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyAKwNEbNa6f40oSMwGp6dcDY1ZY6hUN1Ks",authDomain:"plazma-esport.firebaseapp.com",projectId:"plazma-esport",storageBucket:"plazma-esport.firebasestorage.app",messagingSenderId:"534325929279",appId:"1:534325929279:web:b507a46c601fa6625edf8a"};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07070f;--bg2:#0c0b18;--surface:#10101e;--surface2:#141428;--surface3:#181830;
+  --border:#1c1b33;--border2:#252444;--border3:#2e2e5e;
+  --v1:#6d28d9;--v2:#7c3aed;--v3:#8b5cf6;--v4:#a78bfa;--v5:#c4b5fd;
+  --blue:#3b82f6;--green:#22c55e;--red:#ef4444;--orange:#f97316;--yellow:#f59e0b;--cyan:#06b6d4;--pink:#ec4899;
+  --top:#f97316;--jgl:#22c55e;--mid:#3b82f6;--adc:#ef4444;--sup:#a855f7;
+  --text:#e8e6f4;--text2:#8b82b0;--text3:#45405e;
+}
+body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 20px 80px}
+
+/* ── LOADING ── */
+.loading-screen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .5s}
+.loading-screen.hidden{opacity:0;pointer-events:none}
+.loading-logo{font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:800;letter-spacing:4px;background:linear-gradient(135deg,#fff,var(--v4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.loading-bar{width:200px;height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.loading-fill{height:100%;background:linear-gradient(90deg,var(--v2),var(--v4));border-radius:2px;animation:lb 1.5s ease infinite}
+@keyframes lb{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
+.loading-text{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase}
+
+/* ── UI CHROME ── */
+.hub-link{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:var(--text3);text-decoration:none;letter-spacing:1px;transition:color .15s;margin-bottom:10px}
+.hub-link:hover{color:var(--v4)}
+.sync-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
+.sync-indicator{display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:7px;background:var(--surface2);border:1px solid var(--border2)}
+.sync-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;transition:background .3s}
+.sync-dot.connected{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,.5)}
+.sync-dot.syncing{background:var(--yellow);animation:pulse .8s infinite}
+.sync-dot.error{background:var(--red)}
+.sync-dot.offline{background:var(--text3)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.sync-text{font-size:10px;font-weight:600;letter-spacing:.5px}
+.sync-time{font-size:9px;color:var(--text3)}
+.btn-save-fb{background:rgba(109,40,217,.18);border:1px solid rgba(109,40,217,.35);color:var(--v4);padding:7px 18px;border-radius:7px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .2s}
+.btn-save-fb:hover{background:rgba(109,40,217,.3)}
+.btn-save-fb.saved{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.3);color:var(--green)}
+.btn-mini-row{display:flex;gap:5px}
+.btn-mini{background:var(--surface2);border:1px solid var(--border2);color:var(--text3);padding:6px 12px;border-radius:6px;font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:color .15s}
+.btn-mini:hover{color:var(--text2)}
+.btn-mini.red{border-color:rgba(239,68,68,.12);color:rgba(239,68,68,.3)}
+.btn-mini.red:hover{color:#ef4444}
+.toolbar{display:flex;gap:10px;margin-bottom:16px;justify-content:center}
+.btn{padding:9px 22px;border-radius:7px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:none;font-family:'Barlow',sans-serif;transition:all .2s}
+.btn-export{background:var(--v2);color:#fff;box-shadow:0 0 28px rgba(124,58,237,.4)}
+.btn-export:hover{background:var(--v3);transform:translateY(-1px)}
+.btn-export:disabled{opacity:.4;cursor:default;transform:none}
+
+/* ── CARD ── */
+.card{width:100%;max-width:1000px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 0 0 1px rgba(109,40,217,.08),0 40px 100px rgba(0,0,0,.6)}
+.card-header{position:relative;overflow:hidden;padding:24px 32px 20px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+.card-header::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 55% 180% at 0% 50%,rgba(109,40,217,.18) 0%,transparent 65%)}
+.card-header::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--v1) 0%,var(--yellow) 40%,transparent 70%)}
+.logo-row{display:flex;align-items:center;gap:12px}
+.logo-badge{width:40px;height:40px;background:linear-gradient(135deg,var(--v1),var(--v3));border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:#fff;box-shadow:0 0 20px rgba(124,58,237,.5)}
+.club-name{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:800;letter-spacing:4px;text-transform:uppercase;background:linear-gradient(135deg,#fff 0%,var(--v4) 40%,var(--v3) 75%,#fff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 16px rgba(139,92,246,.4))}
+.doc-type{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--yellow);margin-top:4px}
+.season-tag{background:rgba(109,40,217,.15);border:1px solid rgba(109,40,217,.3);border-radius:4px;padding:3px 10px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--v4)}
+
+/* ── META BAR ── */
+.meta-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
+.meta-cell{background:var(--surface);padding:12px 14px}
+.meta-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:5px}
+.meta-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-size:13px;font-family:'Barlow',sans-serif;padding:3px 0;outline:none;transition:border-color .2s}
+.meta-input:focus{border-bottom-color:var(--yellow)}
+.meta-input option{background:var(--surface)}
+
+/* ── CARD BODY ── */
+.card-body{padding:24px 28px;display:flex;flex-direction:column;gap:24px}
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* ── TAGS ── */
+.tag-zone{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px}
+.tag-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.champ-tags{display:flex;flex-wrap:wrap;gap:5px;min-height:28px;margin-bottom:8px}
+.champ-tag{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;font-size:11px;font-family:'Barlow',sans-serif;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);transition:all .15s}
+.champ-tag:hover{border-color:var(--v3)}
+.tag-del{color:var(--text3);cursor:pointer;font-size:10px;line-height:1;padding:0 1px}
+.tag-del:hover{color:var(--red)}
+.add-tag-row{display:flex;gap:6px}
+.add-tag-input{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:11px;font-family:'Barlow',sans-serif;padding:5px 9px;border-radius:5px;outline:none;transition:border-color .2s}
+.add-tag-input:focus{border-color:var(--v3)}
+.add-tag-btn{background:var(--v1);color:#fff;border:none;border-radius:5px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:700;transition:background .15s}
+.add-tag-btn:hover{background:var(--v2)}
+
+/* ── CHAMPION POOL ROSTER ── */
+.pool-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.pool-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .15s}
+.pool-card:hover{border-color:var(--border3)}
+.pool-head{padding:10px 12px 8px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.pool-emoji{font-size:16px}
+.pool-info{flex:1;min-width:0}
+.pool-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pool-role{font-size:8px;letter-spacing:2px;text-transform:uppercase;margin-top:1px}
+.pool-body{padding:10px 10px 8px}
+.pool-tags{display:flex;flex-wrap:wrap;gap:4px;min-height:24px;margin-bottom:7px}
+.pool-tag{display:flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;border:1px solid;cursor:pointer;transition:opacity .15s}
+.pool-tag:hover{opacity:.7}
+.pool-tag-del{font-size:9px;opacity:.5}
+.pool-tag-del:hover{opacity:1;color:var(--red)}
+.pool-add{display:flex;gap:4px}
+.pool-add-input{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:10px;font-family:'Barlow',sans-serif;padding:4px 7px;border-radius:4px;outline:none;transition:border-color .2s;min-width:0}
+.pool-add-input:focus{border-color:var(--border3)}
+.pool-add-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text3);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:700;transition:all .15s}
+.pool-add-btn:hover{border-color:var(--v3);color:var(--v4)}
+
+/* ── DRAFT SIMULATOR ── */
+.draft-wrap{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.draft-side-col{padding:14px}
+.draft-side-col.blue{background:rgba(59,130,246,.04);border-right:1px solid var(--border)}
+.draft-side-col.red{background:rgba(239,68,68,.04)}
+.draft-side-head{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.draft-side-dot{width:8px;height:8px;border-radius:50%}
+.draft-side-label{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+.draft-phase-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin:10px 0 6px;font-weight:700}
+.draft-slots{display:flex;flex-direction:column;gap:4px}
+.draft-slot{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;transition:border-color .15s}
+.draft-slot:focus-within{border-color:var(--border3)}
+.slot-num{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--text3);min-width:22px;letter-spacing:.5px}
+.slot-input{flex:1;background:transparent;border:none;color:var(--text);font-size:12px;font-family:'Barlow',sans-serif;outline:none;padding:0}
+.slot-input::placeholder{color:var(--text3)}
+.slot-ban{border-left:3px solid rgba(239,68,68,.5)}
+.slot-pick-b{border-left:3px solid rgba(59,130,246,.5)}
+.slot-pick-r{border-left:3px solid rgba(239,68,68,.5)}
+.slot-label{font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);min-width:28px;text-align:right}
+
+/* ── COMPOSITIONS CIBLES ── */
+.compo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.compo-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.compo-head{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.compo-num{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--border2)}
+.compo-name-input{flex:1;background:transparent;border:none;color:var(--text);font-size:13px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:1px;outline:none;min-width:0}
+.compo-name-input::placeholder{color:var(--text3)}
+.compo-style{padding:2px 8px;border-radius:4px;font-size:9px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;border:none;cursor:pointer;outline:none}
+.compo-style option{background:var(--surface)}
+.compo-body{padding:10px 14px;display:flex;flex-direction:column;gap:6px}
+.compo-row{display:flex;align-items:center;gap:7px}
+.compo-role-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.compo-role-lbl{font-size:9px;letter-spacing:1px;text-transform:uppercase;font-weight:600;min-width:44px}
+.compo-pick-input{flex:1;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text2);font-size:12px;font-family:'Barlow',sans-serif;padding:2px 0;outline:none;transition:border-color .2s}
+.compo-pick-input:focus{border-bottom-color:var(--v3)}
+.compo-wincon{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text2);font-size:11px;font-family:'Barlow',sans-serif;padding:7px 9px;outline:none;resize:none;margin-top:6px;line-height:1.5;transition:border-color .2s}
+.compo-wincon:focus{border-color:var(--v3)}
+.compo-wincon::placeholder{color:var(--text3)}
+
+/* ── NOTES META ── */
+.meta-notes-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.meta-note-block{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px}
+.meta-note-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.meta-note-textarea{width:100%;background:transparent;border:none;color:var(--text2);font-size:12px;font-family:'Barlow',sans-serif;line-height:1.7;resize:none;outline:none;min-height:72px}
+.meta-note-textarea::placeholder{color:var(--text3)}
+
+/* ── PLAN DE BAN ── */
+.ban-plan-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.ban-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px}
+.ban-card-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px}
+
+/* ── FOOTER ── */
+.card-footer{border-top:1px solid var(--border);background:var(--surface);padding:12px 32px;display:flex;align-items:center;justify-content:space-between}
+.footer-brand{font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
+.footer-date{font-size:10px;color:var(--text3);letter-spacing:1px}
+</style>
+</head>
+<body>
+
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-logo">PlaZma</div>
+  <div class="loading-bar"><div class="loading-fill"></div></div>
+  <div class="loading-text">Connexion Firebase…</div>
+</div>
+
+<a href="index.html" class="hub-link">← Hub PlaZma</a>
+
+<div class="sync-bar">
+  <div class="sync-indicator">
+    <div class="sync-dot offline" id="syncDot"></div>
+    <span class="sync-text" id="syncText" style="color:var(--text3)">En attente…</span>
+    <span class="sync-time" id="syncTime"></span>
+  </div>
+  <button class="btn-save-fb" id="saveFbBtn" onclick="save()">💾 Sauvegarder</button>
+  <div class="btn-mini-row">
+    <div class="btn-mini" onclick="exportBackup()">📦 Backup</div>
+    <div class="btn-mini" onclick="importBackup()">📥 Import</div>
+    <div class="btn-mini red" onclick="resetData()">🗑 Reset</div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <button class="btn btn-export" id="exportBtn">⬇ Exporter PNG</button>
+</div>
+
+<div class="card" id="card">
+
+  <!-- HEADER -->
+  <div class="card-header">
+    <div>
+      <div class="logo-row">
+        <div class="logo-badge">PZ</div>
+        <div class="club-name">PlaZma</div>
+      </div>
+      <div class="doc-type">Préparation de Draft</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+      <div class="season-tag">League of Legends · Saison 2026</div>
+    </div>
+  </div>
+
+  <!-- META -->
+  <div class="meta-bar">
+    <div class="meta-cell"><div class="meta-label">Adversaire</div><input class="meta-input" id="m_adv" type="text" placeholder="Nom de l'équipe"></div>
+    <div class="meta-cell"><div class="meta-label">Date</div><input class="meta-input" id="m_date" type="date"></div>
+    <div class="meta-cell"><div class="meta-label">Patch</div><input class="meta-input" id="m_patch" type="text" placeholder="ex: 25.06"></div>
+    <div class="meta-cell"><div class="meta-label">Notre side</div>
+      <select class="meta-input" id="m_side">
+        <option value="">— À définir</option>
+        <option>Blue Side</option>
+        <option>Red Side</option>
+      </select>
+    </div>
+    <div class="meta-cell"><div class="meta-label">Analyste</div><input class="meta-input" id="m_analyst" type="text" placeholder="Coach / Joueur"></div>
+  </div>
+
+  <div class="card-body">
+
+    <!-- ── 1. CHAMPION POOL ROSTER ── -->
+    <div>
+      <div class="section-title">
+        <div class="section-dot" style="background:var(--yellow)"></div>
+        Champion pool du roster
+      </div>
+      <div class="pool-grid" id="poolGrid"></div>
+    </div>
+
+    <!-- ── 2. SIMULATEUR DE DRAFT ── -->
+    <div>
+      <div class="section-title">
+        <div class="section-dot" style="background:var(--blue)"></div>
+        Simulateur de draft (ordre officiel B/P)
+      </div>
+      <div class="draft-wrap">
+
+        <!-- BLUE SIDE -->
+        <div class="draft-side-col blue">
+          <div class="draft-side-head">
+            <div class="draft-side-dot" style="background:var(--blue)"></div>
+            <div class="draft-side-label" style="color:var(--blue)">🔵 Blue Side</div>
+          </div>
+
+          <div class="draft-phase-label">Phase 1 — Bans (3)</div>
+          <div class="draft-slots">
+            <div class="draft-slot slot-ban"><div class="slot-num">B1</div><input class="slot-input" id="bb1" placeholder="Champion banni…" oninput="debounceSave()"><div class="slot-label">BAN</div></div>
+            <div class="draft-slot slot-ban"><div class="slot-num">B2</div><input class="slot-input" id="bb2" placeholder="Champion banni…" oninput="debounceSave()"><div class="slot-label">BAN</div></div>
+            <div class="draft-slot slot-ban"><div class="slot-num">B3</div><input class="slot-input" id="bb3" placeholder="Champion banni…" oninput="debounceSave()"><div class="slot-label">BAN</div></div>
+          </div>
+
+          <div class="draft-phase-label">Phase 1 — Picks (3)</div>
+          <div class="draft-slots">
+            <div class="draft-slot slot-pick-b"><div class="slot-num">P1</div><input class="slot-input" id="bp1" placeholder="Top / Jungle / Mid…" oninput="debounceSave()"><div class="slot-label">PICK</div></div>
+            <div class="draft-slot slot-pick-b"><div class="slot-num">P2</div><input class="slot-input" id="bp2" placeholder="" oninput="debounceSave()"><div class="slot-label">PICK</div></div>
+            <div class="draft-slot slot-pick-b"><div class="slot-num">P3</div><input class="slot-input" id="bp3" placeholder="" oninput="debounceSave()"><div class="slot-label">PICK</div></div>
+          </div>
+
+          <div class="draft-phase-label">Phase 2 — Bans (2)</div>
+          <div class="draft-slots">
+            <div class="draft-slot slot-ban"><div class="slot-num">B4</div><input class="slot-input" id="bb4" placeholder="Champion banni…" oninput="debounceSave()"><div class="slot-label">BAN</div></div>
+            <div class="draft-slot slot-ban"><div class="slot-num">B5</div><input class="slot-input" id="bb5" placeholder="Champion banni…" oninput="debounceSave()"><div class="slot-label">BAN</div></div>
+          </div>
+
+          <div class="draft-phase-label">Phase 2 — Picks (2)</div>
+          <div class="draft-slots">
+            <div class="draft-slot slot-pick-b"><div class="slot-num">P4</div><input class="slot-input" id="bp4" placeholder="" oninput="debounceSave()"><div class="slot-label">PICK</div></div>
+            <div class="draft-slot slot-pick-b"><div class="slot-num">P5</div><input class="slot-input" id="bp5" placeholder="" oninput="debounceSave()"><div class="slot-label">PICK</div></div>
+          </div>
+        </div>
+
+        <!-- RED SIDE -->
+        <div class="draft-side-col red">
+          <div class="draft-side-head">
+            <div class="draft-side-dot" style="background:var(--red)"></div>
+            <div class="draft-side-label" style="color:var(--red)">🔴 Red Side</div>
+          </div>
+
+          <div class="draft-phase-label">Phase 1 — Bans (3)</div>
+          <div class="draft-slots">
+            <div class="draft-slot slot-ban"><div class="slot-num">B1</div><input class="slot-input" id="rb1" placeholder="Champion banni…" oninput="debounceSave()"><div class="slot-label">BAN</div></div>
+            <div class="draft-slot slot-ban"><div class="slot-num">B2</div><input class="slot-input" id="rb2" placeholder="Champion banni…" oninput="debounceSave()"><div class="slot-label">BAN</div></div>
+            <div class="draft-slot slot-ban"><div class="slot-num">B3</div><input class="slot-input" id="rb3" placeholder="Champion banni…" oninput="debounceSave()"><div class="slot-label">BAN</div></div>
+          </div>
+
+          <div class="draft-phase-label">Phase 1 — Picks (3)</div>
+          <div class="draft-slots">
+            <div class="draft-slot slot-pick-r"><div class="slot-num">P1</div><input class="slot-input" id="rp1" placeholder="" oninput="debounceSave()"><div class="slot-label">PICK</div></div>
+            <div class="draft-slot slot-pick-r"><div class="slot-num">P2</div><input class="slot-input" id="rp2" placeholder="" oninput="debounceSave()"><div class="slot-label">PICK</div></div>
+            <div class="draft-slot slot-pick-r"><div class="slot-num">P3</div><input class="slot-input" id="rp3" placeholder="" oninput="debounceSave()"><div class="slot-label">PICK</div></div>
+          </div>
+
+          <div class="draft-phase-label">Phase 2 — Bans (2)</div>
+          <div class="draft-slots">
+            <div class="draft-slot slot-ban"><div class="slot-num">B4</div><input class="slot-input" id="rb4" placeholder="Champion banni…" oninput="debounceSave()"><div class="slot-label">BAN</div></div>
+            <div class="draft-slot slot-ban"><div class="slot-num">B5</div><input class="slot-input" id="rb5" placeholder="Champion banni…" oninput="debounceSave()"><div class="slot-label">BAN</div></div>
+          </div>
+
+          <div class="draft-phase-label">Phase 2 — Picks (2)</div>
+          <div class="draft-slots">
+            <div class="draft-slot slot-pick-r"><div class="slot-num">P4</div><input class="slot-input" id="rp4" placeholder="" oninput="debounceSave()"><div class="slot-label">PICK</div></div>
+            <div class="draft-slot slot-pick-r"><div class="slot-num">P5</div><input class="slot-input" id="rp5" placeholder="" oninput="debounceSave()"><div class="slot-label">PICK</div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── 3. COMPOSITIONS CIBLES ── -->
+    <div>
+      <div class="section-title">
+        <div class="section-dot" style="background:var(--v3)"></div>
+        Compositions cibles (ce qu'on veut drafter)
+      </div>
+      <div class="compo-grid" id="compoGrid"></div>
+    </div>
+
+    <!-- ── 4. PLAN DE BAN vs ADV ── -->
+    <div>
+      <div class="section-title">
+        <div class="section-dot" style="background:var(--red)"></div>
+        Plan de ban & stratégie vs adversaire
+      </div>
+      <div class="ban-plan-grid">
+        <div class="ban-card" style="border-left:3px solid var(--red)">
+          <div class="ban-card-title" style="color:var(--red)">🚫 Bans prioritaires vs eux</div>
+          <div class="champ-tags" id="tagsBANS"></div>
+          <div class="add-tag-row">
+            <input class="add-tag-input" id="inputBANS" placeholder="Champion à bannir…" onkeydown="if(event.key==='Enter')addTag('BANS')">
+            <button class="add-tag-btn" onclick="addTag('BANS')">+</button>
+          </div>
+        </div>
+        <div class="ban-card" style="border-left:3px solid var(--yellow)">
+          <div class="ban-card-title" style="color:var(--yellow)">⚡ Flexes & swaps</div>
+          <textarea class="meta-note-textarea" id="t_flex" placeholder="Champions qu'on peut jouer sur plusieurs rôles, swaps possibles au dernier pick…" style="min-height:80px"></textarea>
+        </div>
+        <div class="ban-card" style="border-left:3px solid var(--v4)">
+          <div class="ban-card-title" style="color:var(--v4)">🎯 Notre win condition</div>
+          <textarea class="meta-note-textarea" id="t_wincon" placeholder="Comment on veut gagner cette partie, la condition à remplir…" style="min-height:80px"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 5. NOTES META ── -->
+    <div>
+      <div class="section-title">
+        <div class="section-dot" style="background:var(--cyan)"></div>
+        Notes de meta (Patch <span id="patchLabel">—</span>)
+      </div>
+      <div class="meta-notes-grid">
+        <div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+            <div class="tag-zone" style="border-left:3px solid var(--green)">
+              <div class="tag-title" style="color:var(--green)">✦ Champions OP à jouer</div>
+              <div class="champ-tags" id="tagsOP"></div>
+              <div class="add-tag-row">
+                <input class="add-tag-input" id="inputOP" placeholder="Champion…" onkeydown="if(event.key==='Enter')addTag('OP')">
+                <button class="add-tag-btn" onclick="addTag('OP')">+</button>
+              </div>
+            </div>
+            <div class="tag-zone" style="border-left:3px solid var(--red)">
+              <div class="tag-title" style="color:var(--red)">✦ Champions à ban globalement</div>
+              <div class="champ-tags" id="tagsBGLOBAL"></div>
+              <div class="add-tag-row">
+                <input class="add-tag-input" id="inputBGLOBAL" placeholder="Champion…" onkeydown="if(event.key==='Enter')addTag('BGLOBAL')">
+                <button class="add-tag-btn" onclick="addTag('BGLOBAL')">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="meta-note-block" style="border-left:3px solid var(--cyan)">
+          <div class="meta-note-title" style="color:var(--cyan)">📋 Notes générales de meta</div>
+          <textarea class="meta-note-textarea" id="t_meta" placeholder="Changements de patch importants, styles de jeu dominants, champions en hausse/baisse…" style="min-height:100px"></textarea>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card-footer">
+    <div class="footer-brand">PlaZma Esport · plazma-esport.fr</div>
+    <div class="footer-date" id="footerDate"></div>
+  </div>
+
+</div>
+
+<script>
+const COL='plazma', DOC_ID='draft';
+
+// ── ROSTER ───────────────────────────────────────────────────
+const ROSTER=[
+  {id:'boulou',  name:'boulou',  role:'Top',    emoji:'⚔️',  color:'var(--top)'},
+  {id:'zugu',    name:'Zugu',    role:'Jungle', emoji:'🌿',  color:'var(--jgl)'},
+  {id:'lakrael', name:'Lakraël', role:'Mid',    emoji:'💎',  color:'var(--mid)'},
+  {id:'ke1do',   name:'Ke1do',   role:'ADC',    emoji:'🏹',  color:'var(--adc)'},
+  {id:'sayro',   name:'Sayro',   role:'Support',emoji:'🛡',  color:'var(--sup)'},
+];
+
+// pool[playerId] = [list of champion strings]
+let pool={boulou:[],zugu:[],lakrael:[],ke1do:[],sayro:[]};
+
+// ── COMPOSITIONS ─────────────────────────────────────────────
+const COMPO_STYLES=[
+  {val:'teamfight',label:'Teamfight',color:'#ef4444'},
+  {val:'poke',     label:'Poke',     color:'#06b6d4'},
+  {val:'engage',   label:'Engage',   color:'#f97316'},
+  {val:'split',    label:'Split',    color:'#22c55e'},
+  {val:'prot',     label:'Protect',  color:'#a855f7'},
+  {val:'pick',     label:'Pick',     color:'#f59e0b'},
+];
+
+// ── TAGS ─────────────────────────────────────────────────────
+const tagData={OP:[],BGLOBAL:[],BANS:[]};
+
+// ── BUILD POOL GRID ──────────────────────────────────────────
+function buildPoolGrid(){
+  const g=document.getElementById('poolGrid');g.innerHTML='';
+  ROSTER.forEach(p=>{
+    const card=document.createElement('div');card.className='pool-card';
+    card.innerHTML=`
+      <div class="pool-head">
+        <div class="pool-emoji">${p.emoji}</div>
+        <div class="pool-info">
+          <div class="pool-name">${p.name}</div>
+          <div class="pool-role" style="color:${p.color}">${p.role}</div>
+        </div>
+      </div>
+      <div class="pool-body">
+        <div class="pool-tags" id="ptags_${p.id}"></div>
+        <div class="pool-add">
+          <input class="pool-add-input" id="pinput_${p.id}" placeholder="Champion…" onkeydown="if(event.key==='Enter')addPoolChamp('${p.id}')">
+          <button class="pool-add-btn" onclick="addPoolChamp('${p.id}')">+</button>
+        </div>
+      </div>`;
+    g.appendChild(card);
+  });
+}
+
+function renderPoolTags(pid){
+  const c=document.getElementById('ptags_'+pid);if(!c)return;
+  const p=ROSTER.find(r=>r.id===pid);
+  c.innerHTML=(pool[pid]||[]).map((ch,i)=>`
+    <div class="pool-tag" style="color:${p.color};border-color:${p.color}33;background:${p.color}11">
+      ${ch}<span class="pool-tag-del" onclick="removePoolChamp('${pid}',${i})">✕</span>
+    </div>`).join('');
+}
+function addPoolChamp(pid){
+  const inp=document.getElementById('pinput_'+pid);
+  const val=inp.value.trim();if(!val)return;
+  if(!pool[pid])pool[pid]=[];
+  pool[pid].push(val);inp.value='';
+  renderPoolTags(pid);debounceSave();
+}
+function removePoolChamp(pid,i){pool[pid].splice(i,1);renderPoolTags(pid);debounceSave();}
+
+// ── BUILD COMPO GRID ─────────────────────────────────────────
+function buildCompoGrid(){
+  const g=document.getElementById('compoGrid');g.innerHTML='';
+  for(let c=1;c<=3;c++){
+    const card=document.createElement('div');card.className='compo-card';
+    const styleOpts=COMPO_STYLES.map(s=>`<option value="${s.val}">${s.label}</option>`).join('');
+    card.innerHTML=`
+      <div class="compo-head">
+        <div class="compo-num">0${c}</div>
+        <input class="compo-name-input" id="co${c}_name" placeholder="Nom de la compo…" oninput="debounceSave()">
+        <select class="compo-style" id="co${c}_style" onchange="updateCompoStyle(${c});debounceSave()">${styleOpts}</select>
+      </div>
+      <div class="compo-body">
+        ${[['Top','var(--top)'],['Jungle','var(--jgl)'],['Mid','var(--mid)'],['ADC','var(--adc)'],['Support','var(--sup)']].map(([role,col])=>`
+        <div class="compo-row">
+          <div class="compo-role-dot" style="background:${col}"></div>
+          <div class="compo-role-lbl" style="color:${col}">${role}</div>
+          <input class="compo-pick-input" id="co${c}_${role.toLowerCase()}" placeholder="Champion…" oninput="debounceSave()">
+        </div>`).join('')}
+        <textarea class="compo-wincon" id="co${c}_wincon" rows="2" placeholder="Win condition de cette compo…" oninput="debounceSave()"></textarea>
+      </div>`;
+    g.appendChild(card);
+  }
+  for(let c=1;c<=3;c++) updateCompoStyle(c);
+}
+
+function updateCompoStyle(c){
+  const sel=document.getElementById(`co${c}_style`);if(!sel)return;
+  const s=COMPO_STYLES.find(s=>s.val===sel.value)||COMPO_STYLES[0];
+  sel.style.background=s.color+'22';sel.style.color=s.color;sel.style.border='1px solid '+s.color+'44';
+}
+
+// ── TAGS ─────────────────────────────────────────────────────
+const TAG_COLORS={OP:'var(--green)',BGLOBAL:'var(--red)',BANS:'var(--red)'};
+function addTag(type){
+  const input=document.getElementById('input'+type);
+  const val=input.value.trim();if(!val)return;
+  tagData[type].push(val);renderTags(type);input.value='';debounceSave();
+}
+function removeTag(type,i){tagData[type].splice(i,1);renderTags(type);debounceSave();}
+function renderTags(type){
+  const c=document.getElementById('tags'+type);if(!c)return;
+  const col=TAG_COLORS[type]||'var(--v4)';
+  c.innerHTML=tagData[type].map((t,i)=>`
+    <div class="champ-tag" style="color:${col};border-color:${col}33;background:${col}11">
+      ${t}<span class="tag-del" onclick="removeTag('${type}',${i})">✕</span>
+    </div>`).join('');
+}
+
+// ── PATCH LABEL ──────────────────────────────────────────────
+document.getElementById('m_patch').addEventListener('input',e=>{
+  document.getElementById('patchLabel').textContent=e.target.value||'—';
+  debounceSave();
+});
+
+// ── GET / APPLY STATE ─────────────────────────────────────────
+function v(id){const e=document.getElementById(id);return e?e.value:'';}
+function sv(id,val){const e=document.getElementById(id);if(e)e.value=val||'';}
+
+function getState(){
+  const draft={};
+  ['bb1','bb2','bb3','bb4','bb5','bp1','bp2','bp3','bp4','bp5',
+   'rb1','rb2','rb3','rb4','rb5','rp1','rp2','rp3','rp4','rp5'].forEach(k=>draft[k]=v(k));
+  const compos={};
+  for(let c=1;c<=3;c++){
+    ['name','style','wincon','top','jungle','mid','adc','support'].forEach(k=>compos[`co${c}_${k}`]=v(`co${c}_${k}`));
+  }
+  return{
+    m_adv:v('m_adv'),m_date:v('m_date'),m_patch:v('m_patch'),m_side:v('m_side'),m_analyst:v('m_analyst'),
+    t_flex:v('t_flex'),t_wincon:v('t_wincon'),t_meta:v('t_meta'),
+    pool:{...pool},tagData:{...tagData},
+    ...draft,...compos
+  };
+}
+
+function applyState(s){
+  if(!s)return;
+  ['m_adv','m_date','m_patch','m_side','m_analyst','t_flex','t_wincon','t_meta'].forEach(k=>sv(k,s[k]));
+  document.getElementById('patchLabel').textContent=s.m_patch||'—';
+  ['bb1','bb2','bb3','bb4','bb5','bp1','bp2','bp3','bp4','bp5',
+   'rb1','rb2','rb3','rb4','rb5','rp1','rp2','rp3','rp4','rp5'].forEach(k=>sv(k,s[k]));
+  for(let c=1;c<=3;c++){
+    ['name','style','wincon','top','jungle','mid','adc','support'].forEach(k=>sv(`co${c}_${k}`,s[`co${c}_${k}`]));
+    updateCompoStyle(c);
+  }
+  if(s.pool){Object.assign(pool,s.pool);ROSTER.forEach(p=>renderPoolTags(p.id));}
+  if(s.tagData){Object.assign(tagData,s.tagData);['OP','BGLOBAL','BANS'].forEach(renderTags);}
+}
+
+// ── FIREBASE ─────────────────────────────────────────────────
+function setSyncState(state,text,time=''){
+  const dot=document.getElementById('syncDot'),txt=document.getElementById('syncText'),tim=document.getElementById('syncTime');
+  if(!dot)return;
+  dot.className='sync-dot '+state;
+  txt.textContent=text;
+  txt.style.color=state==='connected'?'var(--green)':state==='syncing'?'var(--yellow)':state==='error'?'var(--red)':'var(--text3)';
+  tim.textContent=time;
+}
+function hideLoading(){const ls=document.getElementById('loadingScreen');if(ls){ls.classList.add('hidden');setTimeout(()=>ls.style.display='none',500);}}
+function save(){
+  setSyncState('syncing','Sauvegarde…');
+  db.collection(COL).doc(DOC_ID).set(getState())
+    .then(()=>{setSyncState('connected','Synchronisé');flashSave(true);})
+    .catch(e=>{setSyncState('error','Erreur Firebase');flashSave(false);console.error(e);});
+}
+function startSync(){
+  setSyncState('syncing','Connexion…');
+  db.collection(COL).doc(DOC_ID).onSnapshot(doc=>{
+    if(doc.metadata.hasPendingWrites)return;
+    if(doc.exists){applyState(doc.data());const now=new Date();setSyncState('connected','Synchronisé',now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));}
+    else setSyncState('connected','Prêt','');
+    hideLoading();
+  },err=>{console.error(err);setSyncState('error','Erreur connexion');hideLoading();});
+}
+function flashSave(ok){
+  const btn=document.getElementById('saveFbBtn');if(!btn)return;
+  btn.classList.add('saved');btn.textContent=ok?'✓ Sauvegardé':'⚠ Erreur';if(!ok)btn.style.color='#ef4444';
+  setTimeout(()=>{btn.classList.remove('saved');btn.textContent='💾 Sauvegarder';btn.style.color='';},1600);
+}
+let _st=null;
+function debounceSave(){clearTimeout(_st);_st=setTimeout(save,1000);}
+
+function exportBackup(){
+  const b=new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='plazma-draft-backup-'+new Date().toISOString().split('T')[0]+'.json';a.click();
+}
+function importBackup(){
+  const input=document.createElement('input');input.type='file';input.accept='.json';
+  input.addEventListener('change',async()=>{try{applyState(JSON.parse(await input.files[0].text()));save();}catch(e){alert('Fichier invalide');}});
+  input.click();
+}
+function resetData(){if(!confirm('Effacer cette préparation de draft ?'))return;db.collection(COL).doc(DOC_ID).delete().then(()=>location.reload());}
+
+// Global listener pour les textarea / meta-input
+document.addEventListener('input',e=>{
+  if(e.target.matches('.meta-input,.meta-note-textarea,.slot-input')) debounceSave();
+});
+
+// Export PNG
+document.getElementById('exportBtn').addEventListener('click',async()=>{
+  const btn=document.getElementById('exportBtn');
+  btn.disabled=true;btn.textContent='Export…';
+  document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(b=>b.style.visibility='hidden');
+  await new Promise(r=>setTimeout(r,80));
+  const canvas=await html2canvas(document.getElementById('card'),{scale:2,backgroundColor:'#0c0b18',useCORS:true,logging:false});
+  document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(b=>b.style.visibility='');
+  btn.disabled=false;btn.textContent='⬇ Exporter PNG';
+  const link=document.createElement('a');link.download='plazma-draft.png';link.href=canvas.toDataURL('image/png');link.click();
+});
+
+// INIT
+document.getElementById('footerDate').textContent='Mise à jour le '+new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+buildPoolGrid();
+buildCompoGrid();
+startSync();
+setTimeout(()=>{const ls=document.getElementById('loadingScreen');if(ls&&!ls.classList.contains('hidden')){hideLoading();setSyncState('error','Firebase inaccessible');}},8000);
+</script>
+</body>
+</html>

@@ -28,7 +28,7 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 .section-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);text-align:center;margin-bottom:14px}
 
 /* NAV PRINCIPALE */
-.nav-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:780px;margin-bottom:48px}
+.nav-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;max-width:900px;margin-bottom:48px}
 .nav-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--text);transition:all .2s;position:relative;overflow:hidden}
 .nav-card::before{content:'';position:absolute;inset:0;background:var(--hc,transparent);opacity:0;transition:opacity .2s;pointer-events:none}
 .nav-card:hover{transform:translateY(-3px);box-shadow:0 12px 36px rgba(0,0,0,.4);border-color:var(--border2)}
@@ -39,7 +39,7 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 .nav-dot{width:5px;height:5px;border-radius:50%;margin-left:auto;flex-shrink:0}
 
 /* ROSTER */
-.roster-section{width:100%;max-width:780px;margin-bottom:48px}
+.roster-section{width:100%;max-width:900px;margin-bottom:48px}
 .roster-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
 .player-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;text-decoration:none;color:var(--text);transition:all .2s;position:relative;overflow:hidden;cursor:pointer}
 .player-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.4);border-color:var(--rc,var(--border2))}
@@ -105,6 +105,11 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
     <div><div class="nav-label">RACI</div><div class="nav-sub">Rôles & responsabilités</div></div>
     <div class="nav-dot" style="background:#ec4899"></div>
   </a>
+  <a href="plazma-draft.html" class="nav-card" style="--hc:rgba(245,158,11,.05)">
+    <div class="nav-icon">⚔️</div>
+    <div><div class="nav-label">Draft</div><div class="nav-sub">Préparation B/P · Champion pool</div></div>
+    <div class="nav-dot" style="background:#f59e0b"></div>
+  </a>
 </div>
 
 <div class="roster-section">
@@ -117,7 +122,7 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
         <div class="pc-avatar">⚔️</div>
         <div class="pc-role-badge">Top</div>
       </div>
-      <div class="pc-name">Boulou</div>
+      <div class="pc-name">boulou</div>
       <div class="pc-action">Voir la fiche →</div>
     </a>
 
@@ -171,6 +176,8 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
   <a href="plazma-scrim.html" class="footer-link">Scrim</a>
   <span class="footer-sep">·</span>
   <a href="plazma-scouting.html" class="footer-link">Scouting</a>
+  <span class="footer-sep">·</span>
+  <a href="plazma-draft.html" class="footer-link">Draft</a>
   <span class="footer-sep">·</span>
   <span style="font-size:10px;color:var(--text3);letter-spacing:1px">plazma-esport.fr</span>
 </div>
