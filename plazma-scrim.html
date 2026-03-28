@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlaZma — Compte Rendu Scrim</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyAKwNEbNa6f40oSMwGp6dcDY1ZY6hUN1Ks",authDomain:"plazma-esport.firebaseapp.com",projectId:"plazma-esport",storageBucket:"plazma-esport.firebasestorage.app",messagingSenderId:"534325929279",appId:"1:534325929279:web:b507a46c601fa6625edf8a"};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07070f;--bg2:#0c0b18;--surface:#10101e;--surface2:#141428;
+  --border:#1c1b33;--border2:#252444;
+  --v1:#6d28d9;--v2:#7c3aed;--v3:#8b5cf6;--v4:#a78bfa;--v5:#c4b5fd;
+  --green:#22c55e;--red:#ef4444;--orange:#f97316;--cyan:#06b6d4;--yellow:#f59e0b;--blue:#3b82f6;
+  --text:#e8e6f4;--text2:#8b82b0;--text3:#45405e;
+}
+body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 20px 80px}
+.loading-screen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .5s}
+.loading-screen.hidden{opacity:0;pointer-events:none}
+.loading-logo{font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:800;letter-spacing:4px;background:linear-gradient(135deg,#fff,var(--v4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.loading-bar{width:200px;height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.loading-fill{height:100%;background:linear-gradient(90deg,var(--v2),var(--v4));border-radius:2px;animation:loadbar 1.5s ease infinite}
+@keyframes loadbar{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
+.loading-text{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase}
+.hub-link{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:var(--text3);text-decoration:none;letter-spacing:1px;transition:color .15s;margin-bottom:10px}
+.hub-link:hover{color:var(--v4)}
+.sync-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
+.sync-indicator{display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:7px;background:var(--surface2);border:1px solid var(--border2)}
+.sync-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;transition:background .3s}
+.sync-dot.connected{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,.5)}
+.sync-dot.syncing{background:var(--yellow);animation:pulse .8s infinite}
+.sync-dot.error{background:var(--red)}
+.sync-dot.offline{background:var(--text3)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.sync-text{font-size:10px;font-weight:600;letter-spacing:.5px}
+.sync-time{font-size:9px;color:var(--text3)}
+.btn-save-fb{background:rgba(109,40,217,.18);border:1px solid rgba(109,40,217,.35);color:var(--v4);padding:7px 18px;border-radius:7px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .2s}
+.btn-save-fb:hover{background:rgba(109,40,217,.3)}
+.btn-save-fb.saved{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.3);color:var(--green)}
+.btn-mini-row{display:flex;gap:5px}
+.btn-mini{background:var(--surface2);border:1px solid var(--border2);color:var(--text3);padding:6px 12px;border-radius:6px;font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:color .15s}
+.btn-mini:hover{color:var(--text2)}
+.btn-mini.red{border-color:rgba(239,68,68,.12);color:rgba(239,68,68,.3)}
+.btn-mini.red:hover{color:#ef4444}
+.toolbar{display:flex;gap:10px;margin-bottom:16px;justify-content:center}
+.btn{padding:9px 22px;border-radius:7px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:none;font-family:'Barlow',sans-serif;transition:all .2s}
+.btn-export{background:var(--v2);color:#fff;box-shadow:0 0 28px rgba(124,58,237,.4)}
+.btn-export:hover{background:var(--v3);transform:translateY(-1px)}
+.btn-export:disabled{opacity:.4;cursor:default;transform:none}
+.card{width:100%;max-width:900px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 0 0 1px rgba(109,40,217,.08),0 40px 100px rgba(0,0,0,.6)}
+.card-header{position:relative;overflow:hidden;padding:26px 32px 22px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between}
+.card-header::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 55% 180% at 0% 50%,rgba(109,40,217,.18) 0%,transparent 65%)}
+.card-header::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--v1) 0%,var(--v3) 35%,transparent 70%)}
+.logo-row{display:flex;align-items:center;gap:12px}
+.logo-badge{width:40px;height:40px;background:linear-gradient(135deg,var(--v1),var(--v3));border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:#fff;box-shadow:0 0 20px rgba(124,58,237,.5)}
+.club-name{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:800;letter-spacing:4px;text-transform:uppercase;background:linear-gradient(135deg,#fff 0%,var(--v4) 40%,var(--v3) 75%,#fff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 16px rgba(139,92,246,.4))}
+.doc-type{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--v4);margin-top:4px}
+.season-tag{background:rgba(109,40,217,.15);border:1px solid rgba(109,40,217,.3);border-radius:4px;padding:3px 10px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--v4)}
+.meta-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
+.meta-cell{background:var(--surface);padding:14px 16px}
+.meta-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.meta-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-size:13px;font-family:'Barlow',sans-serif;padding:3px 0;outline:none;transition:border-color .2s}
+.meta-input:focus{border-bottom-color:var(--v3)}
+.meta-input option{background:var(--surface)}
+.score-tracker{background:var(--surface);margin:0;padding:20px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:0}
+.score-team{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1}
+.score-team-name{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
+.score-num{font-family:'Barlow Condensed',sans-serif;font-size:72px;font-weight:800;line-height:1;cursor:pointer;background:transparent;border:none;outline:none;width:100px;text-align:center;border-bottom:2px solid var(--border2);transition:border-color .2s}
+.score-num:focus{border-bottom-color:var(--v3)}
+.score-vs{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700;color:var(--border2);padding:0 20px;margin-top:24px;letter-spacing:2px}
+.card-body{padding:28px 32px;display:flex;flex-direction:column;gap:24px}
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.section-dot{width:6px;height:6px;border-radius:50%}
+.game-table{width:100%;border-collapse:separate;border-spacing:0}
+.game-table thead tr{background:var(--surface2)}
+.game-table th{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);padding:10px 12px;text-align:left;font-weight:600;border-bottom:1px solid var(--border)}
+.game-table td{padding:0;border-bottom:1px solid var(--border)}
+.game-table tbody tr:hover td{background:rgba(255,255,255,.01)}
+.table-input{width:100%;background:transparent;border:none;color:var(--text2);font-size:12px;font-family:'Barlow',sans-serif;padding:10px 12px;outline:none;transition:background .2s}
+.table-input:focus{background:rgba(139,92,246,.05)}
+.table-select{width:100%;background:transparent;border:none;color:var(--text2);font-size:12px;font-family:'Barlow',sans-serif;padding:10px 12px;outline:none;cursor:pointer}
+.table-select option{background:var(--surface)}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.ta-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px}
+.ta-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.fiche-textarea{width:100%;background:transparent;border:none;color:var(--text2);font-size:12px;font-family:'Barlow',sans-serif;line-height:1.7;resize:none;outline:none;min-height:90px}
+.fiche-textarea::placeholder{color:var(--text3)}
+.moments-list{display:flex;flex-direction:column;gap:8px}
+.moment-row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:9px 12px}
+.moment-icon{font-size:14px;flex-shrink:0}
+.moment-type{background:transparent;border:none;color:var(--text3);font-size:10px;font-family:'Barlow',sans-serif;letter-spacing:1px;text-transform:uppercase;width:90px;outline:none;flex-shrink:0}
+.moment-type option{background:var(--surface)}
+.moment-input{flex:1;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-size:12px;font-family:'Barlow',sans-serif;padding:2px 0;outline:none}
+.moment-time{background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text3);font-size:11px;font-family:'Barlow Condensed',sans-serif;width:55px;text-align:right;padding:2px 0;outline:none}
+.draft-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:start}
+.draft-side{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px}
+.draft-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:12px}
+.pick-row{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+.pick-num{font-size:9px;color:var(--text3);font-family:'Barlow Condensed',sans-serif;font-weight:600;width:16px;flex-shrink:0}
+.pick-input{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-size:11px;font-family:'Barlow',sans-serif;padding:5px 8px;border-radius:5px;outline:none;transition:border-color .2s}
+.pick-input:focus{border-color:var(--v3)}
+.draft-vs{display:flex;align-items:center;justify-content:center;padding-top:36px}
+.draft-vs-txt{font-family:'Barlow Condensed',sans-serif;font-size:20px;color:var(--border2);font-weight:700}
+.note-globale{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;display:flex;align-items:center;gap:24px}
+.note-val{font-family:'Barlow Condensed',sans-serif;font-size:56px;font-weight:800;color:var(--v4);line-height:1;background:transparent;border:none;border-bottom:2px solid var(--border2);outline:none;width:80px;text-align:center;transition:border-color .2s}
+.note-val:focus{border-bottom-color:var(--v3)}
+.note-sep{font-family:'Barlow Condensed',sans-serif;font-size:32px;color:var(--text3);font-weight:700}
+.note-right{flex:1}
+.note-label-big{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--v4);margin-bottom:8px}
+.note-comment{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text2);font-size:13px;font-family:'Barlow',sans-serif;padding:4px 0;outline:none}
+.note-comment:focus{border-bottom-color:var(--v3)}
+.card-footer{border-top:1px solid var(--border);background:var(--surface);padding:12px 32px;display:flex;align-items:center;justify-content:space-between}
+.footer-brand{font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
+.footer-date{font-size:10px;color:var(--text3);letter-spacing:1px}
+</style>
+</head>
+<body>
+
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-logo">PlaZma</div>
+  <div class="loading-bar"><div class="loading-fill"></div></div>
+  <div class="loading-text">Connexion Firebase…</div>
+</div>
+
+<a href="index.html" class="hub-link">← Hub PlaZma</a>
+
+<div class="sync-bar">
+  <div class="sync-indicator">
+    <div class="sync-dot offline" id="syncDot"></div>
+    <span class="sync-text" id="syncText" style="color:var(--text3)">En attente…</span>
+    <span class="sync-time" id="syncTime"></span>
+  </div>
+  <button class="btn-save-fb" id="saveFbBtn" onclick="save()">💾 Sauvegarder</button>
+  <div class="btn-mini-row">
+    <div class="btn-mini" onclick="exportBackup()">📦 Backup</div>
+    <div class="btn-mini" onclick="importBackup()">📥 Import</div>
+    <div class="btn-mini red" onclick="resetData()">🗑 Reset</div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <button class="btn btn-export" id="exportBtn">⬇ Exporter PNG</button>
+</div>
+
+<div class="card" id="card">
+  <div class="card-header">
+    <div>
+      <div class="logo-row">
+        <div class="logo-badge">PZ</div>
+        <div class="club-name">PlaZma</div>
+      </div>
+      <div class="doc-type">Compte Rendu de Scrim</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+      <div class="season-tag">League of Legends · Saison 2026</div>
+    </div>
+  </div>
+
+  <div class="meta-bar">
+    <div class="meta-cell"><div class="meta-label">Date</div><input class="meta-input" id="m_date" type="date"></div>
+    <div class="meta-cell"><div class="meta-label">Équipe adverse</div><input class="meta-input" id="m_adv" type="text" placeholder="Nom de l'équipe"></div>
+    <div class="meta-cell"><div class="meta-label">Type de scrim</div>
+      <select class="meta-input" id="m_type">
+        <option>Préparation match</option><option>Entraînement standard</option>
+        <option>Test de composition</option><option>Ranked scrim</option>
+      </select>
+    </div>
+    <div class="meta-cell"><div class="meta-label">Responsable CR</div><input class="meta-input" id="m_resp" type="text" placeholder="Coach / Joueur"></div>
+  </div>
+
+  <div class="score-tracker">
+    <div class="score-team">
+      <div class="score-team-name">PlaZma</div>
+      <input class="score-num" id="s_plazma" type="text" value="0" style="color:var(--green)" maxlength="2">
+    </div>
+    <div class="score-vs">VS</div>
+    <div class="score-team">
+      <div class="score-team-name" id="advLabel">Adversaire</div>
+      <input class="score-num" id="s_adv" type="text" value="0" style="color:var(--red)" maxlength="2">
+    </div>
+  </div>
+
+  <div class="card-body">
+
+    <div>
+      <div class="section-title"><div class="section-dot" style="background:var(--blue)"></div>Détail des games</div>
+      <table class="game-table">
+        <thead><tr>
+          <th style="width:50px">Game</th><th style="width:70px">Résultat</th>
+          <th style="width:80px">Durée</th><th style="width:110px">Side</th>
+          <th>Notre compo (5 champs)</th><th>Compo adverse</th><th style="width:80px">K/D</th>
+        </tr></thead>
+        <tbody id="gameTable"></tbody>
+      </table>
+    </div>
+
+    <div>
+      <div class="section-title"><div class="section-dot" style="background:var(--yellow)"></div>Analyse de draft (Game 1)</div>
+      <div class="draft-grid">
+        <div class="draft-side">
+          <div class="draft-title" style="color:var(--v4)">🔵 PlaZma — Picks / Bans</div>
+          <div style="font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Bans</div>
+          <div class="pick-row"><div class="pick-num">B1</div><input class="pick-input" id="pb1"><div class="pick-num">B2</div><input class="pick-input" id="pb2"><div class="pick-num">B3</div><input class="pick-input" id="pb3"></div>
+          <div class="pick-row"><div class="pick-num">B4</div><input class="pick-input" id="pb4"><div class="pick-num">B5</div><input class="pick-input" id="pb5"></div>
+          <div style="font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin:10px 0 8px">Picks</div>
+          <div class="pick-row"><div class="pick-num">P1</div><input class="pick-input" id="pp1" placeholder="Top…"></div>
+          <div class="pick-row"><div class="pick-num">P2</div><input class="pick-input" id="pp2" placeholder="Jungle…"></div>
+          <div class="pick-row"><div class="pick-num">P3</div><input class="pick-input" id="pp3" placeholder="Mid…"></div>
+          <div class="pick-row"><div class="pick-num">P4</div><input class="pick-input" id="pp4" placeholder="ADC…"></div>
+          <div class="pick-row"><div class="pick-num">P5</div><input class="pick-input" id="pp5" placeholder="Support…"></div>
+        </div>
+        <div class="draft-vs"><div class="draft-vs-txt">VS</div></div>
+        <div class="draft-side">
+          <div class="draft-title" style="color:var(--red)">🔴 Adversaire — Picks / Bans</div>
+          <div style="font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Bans</div>
+          <div class="pick-row"><div class="pick-num">B1</div><input class="pick-input" id="ab1"><div class="pick-num">B2</div><input class="pick-input" id="ab2"><div class="pick-num">B3</div><input class="pick-input" id="ab3"></div>
+          <div class="pick-row"><div class="pick-num">B4</div><input class="pick-input" id="ab4"><div class="pick-num">B5</div><input class="pick-input" id="ab5"></div>
+          <div style="font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin:10px 0 8px">Picks</div>
+          <div class="pick-row"><div class="pick-num">P1</div><input class="pick-input" id="ap1" placeholder="Top…"></div>
+          <div class="pick-row"><div class="pick-num">P2</div><input class="pick-input" id="ap2" placeholder="Jungle…"></div>
+          <div class="pick-row"><div class="pick-num">P3</div><input class="pick-input" id="ap3" placeholder="Mid…"></div>
+          <div class="pick-row"><div class="pick-num">P4</div><input class="pick-input" id="ap4" placeholder="ADC…"></div>
+          <div class="pick-row"><div class="pick-num">P5</div><input class="pick-input" id="ap5" placeholder="Support…"></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title"><div class="section-dot" style="background:var(--orange)"></div>Moments clés à retenir</div>
+      <div class="moments-list" id="momentsList"></div>
+    </div>
+
+    <div>
+      <div class="section-title"><div class="section-dot" style="background:var(--v3)"></div>Analyse post-scrim</div>
+      <div class="three-col">
+        <div class="ta-card" style="border-left:3px solid var(--green)">
+          <div class="ta-title" style="color:var(--green)">✦ Ce qui a bien fonctionné</div>
+          <textarea class="fiche-textarea" id="t_bien" placeholder="Phases de jeu maîtrisées, stratégies efficaces…"></textarea>
+        </div>
+        <div class="ta-card" style="border-left:3px solid var(--red)">
+          <div class="ta-title" style="color:var(--red)">✦ Erreurs récurrentes</div>
+          <textarea class="fiche-textarea" id="t_erreurs" placeholder="Erreurs collectives et individuelles répétées…"></textarea>
+        </div>
+        <div class="ta-card" style="border-left:3px solid var(--yellow)">
+          <div class="ta-title" style="color:var(--yellow)">✦ Axes de travail</div>
+          <textarea class="fiche-textarea" id="t_axes" placeholder="Points à prioriser en entraînement…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title"><div class="section-dot" style="background:var(--v4)"></div>Bilan global</div>
+      <div class="note-globale">
+        <input class="note-val" id="f_note" type="text" value="—" maxlength="2">
+        <div class="note-sep">/ 10</div>
+        <div class="note-right">
+          <div class="note-label-big">Performance collective</div>
+          <input class="note-comment" id="f_comment" type="text" placeholder="Résumé de la session, niveau adversaire, progrès observés…">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card-footer">
+    <div class="footer-brand">PlaZma Esport · plazma-esport.fr</div>
+    <div class="footer-date" id="footerDate"></div>
+  </div>
+</div>
+
+<script>
+const COL='plazma', DOC_ID='scrim';
+const GAME_IDS=['result','dur','side','compo','acompo','kd'];
+
+// ── BUILD GAME TABLE ──────────────────────────────────────────
+function buildGameTable(){
+  const tbody=document.getElementById('gameTable');
+  tbody.innerHTML='';
+  for(let g=1;g<=5;g++){
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><div style="padding:10px 12px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--text3)">G${g}</div></td>
+      <td><select class="table-select" id="g${g}_result" onchange="styleResult(this);debounceSave()">
+        <option value="">—</option><option>Victoire</option><option>Défaite</option>
+      </select></td>
+      <td><input class="table-input" id="g${g}_dur" type="text" placeholder="30:00" oninput="debounceSave()"></td>
+      <td><select class="table-select" id="g${g}_side" onchange="debounceSave()"><option value="">—</option><option>Blue Side</option><option>Red Side</option></select></td>
+      <td><input class="table-input" id="g${g}_compo" type="text" placeholder="Top / Jgl / Mid / ADC / Sup" oninput="debounceSave()"></td>
+      <td><input class="table-input" id="g${g}_acompo" type="text" placeholder="Top / Jgl / Mid / ADC / Sup" oninput="debounceSave()"></td>
+      <td><input class="table-input" id="g${g}_kd" type="text" placeholder="K - D" oninput="debounceSave()"></td>`;
+    tbody.appendChild(tr);
+  }
+}
+function styleResult(sel){
+  sel.style.color=sel.value==='Victoire'?'var(--green)':sel.value==='Défaite'?'var(--red)':'var(--text2)';
+  sel.style.fontWeight=sel.value?'700':'400';
+  sel.style.fontFamily=sel.value?'\'Barlow Condensed\',sans-serif':'\'Barlow\',sans-serif';
+  sel.style.fontSize=sel.value?'13px':'12px';
+  sel.style.letterSpacing=sel.value?'1px':'0';
+}
+
+// ── BUILD MOMENTS LIST ────────────────────────────────────────
+function buildMoments(){
+  const list=document.getElementById('momentsList');
+  list.innerHTML='';
+  for(let m=1;m<=5;m++){
+    const row=document.createElement('div');
+    row.className='moment-row';
+    row.innerHTML=`<div class="moment-icon">⚡</div>
+      <select class="moment-type" id="mo${m}_type" onchange="debounceSave()">
+        <option>Teamfight</option><option>Objectif</option><option>Erreur</option>
+        <option>Belle action</option><option>Rotation</option><option>Draft</option>
+      </select>
+      <input class="moment-input" id="mo${m}_desc" placeholder="Description du moment clé…" oninput="debounceSave()">
+      <input class="moment-time" id="mo${m}_time" type="text" placeholder="min" oninput="debounceSave()">`;
+    list.appendChild(row);
+  }
+}
+
+// ── GET / APPLY STATE ─────────────────────────────────────────
+function v(id){const e=document.getElementById(id);return e?e.value:'';}
+function sv(id,val){const e=document.getElementById(id);if(e)e.value=val||'';}
+
+function getState(){
+  const games={};
+  for(let g=1;g<=5;g++) GAME_IDS.forEach(k=>{games[`g${g}_${k}`]=v(`g${g}_${k}`);});
+  const moments={};
+  for(let m=1;m<=5;m++){moments[`mo${m}_type`]=v(`mo${m}_type`);moments[`mo${m}_desc`]=v(`mo${m}_desc`);moments[`mo${m}_time`]=v(`mo${m}_time`);}
+  return{
+    m_date:v('m_date'),m_adv:v('m_adv'),m_type:v('m_type'),m_resp:v('m_resp'),
+    s_plazma:v('s_plazma'),s_adv:v('s_adv'),
+    pb1:v('pb1'),pb2:v('pb2'),pb3:v('pb3'),pb4:v('pb4'),pb5:v('pb5'),
+    pp1:v('pp1'),pp2:v('pp2'),pp3:v('pp3'),pp4:v('pp4'),pp5:v('pp5'),
+    ab1:v('ab1'),ab2:v('ab2'),ab3:v('ab3'),ab4:v('ab4'),ab5:v('ab5'),
+    ap1:v('ap1'),ap2:v('ap2'),ap3:v('ap3'),ap4:v('ap4'),ap5:v('ap5'),
+    t_bien:v('t_bien'),t_erreurs:v('t_erreurs'),t_axes:v('t_axes'),
+    f_note:v('f_note'),f_comment:v('f_comment'),
+    ...games,...moments
+  };
+}
+
+function applyState(s){
+  if(!s)return;
+  Object.keys(s).forEach(k=>{sv(k,s[k]);});
+  // Restore result colors
+  for(let g=1;g<=5;g++){const sel=document.getElementById(`g${g}_result`);if(sel)styleResult(sel);}
+  // Restore adv label
+  const adv=document.getElementById('m_adv');
+  if(adv&&adv.value) document.getElementById('advLabel').textContent=adv.value;
+}
+
+// ── FIREBASE ──────────────────────────────────────────────────
+function setSyncState(state,text,time=''){
+  const dot=document.getElementById('syncDot'),txt=document.getElementById('syncText'),tim=document.getElementById('syncTime');
+  if(!dot)return;
+  dot.className='sync-dot '+state;
+  txt.textContent=text;
+  txt.style.color=state==='connected'?'var(--green)':state==='syncing'?'var(--yellow)':state==='error'?'var(--red)':'var(--text3)';
+  tim.textContent=time;
+}
+function hideLoading(){const ls=document.getElementById('loadingScreen');if(ls){ls.classList.add('hidden');setTimeout(()=>ls.style.display='none',500);}}
+function save(){
+  setSyncState('syncing','Sauvegarde…');
+  db.collection(COL).doc(DOC_ID).set(getState())
+    .then(()=>{setSyncState('connected','Synchronisé');flashSave(true);})
+    .catch(e=>{setSyncState('error','Erreur Firebase');flashSave(false);console.error(e);});
+}
+function startSync(){
+  setSyncState('syncing','Connexion…');
+  db.collection(COL).doc(DOC_ID).onSnapshot(doc=>{
+    if(doc.metadata.hasPendingWrites)return;
+    if(doc.exists){applyState(doc.data());const now=new Date();setSyncState('connected','Synchronisé',now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));}
+    else setSyncState('connected','Prêt','');
+    hideLoading();
+  },err=>{console.error(err);setSyncState('error','Erreur connexion');hideLoading();});
+}
+function flashSave(ok){
+  const btn=document.getElementById('saveFbBtn');if(!btn)return;
+  btn.classList.add('saved');btn.textContent=ok?'✓ Sauvegardé':'⚠ Erreur';if(!ok)btn.style.color='#ef4444';
+  setTimeout(()=>{btn.classList.remove('saved');btn.textContent='💾 Sauvegarder';btn.style.color='';},1600);
+}
+let _st=null;
+function debounceSave(){clearTimeout(_st);_st=setTimeout(save,1000);}
+function exportBackup(){
+  const b=new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='plazma-scrim-backup-'+new Date().toISOString().split('T')[0]+'.json';a.click();
+}
+function importBackup(){
+  const input=document.createElement('input');input.type='file';input.accept='.json';
+  input.addEventListener('change',async()=>{try{applyState(JSON.parse(await input.files[0].text()));save();}catch(e){alert('Fichier invalide');}});
+  input.click();
+}
+function resetData(){if(!confirm('Effacer ce compte rendu ?'))return;db.collection(COL).doc(DOC_ID).delete().then(()=>location.reload());}
+
+// ── SYNC ADV LABEL ────────────────────────────────────────────
+document.getElementById('m_adv').addEventListener('input',e=>{
+  document.getElementById('advLabel').textContent=e.target.value||'Adversaire';
+});
+
+// ── GLOBAL INPUT LISTENER ─────────────────────────────────────
+document.addEventListener('input',e=>{
+  if(e.target.matches('.meta-input,.score-num,.note-val,.note-comment,.pick-input,.fiche-textarea')) debounceSave();
+});
+
+// ── EXPORT PNG ────────────────────────────────────────────────
+document.getElementById('exportBtn').addEventListener('click',async()=>{
+  const btn=document.getElementById('exportBtn');
+  btn.disabled=true;btn.textContent='Export…';
+  document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(b=>b.style.visibility='hidden');
+  await new Promise(r=>setTimeout(r,80));
+  const canvas=await html2canvas(document.getElementById('card'),{scale:2,backgroundColor:'#0c0b18',useCORS:true,logging:false});
+  document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(b=>b.style.visibility='');
+  btn.disabled=false;btn.textContent='⬇ Exporter PNG';
+  const link=document.createElement('a');link.download='plazma-scrim.png';link.href=canvas.toDataURL('image/png');link.click();
+});
+
+// ── INIT ──────────────────────────────────────────────────────
+document.getElementById('footerDate').textContent=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+buildGameTable();
+buildMoments();
+startSync();
+setTimeout(()=>{const ls=document.getElementById('loadingScreen');if(ls&&!ls.classList.contains('hidden')){hideLoading();setSyncState('error','Firebase inaccessible');}},8000);
+</script>
+</body>
+</html>
