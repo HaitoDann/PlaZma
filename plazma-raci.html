@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlaZma — RACI</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07070f;--bg2:#0c0b18;--surface:#10101e;--surface2:#141428;
+  --border:#1c1b33;--border2:#252444;
+  --v1:#6d28d9;--v2:#7c3aed;--v3:#8b5cf6;--v4:#a78bfa;
+  --text:#e8e6f4;--text2:#8b82b0;--text3:#45405e;
+  --r-color:#f97316;--r-bg:rgba(249,115,22,.13);--r-border:rgba(249,115,22,.3);
+  --a-color:#a855f7;--a-bg:rgba(168,85,247,.13);--a-border:rgba(168,85,247,.3);
+  --c-color:#06b6d4;--c-bg:rgba(6,182,212,.13);--c-border:rgba(6,182,212,.3);
+  --i-color:#22c55e;--i-bg:rgba(34,197,94,.13);--i-border:rgba(34,197,94,.3);
+}
+body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 16px 80px}
+
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:24px;flex-wrap:wrap;justify-content:center}
+.btn{padding:8px 18px;border-radius:7px;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border:none;font-family:'Barlow',sans-serif;transition:all .2s;display:flex;align-items:center;gap:6px}
+.btn-export{background:var(--v2);color:#fff;box-shadow:0 0 24px rgba(124,58,237,.4)}
+.btn-export:hover{background:var(--v3);transform:translateY(-1px)}
+.btn-export:disabled{opacity:.4;cursor:default;transform:none}
+.btn-add{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.btn-add:hover{border-color:var(--v3);color:var(--v4)}
+
+/* CARD */
+.card{width:100%;max-width:1100px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 0 0 1px rgba(109,40,217,.08),0 40px 120px rgba(0,0,0,.7)}
+
+/* HEADER */
+.card-header{position:relative;overflow:hidden;padding:24px 32px 20px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.card-header::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 50% 200% at 0% 50%,rgba(109,40,217,.2) 0%,transparent 60%)}
+.card-header::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--v1) 0%,var(--v3) 35%,transparent 70%)}
+.logo-row{display:flex;align-items:center;gap:12px}
+.logo-badge{width:40px;height:40px;background:linear-gradient(135deg,var(--v1),var(--v3));border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:#fff;box-shadow:0 0 18px rgba(124,58,237,.5)}
+.club-name{font-family:'Barlow Condensed',sans-serif;font-size:34px;font-weight:800;letter-spacing:4px;text-transform:uppercase;background:linear-gradient(135deg,#fff 0%,var(--v4) 40%,var(--v3) 75%,#fff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 14px rgba(139,92,246,.4))}
+.doc-type{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--v4);margin-top:3px}
+.season-tag{background:rgba(109,40,217,.15);border:1px solid rgba(109,40,217,.3);border-radius:4px;padding:3px 10px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--v4)}
+
+/* LEGEND */
+.legend-bar{display:flex;align-items:stretch;border-bottom:1px solid var(--border);background:var(--surface2)}
+.leg-item{flex:1;display:flex;align-items:center;gap:10px;padding:12px 16px;border-right:1px solid var(--border)}
+.leg-item:last-child{border-right:none}
+.leg-letter{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;border:1px solid;flex-shrink:0}
+.leg-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.leg-desc{font-size:10px;color:var(--text3);margin-top:1px}
+
+/* TABLE WRAP */
+.table-wrap{overflow-x:auto}
+
+/* TABLE */
+.raci-table{width:100%;border-collapse:separate;border-spacing:0;min-width:600px}
+.raci-table thead th{padding:11px 6px;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);font-weight:600;border-bottom:2px solid var(--border);white-space:nowrap;text-align:center;background:var(--surface);position:sticky;top:0;z-index:2}
+.raci-table thead th.task-col{text-align:left;padding-left:16px;min-width:240px}
+.th-content{display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
+.th-name{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:1px;text-transform:uppercase}
+.th-del{position:absolute;top:-4px;right:-4px;background:none;border:none;color:var(--text3);font-size:10px;cursor:pointer;opacity:0;transition:opacity .15s;line-height:1;padding:2px}
+.th-content:hover .th-del{opacity:1}
+.th-del:hover{color:var(--red,#ef4444)}
+
+/* CAT ROW */
+.cat-row td{background:var(--surface2);padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;border-bottom:1px solid var(--border);border-top:1px solid var(--border)}
+.cat-dot{display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:8px;vertical-align:middle}
+.cat-row td button{margin-left:10px;background:none;border:1px dashed;border-radius:5px;padding:2px 8px;font-size:9px;font-family:'Barlow',sans-serif;letter-spacing:1px;text-transform:uppercase;cursor:pointer;vertical-align:middle;transition:all .15s;opacity:.5}
+.cat-row td button:hover{opacity:1}
+
+/* DATA ROWS */
+.raci-table tbody tr:hover td{background:rgba(255,255,255,.012)}
+.raci-table tbody td{border-bottom:1px solid var(--border);text-align:center;padding:0;vertical-align:middle}
+.raci-table tbody td.task-cell{text-align:left;padding:10px 16px;vertical-align:middle}
+.task-name-wrap{display:flex;align-items:center;gap:8px}
+.task-name{font-size:12px;color:var(--text);font-weight:500;flex:1}
+.task-del{background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;opacity:0;transition:opacity .15s;line-height:1;padding:2px;flex-shrink:0}
+.task-cell:hover .task-del{opacity:1}
+.task-del:hover{color:#ef4444}
+
+/* RACI CHIP */
+.cell-inner{display:flex;align-items:center;justify-content:center;padding:8px 4px;cursor:pointer;transition:all .15s;min-height:42px}
+.raci-chip{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;border:1px solid transparent;transition:all .15s;user-select:none}
+.raci-chip:hover{transform:scale(1.2)}
+.raci-chip.empty{opacity:.12;border-color:var(--border2);color:var(--text3)}
+.raci-chip.R{background:var(--r-bg);border-color:var(--r-border);color:var(--r-color)}
+.raci-chip.A{background:var(--a-bg);border-color:var(--a-border);color:var(--a-color)}
+.raci-chip.C{background:var(--c-bg);border-color:var(--c-border);color:var(--c-color)}
+.raci-chip.I{background:var(--i-bg);border-color:var(--i-border);color:var(--i-color)}
+
+/* FOOTER */
+.card-footer{border-top:1px solid var(--border);background:var(--surface);padding:11px 32px;display:flex;align-items:center;justify-content:space-between}
+.footer-brand{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
+.footer-hint{font-size:9px;color:var(--text3);letter-spacing:.5px}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(7,7,15,.88);backdrop-filter:blur(8px);z-index:300;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--surface2);border:1px solid var(--border2);border-radius:14px;padding:26px;width:360px;max-width:92vw;box-shadow:0 0 80px rgba(0,0,0,.7),0 0 40px rgba(109,40,217,.15)}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--v4);margin-bottom:18px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.field input,.field select{width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:9px 12px;border-radius:7px;font-size:13px;font-family:'Barlow',sans-serif;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus{border-color:var(--v3)}
+.field select option{background:var(--surface)}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.btn-confirm{flex:1;background:var(--v2);color:#fff;justify-content:center}
+.btn-confirm:hover{background:var(--v3)}
+.btn-cancel-m{flex:1;background:var(--surface);color:var(--text2);border:1px solid var(--border2);justify-content:center}
+.btn-cancel-m:hover{border-color:var(--v3);color:var(--v4)}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey:            "AIzaSyAKwNEbNa6f40oSMwGp6dcDY1ZY6hUN1Ks",
+  authDomain:        "plazma-esport.firebaseapp.com",
+  projectId:         "plazma-esport",
+  storageBucket:     "plazma-esport.firebasestorage.app",
+  messagingSenderId: "534325929279",
+  appId:             "1:534325929279:web:b507a46c601fa6625edf8a"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+</script>
+</head>
+<body>
+
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-logo">PlaZma</div>
+  <div class="loading-bar"><div class="loading-fill"></div></div>
+  <div class="loading-text">Connexion Firebase…</div>
+</div>
+<a href="index.html" class="hub-link">← Hub PlaZma</a>
+<div class="sync-bar">
+  <div class="sync-indicator">
+    <div class="sync-dot offline" id="syncDot"></div>
+    <span class="sync-text" id="syncText" style="color:var(--text3)">En attente…</span>
+    <span class="sync-time" id="syncTime"></span>
+  </div>
+  <button class="btn-save-fb" id="saveFbBtn" onclick="save()">💾 Sauvegarder</button>
+  <div class="btn-mini-row">
+    <div class="btn-mini" onclick="exportBackup()">📦 Backup</div>
+    <div class="btn-mini" onclick="importBackup()">📥 Import</div>
+    <div class="btn-mini red" onclick="resetData()">🗑 Reset</div>
+  </div>
+</div>
+<div class="toolbar" id="toolbar">
+  <button class="btn btn-add" onclick="openAddMember()">＋ Membre</button>
+  <button class="btn btn-add" onclick="openAddTask()">＋ Tâche</button>
+  <button class="btn btn-export" id="exportBtn">⬇ Exporter PNG</button>
+</div>
+
+<div class="card" id="card">
+
+  <div class="card-header">
+    <div>
+      <div class="logo-row">
+        <div class="logo-badge">PZ</div>
+        <div class="club-name">PlaZma</div>
+      </div>
+      <div class="doc-type">Matrice RACI — Responsabilités de l'organisation</div>
+    </div>
+    <div><div class="season-tag">Esport · League of Legends · Saison 2026</div></div>
+  </div>
+
+  <div class="legend-bar">
+    <div class="leg-item">
+      <div class="leg-letter" style="background:var(--r-bg);border-color:var(--r-border);color:var(--r-color)">R</div>
+      <div><div class="leg-title" style="color:var(--r-color)">Responsible</div><div class="leg-desc">Réalise la tâche</div></div>
+    </div>
+    <div class="leg-item">
+      <div class="leg-letter" style="background:var(--a-bg);border-color:var(--a-border);color:var(--a-color)">A</div>
+      <div><div class="leg-title" style="color:var(--a-color)">Accountable</div><div class="leg-desc">Responsable final</div></div>
+    </div>
+    <div class="leg-item">
+      <div class="leg-letter" style="background:var(--c-bg);border-color:var(--c-border);color:var(--c-color)">C</div>
+      <div><div class="leg-title" style="color:var(--c-color)">Consulted</div><div class="leg-desc">Consulté / avis</div></div>
+    </div>
+    <div class="leg-item">
+      <div class="leg-letter" style="background:var(--i-bg);border-color:var(--i-border);color:var(--i-color)">I</div>
+      <div><div class="leg-title" style="color:var(--i-color)">Informed</div><div class="leg-desc">Informé du résultat</div></div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="raci-table" id="raciTable">
+      <thead><tr id="headerRow"><th class="task-col">Tâche / Activité</th></tr></thead>
+      <tbody id="raciBody"></tbody>
+    </table>
+  </div>
+
+  <div class="card-footer">
+    <div class="footer-brand">PlaZma Esport · plazma-esport.fr</div>
+    <div class="footer-hint" id="footerHint">Cliquer sur une cellule : R → A → C → I → vide</div>
+  </div>
+</div>
+
+<!-- MODAL MEMBRE -->
+<div class="overlay" id="overlayMember">
+  <div class="modal">
+    <div class="modal-title">Ajouter un membre</div>
+    <div class="field"><label>Nom / Pseudo</label><input type="text" id="memberName" placeholder="ex: Haito"></div>
+    <div class="field"><label>Rôle</label>
+      <select id="memberRole">
+        <option value="Président">Président</option>
+        <option value="Coach">Coach</option>
+        <option value="Capitaine">Capitaine</option>
+        <option value="Joueur">Joueur</option>
+        <option value="Autre">Autre (libre)</option>
+      </select>
+    </div>
+    <div class="field" id="memberRoleCustomField" style="display:none"><label>Rôle personnalisé</label><input type="text" id="memberRoleCustom" placeholder="ex: Analyste"></div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel-m" onclick="closeModals()">Annuler</button>
+      <button class="btn btn-confirm" onclick="confirmAddMember()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TÂCHE -->
+<div class="overlay" id="overlayTask">
+  <div class="modal">
+    <div class="modal-title">Ajouter une tâche</div>
+    <div class="field"><label>Nom de la tâche</label><input type="text" id="taskName" placeholder="ex: Organiser les scrims"></div>
+    <div class="field"><label>Catégorie</label>
+      <select id="taskCat" id="taskCatSelect"></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel-m" onclick="closeModals()">Annuler</button>
+      <button class="btn btn-confirm" onclick="confirmAddTask()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CYCLE = ['R','A','C','I',''];
+const CAT_COLORS = ['#3b82f6','#a855f7','#f97316','#ec4899','#f59e0b','#06b6d4','#22c55e','#f43f5e'];
+
+// ─── STATE ──────────────────────────────────────────────────
+let members = [
+  { id:'president', label:'Président',  icon:'👑' },
+  { id:'coach',     label:'Coach',      icon:'🎯' },
+  { id:'capitaine', label:'Capitaine',  icon:'⚡' },
+  { id:'joueur1',   label:'Joueur',     icon:'🎮' },
+];
+
+let categories = [
+  {
+    id:'c1', label:'🏆 Compétitif & Entraînement', color:'#3b82f6',
+    tasks:[
+      { id:'t1',  name:'Définir le planning d\'entraînement',  values:{president:'A', coach:'R', capitaine:'C', joueur1:'I'} },
+      { id:'t2',  name:'Organiser et programmer les scrims',    values:{president:'I', coach:'R', capitaine:'C', joueur1:'I'} },
+      { id:'t3',  name:'Sélection du lineup (matchs officiels)',values:{president:'A', coach:'R', capitaine:'C', joueur1:'I'} },
+      { id:'t4',  name:'Préparer la stratégie de draft',        values:{president:'', coach:'A',  capitaine:'R', joueur1:'C'} },
+      { id:'t5',  name:'Animer les sessions de coaching',       values:{president:'I', coach:'R', capitaine:'C', joueur1:'I'} },
+      { id:'t6',  name:'Coachings individuels',                 values:{president:'', coach:'R',  capitaine:'C', joueur1:'C'} },
+      { id:'t7',  name:'Comptes rendus de scrim',               values:{president:'I', coach:'A', capitaine:'R', joueur1:'I'} },
+      { id:'t8',  name:'Analyser les VODs adverses (scouting)', values:{president:'', coach:'A',  capitaine:'R', joueur1:'C'} },
+      { id:'t9',  name:'Suivi des statistiques individuelles',  values:{president:'', coach:'A',  capitaine:'C', joueur1:'I'} },
+    ]
+  },
+  {
+    id:'c2', label:'📋 Gestion des joueurs', color:'#a855f7',
+    tasks:[
+      { id:'t10', name:'Définir les critères de recrutement',   values:{president:'A', coach:'R', capitaine:'C', joueur1:''} },
+      { id:'t11', name:'Organiser les tryouts',                 values:{president:'I', coach:'R', capitaine:'C', joueur1:'C'} },
+      { id:'t12', name:'Intégrer un nouveau joueur',            values:{president:'I', coach:'R', capitaine:'C', joueur1:'I'} },
+      { id:'t13', name:'Gérer les conflits intra-équipe',       values:{president:'A', coach:'R', capitaine:'C', joueur1:''} },
+      { id:'t14', name:'Évaluer la performance des joueurs',    values:{president:'I', coach:'R', capitaine:'C', joueur1:'I'} },
+      { id:'t15', name:'Décision de départ d\'un joueur',       values:{president:'A', coach:'R', capitaine:'C', joueur1:'I'} },
+    ]
+  },
+  {
+    id:'c3', label:'🏅 Tournois & Compétitions', color:'#f97316',
+    tasks:[
+      { id:'t16', name:'Identifier les tournois',               values:{president:'C', coach:'R', capitaine:'C', joueur1:'I'} },
+      { id:'t17', name:'Inscrire l\'équipe aux tournois',       values:{president:'A', coach:'R', capitaine:'C', joueur1:'I'} },
+      { id:'t18', name:'Coordonner la logistique le jour J',    values:{president:'I', coach:'A', capitaine:'R', joueur1:'I'} },
+      { id:'t19', name:'Communiquer les résultats des matchs',  values:{president:'I', coach:'I', capitaine:'R', joueur1:'I'} },
+      { id:'t20', name:'Bilan post-tournoi',                    values:{president:'I', coach:'A', capitaine:'R', joueur1:'C'} },
+    ]
+  },
+  {
+    id:'c4', label:'💰 Administration & Finances', color:'#f59e0b',
+    tasks:[
+      { id:'t21', name:'Établir le budget prévisionnel',        values:{president:'R', coach:'C', capitaine:'', joueur1:''} },
+      { id:'t22', name:'Valider les dépenses',                  values:{president:'A', coach:'C', capitaine:'', joueur1:''} },
+      { id:'t23', name:'Inscrire l\'asso (loi 1901)',           values:{president:'R', coach:'I', capitaine:'', joueur1:''} },
+      { id:'t24', name:'Organiser l\'Assemblée Générale',       values:{president:'R', coach:'C', capitaine:'I', joueur1:'I'} },
+    ]
+  },
+  {
+    id:'c5', label:'📣 Communication & Visibilité', color:'#ec4899',
+    tasks:[
+      { id:'t25', name:'Gérer les réseaux sociaux',             values:{president:'A', coach:'I', capitaine:'R', joueur1:'I'} },
+      { id:'t26', name:'Animer le serveur Discord',             values:{president:'I', coach:'I', capitaine:'R', joueur1:'C'} },
+      { id:'t27', name:'Rédiger les communiqués officiels',     values:{president:'A', coach:'C', capitaine:'R', joueur1:'I'} },
+      { id:'t28', name:'Gérer les relations partenaires',       values:{president:'A', coach:'I', capitaine:'C', joueur1:''} },
+    ]
+  },
+];
+
+let taskCounter = 100;
+let memberCounter = 10;
+
+// ─── RENDER ─────────────────────────────────────────────────
+function render() {
+  const thead = document.getElementById('headerRow');
+  const tbody = document.getElementById('raciBody');
+  thead.innerHTML = '<th class="task-col">Tâche / Activité</th>';
+  tbody.innerHTML = '';
+
+  // Headers
+  members.forEach(m => {
+    const th = document.createElement('th');
+    th.innerHTML = `<div class="th-content">
+      <span class="th-name">${m.icon} ${m.label}</span>
+      <button class="th-del" onclick="removeMember('${m.id}')" title="Retirer">✕</button>
+    </div>`;
+    thead.appendChild(th);
+  });
+
+  // Body
+  categories.forEach(cat => {
+    // Category row
+    const catTr = document.createElement('tr');
+    catTr.className = 'cat-row';
+    const catTd = document.createElement('td');
+    catTd.colSpan = members.length + 1;
+    catTd.style.color = cat.color;
+    catTd.innerHTML = `<span class="cat-dot" style="background:${cat.color}"></span>${cat.label}
+      <button style="color:${cat.color};border-color:${cat.color}" onclick="openAddTaskInCat('${cat.id}')">+ Tâche</button>
+      <button style="color:#ef4444;border-color:rgba(239,68,68,.3)" onclick="removeCategory('${cat.id}')">✕ Catégorie</button>`;
+    catTr.appendChild(catTd);
+    tbody.appendChild(catTr);
+
+    // Tasks
+    cat.tasks.forEach(task => {
+      const tr = document.createElement('tr');
+      // Task name cell
+      const tdTask = document.createElement('td');
+      tdTask.className = 'task-cell';
+      tdTask.innerHTML = `<div class="task-name-wrap">
+        <span class="task-name">${task.name}</span>
+        <button class="task-del" onclick="removeTask('${cat.id}','${task.id}')">✕</button>
+      </div>`;
+      tr.appendChild(tdTask);
+      // RACI cells
+      members.forEach(m => {
+        const td = document.createElement('td');
+        const val = task.values[m.id] || '';
+        td.innerHTML = `<div class="cell-inner"><div class="raci-chip ${val||'empty'}">${val||'·'}</div></div>`;
+        td.querySelector('.cell-inner').addEventListener('click', () => {
+          const chip = td.querySelector('.raci-chip');
+          const cur = chip.textContent === '·' ? '' : chip.textContent;
+          const next = CYCLE[(CYCLE.indexOf(cur)+1) % CYCLE.length];
+          chip.textContent = next || '·';
+          chip.className = 'raci-chip ' + (next||'empty');
+          task.values[m.id] = next; save();
+        });
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+  });
+
+  // Update category selector in modal
+  const sel = document.getElementById('taskCat');
+  if(sel){
+    sel.innerHTML = categories.map(c => `<option value="${c.id}">${c.label.replace(/[^\w\s']/g,'').trim()}</option>`).join('');
+  }
+}
+
+// ─── MEMBERS ────────────────────────────────────────────────
+function openAddMember() {
+  document.getElementById('memberName').value = '';
+  document.getElementById('memberRole').value = 'Joueur';
+  document.getElementById('memberRoleCustomField').style.display = 'none';
+  document.getElementById('overlayMember').classList.add('open');
+  setTimeout(() => document.getElementById('memberName').focus(), 50);
+}
+
+document.getElementById('memberRole').addEventListener('change', function(){
+  document.getElementById('memberRoleCustomField').style.display = this.value === 'Autre' ? 'block' : 'none';
+});
+
+function confirmAddMember() {
+  const name = document.getElementById('memberName').value.trim();
+  const roleVal = document.getElementById('memberRole').value;
+  const roleCustom = document.getElementById('memberRoleCustom').value.trim();
+  const role = roleVal === 'Autre' ? (roleCustom || 'Membre') : roleVal;
+  if(!name) return;
+  const icons = { 'Président':'👑','Coach':'🎯','Capitaine':'⚡','Joueur':'🎮' };
+  const icon = icons[role] || '👤';
+  const id = 'm' + (++memberCounter);
+  members.push({ id, label: name + ' · ' + role, icon });
+  closeModals();
+  render(); save();
+}
+
+function removeMember(id) {
+  if(members.length <= 1) return;
+  members = members.filter(m => m.id !== id);
+  categories.forEach(c => c.tasks.forEach(t => delete t.values[id]));
+  render(); save();
+}
+
+// ─── TASKS ──────────────────────────────────────────────────
+let _targetCatId = null;
+
+function openAddTask() {
+  _targetCatId = null;
+  document.getElementById('taskName').value = '';
+  document.getElementById('overlayTask').classList.add('open');
+  setTimeout(() => document.getElementById('taskName').focus(), 50);
+}
+
+function openAddTaskInCat(catId) {
+  _targetCatId = catId;
+  document.getElementById('taskName').value = '';
+  // Pre-select category
+  const sel = document.getElementById('taskCat');
+  if(sel) sel.value = catId;
+  document.getElementById('overlayTask').classList.add('open');
+  setTimeout(() => document.getElementById('taskName').focus(), 50);
+}
+
+function confirmAddTask() {
+  const name = document.getElementById('taskName').value.trim();
+  if(!name) return;
+  const catId = _targetCatId || document.getElementById('taskCat').value;
+  const cat = categories.find(c => c.id === catId);
+  if(!cat) return;
+  const id = 'task' + (++taskCounter);
+  cat.tasks.push({ id, name, values:{} });
+  closeModals();
+  render(); save();
+}
+
+function removeTask(catId, taskId) {
+  const cat = categories.find(c => c.id === catId);
+  if(!cat) return;
+  cat.tasks = cat.tasks.filter(t => t.id !== taskId);
+  render(); save();
+}
+
+function removeCategory(catId) {
+  if(categories.length <= 1) return;
+  categories = categories.filter(c => c.id !== catId);
+  render(); save();
+}
+
+// ─── MODALS ─────────────────────────────────────────────────
+function closeModals() {
+  document.querySelectorAll('.overlay').forEach(o => o.classList.remove('open'));
+}
+document.querySelectorAll('.overlay').forEach(o => {
+  o.addEventListener('click', e => { if(e.target === o) closeModals(); });
+});
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModals(); });
+
+// Enter to confirm in modals
+document.getElementById('memberName').addEventListener('keydown', e => { if(e.key==='Enter') confirmAddMember(); });
+document.getElementById('taskName').addEventListener('keydown', e => { if(e.key==='Enter') confirmAddTask(); });
+
+// ─── EXPORT ─────────────────────────────────────────────────
+document.getElementById('exportBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('exportBtn');
+  btn.disabled = true; btn.textContent = 'Export…';
+  // Hide UI controls
+  document.querySelectorAll('.toolbar,.th-del,.task-del,.cat-row button,.footer-hint').forEach(el => el.style.visibility='hidden');
+  await new Promise(r => setTimeout(r, 80));
+  const canvas = await html2canvas(document.getElementById('card'), {
+    scale:2, backgroundColor:'#0c0b18', useCORS:true, logging:false,
+  });
+  document.querySelectorAll('.toolbar,.th-del,.task-del,.cat-row button,.footer-hint').forEach(el => el.style.visibility='');
+  btn.disabled = false; btn.textContent = '⬇ Exporter PNG';
+  const link = document.createElement('a');
+  link.download = 'plazma-raci.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+});
+
+// ─── INIT ────────────────────────────────────────────────────
+
+// ════════════════════════════════════════════════
+// FIREBASE SYNC — RACI
+// ════════════════════════════════════════════════
+const COL='plazma', DOC_ID='raci';
+
+function getState(){ return{members,categories,taskCounter,memberCounter}; }
+function applyState(s){
+  if(s.members)    members    = s.members;
+  if(s.categories) categories = s.categories;
+  if(s.taskCounter!==undefined)   taskCounter   = s.taskCounter;
+  if(s.memberCounter!==undefined) memberCounter = s.memberCounter;
+}
+function setSyncState(state,text,time=''){
+  const dot=document.getElementById('syncDot'),txt=document.getElementById('syncText'),tim=document.getElementById('syncTime');
+  if(!dot)return;
+  dot.className='sync-dot '+state;
+  txt.textContent=text;
+  txt.style.color=state==='connected'?'#22c55e':state==='syncing'?'#f59e0b':state==='error'?'#ef4444':'var(--text3)';
+  tim.textContent=time;
+}
+function hideLoading(){const ls=document.getElementById('loadingScreen');if(ls){ls.classList.add('hidden');setTimeout(()=>ls.style.display='none',500);}}
+function save(){
+  setSyncState('syncing','Sauvegarde…');
+  db.collection(COL).doc(DOC_ID).set(getState())
+    .then(()=>{setSyncState('connected','Synchronisé');flashSave(true);})
+    .catch(e=>{setSyncState('error','Erreur Firebase');flashSave(false);console.error(e);});
+}
+function startSync(){
+  setSyncState('syncing','Connexion…');
+  db.collection(COL).doc(DOC_ID).onSnapshot(doc=>{
+    if(doc.metadata.hasPendingWrites)return;
+    if(doc.exists){applyState(doc.data());render();const now=new Date();setSyncState('connected','Synchronisé',now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));}
+    else{setSyncState('connected','Prêt','');}
+    hideLoading();
+  },err=>{console.error(err);setSyncState('error','Erreur connexion');hideLoading();});
+}
+function flashSave(ok){
+  const btn=document.getElementById('saveFbBtn');if(!btn)return;
+  btn.classList.add('saved');btn.textContent=ok?'✓ Sauvegardé':'⚠ Erreur';if(!ok)btn.style.color='#ef4444';
+  setTimeout(()=>{btn.classList.remove('saved');btn.textContent='💾 Sauvegarder';btn.style.color='';},1600);
+}
+function exportBackup(){
+  const b=new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='plazma-raci-backup-'+new Date().toISOString().split('T')[0]+'.json';a.click();
+}
+function importBackup(){
+  const input=document.createElement('input');input.type='file';input.accept='.json';
+  input.addEventListener('change',async()=>{try{applyState(JSON.parse(await input.files[0].text()));save();render();}catch(e){alert('Fichier invalide');}});
+  input.click();
+}
+function resetData(){if(!confirm('Réinitialiser le RACI ?'))return;db.collection(COL).doc(DOC_ID).delete().then(()=>location.reload());}
+
+startSync();
+setTimeout(()=>{const ls=document.getElementById('loadingScreen');if(ls&&!ls.classList.contains('hidden')){hideLoading();setSyncState('error','Firebase inaccessible');render();}},8000);
+
+</script>
+</body>
+</html>
