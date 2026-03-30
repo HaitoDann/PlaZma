@@ -9,34 +9,45 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
-const firebaseConfig={apiKey:"AIzaSyAKwNEbNa6f40oSMwGp6dcDY1ZY6hUN1Ks",authDomain:"plazma-esport.firebaseapp.com",projectId:"plazma-esport",storageBucket:"plazma-esport.firebasestorage.app",messagingSenderId:"534325929279",appId:"1:534325929279:web:b507a46c601fa6625edf8a"};
+const firebaseConfig={
+  apiKey:"AIzaSyAKwNEbNa6f40oSMwGp6dcDY1ZY6hUN1Ks",
+  authDomain:"plazma-esport.firebaseapp.com",
+  projectId:"plazma-esport",
+  storageBucket:"plazma-esport.firebasestorage.app",
+  messagingSenderId:"534325929279",
+  appId:"1:534325929279:web:b507a46c601fa6625edf8a"
+};
 firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
 </script>
 <style>
-
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#07070f;--bg2:#0c0b18;--surface:#10101e;--surface2:#141428;
+  --bg:#07070f;--bg2:#0c0b18;--surface:#10101e;--surface2:#141428;--surface3:#181835;
   --border:#1c1b33;--border2:#252444;
   --v1:#6d28d9;--v2:#7c3aed;--v3:#8b5cf6;--v4:#a78bfa;--v5:#c4b5fd;
-  --green:#22c55e;--red:#ef4444;--orange:#f97316;--cyan:#06b6d4;--yellow:#f59e0b;
+  --green:#22c55e;--red:#ef4444;--orange:#f97316;--cyan:#06b6d4;--yellow:#f59e0b;--blue:#3b82f6;
   --text:#e8e6f4;--text2:#8b82b0;--text3:#45405e;
+  --rc:#22c55e;
 }
 body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 20px 80px}
+
+/* LOADING */
 .loading-screen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .5s}
 .loading-screen.hidden{opacity:0;pointer-events:none}
 .loading-logo{font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:800;letter-spacing:4px;background:linear-gradient(135deg,#fff,var(--v4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .loading-bar{width:200px;height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
-.loading-fill{height:100%;background:linear-gradient(90deg,var(--rc),var(--v4));border-radius:2px;animation:loadbar 1.5s ease infinite}
-@keyframes loadbar{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
+.loading-fill{height:100%;background:linear-gradient(90deg,var(--rc),var(--v4));border-radius:2px;animation:lb 1.5s ease infinite}
+@keyframes lb{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
 .loading-text{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase}
+
+/* CHROME */
 .hub-link{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:var(--text3);text-decoration:none;letter-spacing:1px;transition:color .15s;margin-bottom:14px}
 .hub-link:hover{color:var(--rc)}
 .toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;justify-content:center}
 .btn{padding:9px 22px;border-radius:7px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:none;font-family:'Barlow',sans-serif;transition:all .2s}
 .btn-export{background:var(--v2);color:#fff;box-shadow:0 0 28px rgba(124,58,237,.4)}
-.btn-export:hover{background:var(--v3);box-shadow:0 0 40px rgba(124,58,237,.6);transform:translateY(-1px)}
+.btn-export:hover{background:var(--v3);transform:translateY(-1px)}
 .btn-export:disabled{opacity:.4;cursor:default;transform:none}
 .sync-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:20px}
 .sync-indicator{display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:7px;background:var(--surface2);border:1px solid var(--border2)}
@@ -56,94 +67,118 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 .btn-mini:hover{color:var(--text2)}
 .btn-mini.red{border-color:rgba(239,68,68,.12);color:rgba(239,68,68,.3)}
 .btn-mini.red:hover{color:#ef4444}
+
+/* CARD */
 .card{width:100%;max-width:900px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 0 0 1px rgba(109,40,217,.08),0 40px 100px rgba(0,0,0,.6)}
+
+/* HEADER */
 .card-header{position:relative;overflow:hidden;padding:26px 32px 22px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
-.card-header::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 55% 180% at 0% 50%,rgba(109,40,217,.18) 0%,transparent 65%)}
+.card-header::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 200% at 0% 50%,rgba(34,197,94,.09) 0%,rgba(109,40,217,.1) 45%,transparent 70%)}
 .card-header::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--rc) 0%,var(--v3) 40%,transparent 70%)}
 .logo-row{display:flex;align-items:center;gap:12px}
 .logo-badge{width:40px;height:40px;background:linear-gradient(135deg,var(--v1),var(--v3));border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:#fff;box-shadow:0 0 20px rgba(124,58,237,.5)}
-.club-name{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:800;letter-spacing:4px;text-transform:uppercase;background:linear-gradient(135deg,#fff 0%,var(--v4) 40%,var(--v3) 75%,#fff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 16px rgba(139,92,246,.4))}
+.club-name{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:800;letter-spacing:4px;text-transform:uppercase;background:linear-gradient(135deg,#fff 0%,var(--v4) 40%,var(--v3) 75%,#fff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 16px rgba(139,92,246,.35))}
 .doc-type{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--rc);margin-top:4px}
-.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-.player-badge{display:flex;align-items:center;gap:10px;background:color-mix(in srgb,var(--rc) 10%,transparent);border:1px solid color-mix(in srgb,var(--rc) 25%,transparent);border-radius:9px;padding:8px 14px}
-.player-emoji{font-size:22px}
+.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.player-badge{display:flex;align-items:center;gap:10px;background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:9px;padding:9px 15px}
+.player-emoji{font-size:24px}
 .player-info{text-align:right}
-.player-pseudo{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;letter-spacing:2px;color:var(--rc)}
-.player-role{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-top:1px}
+.player-pseudo{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;letter-spacing:2px;color:var(--rc)}
+.player-role{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-top:2px}
 .season-tag{background:rgba(109,40,217,.15);border:1px solid rgba(109,40,217,.3);border-radius:4px;padding:3px 10px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--v4)}
-.meta-bar{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
-.meta-cell{background:var(--surface);padding:14px 16px}
+
+/* META */
+.meta-bar{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
+.meta-cell{background:var(--surface);padding:14px 18px}
 .meta-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
 .meta-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-size:13px;font-family:'Barlow',sans-serif;padding:3px 0;outline:none;transition:border-color .2s}
 .meta-input:focus{border-bottom-color:var(--rc)}
-.card-body{padding:24px 32px;display:flex;flex-direction:column;gap:22px}
-.section-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* BODY */
+.card-body{padding:26px 32px;display:flex;flex-direction:column;gap:26px}
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding-bottom:11px;border-bottom:1px solid var(--border);margin-bottom:16px;display:flex;align-items:center;gap:9px}
 .section-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.section-hint{font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:none;font-family:'Barlow',sans-serif;font-weight:400;margin-left:2px}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px}
-.stat-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
-.stat-input{background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-size:18px;font-family:'Barlow Condensed',sans-serif;font-weight:700;width:100%;outline:none;padding:2px 0;transition:border-color .2s}
+.stat-card.primary{border-color:rgba(34,197,94,.28);background:rgba(34,197,94,.035)}
+.stat-label{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
+.stat-card.primary .stat-label{color:rgba(34,197,94,.65)}
+.stat-input{background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-size:20px;font-family:'Barlow Condensed',sans-serif;font-weight:800;width:100%;outline:none;padding:2px 0;transition:border-color .2s}
 .stat-input:focus{border-bottom-color:var(--rc)}
-.stat-sub{font-size:10px;color:var(--text3)}
-.stat-card.highlight{border-color:color-mix(in srgb,var(--rc) 35%,transparent);background:color-mix(in srgb,var(--rc) 5%,var(--surface))}
-.rating-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.rating-row{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.rating-label{font-size:12px;color:var(--text2);font-weight:500;flex:1}
-.rating-cat{font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:1px 6px;border-radius:3px;font-weight:700;margin-left:6px;flex-shrink:0}
-.stars{display:flex;gap:4px}
-.star{width:22px;height:22px;cursor:pointer;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:transform .1s;background:var(--surface2)}
-.star.active{background:rgba(245,158,11,.15)}
-.star:hover{transform:scale(1.15)}
-.textarea-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.textarea-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px}
-.textarea-card-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;font-weight:700}
-.fiche-textarea{width:100%;background:transparent;border:none;color:var(--text2);font-size:12px;font-family:'Barlow',sans-serif;line-height:1.6;resize:none;outline:none;min-height:85px}
-.fiche-textarea::placeholder{color:var(--text3)}
-.axes-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.axe-card{background:var(--surface);border-radius:8px;padding:14px;border:1px solid var(--border)}
-.axe-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.axe-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
-.obj-list{display:flex;flex-direction:column;gap:8px}
-.obj-row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:10px 12px}
-.obj-num{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--border2);flex-shrink:0;width:24px}
-.obj-input{flex:1;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-size:13px;font-family:'Barlow',sans-serif;padding:2px 0;outline:none;transition:border-color .2s}
+.stat-card.primary .stat-input{color:var(--rc)}
+.stat-sub{font-size:9.5px;color:var(--text3);line-height:1.4}
+
+/* JAUGES */
+.jauge-list{display:flex;flex-direction:column;gap:7px}
+.jauge-row{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 14px;transition:border-color .15s}
+.jauge-row:hover{border-color:var(--border2)}
+.jauge-label{font-size:12px;color:var(--text2);font-weight:500;min-width:230px;flex-shrink:0}
+.jauge-dots{display:flex;gap:4px;flex:1}
+.jd{flex:1;height:8px;border-radius:3px;cursor:pointer;opacity:.16;transition:opacity .12s,transform .1s}
+.jd:hover{transform:scaleY(1.4);opacity:.7}
+.jd.on{opacity:1}
+.jd.on:hover{transform:scaleY(1.4)}
+.jauge-num{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;min-width:22px;text-align:right}
+
+/* COMPÉTENCES */
+.comp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.comp-row{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:border-color .15s}
+.comp-row:hover{border-color:var(--border2)}
+.comp-left{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.comp-cat{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;padding:2px 7px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;flex-shrink:0}
+.comp-label{font-size:12px;color:var(--text2);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stars{display:flex;gap:3px;flex-shrink:0}
+.star{width:23px;height:23px;cursor:pointer;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:13px;transition:transform .1s,background .15s;background:var(--surface2);color:var(--border2)}
+.star.on{background:rgba(245,158,11,.12);color:var(--yellow)}
+.star:hover{transform:scale(1.2)}
+
+/* TEXTZONES */
+.qual-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.qual-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.qual-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700}
+.fiche-ta{width:100%;background:transparent;border:none;color:var(--text2);font-size:12px;font-family:'Barlow',sans-serif;line-height:1.65;resize:none;outline:none;min-height:90px}
+.fiche-ta::placeholder{color:var(--text3)}
+
+/* AXES */
+.axes-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.axe-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:9px}
+.axe-head{display:flex;align-items:center;gap:8px}
+.axe-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.axe-title{font-size:11px;font-weight:700;letter-spacing:.3px}
+
+/* OBJECTIFS */
+.obj-list{display:flex;flex-direction:column;gap:7px}
+.obj-row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px}
+.obj-num{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--border2);min-width:24px;flex-shrink:0}
+.obj-input{flex:1;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-size:13px;font-family:'Barlow',sans-serif;padding:3px 0;outline:none;transition:border-color .2s}
 .obj-input:focus{border-bottom-color:var(--rc)}
-.obj-prio{background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:10px;font-family:'Barlow',sans-serif;padding:3px 8px;border-radius:5px;outline:none;cursor:pointer}
+.obj-prio{background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:10px;font-family:'Barlow',sans-serif;padding:4px 8px;border-radius:5px;outline:none;cursor:pointer;flex-shrink:0;transition:border-color .2s}
+.obj-prio:focus{border-color:var(--v3)}
 .obj-prio option{background:var(--surface)}
-.note-globale{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;display:flex;align-items:center;gap:24px}
-.note-val{font-family:'Barlow Condensed',sans-serif;font-size:56px;font-weight:800;color:var(--rc);line-height:1;background:transparent;border:none;border-bottom:2px solid var(--border2);outline:none;width:80px;text-align:center;transition:border-color .2s}
-.note-val:focus{border-bottom-color:var(--rc)}
-.note-sep{font-family:'Barlow Condensed',sans-serif;font-size:32px;color:var(--text3);font-weight:700}
-.note-right{flex:1}
-.note-label-big{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--rc);margin-bottom:8px}
-.note-comment{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text2);font-size:13px;font-family:'Barlow',sans-serif;padding:4px 0;outline:none}
+
+/* NOTE */
+.note-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:22px 24px;display:flex;align-items:center;gap:24px}
+.note-score-wrap{display:flex;align-items:baseline;gap:8px;flex-shrink:0}
+.note-input{background:transparent;border:none;border-bottom:2px solid var(--border2);color:var(--rc);font-family:'Barlow Condensed',sans-serif;font-size:64px;font-weight:800;line-height:1;width:82px;text-align:center;outline:none;transition:border-color .2s}
+.note-input:focus{border-bottom-color:var(--rc)}
+.note-over{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:700;color:var(--text3)}
+.note-right{flex:1;display:flex;flex-direction:column;gap:7px}
+.note-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--rc)}
+.note-comment{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text2);font-size:13px;font-family:'Barlow',sans-serif;padding:4px 0;outline:none;transition:border-color .2s}
 .note-comment:focus{border-bottom-color:var(--rc)}
-.card-footer{border-top:1px solid var(--border);background:var(--surface);padding:12px 32px;display:flex;align-items:center;justify-content:space-between}
+.note-comment::placeholder{color:var(--text3)}
+
+/* FOOTER */
+.card-footer{border-top:1px solid var(--border);background:var(--surface);padding:13px 32px;display:flex;align-items:center;justify-content:space-between;gap:20px}
 .footer-brand{font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
-.footer-sig{display:flex;gap:24px}
-.sig-field{display:flex;flex-direction:column;gap:4px;align-items:center}
+.footer-sigs{display:flex;gap:28px}
+.sig{display:flex;flex-direction:column;gap:5px;align-items:center}
 .sig-line{width:120px;height:1px;background:var(--border2)}
 .sig-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
-/* JAUGE */
-.jauge-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
-.jauge-label{font-size:11px;color:var(--text2);font-weight:500;min-width:140px}
-.jauge-track{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;cursor:pointer;position:relative}
-.jauge-fill{height:100%;border-radius:4px;transition:width .3s}
-.jauge-val{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;min-width:36px;text-align:right}
-.jauge-steps{display:flex;gap:4px;margin-top:4px}
-.js{flex:1;height:6px;border-radius:2px;cursor:pointer;opacity:.3;transition:opacity .15s}
-.js.on{opacity:1}
-/* PATH */
-.path-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.path-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px}
-.path-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px}
-.camp-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.camp-icon{font-size:12px;width:20px;text-align:center}
-.camp-label{font-size:11px;color:var(--text2);flex:1}
-.camp-check{width:18px;height:18px;border-radius:4px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10px;transition:all .15s;flex-shrink:0}
-.camp-check.on{background:color-mix(in srgb,var(--rc) 20%,transparent);border-color:var(--rc);color:var(--rc)}
-
-:root { --rc:#22c55e; }
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 </style>
 </head>
 <body>
@@ -155,7 +190,9 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 </div>
 
 <a href="index.html" class="hub-link">← Hub PlaZma</a>
-<div class="toolbar"><button class="btn btn-export" id="exportBtn">⬇ Exporter PNG</button></div>
+<div class="toolbar">
+  <button class="btn btn-export" id="exportBtn">⬇ Exporter PNG</button>
+</div>
 <div class="sync-bar">
   <div class="sync-indicator">
     <div class="sync-dot offline" id="syncDot"></div>
@@ -171,13 +208,15 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 </div>
 
 <div class="card" id="card">
+
+  <!-- HEADER -->
   <div class="card-header">
     <div>
       <div class="logo-row">
         <div class="logo-badge">PZ</div>
         <div class="club-name">PlaZma</div>
       </div>
-      <div class="doc-type">Fiche Jungle — Analyse de Performance</div>
+      <div class="doc-type">Fiche de Performance — Jungle</div>
     </div>
     <div class="header-right">
       <div class="player-badge">
@@ -191,356 +230,496 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
     </div>
   </div>
 
+  <!-- META -->
   <div class="meta-bar">
-    <div class="meta-cell"><div class="meta-label">Période évaluée</div><input class="meta-input" id="f_periode" type="text" placeholder="ex: Semaine 12 — Mars 2026"></div>
-    <div class="meta-cell"><div class="meta-label">Évaluateur</div><input class="meta-input" id="f_eval" type="text" placeholder="Coach / Manager"></div>
+    <div class="meta-cell">
+      <div class="meta-label">Période évaluée</div>
+      <input class="meta-input" id="f_periode" type="text" placeholder="ex: Semaine 14 — Avril 2026" oninput="debounceSave()">
+    </div>
+    <div class="meta-cell">
+      <div class="meta-label">Évaluateur</div>
+      <input class="meta-input" id="f_eval" type="text" placeholder="Coach / Manager" oninput="debounceSave()">
+    </div>
   </div>
 
   <div class="card-body">
 
-    <!-- ── STATS JUNGLE ── -->
+    <!-- ════ STATS ════ -->
     <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--rc)"></div>Statistiques clés — Jungle</div>
+      <div class="section-title">
+        <div class="section-dot" style="background:var(--rc)"></div>
+        Statistiques clés — Jungle
+        <span class="section-hint">(vert = prioritaires)</span>
+      </div>
       <div class="stats-grid">
-        <div class="stat-card highlight"><div class="stat-label">KDA</div><input class="stat-input" id="s_kda" type="text" placeholder="—"><div class="stat-sub">K / D / A</div></div>
-        <div class="stat-card highlight"><div class="stat-label">KP%</div><input class="stat-input" id="s_kp" type="text" placeholder="—"><div class="stat-sub">Kill Participation</div></div>
-        <div class="stat-card highlight"><div class="stat-label">Dragon Ctrl %</div><input class="stat-input" id="s_drag" type="text" placeholder="—"><div class="stat-sub">Dragons pris / total</div></div>
-        <div class="stat-card highlight"><div class="stat-label">Clear Speed</div><input class="stat-input" id="s_clear" type="text" placeholder="—"><div class="stat-sub">Temps 1er clear (min)</div></div>
-        <div class="stat-card highlight"><div class="stat-label">First Blood %</div><input class="stat-input" id="s_fb" type="text" placeholder="—"><div class="stat-sub">Implication FB</div></div>
-        <div class="stat-card"><div class="stat-label">Dégâts / min</div><input class="stat-input" id="s_dmg" type="text" placeholder="—"><div class="stat-sub">DPS moyen</div></div>
-        <div class="stat-card"><div class="stat-label">Vision Score</div><input class="stat-input" id="s_vision" type="text" placeholder="—"><div class="stat-sub">Moy / partie</div></div>
-        <div class="stat-card"><div class="stat-label">Win Rate</div><input class="stat-input" id="s_wr" type="text" placeholder="—"><div class="stat-sub">% période</div></div>
-        <div class="stat-card"><div class="stat-label">Rank actuel</div><input class="stat-input" id="s_rank" type="text" placeholder="—"><div class="stat-sub">LP actuel</div></div>
-        <div class="stat-card"><div class="stat-label">Stat custom</div><input class="stat-input" id="s_custom_val" type="text" placeholder="—"><div class="stat-sub"><input type="text" id="s_custom_lbl" style="background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text3);font-size:10px;font-family:'Barlow',sans-serif;width:100%;outline:none" placeholder="Définir…"></div></div>
-        <div class="stat-card"><div class="stat-label">Parties jouées</div><input class="stat-input" id="s_games" type="text" placeholder="—"><div class="stat-sub">Total période</div></div>
-      </div>
-    </div>
-
-    <!-- ── JAUGES SPÉCIFIQUES ── -->
-    <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--yellow)"></div>Évaluation spécifique Jungle (0–10)</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <div id="jauge_clear"></div>
-        <div id="jauge_gank"></div>
-        <div id="jauge_obj"></div>
-        <div id="jauge_counter"></div>
-        <div id="jauge_track"></div>
-        <div id="jauge_smite"></div>
-      </div>
-    </div>
-
-    <!-- ── JUNGLE PATH ── -->
-    <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--cyan)"></div>Jungle Path — Analyse des clears</div>
-      <div class="path-grid">
-        <div class="path-card" style="border-left:3px solid #3b82f6">
-          <div class="path-title" style="color:#3b82f6">🔵 Blue Side — Camps prioritaires</div>
-          <div id="camps_blue"></div>
-          <div style="margin-top:12px"><textarea class="fiche-textarea" id="path_blue" placeholder="Notes Blue Side : Gromp → Blue → Gromp → gank top / Wolves → Blue → Scuttle → gank mid…" style="min-height:60px"></textarea></div>
+        <div class="stat-card primary">
+          <div class="stat-label">KDA</div>
+          <input class="stat-input" id="s_kda" type="text" placeholder="—" oninput="debounceSave()">
+          <div class="stat-sub">Kills / Deaths / Assists</div>
         </div>
-        <div class="path-card" style="border-left:3px solid var(--red)">
-          <div class="path-title" style="color:var(--red)">🔴 Red Side — Camps prioritaires</div>
-          <div id="camps_red"></div>
-          <div style="margin-top:12px"><textarea class="fiche-textarea" id="path_red" placeholder="Notes Red Side : Red → Krugs → Raptors → gank bot / Red → Gromp → Blue → gank mid…" style="min-height:60px"></textarea></div>
+        <div class="stat-card primary">
+          <div class="stat-label">KP %</div>
+          <input class="stat-input" id="s_kp" type="text" placeholder="—" oninput="debounceSave()">
+          <div class="stat-sub">Kill Participation</div>
+        </div>
+        <div class="stat-card primary">
+          <div class="stat-label">Dragon Ctrl %</div>
+          <input class="stat-input" id="s_drag" type="text" placeholder="—" oninput="debounceSave()">
+          <div class="stat-sub">Dragons pris / total</div>
+        </div>
+        <div class="stat-card primary">
+          <div class="stat-label">Clear Speed</div>
+          <input class="stat-input" id="s_clear" type="text" placeholder="—" oninput="debounceSave()">
+          <div class="stat-sub">Temps 1er clear (min)</div>
+        </div>
+        <div class="stat-card primary">
+          <div class="stat-label">First Blood %</div>
+          <input class="stat-input" id="s_fb" type="text" placeholder="—" oninput="debounceSave()">
+          <div class="stat-sub">Impliqué au First Blood</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Camps / min</div>
+          <input class="stat-input" id="s_camps" type="text" placeholder="—" oninput="debounceSave()">
+          <div class="stat-sub">Efficacité clear</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Scuttle Ctrl %</div>
+          <input class="stat-input" id="s_scuttle" type="text" placeholder="—" oninput="debounceSave()">
+          <div class="stat-sub">Crabe de rivière</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Ganks / game</div>
+          <input class="stat-input" id="s_ganks" type="text" placeholder="—" oninput="debounceSave()">
+          <div class="stat-sub">Moyenne / partie</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Win Rate</div>
+          <input class="stat-input" id="s_wr" type="text" placeholder="—" oninput="debounceSave()">
+          <div class="stat-sub">% période</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Rank actuel</div>
+          <input class="stat-input" id="s_rank" type="text" placeholder="—" oninput="debounceSave()">
+          <div class="stat-sub">LP actuel</div>
         </div>
       </div>
-      <div style="margin-top:10px">
-        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;font-weight:600">Priorité de gank (rôles à gank en premier)</div>
-        <input class="meta-input" id="path_prio" type="text" placeholder="ex: Top > Mid > Bot selon le matchup" style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 12px;color:var(--text)">
+    </div>
+
+    <!-- ════ JAUGES ════ -->
+    <div>
+      <div class="section-title">
+        <div class="section-dot" style="background:var(--yellow)"></div>
+        Évaluation spécifique Jungle (0 – 10)
+        <span class="section-hint">cliquer pour noter, recliquer pour enlever</span>
       </div>
-      <div style="margin-top:10px">
-        <textarea class="fiche-textarea" id="path_notes" placeholder="Notes générales sur le pathing : points forts identifiés, erreurs de routing, adaptation selon l'adversaire…" style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:10px;min-height:56px;width:100%"></textarea>
+      <div class="jauge-list" id="jaugeList"></div>
+    </div>
+
+    <!-- ════ COMPÉTENCES ════ -->
+    <div>
+      <div class="section-title">
+        <div class="section-dot" style="background:var(--v3)"></div>
+        Évaluation par compétences (1 à 5 ★)
+      </div>
+      <div class="comp-grid" id="compGrid"></div>
+    </div>
+
+    <!-- ════ ANALYSE QUALITATIVE ════ -->
+    <div>
+      <div class="section-title">
+        <div class="section-dot" style="background:var(--orange)"></div>
+        Analyse qualitative
+      </div>
+      <div class="qual-grid">
+        <div class="qual-card" style="border-left:3px solid var(--green)">
+          <div class="qual-title" style="color:var(--green)">✦ Forces identifiées</div>
+          <textarea class="fiche-ta" id="t_forces"
+            placeholder="Ce que Zugu maîtrise bien sur cette période : clear efficace, bonne lecture des ganks, smite précis, prise d'objectifs sécurisée…"
+            oninput="debounceSave()"></textarea>
+        </div>
+        <div class="qual-card" style="border-left:3px solid var(--red)">
+          <div class="qual-title" style="color:var(--red)">✦ Points à améliorer</div>
+          <textarea class="fiche-ta" id="t_faiblesses"
+            placeholder="Faiblesses récurrentes : ganks trop tardifs ou frontaux, counter-jungle trop passif, mauvais timing sur Baron, routes non optimisées…"
+            oninput="debounceSave()"></textarea>
+        </div>
+        <div class="qual-card" style="border-left:3px solid var(--cyan)">
+          <div class="qual-title" style="color:var(--cyan)">✦ Observations générales</div>
+          <textarea class="fiche-ta" id="t_obs"
+            placeholder="Comportement en-game, qualité des calls, adaptation au champion adverse, gestion du tilt, présence aux entraînements…"
+            oninput="debounceSave()"></textarea>
+        </div>
       </div>
     </div>
 
-    <!-- ── COMPÉTENCES ── -->
+    <!-- ════ AXES D'AMÉLIORATION ════ -->
     <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--v3)"></div>Évaluation par compétences (1 à 5)</div>
-      <div class="rating-grid" id="ratingGrid"></div>
-    </div>
-
-    <!-- ── ANALYSE ── -->
-    <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--yellow)"></div>Analyse qualitative</div>
-      <div class="textarea-grid">
-        <div class="textarea-card" style="border-left:3px solid var(--green)"><div class="textarea-card-title" style="color:var(--green)">✦ Forces</div><textarea class="fiche-textarea" id="t_forces" placeholder="Points forts identifiés…"></textarea></div>
-        <div class="textarea-card" style="border-left:3px solid var(--red)"><div class="textarea-card-title" style="color:var(--red)">✦ Faiblesses</div><textarea class="fiche-textarea" id="t_faiblesses" placeholder="Points à améliorer…"></textarea></div>
-        <div class="textarea-card" style="border-left:3px solid var(--cyan)"><div class="textarea-card-title" style="color:var(--cyan)">✦ Observations</div><textarea class="fiche-textarea" id="t_obs" placeholder="Comportement, attitude, mentalité…"></textarea></div>
+      <div class="section-title">
+        <div class="section-dot" style="background:var(--blue)"></div>
+        Axes d'amélioration prioritaires
       </div>
-    </div>
-
-    <!-- ── AXES ── -->
-    <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--orange)"></div>Axes d'amélioration</div>
       <div class="axes-grid">
-        <div class="axe-card" style="border-left:3px solid var(--rc)"><div class="axe-title"><div class="axe-dot" style="background:var(--rc)"></div>Jungle pathing & clear</div><textarea class="fiche-textarea" id="a_tech" placeholder="Optimisation des routes, timing des camps, wasting objectives…" style="min-height:65px"></textarea></div>
-        <div class="axe-card" style="border-left:3px solid var(--v3)"><div class="axe-title"><div class="axe-dot" style="background:var(--v3)"></div>Prise de décision macro</div><textarea class="fiche-textarea" id="a_macro" placeholder="Gank vs objectif, tracking adversaire, vision control…" style="min-height:65px"></textarea></div>
-        <div class="axe-card" style="border-left:3px solid var(--cyan)"><div class="axe-title"><div class="axe-dot" style="background:var(--cyan)"></div>Communication équipe</div><textarea class="fiche-textarea" id="a_comms" placeholder="Calls avant gank, coordination Dragon/Baron, TP calls…" style="min-height:65px"></textarea></div>
-        <div class="axe-card" style="border-left:3px solid var(--yellow)"><div class="axe-title"><div class="axe-dot" style="background:var(--yellow)"></div>Mentalité & régularité</div><textarea class="fiche-textarea" id="a_mental" placeholder="Réaction aux early deaths, gestion des bad games, consistance…" style="min-height:65px"></textarea></div>
-      </div>
-    </div>
-
-    <!-- ── OBJECTIFS ── -->
-    <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--green)"></div>Objectifs pour la prochaine période</div>
-      <div class="obj-list">
-        <div class="obj-row"><div class="obj-num">01</div><input class="obj-input" id="o1" type="text" placeholder="Objectif principal…"><select class="obj-prio" id="o1p"><option>🔴 Urgent</option><option>🟠 Prioritaire</option><option>🟡 Normal</option></select></div>
-        <div class="obj-row"><div class="obj-num">02</div><input class="obj-input" id="o2" type="text" placeholder="Objectif secondaire…"><select class="obj-prio" id="o2p"><option>🔴 Urgent</option><option>🟠 Prioritaire</option><option>🟡 Normal</option></select></div>
-        <div class="obj-row"><div class="obj-num">03</div><input class="obj-input" id="o3" type="text" placeholder="Objectif tertiaire…"><select class="obj-prio" id="o3p"><option>🔴 Urgent</option><option>🟠 Prioritaire</option><option>🟡 Normal</option></select></div>
-      </div>
-    </div>
-
-    <!-- ── NOTE ── -->
-    <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--v4)"></div>Note globale & appréciation</div>
-      <div class="note-globale">
-        <input class="note-val" id="f_note" type="text" value="—" maxlength="2">
-        <div class="note-sep">/ 10</div>
-        <div class="note-right">
-          <div class="note-label-big">Performance globale</div>
-          <input class="note-comment" id="f_comment" type="text" placeholder="Résumé, évolution, message au joueur…">
+        <div class="axe-card" style="border-left:3px solid var(--rc)">
+          <div class="axe-head">
+            <div class="axe-icon" style="background:rgba(34,197,94,.1)">🌿</div>
+            <div class="axe-title" style="color:var(--rc)">Pathing & efficacité du clear</div>
+          </div>
+          <textarea class="fiche-ta" id="a_path"
+            placeholder="Optimisation des routes Blue / Red side, timing des resets, adaptation selon le matchup de jungle adverse…"
+            oninput="debounceSave()"></textarea>
+        </div>
+        <div class="axe-card" style="border-left:3px solid var(--yellow)">
+          <div class="axe-head">
+            <div class="axe-icon" style="background:rgba(245,158,11,.1)">⚡</div>
+            <div class="axe-title" style="color:var(--yellow)">Timing & qualité des ganks</div>
+          </div>
+          <textarea class="fiche-ta" id="a_ganks"
+            placeholder="Timing selon l'état de la wave, coordination avec la lane avant le gank, fréquence par rôle, ganks derrière vs frontaux…"
+            oninput="debounceSave()"></textarea>
+        </div>
+        <div class="axe-card" style="border-left:3px solid var(--orange)">
+          <div class="axe-head">
+            <div class="axe-icon" style="background:rgba(249,115,22,.1)">🐉</div>
+            <div class="axe-title" style="color:var(--orange)">Prise d'objectifs & macro</div>
+          </div>
+          <textarea class="fiche-ta" id="a_obj"
+            placeholder="Setup avec vision avant Dragon / Baron, smite accuracy, solo vs en équipe, utilisation du Rift Herald, transition mid/late…"
+            oninput="debounceSave()"></textarea>
+        </div>
+        <div class="axe-card" style="border-left:3px solid var(--cyan)">
+          <div class="axe-head">
+            <div class="axe-icon" style="background:rgba(6,182,212,.1)">🗺</div>
+            <div class="axe-title" style="color:var(--cyan)">Tracking & contre-jungle</div>
+          </div>
+          <textarea class="fiche-ta" id="a_track"
+            placeholder="Lecture de la minimap, suivi du jungler via les wards, invades calculées quand l'ennemi est visible loin, vol de camps…"
+            oninput="debounceSave()"></textarea>
         </div>
       </div>
     </div>
 
-  </div>
+    <!-- ════ OBJECTIFS ════ -->
+    <div>
+      <div class="section-title">
+        <div class="section-dot" style="background:var(--green)"></div>
+        Objectifs pour la prochaine période
+      </div>
+      <div class="obj-list">
+        <div class="obj-row">
+          <div class="obj-num">01</div>
+          <input class="obj-input" id="o1" type="text" placeholder="Objectif principal…" oninput="debounceSave()">
+          <select class="obj-prio" id="o1p" onchange="debounceSave()">
+            <option>🔴 Urgent</option><option>🟠 Prioritaire</option><option>🟡 Normal</option>
+          </select>
+        </div>
+        <div class="obj-row">
+          <div class="obj-num">02</div>
+          <input class="obj-input" id="o2" type="text" placeholder="Objectif secondaire…" oninput="debounceSave()">
+          <select class="obj-prio" id="o2p" onchange="debounceSave()">
+            <option>🔴 Urgent</option><option>🟠 Prioritaire</option><option>🟡 Normal</option>
+          </select>
+        </div>
+        <div class="obj-row">
+          <div class="obj-num">03</div>
+          <input class="obj-input" id="o3" type="text" placeholder="Objectif tertiaire…" oninput="debounceSave()">
+          <select class="obj-prio" id="o3p" onchange="debounceSave()">
+            <option>🔴 Urgent</option><option>🟠 Prioritaire</option><option>🟡 Normal</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ NOTE GLOBALE ════ -->
+    <div>
+      <div class="section-title">
+        <div class="section-dot" style="background:var(--v4)"></div>
+        Note globale & commentaire final
+      </div>
+      <div class="note-block">
+        <div class="note-score-wrap">
+          <input class="note-input" id="f_note" type="text" value="—" maxlength="2" oninput="debounceSave()">
+          <div class="note-over">/ 10</div>
+        </div>
+        <div class="note-right">
+          <div class="note-label">Appréciation générale</div>
+          <input class="note-comment" id="f_comment" type="text"
+            placeholder="Résumé de la période, évolution observée, points de progression, message personnel à Zugu…"
+            oninput="debounceSave()">
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /card-body -->
+
+  <!-- FOOTER -->
   <div class="card-footer">
     <div class="footer-brand">PlaZma Esport · plazma-esport.fr</div>
-    <div class="footer-sig">
-      <div class="sig-field"><div class="sig-line"></div><div class="sig-label">Signature Coach</div></div>
-      <div class="sig-field"><div class="sig-line"></div><div class="sig-label">Signature Joueur</div></div>
+    <div class="footer-sigs">
+      <div class="sig"><div class="sig-line"></div><div class="sig-label">Signature Coach</div></div>
+      <div class="sig"><div class="sig-line"></div><div class="sig-label">Signature Joueur</div></div>
     </div>
   </div>
-</div>
+
+</div><!-- /card -->
 
 <script>
+// ═══════════════════════════════════════════════
+// FIREBASE
+// ═══════════════════════════════════════════════
+const COL = 'plazma', DOC_ID = 'perf-zugu';
 
+// ═══════════════════════════════════════════════
+// JAUGES JUNGLE (0 – 10)
+// ═══════════════════════════════════════════════
+const JAUGES = [
+  { id:'clear',   label:'Clear speed & efficacité du premier tour',         color:'#22c55e' },
+  { id:'gank',    label:'Qualité & timing des ganks',                        color:'#f59e0b' },
+  { id:'obj',     label:'Prise d\'objectifs majeurs (Dragon, Baron, Herald)',color:'#f97316' },
+  { id:'counter', label:'Counter-jungle & invades',                          color:'#ef4444' },
+  { id:'track',   label:'Tracking du jungler adverse',                       color:'#06b6d4' },
+  { id:'smite',   label:'Smite accuracy & steal d\'objectif',                color:'#a78bfa' },
+];
+let jaugeVals = {};
+JAUGES.forEach(j => jaugeVals[j.id] = 0);
 
-const COL='plazma';
-const DOC_ID='{doc_id}';
-let starValues=new Array(12).fill(0);
-let jaugeValues={};
-let campChecks={};
-
-function buildRatingGrid(competences,containerId){
-  const grid=document.getElementById(containerId);if(!grid)return;
-  competences.forEach((c,i)=>{
-    const row=document.createElement('div');row.className='rating-row';
-    const lb=document.createElement('div');lb.className='rating-label';
-    const catColor=c.catColor||'var(--text3)';
-    lb.innerHTML='<span style="font-size:9px;letter-spacing:1px;text-transform:uppercase;margin-right:6px;color:'+catColor+'">'+c.cat+'</span>'+c.label;
-    const stars=document.createElement('div');stars.className='stars';stars.id='stars_'+i;
-    for(let s=1;s<=5;s++){
-      const star=document.createElement('div');star.className='star';star.dataset.val=s;star.dataset.idx=i;
-      star.textContent='★';star.style.color='var(--border2)';
-      star.addEventListener('click',()=>{starValues[i]=s;updateStars(i);debounceSave();});
-      stars.appendChild(star);
+function buildJauges() {
+  const list = document.getElementById('jaugeList');
+  JAUGES.forEach(j => {
+    const row = document.createElement('div');
+    row.className = 'jauge-row';
+    const lbl = document.createElement('div');
+    lbl.className = 'jauge-label';
+    lbl.textContent = j.label;
+    const dotsWrap = document.createElement('div');
+    dotsWrap.className = 'jauge-dots';
+    dotsWrap.id = 'jdots_' + j.id;
+    for (let i = 1; i <= 10; i++) {
+      const d = document.createElement('div');
+      d.className = 'jd';
+      d.style.background = j.color;
+      d.dataset.jid = j.id;
+      d.dataset.n = i;
+      d.addEventListener('click', () => {
+        jaugeVals[j.id] = (jaugeVals[j.id] === i) ? 0 : i;
+        refreshJauge(j.id, j.color);
+        debounceSave();
+      });
+      dotsWrap.appendChild(d);
     }
-    row.appendChild(lb);row.appendChild(stars);grid.appendChild(row);
+    const num = document.createElement('div');
+    num.className = 'jauge-num';
+    num.id = 'jnum_' + j.id;
+    num.style.color = j.color;
+    num.textContent = '0';
+    row.appendChild(lbl);
+    row.appendChild(dotsWrap);
+    row.appendChild(num);
+    list.appendChild(row);
   });
 }
-function updateStars(i){
-  const stars=document.querySelectorAll('#stars_'+i+' .star');
-  stars.forEach(st=>{const v=parseInt(st.dataset.val);st.style.color=v<=starValues[i]?'var(--yellow)':'var(--border2)';st.classList.toggle('active',v<=starValues[i]);});
-}
-function buildJauge(id,label,color,maxVal=10){
-  const container=document.getElementById('jauge_'+id);if(!container)return;
-  jaugeValues[id]=0;
-  container.innerHTML='';
-  const row=document.createElement('div');row.className='jauge-row';
-  const lbl=document.createElement('div');lbl.className='jauge-label';lbl.textContent=label;
-  const steps=document.createElement('div');steps.style.cssText='flex:1';
-  const stepsRow=document.createElement('div');stepsRow.className='jauge-steps';
-  const valEl=document.createElement('div');valEl.className='jauge-val';valEl.id='jv_'+id;valEl.style.color=color;valEl.textContent='0';
-  for(let i=1;i<=maxVal;i++){
-    const s=document.createElement('div');s.className='js';s.dataset.n=i;s.style.background=color;
-    s.addEventListener('click',()=>{jaugeValues[id]=jaugeValues[id]===i?0:i;updateJauge(id,color,maxVal);debounceSave();});
-    stepsRow.appendChild(s);
-  }
-  steps.appendChild(stepsRow);
-  row.appendChild(lbl);row.appendChild(steps);row.appendChild(valEl);
-  container.appendChild(row);
-}
-function updateJauge(id,color,maxVal=10){
-  const val=jaugeValues[id]||0;
-  const steps=document.querySelectorAll('.jauge-steps .js');
-  steps.forEach(s=>{if(s.closest('.jauge-row')===document.getElementById('jauge_'+id)?.querySelector('.jauge-row')||true){/* skip */}});
-  const allSteps=document.querySelectorAll('#jauge_'+id+' .js');
-  allSteps.forEach(s=>s.classList.toggle('on',parseInt(s.dataset.n)<=val));
-  const vEl=document.getElementById('jv_'+id);if(vEl)vEl.textContent=val;
-}
-function setCampCheck(id,checked){
-  campChecks[id]=checked;
-  const el=document.getElementById('cc_'+id);
-  if(el){el.classList.toggle('on',checked);el.textContent=checked?'✓':'';}
-  debounceSave();
+
+function refreshJauge(id, color) {
+  const val = jaugeVals[id] || 0;
+  document.querySelectorAll(`.jd[data-jid="${id}"]`).forEach(d => {
+    d.classList.toggle('on', parseInt(d.dataset.n) <= val);
+  });
+  const numEl = document.getElementById('jnum_' + id);
+  if (numEl) numEl.textContent = val;
 }
 
-function v(id){const e=document.getElementById(id);return e?e.value:'';}
-function sv(id,val){const e=document.getElementById(id);if(e)e.value=val||'';}
-function getBaseState(){
-  return{
-    f_periode:v('f_periode'),f_eval:v('f_eval'),
-    s_kda:v('s_kda'),s_kp:v('s_kp'),s_dmg:v('s_dmg'),s_vision:v('s_vision'),s_wr:v('s_wr'),
-    s_clear:v('s_clear'),s_drag:v('s_drag'),s_fb:v('s_fb'),s_rank:v('s_rank'),s_games:v('s_games'),
-    s_custom_val:v('s_custom_val'),s_custom_lbl:v('s_custom_lbl'),
-    starValues:[...starValues],jaugeValues:{...jaugeValues},campChecks:{...campChecks},
-    t_forces:v('t_forces'),t_faiblesses:v('t_faiblesses'),t_obs:v('t_obs'),
-    a_tech:v('a_tech'),a_macro:v('a_macro'),a_comms:v('a_comms'),a_mental:v('a_mental'),
-    o1:v('o1'),o1p:v('o1p'),o2:v('o2'),o2p:v('o2p'),o3:v('o3'),o3p:v('o3p'),
-    f_note:v('f_note'),f_comment:v('f_comment'),
+// ═══════════════════════════════════════════════
+// COMPÉTENCES JUNGLE (1 – 5 étoiles)
+// ═══════════════════════════════════════════════
+const COMPETENCES = [
+  { label:'Routing & optimisation du clear',        cat:'Jungle',    catColor:'#22c55e' },
+  { label:'Invade & counter-jungle',                cat:'Jungle',    catColor:'#22c55e' },
+  { label:'Timing & placement des ganks',           cat:'Jungle',    catColor:'#22c55e' },
+  { label:'Smite accuracy',                         cat:'Jungle',    catColor:'#22c55e' },
+  { label:'Prise de Dragon & vision pre-objectif',  cat:'Macro',     catColor:'#f59e0b' },
+  { label:'Gestion Baron & Rift Herald',            cat:'Macro',     catColor:'#f59e0b' },
+  { label:'Tracking du jungler adverse',            cat:'Macro',     catColor:'#f59e0b' },
+  { label:'Transition early → mid game',            cat:'Macro',     catColor:'#f59e0b' },
+  { label:'Calls avant objectif',                   cat:'Collectif', catColor:'#8b5cf6' },
+  { label:'Synchro & timing en teamfight',          cat:'Collectif', catColor:'#8b5cf6' },
+  { label:'Adaptabilité (champion & game plan)',    cat:'Mental',    catColor:'#94a3b8' },
+  { label:'Mentalité & gestion du tilt',            cat:'Mental',    catColor:'#94a3b8' },
+];
+let starVals = new Array(COMPETENCES.length).fill(0);
+
+function buildCompGrid() {
+  const grid = document.getElementById('compGrid');
+  COMPETENCES.forEach((c, i) => {
+    const row = document.createElement('div');
+    row.className = 'comp-row';
+    const left = document.createElement('div');
+    left.className = 'comp-left';
+    const cat = document.createElement('div');
+    cat.className = 'comp-cat';
+    cat.textContent = c.cat;
+    cat.style.cssText = `background:${c.catColor}18;color:${c.catColor}`;
+    const lbl = document.createElement('div');
+    lbl.className = 'comp-label';
+    lbl.title = c.label;
+    lbl.textContent = c.label;
+    left.appendChild(cat);
+    left.appendChild(lbl);
+    const starsEl = document.createElement('div');
+    starsEl.className = 'stars';
+    starsEl.id = 'stars_' + i;
+    for (let s = 1; s <= 5; s++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      star.textContent = '★';
+      star.addEventListener('click', () => {
+        starVals[i] = (starVals[i] === s) ? 0 : s;
+        refreshStars(i);
+        debounceSave();
+      });
+      starsEl.appendChild(star);
+    }
+    row.appendChild(left);
+    row.appendChild(starsEl);
+    grid.appendChild(row);
+  });
+}
+
+function refreshStars(i) {
+  document.querySelectorAll(`#stars_${i} .star`).forEach((st, idx) => {
+    const on = idx < starVals[i];
+    st.classList.toggle('on', on);
+    st.style.color = on ? 'var(--yellow)' : 'var(--border2)';
+  });
+}
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+function v(id) { const e = document.getElementById(id); return e ? e.value : ''; }
+function sv(id, val) { const e = document.getElementById(id); if (e) e.value = val || ''; }
+
+function getState() {
+  return {
+    f_periode:v('f_periode'), f_eval:v('f_eval'),
+    s_kda:v('s_kda'), s_kp:v('s_kp'), s_drag:v('s_drag'), s_clear:v('s_clear'), s_fb:v('s_fb'),
+    s_camps:v('s_camps'), s_scuttle:v('s_scuttle'), s_ganks:v('s_ganks'), s_wr:v('s_wr'), s_rank:v('s_rank'),
+    jaugeVals:{...jaugeVals},
+    starVals:[...starVals],
+    t_forces:v('t_forces'), t_faiblesses:v('t_faiblesses'), t_obs:v('t_obs'),
+    a_path:v('a_path'), a_ganks:v('a_ganks'), a_obj:v('a_obj'), a_track:v('a_track'),
+    o1:v('o1'), o1p:v('o1p'), o2:v('o2'), o2p:v('o2p'), o3:v('o3'), o3p:v('o3p'),
+    f_note:v('f_note'), f_comment:v('f_comment'),
   };
 }
-function applyBaseState(s){
-  if(!s)return;
-  const fields=['f_periode','f_eval','s_kda','s_kp','s_dmg','s_vision','s_wr',
-    's_clear','s_drag','s_fb','s_rank','s_games','s_custom_val','s_custom_lbl',
-    't_forces','t_faiblesses','t_obs','a_tech','a_macro','a_comms','a_mental',
-    'o1','o2','o3','f_note','f_comment'];
-  fields.forEach(k=>sv(k,s[k]));
-  ['o1p','o2p','o3p'].forEach(k=>{const e=document.getElementById(k);if(e&&s[k])e.value=s[k];});
-  if(s.starValues){starValues=s.starValues;starValues.forEach((_,i)=>updateStars(i));}
-  if(s.jaugeValues){Object.assign(jaugeValues,s.jaugeValues);}
-  if(s.campChecks){Object.assign(campChecks,s.campChecks);}
-}
-function setSyncState(state,text,time=''){
-  const dot=document.getElementById('syncDot'),txt=document.getElementById('syncText'),tim=document.getElementById('syncTime');
-  if(!dot)return;
-  dot.className='sync-dot '+state;
-  txt.textContent=text;
-  txt.style.color=state==='connected'?'var(--green)':state==='syncing'?'var(--yellow)':state==='error'?'var(--red)':'var(--text3)';
-  tim.textContent=time;
-}
-function hideLoading(){const ls=document.getElementById('loadingScreen');if(ls){ls.classList.add('hidden');setTimeout(()=>ls.style.display='none',500);}}
-function flashSave(ok){
-  const btn=document.getElementById('saveFbBtn');if(!btn)return;
-  btn.classList.add('saved');btn.textContent=ok?'✓ Sauvegardé':'⚠ Erreur';if(!ok)btn.style.color='#ef4444';
-  setTimeout(()=>{btn.classList.remove('saved');btn.textContent='💾 Sauvegarder';btn.style.color='';},1600);
-}
-let _saveTimer=null;
-function debounceSave(){clearTimeout(_saveTimer);_saveTimer=setTimeout(save,1200);}
-document.querySelectorAll('input,textarea,select').forEach(el=>{if(el.id!=='exportBtn')el.addEventListener('input',debounceSave);});
-function exportBackupBase(pseudo){
-  const b=new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(b);
-  a.download='plazma-perf-'+pseudo+'-'+new Date().toISOString().split('T')[0]+'.json';a.click();
-}
-function importBackup(){
-  const input=document.createElement('input');input.type='file';input.accept='.json';
-  input.addEventListener('change',async()=>{try{applyState(JSON.parse(await input.files[0].text()));save();}catch(e){alert('Fichier invalide');}});
-  input.click();
+
+function applyState(s) {
+  if (!s) return;
+  const fields = [
+    'f_periode','f_eval',
+    's_kda','s_kp','s_drag','s_clear','s_fb','s_camps','s_scuttle','s_ganks','s_wr','s_rank',
+    't_forces','t_faiblesses','t_obs',
+    'a_path','a_ganks','a_obj','a_track',
+    'o1','o2','o3','f_note','f_comment'
+  ];
+  fields.forEach(k => sv(k, s[k]));
+  ['o1p','o2p','o3p'].forEach(k => { const e=document.getElementById(k); if(e&&s[k]) e.value=s[k]; });
+  if (s.jaugeVals) {
+    Object.assign(jaugeVals, s.jaugeVals);
+    JAUGES.forEach(j => refreshJauge(j.id, j.color));
+  }
+  if (s.starVals) {
+    starVals = s.starVals;
+    starVals.forEach((_, i) => refreshStars(i));
+  }
 }
 
-function save(){
+// ═══════════════════════════════════════════════
+// FIREBASE SYNC
+// ═══════════════════════════════════════════════
+function setSyncState(state, text, time='') {
+  const dot=document.getElementById('syncDot'), txt=document.getElementById('syncText'), tim=document.getElementById('syncTime');
+  if (!dot) return;
+  dot.className = 'sync-dot ' + state;
+  txt.textContent = text;
+  txt.style.color = state==='connected'?'var(--green)':state==='syncing'?'var(--yellow)':state==='error'?'var(--red)':'var(--text3)';
+  tim.textContent = time;
+}
+function hideLoading() {
+  const ls=document.getElementById('loadingScreen');
+  if (ls){ls.classList.add('hidden');setTimeout(()=>ls.style.display='none',500);}
+}
+function save() {
   setSyncState('syncing','Sauvegarde…');
   db.collection(COL).doc(DOC_ID).set(getState())
     .then(()=>{setSyncState('connected','Synchronisé');flashSave(true);})
     .catch(e=>{setSyncState('error','Erreur Firebase');flashSave(false);console.error(e);});
 }
-function startSync(){
+function startSync() {
   setSyncState('syncing','Connexion…');
-  db.collection(COL).doc(DOC_ID).onSnapshot(doc=>{
-    if(doc.metadata.hasPendingWrites)return;
-    if(doc.exists){applyState(doc.data());const now=new Date();setSyncState('connected','Synchronisé',now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));}
-    else setSyncState('connected','Prêt','');
-    hideLoading();
-  },err=>{console.error(err);setSyncState('error','Erreur connexion');hideLoading();});
+  db.collection(COL).doc(DOC_ID).onSnapshot(
+    doc=>{
+      if(doc.metadata.hasPendingWrites) return;
+      if(doc.exists){
+        applyState(doc.data());
+        const now=new Date();
+        setSyncState('connected','Synchronisé',now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));
+      } else {
+        setSyncState('connected','Prêt','');
+      }
+      hideLoading();
+    },
+    err=>{console.error(err);setSyncState('error','Erreur connexion');hideLoading();}
+  );
 }
-function getState(){return{...getBaseState(),path_blue:v('path_blue'),path_red:v('path_red'),path_prio:v('path_prio'),path_notes:v('path_notes')};}
-function applyState(s){applyBaseState(s);['path_blue','path_red','path_prio','path_notes'].forEach(k=>sv(k,s[k]));if(s.jaugeValues)Object.entries(s.jaugeValues).forEach(([k,val])=>{jaugeValues[k]=val;updateJauge(k,'#22c55e');});if(s.campChecks)Object.entries(s.campChecks).forEach(([k,v])=>setCampCheck(k,v));}
-function resetData(){if(!confirm('Effacer la fiche de Zugu ?'))return;db.collection(COL).doc(DOC_ID).delete().then(()=>location.reload());}
-function exportBackup(){exportBackupBase('zugu');}
-document.getElementById('exportBtn').addEventListener('click',async()=>{
+function flashSave(ok) {
+  const btn=document.getElementById('saveFbBtn'); if(!btn) return;
+  btn.classList.add('saved'); btn.textContent=ok?'✓ Sauvegardé':'⚠ Erreur';
+  if(!ok) btn.style.color='#ef4444';
+  setTimeout(()=>{btn.classList.remove('saved');btn.textContent='💾 Sauvegarder';btn.style.color='';},1600);
+}
+let _st=null;
+function debounceSave(){clearTimeout(_st);_st=setTimeout(save,1100);}
+
+function exportBackup() {
+  const b=new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='plazma-perf-zugu-'+new Date().toISOString().split('T')[0]+'.json';a.click();
+}
+function importBackup() {
+  const input=document.createElement('input');input.type='file';input.accept='.json';
+  input.addEventListener('change',async()=>{
+    try{applyState(JSON.parse(await input.files[0].text()));save();}
+    catch(e){alert('Fichier invalide');}
+  });
+  input.click();
+}
+function resetData() {
+  if(!confirm('Effacer la fiche de Zugu sur Firebase ?')) return;
+  db.collection(COL).doc(DOC_ID).delete().then(()=>location.reload());
+}
+
+// Export PNG
+document.getElementById('exportBtn').addEventListener('click', async()=>{
   const btn=document.getElementById('exportBtn');
-  btn.disabled=true;btn.textContent='Export…';
-  document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(b=>b.style.visibility='hidden');
+  btn.disabled=true; btn.textContent='Export…';
+  document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(el=>el.style.visibility='hidden');
   await new Promise(r=>setTimeout(r,80));
   const canvas=await html2canvas(document.getElementById('card'),{scale:2,backgroundColor:'#0c0b18',useCORS:true,logging:false});
-  document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(b=>b.style.visibility='');
-  btn.disabled=false;btn.textContent='⬇ Exporter PNG';
-  const link=document.createElement('a');link.download='plazma-perf-zugu.png';link.href=canvas.toDataURL('image/png');link.click();
+  document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(el=>el.style.visibility='');
+  btn.disabled=false; btn.textContent='⬇ Exporter PNG';
+  const link=document.createElement('a');
+  link.download='plazma-perf-zugu.png';
+  link.href=canvas.toDataURL('image/png');
+  link.click();
 });
 
-
-// ── COMPÉTENCES JUNGLE ──────────────────────────────────────
-const COMP_JUNGLE = [
-  {label:'Routing & clear speed',  cat:'Jungle',    catColor:'var(--rc)'},
-  {label:'Invade / Counter-jungle',cat:'Jungle',    catColor:'var(--rc)'},
-  {label:'Timing des ganks',       cat:'Jungle',    catColor:'var(--rc)'},
-  {label:'Smite accuracy',         cat:'Jungle',    catColor:'var(--rc)'},
-  {label:'Prise d'objectifs',     cat:'Macro',     catColor:'var(--yellow)'},
-  {label:'Tracking de l'adversaire',cat:'Macro',  catColor:'var(--yellow)'},
-  {label:'Contrôle vision jungler',cat:'Macro',     catColor:'var(--yellow)'},
-  {label:'Transition early→mid',   cat:'Transition',catColor:'var(--cyan)'},
-  {label:'Teamfight positioning',  cat:'Team',      catColor:'var(--v3)'},
-  {label:'Communication calls',    cat:'Team',      catColor:'var(--v3)'},
-  {label:'Adaptabilité au jeu',    cat:'Mental',    catColor:'var(--text3)'},
-  {label:'Mentalité / Tilt',       cat:'Mental',    catColor:'var(--text3)'},
-];
-
-// ── CAMPS JUNGLE ─────────────────────────────────────────────
-const CAMPS_BLUE = [
-  {id:'bb_gromp',emoji:'🐸',label:'Gromp'},
-  {id:'bb_blue', emoji:'💎',label:'Blue Buff'},
-  {id:'bb_wolves',emoji:'🐺',label:'Wolves'},
-  {id:'bb_raptors',emoji:'🦅',label:'Raptors'},
-  {id:'bb_red',  emoji:'🔴',label:'Red Buff'},
-  {id:'bb_krugs',emoji:'🪨',label:'Krugs'},
-  {id:'bb_scuttle',emoji:'🦀',label:'Scuttle'},
-];
-const CAMPS_RED = [
-  {id:'br_gromp',emoji:'🐸',label:'Gromp'},
-  {id:'br_blue', emoji:'💎',label:'Blue Buff'},
-  {id:'br_wolves',emoji:'🐺',label:'Wolves'},
-  {id:'br_raptors',emoji:'🦅',label:'Raptors'},
-  {id:'br_red',  emoji:'🔴',label:'Red Buff'},
-  {id:'br_krugs',emoji:'🪨',label:'Krugs'},
-  {id:'br_scuttle',emoji:'🦀',label:'Scuttle'},
-];
-
-function buildCamps(camps, containerId) {
-  const c = document.getElementById(containerId); if(!c) return;
-  camps.forEach(camp => {
-    const row = document.createElement('div'); row.className = 'camp-row';
-    const icon = document.createElement('div'); icon.className = 'camp-icon'; icon.textContent = camp.emoji;
-    const label = document.createElement('div'); label.className = 'camp-label'; label.textContent = camp.label;
-    const check = document.createElement('div');
-    check.className = 'camp-check'; check.id = 'cc_'+camp.id;
-    check.addEventListener('click', () => setCampCheck(camp.id, !campChecks[camp.id]));
-    row.appendChild(icon); row.appendChild(label); row.appendChild(check);
-    c.appendChild(row);
-  });
-}
-
-// ── INIT ─────────────────────────────────────────────────────
-buildRatingGrid(COMP_JUNGLE, 'ratingGrid');
-buildCamps(CAMPS_BLUE, 'camps_blue');
-buildCamps(CAMPS_RED, 'camps_red');
-
-// Jauges
-const JAUGES = [
-  {id:'clear',label:'Clear speed & efficacité',color:'var(--rc)'},
-  {id:'gank', label:'Qualité / timing des ganks',color:'var(--yellow)'},
-  {id:'obj',  label:'Prise d'objectifs majeurs',color:'var(--orange)'},
-  {id:'counter',label:'Counter-jungle / invade', color:'var(--red)'},
-  {id:'track',label:'Tracking de l'adversaire', color:'var(--cyan)'},
-  {id:'smite',label:'Smite accuracy & steal',   color:'var(--v4)'},
-];
-JAUGES.forEach(j => buildJauge(j.id, j.label, j.color));
-
-// Sync jauges et camps après applyState
-const _origApply = applyState;
-applyState = (s) => {
-  _origApply(s);
-  JAUGES.forEach(j => updateJauge(j.id, j.color));
-  [...CAMPS_BLUE, ...CAMPS_RED].forEach(c => {
-    const el = document.getElementById('cc_'+c.id);
-    if(el) { el.classList.toggle('on', !!campChecks[c.id]); el.textContent = campChecks[c.id] ? '✓' : ''; }
-  });
-};
-
+// ── INIT ────────────────────────────────────────
+buildJauges();
+buildCompGrid();
 startSync();
-setTimeout(()=>{const ls=document.getElementById('loadingScreen');if(ls&&!ls.classList.contains('hidden')){hideLoading();setSyncState('error','Firebase inaccessible');}},8000);
+setTimeout(()=>{
+  const ls=document.getElementById('loadingScreen');
+  if(ls&&!ls.classList.contains('hidden')){hideLoading();setSyncState('error','Firebase inaccessible');}
+},8000);
 </script>
 </body>
 </html>
