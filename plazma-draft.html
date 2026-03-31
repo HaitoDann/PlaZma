@@ -99,26 +99,31 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 .add-tag-btn{background:var(--v1);color:#fff;border:none;border-radius:5px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:700;transition:background .15s}
 .add-tag-btn:hover{background:var(--v2)}
 
-/* ── CHAMPION POOL ROSTER ── */
-.pool-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-.pool-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .15s}
-.pool-card:hover{border-color:var(--border3)}
-.pool-head{padding:10px 12px 8px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
-.pool-emoji{font-size:16px}
-.pool-info{flex:1;min-width:0}
-.pool-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pool-role{font-size:8px;letter-spacing:2px;text-transform:uppercase;margin-top:1px}
-.pool-body{padding:10px 10px 8px}
-.pool-tags{display:flex;flex-wrap:wrap;gap:4px;min-height:24px;margin-bottom:7px}
-.pool-tag{display:flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;border:1px solid;cursor:pointer;transition:opacity .15s}
-.pool-tag:hover{opacity:.7}
-.pool-tag-del{font-size:9px;opacity:.5}
-.pool-tag-del:hover{opacity:1;color:var(--red)}
-.pool-add{display:flex;gap:4px}
-.pool-add-input{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:10px;font-family:'Barlow',sans-serif;padding:4px 7px;border-radius:4px;outline:none;transition:border-color .2s;min-width:0}
-.pool-add-input:focus{border-color:var(--border3)}
-.pool-add-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text3);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:700;transition:all .15s}
-.pool-add-btn:hover{border-color:var(--v3);color:var(--v4)}
+/* ── TIER LIST ── */
+.tierlist-wrapper{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.tier-tabs{display:flex;border-bottom:1px solid var(--border);overflow-x:auto}
+.tier-tab{display:flex;align-items:center;gap:7px;padding:10px 16px;cursor:pointer;border-right:1px solid var(--border);font-size:11px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);background:var(--surface2);transition:all .15s;white-space:nowrap;border-bottom:2px solid transparent;flex-shrink:0}
+.tier-tab:last-child{border-right:none}
+.tier-tab:hover{color:var(--text2);background:var(--surface)}
+.tier-tab.active{color:var(--text);background:var(--surface);border-bottom-color:var(--tab-color,var(--v3))}
+.tier-tab-emoji{font-size:14px}
+.tier-tab-role{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;opacity:.6}
+.tierlist{padding:0}
+.tier-row{display:flex;align-items:stretch;border-bottom:1px solid var(--border);min-height:52px}
+.tier-row:last-child{border-bottom:none}
+.tier-badge{width:52px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-right:1px solid var(--border)}
+.tier-badge-letter{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;line-height:1}
+.tier-badge-desc{font-size:7px;letter-spacing:1px;text-transform:uppercase;opacity:.6;text-align:center;line-height:1.2}
+.tier-champs{flex:1;display:flex;flex-wrap:wrap;align-items:center;gap:5px;padding:8px 12px;min-height:52px}
+.tier-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:5px;font-size:11px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.5px;border:1px solid;cursor:default;transition:opacity .15s;animation:chipin .18s ease both}
+@keyframes chipin{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+.tier-chip-del{font-size:10px;opacity:.45;cursor:pointer;line-height:1;margin-left:1px;transition:opacity .15s}
+.tier-chip-del:hover{opacity:1}
+.tier-add{display:flex;align-items:center;gap:5px;padding:8px 10px;border-left:1px solid var(--border);flex-shrink:0;width:148px}
+.tier-add-input{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:11px;font-family:'Barlow',sans-serif;padding:5px 8px;border-radius:5px;outline:none;transition:border-color .2s;min-width:0}
+.tier-add-input:focus{border-color:var(--border3)}
+.tier-add-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text3);padding:5px 9px;border-radius:5px;cursor:pointer;font-size:13px;font-weight:700;transition:all .15s;flex-shrink:0}
+.tier-add-btn:hover{border-color:var(--v3);color:var(--v4)}
 
 /* ── DRAFT SIMULATOR ── */
 .draft-wrap{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden}
@@ -238,13 +243,17 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 
   <div class="card-body">
 
-    <!-- ── 1. CHAMPION POOL ROSTER ── -->
+    <!-- ── 1. TIER LIST PAR JOUEUR ── -->
     <div>
       <div class="section-title">
         <div class="section-dot" style="background:var(--yellow)"></div>
-        Champion pool du roster
+        Tier list champion pool — par joueur
+        <span style="font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:none;font-family:'Barlow',sans-serif;font-weight:400;margin-left:4px">cliquer sur un joueur pour editer sa tier list</span>
       </div>
-      <div class="pool-grid" id="poolGrid"></div>
+      <div class="tierlist-wrapper">
+        <div class="tier-tabs" id="tierTabs"></div>
+        <div class="tierlist" id="tierlistBody"></div>
+      </div>
     </div>
 
     <!-- ── 2. SIMULATEUR DE DRAFT ── -->
@@ -432,46 +441,89 @@ const COMPO_STYLES=[
 // ── TAGS ─────────────────────────────────────────────────────
 const tagData={OP:[],BGLOBAL:[],BANS:[]};
 
-// ── BUILD POOL GRID ──────────────────────────────────────────
-function buildPoolGrid(){
-  const g=document.getElementById('poolGrid');g.innerHTML='';
+// ── TIER LIST ─────────────────────────────────────────────────
+const TIERS=[
+  {id:'S',label:'S',color:'#f59e0b',bg:'rgba(245,158,11,.12)',desc:'Incontournable'},
+  {id:'A',label:'A',color:'#22c55e',bg:'rgba(34,197,94,.10)', desc:'Très fort'},
+  {id:'B',label:'B',color:'#3b82f6',bg:'rgba(59,130,246,.10)',desc:'Solide'},
+  {id:'C',label:'C',color:'#f97316',bg:'rgba(249,115,22,.10)',desc:'Situationnel'},
+  {id:'D',label:'D',color:'#ef4444',bg:'rgba(239,68,68,.08)', desc:'Dernier recours'},
+];
+
+// tierList[playerId][tierId] = [array of champion names]
+function emptyTierList(){return {S:[],A:[],B:[],C:[],D:[]};}
+let tierList={
+  boulou:  emptyTierList(),
+  zugu:    emptyTierList(),
+  lakrael: emptyTierList(),
+  ke1do:   emptyTierList(),
+  sayro:   emptyTierList(),
+};
+let activeTierPlayer='boulou';
+
+function buildTierTabs(){
+  const tabs=document.getElementById('tierTabs');tabs.innerHTML='';
   ROSTER.forEach(p=>{
-    const card=document.createElement('div');card.className='pool-card';
-    card.innerHTML=`
-      <div class="pool-head">
-        <div class="pool-emoji">${p.emoji}</div>
-        <div class="pool-info">
-          <div class="pool-name">${p.name}</div>
-          <div class="pool-role" style="color:${p.color}">${p.role}</div>
-        </div>
-      </div>
-      <div class="pool-body">
-        <div class="pool-tags" id="ptags_${p.id}"></div>
-        <div class="pool-add">
-          <input class="pool-add-input" id="pinput_${p.id}" placeholder="Champion…" onkeydown="if(event.key==='Enter')addPoolChamp('${p.id}')">
-          <button class="pool-add-btn" onclick="addPoolChamp('${p.id}')">+</button>
-        </div>
-      </div>`;
-    g.appendChild(card);
+    const tab=document.createElement('div');
+    tab.className='tier-tab'+(p.id===activeTierPlayer?' active':'');
+    tab.style.setProperty('--tab-color',p.color);
+    tab.innerHTML=`<span class="tier-tab-emoji">${p.emoji}</span><div><div>${p.name}</div><div class="tier-tab-role">${p.role}</div></div>`;
+    tab.addEventListener('click',()=>{activeTierPlayer=p.id;buildTierTabs();renderTierList();});
+    tabs.appendChild(tab);
   });
 }
 
-function renderPoolTags(pid){
-  const c=document.getElementById('ptags_'+pid);if(!c)return;
-  const p=ROSTER.find(r=>r.id===pid);
-  c.innerHTML=(pool[pid]||[]).map((ch,i)=>`
-    <div class="pool-tag" style="color:${p.color};border-color:${p.color}33;background:${p.color}11">
-      ${ch}<span class="pool-tag-del" onclick="removePoolChamp('${pid}',${i})">✕</span>
-    </div>`).join('');
+function renderTierList(){
+  const body=document.getElementById('tierlistBody');body.innerHTML='';
+  const p=ROSTER.find(r=>r.id===activeTierPlayer);
+  const pColor=p.color;
+  TIERS.forEach(t=>{
+    const champs=tierList[activeTierPlayer][t.id]||[];
+    const row=document.createElement('div');row.className='tier-row';
+    // Badge
+    const badge=document.createElement('div');
+    badge.className='tier-badge';
+    badge.style.cssText=`background:${t.bg};color:${t.color}`;
+    badge.innerHTML=`<div class="tier-badge-letter">${t.label}</div><div class="tier-badge-desc">${t.desc}</div>`;
+    // Champs zone
+    const champsZone=document.createElement('div');champsZone.className='tier-champs';
+    champs.forEach((ch,i)=>{
+      const chip=document.createElement('div');chip.className='tier-chip';
+      chip.style.cssText=`color:${t.color};border-color:${t.color}44;background:${t.bg}`;
+      chip.innerHTML=`${ch}<span class="tier-chip-del" onclick="removeTierChamp('${activeTierPlayer}','${t.id}',${i})" title="Supprimer">✕</span>`;
+      champsZone.appendChild(chip);
+    });
+    if(champs.length===0){
+      const empty=document.createElement('div');
+      empty.style.cssText='font-size:10px;color:var(--text3);letter-spacing:.5px';
+      empty.textContent='—';
+      champsZone.appendChild(empty);
+    }
+    // Add zone
+    const addZone=document.createElement('div');addZone.className='tier-add';
+    const inp=document.createElement('input');inp.className='tier-add-input';inp.placeholder='Champion…';
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')doAddTierChamp(activeTierPlayer,t.id,inp);});
+    const btn=document.createElement('button');btn.className='tier-add-btn';btn.textContent='+';
+    btn.addEventListener('click',()=>doAddTierChamp(activeTierPlayer,t.id,inp));
+    addZone.appendChild(inp);addZone.appendChild(btn);
+    row.appendChild(badge);row.appendChild(champsZone);row.appendChild(addZone);
+    body.appendChild(row);
+  });
 }
-function addPoolChamp(pid){
-  const inp=document.getElementById('pinput_'+pid);
+
+function doAddTierChamp(pid,tid,inp){
   const val=inp.value.trim();if(!val)return;
-  if(!pool[pid])pool[pid]=[];
-  pool[pid].push(val);inp.value='';
-  renderPoolTags(pid);debounceSave();
+  if(!tierList[pid])tierList[pid]=emptyTierList();
+  if(!tierList[pid][tid])tierList[pid][tid]=[];
+  tierList[pid][tid].push(val);
+  inp.value='';
+  renderTierList();debounceSave();
 }
-function removePoolChamp(pid,i){pool[pid].splice(i,1);renderPoolTags(pid);debounceSave();}
+
+function removeTierChamp(pid,tid,i){
+  tierList[pid][tid].splice(i,1);
+  renderTierList();debounceSave();
+}
 
 // ── BUILD COMPO GRID ─────────────────────────────────────────
 function buildCompoGrid(){
@@ -544,6 +596,7 @@ function getState(){
     m_adv:v('m_adv'),m_date:v('m_date'),m_patch:v('m_patch'),m_side:v('m_side'),m_analyst:v('m_analyst'),
     t_flex:v('t_flex'),t_wincon:v('t_wincon'),t_meta:v('t_meta'),
     pool:{...pool},tagData:{...tagData},
+    tierList:JSON.parse(JSON.stringify(tierList)),
     ...draft,...compos
   };
 }
@@ -558,7 +611,15 @@ function applyState(s){
     ['name','style','wincon','top','jungle','mid','adc','support'].forEach(k=>sv(`co${c}_${k}`,s[`co${c}_${k}`]));
     updateCompoStyle(c);
   }
-  if(s.pool){Object.assign(pool,s.pool);ROSTER.forEach(p=>renderPoolTags(p.id));}
+  if(s.pool){Object.assign(pool,s.pool);}
+  if(s.tierList){
+    ROSTER.forEach(p=>{
+      if(s.tierList[p.id]){
+        tierList[p.id]=Object.assign(emptyTierList(),s.tierList[p.id]);
+      }
+    });
+    renderTierList();
+  }
   if(s.tagData){Object.assign(tagData,s.tagData);['OP','BGLOBAL','BANS'].forEach(renderTags);}
 }
 
@@ -626,8 +687,9 @@ document.getElementById('exportBtn').addEventListener('click',async()=>{
 
 // INIT
 document.getElementById('footerDate').textContent='Mise à jour le '+new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
-buildPoolGrid();
+buildTierTabs();
 buildCompoGrid();
+renderTierList();
 startSync();
 setTimeout(()=>{const ls=document.getElementById('loadingScreen');if(ls&&!ls.classList.contains('hidden')){hideLoading();setSyncState('error','Firebase inaccessible');}},8000);
 </script>
