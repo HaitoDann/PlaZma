@@ -292,8 +292,22 @@ input[type="week"]:focus { border-color: var(--v3); }
 .btn-modal-save:hover   { background: var(--v3); }
 .btn-modal-cancel:hover { border-color: var(--v3); color: var(--v4); }
 
-/* hub link */
-.hub-link {
+/* ── NAV SEMAINE ── */
+.week-nav { display: flex; align-items: center; gap: 6px; }
+.btn-week-nav {
+  background: var(--surface2); border: 1px solid var(--border2);
+  color: var(--text2); width: 34px; height: 34px; border-radius: 7px;
+  font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .15s; line-height: 1; flex-shrink: 0;
+}
+.btn-week-nav:hover { border-color: var(--v3); color: var(--v4); }
+.btn-week-today {
+  background: rgba(109,40,217,.15); border: 1px solid rgba(109,40,217,.3);
+  color: var(--v4); padding: 0 12px; height: 34px; border-radius: 7px;
+  font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+  cursor: pointer; font-family: 'Barlow', sans-serif; transition: all .15s; white-space: nowrap;
+}
+.btn-week-today:hover { background: rgba(109,40,217,.3); }
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 10px; color: var(--text3); text-decoration: none;
   letter-spacing: 1px; transition: color .15s; margin-bottom: 14px;
@@ -316,7 +330,12 @@ input[type="week"]:focus { border-color: var(--v3); }
 <!-- TOOLBAR -->
 <div class="toolbar">
   <label>Semaine</label>
-  <input type="week" id="weekPicker">
+  <div class="week-nav">
+    <button class="btn-week-nav" id="prevWeekBtn" title="Semaine précédente">‹</button>
+    <input type="week" id="weekPicker">
+    <button class="btn-week-nav" id="nextWeekBtn" title="Semaine suivante">›</button>
+    <button class="btn-week-today" id="todayBtn">Aujourd'hui</button>
+  </div>
   <button class="btn btn-export" id="exportBtn">⬇ Exporter PNG</button>
 </div>
 
@@ -382,8 +401,15 @@ input[type="week"]:focus { border-color: var(--v3); }
 // ═══════════════════════════════════════════════════════════
 // FIRESTORE CONFIG
 // ═══════════════════════════════════════════════════════════
-const COL    = 'plazma';
-const DOC_ID = 'schedule';
+// ═══════════════════════════════════════════════════════════
+// FIRESTORE CONFIG — un document par semaine
+// ═══════════════════════════════════════════════════════════
+const COL = 'plazma';
+function getDocId() {
+  const val = document.getElementById('weekPicker').value;
+  return val ? 'schedule-' + val : 'schedule-default';
+}
+let _unsubscribe = null;
 
 const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 
@@ -548,7 +574,7 @@ function hideLoading() {
 
 function save() {
   setSyncState('syncing', 'Sauvegarde…');
-  db.collection(COL).doc(DOC_ID)
+  db.collection(COL).doc(getDocId())
     .set(getState())
     .then(() => {
       setSyncState('connected', 'Synchronisé');
@@ -562,8 +588,11 @@ function save() {
 }
 
 function startSync() {
+  // Désabonne l'ancien listener si on change de semaine
+  if (_unsubscribe) { _unsubscribe(); _unsubscribe = null; }
+
   setSyncState('syncing', 'Connexion…');
-  db.collection(COL).doc(DOC_ID)
+  _unsubscribe = db.collection(COL).doc(getDocId())
     .onSnapshot(
       doc => {
         if (doc.metadata.hasPendingWrites) return;
@@ -573,7 +602,10 @@ function startSync() {
           const now = new Date();
           setSyncState('connected', 'Synchronisé', now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }));
         } else {
-          setSyncState('connected', 'Prêt', '');
+          // Semaine vierge — planning vide (pas le planning par défaut)
+          schedule = {};
+          renderGrid();
+          setSyncState('connected', 'Semaine vide', '');
         }
         hideLoading();
       },
@@ -617,9 +649,9 @@ function importBackup() {
   input.click();
 }
 function resetData() {
-  if (!confirm('Effacer le planning sur Firebase et repartir du planning par défaut ?')) return;
-  schedule = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
-  db.collection(COL).doc(DOC_ID).delete().then(() => { renderGrid(); setSyncState('connected', 'Réinitialisé', ''); });
+  if (!confirm('Effacer le planning de cette semaine sur Firebase ?')) return;
+  schedule = {};
+  db.collection(COL).doc(getDocId()).delete().then(() => { renderGrid(); setSyncState('connected', 'Semaine réinitialisée', ''); });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -628,11 +660,37 @@ function resetData() {
 const picker = document.getElementById('weekPicker');
 picker.value = currentWeekValue();
 document.getElementById('weekLabel').textContent = weekLabel(picker.value);
+
 picker.addEventListener('change', () => {
-  document.getElementById('weekLabel').textContent = weekLabel(picker.value);
+  const label = weekLabel(picker.value);
+  document.getElementById('weekLabel').textContent = label;
+  // Réinitialise le planning local et charge la semaine sélectionnée
+  schedule = {};
+  renderGrid();
+  hideLoading();
+  startSync();
 });
 
-document.getElementById('exportBtn').addEventListener('click', async () => {
+// Navigation semaine précédente / suivante
+function shiftWeek(delta) {
+  const val = picker.value || currentWeekValue();
+  const [yr, wk] = val.split('-W').map(Number);
+  // Calcule la date du lundi de la semaine courante
+  const base = new Date(yr, 0, 1 + (wk - 1) * 7);
+  const day = base.getDay();
+  const mon = new Date(base); mon.setDate(base.getDate() - (day === 0 ? 6 : day - 1));
+  mon.setDate(mon.getDate() + delta * 7);
+  const newWk = getWeekNum(mon);
+  const newYr = mon.getFullYear();
+  picker.value = `${newYr}-W${String(newWk).padStart(2,'0')}`;
+  picker.dispatchEvent(new Event('change'));
+}
+document.getElementById('prevWeekBtn').addEventListener('click', () => shiftWeek(-1));
+document.getElementById('nextWeekBtn').addEventListener('click', () => shiftWeek(+1));
+document.getElementById('todayBtn').addEventListener('click', () => {
+  picker.value = currentWeekValue();
+  picker.dispatchEvent(new Event('change'));
+});
   const btn = document.getElementById('exportBtn');
   btn.disabled = true; btn.textContent = 'Export…';
   document.querySelectorAll('.slot-del, .add-slot').forEach(el => el.style.visibility = 'hidden');
