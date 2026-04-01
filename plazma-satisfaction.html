@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlaZma — Satisfaction Joueurs</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({apiKey:"AIzaSyAKwNEbNa6f40oSMwGp6dcDY1ZY6hUN1Ks",authDomain:"plazma-esport.firebaseapp.com",projectId:"plazma-esport",storageBucket:"plazma-esport.firebasestorage.app",messagingSenderId:"534325929279",appId:"1:534325929279:web:b507a46c601fa6625edf8a"});
+const db=firebase.firestore();
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#04040c;--bg2:#07070f;--surface:#0c0b1c;--s2:#111027;--s3:#161534;--border:#181730;--b2:#201f46;--v2:#5b21b6;--v3:#6d28d9;--v4:#7c3aed;--v5:#8b5cf6;--v6:#a78bfa;--v7:#c4b5fd;--green:#22c55e;--red:#ef4444;--orange:#f97316;--yellow:#f59e0b;--cyan:#06b6d4;--pink:#ec4899;--blue:#3b82f6;--text:#ede9f8;--text2:#9b92c4;--text3:#403c60}
+html{scroll-behavior:smooth}
+body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 60% 40% at 20% 0%,rgba(109,40,217,.12) 0%,transparent 60%),radial-gradient(ellipse 40% 60% at 80% 100%,rgba(139,92,246,.07) 0%,transparent 60%)}
+
+/* HEADER */
+.site-header{position:relative;z-index:10;padding:28px 48px 0;display:flex;align-items:center;justify-content:space-between}
+.hub-link{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:var(--text3);text-decoration:none;letter-spacing:1px;transition:color .15s}
+.hub-link:hover{color:var(--v6)}
+.header-pill{background:rgba(109,40,217,.15);border:1px solid rgba(109,40,217,.3);border-radius:99px;padding:5px 14px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--v6)}
+
+/* HERO */
+.hero{position:relative;z-index:10;text-align:center;padding:52px 48px 44px}
+.hero-eyebrow{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--v6);font-weight:700;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:10px}
+.hero-eyebrow::before,.hero-eyebrow::after{content:'';width:40px;height:1px}
+.hero-eyebrow::before{background:linear-gradient(270deg,transparent,rgba(167,139,250,.4))}
+.hero-eyebrow::after{background:linear-gradient(90deg,transparent,rgba(167,139,250,.4))}
+.hero-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(48px,8vw,88px);font-weight:900;letter-spacing:2px;text-transform:uppercase;line-height:.92;margin-bottom:16px;background:linear-gradient(135deg,#fff 0%,var(--v7) 35%,var(--v5) 65%,#fff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 40px rgba(139,92,246,.4))}
+.hero-sub{font-size:14px;color:var(--text2);max-width:520px;margin:0 auto;line-height:1.65}
+
+/* PLAYER SELECTOR */
+.player-selector{position:relative;z-index:10;display:flex;justify-content:center;gap:12px;padding:0 48px 40px;flex-wrap:wrap}
+.player-btn{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 20px;border-radius:12px;background:var(--surface);border:1px solid var(--border);cursor:pointer;transition:all .2s;min-width:96px}
+.player-btn:hover{transform:translateY(-3px);border-color:var(--b2);box-shadow:0 12px 32px rgba(0,0,0,.4)}
+.player-btn.active{border-color:var(--role-color);box-shadow:0 0 0 1px var(--role-color),0 10px 28px rgba(0,0,0,.4);background:var(--s2)}
+.pb-emoji{font-size:24px}.pb-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:1px}.pb-role{font-size:8px;letter-spacing:2px;text-transform:uppercase;font-weight:600}
+
+/* FORM */
+.form-wrap{position:relative;z-index:10;max-width:800px;margin:0 auto;padding:0 24px 80px}
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:0 0 0 1px rgba(109,40,217,.06),0 40px 100px rgba(0,0,0,.5);animation:slideup .4s ease both}
+@keyframes slideup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.form-header{padding:26px 32px 22px;border-bottom:1px solid var(--border);background:var(--s2);position:relative;overflow:hidden}
+.form-header::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--rc,var(--v4)) 0%,var(--v5) 45%,transparent 70%)}
+.fh-inner{display:flex;align-items:center;gap:14px}
+.fh-avatar{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;border:1px solid;flex-shrink:0}
+.fh-name{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;letter-spacing:1px}
+.fh-role{font-size:9px;letter-spacing:3px;text-transform:uppercase;margin-top:2px}
+.fh-date{margin-left:auto;font-size:10px;color:var(--text3);letter-spacing:.5px;flex-shrink:0}
+.form-body{padding:32px 32px 28px;display:flex;flex-direction:column;gap:32px}
+.form-section{display:flex;flex-direction:column;gap:16px}
+.section-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--text2);padding-bottom:12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.s-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.q-block{display:flex;flex-direction:column;gap:9px}
+.q-label{font-size:13px;font-weight:600;color:var(--text);line-height:1.5}
+.req{color:var(--v5);margin-left:3px}
+.q-hint{font-size:10px;color:var(--text3);margin-top:-3px}
+.q-input{background:var(--s2);border:1px solid var(--b2);color:var(--text);font-size:13px;font-family:'Barlow',sans-serif;padding:11px 14px;border-radius:9px;outline:none;transition:border-color .2s;width:100%}
+.q-input:focus{border-color:var(--v4)}
+.q-input::placeholder{color:var(--text3)}
+.q-textarea{width:100%;background:var(--s2);border:1px solid var(--b2);color:var(--text);font-size:13px;font-family:'Barlow',sans-serif;padding:11px 14px;border-radius:9px;outline:none;transition:border-color .2s;resize:none;line-height:1.6}
+.q-textarea:focus{border-color:var(--v4)}
+.q-textarea::placeholder{color:var(--text3)}
+.char-count{text-align:right;font-size:9px;color:var(--text3);margin-top:2px}
+
+/* RADIO PILLS */
+.radio-row{display:flex;gap:8px;flex-wrap:wrap}
+.radio-pill{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:9px;border:1px solid var(--border);background:var(--s2);cursor:pointer;transition:all .15s;font-size:12px;font-weight:500;color:var(--text2);user-select:none;flex-shrink:0}
+.radio-pill:hover{border-color:var(--b2);color:var(--text)}
+.radio-pill.selected{border-color:var(--pill-c,var(--v5));background:rgba(139,92,246,.1);color:var(--text);box-shadow:0 0 0 1px var(--pill-c,var(--v5))}
+.radio-pill .pip{width:13px;height:13px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:all .12s}
+.radio-pill.selected .pip{border-color:var(--pill-c,var(--v5));background:var(--pill-c,var(--v5))}
+
+/* CHECKBOX TAGS */
+.checkbox-tags{display:flex;flex-wrap:wrap;gap:7px}
+.cb-tag{padding:7px 16px;border-radius:99px;border:1px solid var(--border);background:var(--s2);font-size:11px;font-weight:600;color:var(--text3);cursor:pointer;transition:all .15s;user-select:none;display:flex;align-items:center;gap:6px}
+.cb-tag:hover{border-color:var(--b2);color:var(--text2)}
+.cb-tag.sel{background:rgba(109,40,217,.15);border-color:rgba(109,40,217,.4);color:var(--v6)}
+.cb-box{width:12px;height:12px;border-radius:3px;border:1.5px solid var(--border);flex-shrink:0;transition:all .12s;display:flex;align-items:center;justify-content:center;font-size:8px}
+.cb-tag.sel .cb-box{background:var(--v4);border-color:var(--v4);color:#fff}
+
+/* ═══ BARRE COLORÉE (style fiches perfs) ═══ */
+.bar-list{display:flex;flex-direction:column;gap:7px}
+.bar-row{display:flex;align-items:center;gap:14px;background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:12px 16px;transition:border-color .15s;cursor:default}
+.bar-row:hover{border-color:var(--b2)}
+.bar-label{font-size:12px;color:var(--text2);font-weight:500;flex-shrink:0}
+.bar-label.w-full{min-width:240px}
+.bar-label.w-short{min-width:180px}
+.bar-segs{display:flex;gap:4px;flex:1}
+.bseg{flex:1;height:8px;border-radius:3px;cursor:pointer;opacity:.14;transition:opacity .1s,transform .1s}
+.bseg:hover{transform:scaleY(1.5);opacity:.6}
+.bseg.on{opacity:1}
+.bar-num{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;min-width:24px;text-align:right;transition:color .15s}
+
+/* ═══ BARRE 1-10 (note globale) ═══ */
+.bar10-wrap{display:flex;flex-direction:column;gap:10px}
+.bar10-row{display:flex;align-items:center;gap:10px}
+.bar10-segs{display:flex;gap:4px;flex:1}
+.b10{flex:1;height:10px;border-radius:3px;cursor:pointer;opacity:.12;transition:opacity .12s,transform .1s}
+.b10:hover{transform:scaleY(1.6);opacity:.65}
+.b10.on{opacity:1}
+.bar10-num{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;min-width:36px;text-align:right}
+.bar10-lbl{font-size:11px;color:var(--text3);letter-spacing:.5px;height:16px;text-align:center}
+
+/* SUBMIT */
+.submit-area{display:flex;flex-direction:column;align-items:center;gap:12px;padding-top:6px}
+.btn-submit{background:linear-gradient(135deg,var(--v3),var(--v5));color:#fff;border:none;padding:16px 52px;border-radius:10px;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .2s;box-shadow:0 0 32px rgba(109,40,217,.4)}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 0 48px rgba(109,40,217,.55)}
+.btn-submit:disabled{opacity:.4;cursor:default;transform:none}
+.submit-note{font-size:10px;color:var(--text3);letter-spacing:.5px;text-align:center}
+.submit-error{font-size:11px;color:var(--red);text-align:center;display:none;padding:8px 14px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:7px;line-height:1.5}
+.submit-error.show{display:block}
+
+/* SUCCESS */
+.success-screen{display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 32px;gap:20px}
+.success-screen.show{display:flex}
+.success-icon{font-size:64px;animation:bouncein .5s cubic-bezier(.175,.885,.32,1.275) both}
+@keyframes bouncein{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.success-title{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--green)}
+.success-sub{font-size:14px;color:var(--text2);max-width:380px;line-height:1.6}
+.btn-new{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:var(--green);padding:10px 24px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .15s;margin-top:8px}
+.btn-new:hover{background:rgba(34,197,94,.22)}
+
+/* ADMIN */
+.admin-toggle-bar{position:fixed;bottom:20px;right:20px;z-index:200}
+.btn-admin-view{background:var(--s2);border:1px solid var(--b2);color:var(--text3);padding:9px 16px;border-radius:8px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .15s}
+.btn-admin-view:hover{color:var(--v6);border-color:var(--v4)}
+.btn-admin-view.active{background:rgba(109,40,217,.15);border-color:rgba(109,40,217,.3);color:var(--v6)}
+.results-panel{position:fixed;inset:0;z-index:300;background:rgba(4,4,12,.96);backdrop-filter:blur(16px);display:none;flex-direction:column;overflow:hidden}
+.results-panel.open{display:flex}
+.rp-header{padding:20px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--bg2)}
+.rp-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--v6)}
+.rp-close{background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;transition:color .15s}
+.rp-close:hover{color:var(--text)}
+.rp-body{flex:1;overflow-y:auto;padding:24px 32px;display:flex;flex-direction:column;gap:16px;scrollbar-width:thin;scrollbar-color:var(--b2) transparent}
+.rp-filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:4px}
+.rpf{background:var(--s2);border:1px solid var(--border);color:var(--text3);padding:5px 13px;border-radius:6px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .15s}
+.rpf.active{background:rgba(109,40,217,.15);border-color:rgba(109,40,217,.3);color:var(--v6)}
+.rp-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:8px}
+.rp-kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px;text-align:center}
+.rp-kpi-val{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:var(--v6)}
+.rp-kpi-lbl{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-top:4px}
+.resp-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.rc-head{padding:14px 18px;background:var(--s2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.rc-pseudo{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;letter-spacing:1px;flex:1}
+.rc-note{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--yellow)}
+.rc-date{font-size:9px;color:var(--text3)}
+.rc-body{padding:14px 18px;display:flex;flex-direction:column}
+.rc-row{display:flex;align-items:flex-start;gap:12px;font-size:11px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.rc-row:last-child{border-bottom:none}
+.rc-q{color:var(--text3);min-width:210px;flex-shrink:0;line-height:1.4;font-size:10px}
+.rc-a{color:var(--text);flex:1;line-height:1.5}
+.admbar-mini{display:flex;gap:3px;align-items:center}
+.ab-seg-lit{width:9px;height:9px;border-radius:2px}
+.ab-seg-off{width:9px;height:9px;border-radius:2px;background:var(--border)}
+.btn-del-r{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:var(--red);padding:4px 10px;border-radius:5px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .15s;margin-left:auto;flex-shrink:0}
+.btn-del-r:hover{background:rgba(239,68,68,.22)}
+.empty-rp{text-align:center;padding:60px;color:var(--text3);font-size:13px}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:10px 18px;font-size:11px;font-weight:600;color:var(--text);z-index:600;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+@media(max-width:700px){.site-header,.hero{padding-left:20px;padding-right:20px}.player-selector{padding:0 20px 32px;gap:8px}.player-btn{min-width:76px;padding:10px 12px}.form-wrap{padding:0 12px 60px}.form-header,.form-body{padding:20px}.rp-kpis{grid-template-columns:repeat(2,1fr)}.rp-body,.rp-header{padding:16px 20px}.bar-label.w-full{min-width:unset}.radio-row{flex-direction:column}}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a href="index.html" class="hub-link">← Hub PlaZma</a>
+  <div class="header-pill">Satisfaction Joueur</div>
+</header>
+<section class="hero">
+  <div class="hero-eyebrow">PlaZma Esport · Bouches-du-Rhône · LoL</div>
+  <div class="hero-title">Questionnaire<br>Satisfaction</div>
+  <div class="hero-sub">Dis-nous ce que tu ressens — honnêtement. Chaque réponse aide le staff à prendre les bonnes décisions pour le club.</div>
+</section>
+<div class="player-selector" id="playerSelector"></div>
+<div class="form-wrap" id="formWrap" style="display:none">
+<div class="form-card">
+<div class="form-header" id="formHeader">
+  <div class="fh-inner">
+    <div class="fh-avatar" id="fhAvatar"></div>
+    <div><div class="fh-name" id="fhName">—</div><div class="fh-role" id="fhRole">—</div></div>
+    <div class="fh-date" id="fhDate">—</div>
+  </div>
+</div>
+<div class="success-screen" id="successScreen">
+  <div class="success-icon">🏆</div>
+  <div class="success-title">Merci !</div>
+  <div class="success-sub">Ton questionnaire a bien été envoyé au staff PlaZma. Chaque retour compte pour faire progresser le club.</div>
+  <button class="btn-new" onclick="resetForm()">← Soumettre un autre avis</button>
+</div>
+<div class="form-body" id="formBody">
+
+<!-- S1 : IDENTIFICATION -->
+<div class="form-section">
+  <div class="section-label"><div class="s-dot" style="background:var(--v6)"></div>Identification</div>
+  <div class="q-block">
+    <div class="q-label">1. Pseudo <span class="req">*</span></div>
+    <input class="q-input" id="q1" type="text" placeholder="Ton pseudo in-game…">
+  </div>
+</div>
+
+<!-- S2 : COHESION -->
+<div class="form-section">
+  <div class="section-label"><div class="s-dot" style="background:var(--cyan)"></div>Cohésion &amp; Ambiance</div>
+  <div class="q-block">
+    <div class="q-label">2. Te sens-tu écouté et respecté par tes coéquipiers ? <span class="req">*</span></div>
+    <div class="radio-row" id="q2"></div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">3. Y a-t-il des tensions ou conflits que tu aimerais évoquer ?</div>
+    <textarea class="q-textarea" id="q3" rows="3" maxlength="600" placeholder="Tu peux rester vague si tu préfères. Confidentiel, lu uniquement par le staff." oninput="cc('q3','cc3',600)"></textarea>
+    <div class="char-count" id="cc3">0 / 600</div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">4. Comment évalues-tu l’ambiance générale au sein de l’équipe ? <span class="req">*</span></div>
+    <div class="bar-list" id="q4wrap"></div>
+  </div>
+</div>
+
+<!-- S3 : EVALUATION PAR CRITERE -->
+<div class="form-section">
+  <div class="section-label"><div class="s-dot" style="background:var(--v5)"></div>Évaluation par critère <span style="font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:none;font-family:'Barlow',sans-serif;font-weight:400;margin-left:4px">barres colorées de 1 à 5</span></div>
+  <div class="bar-list" id="criteriaList"></div>
+</div>
+
+<!-- S4 : BIEN-ETRE -->
+<div class="form-section">
+  <div class="section-label"><div class="s-dot" style="background:var(--pink)"></div>Bien-être &amp; Charge d’entraînement</div>
+  <div class="q-block">
+    <div class="q-label">5. Comment évalues-tu ta motivation actuelle dans la PlaZma ?</div>
+    <div class="bar-list" id="q5wrap"></div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">6. Comment te sens-tu en terme de fatigue et de stress liés à l’équipe ?</div>
+    <div class="bar-list" id="q6wrap"></div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">7. Le contenu des entraînements t’aide-t-il à progresser ?</div>
+    <div class="bar-list" id="q7wrap"></div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">8. La charge d’entraînement à 5 est…</div>
+    <div class="radio-row" id="q8"></div>
+  </div>
+</div>
+
+<!-- S5 : PROGRESSION -->
+<div class="form-section">
+  <div class="section-label"><div class="s-dot" style="background:var(--green)"></div>Progression &amp; Objectifs</div>
+  <div class="q-block">
+    <div class="q-label">9. Quel domaine aimerais-tu travailler davantage ?</div>
+    <div class="checkbox-tags" id="q9"></div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">10. L’équipe avance-t-elle dans la bonne direction vers ses objectifs (participer au Nexus) ? <span class="req">*</span></div>
+    <div class="radio-row" id="q10"></div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">11. As-tu un objectif personnel à court terme que tu veux partager ? <span style="color:var(--text3);font-size:11px;font-weight:400">(Optionnel)</span></div>
+    <textarea class="q-textarea" id="q11" rows="2" maxlength="400" placeholder="Ex : Monter Platine d’ici fin avril, améliorer mon CS/min…" oninput="cc('q11','cc11',400)"></textarea>
+    <div class="char-count" id="cc11">0 / 400</div>
+  </div>
+</div>
+
+<!-- S6 : STAFF & PROJET -->
+<div class="form-section">
+  <div class="section-label"><div class="s-dot" style="background:var(--orange)"></div>Staff &amp; Vision du projet</div>
+  <div class="q-block">
+    <div class="q-label">12. Est-ce qu’une personne supplémentaire dans le staff te semble nécessaire ?</div>
+    <div class="q-hint">Plusieurs réponses possibles</div>
+    <div class="checkbox-tags" id="q12"></div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">13. Note le projet PlaZma sur 10. <span class="req">*</span></div>
+    <div class="bar10-wrap">
+      <div class="bar10-row"><div class="bar10-segs" id="q13segs"></div><div class="bar10-num" id="q13num" style="color:var(--text3)">0</div></div>
+      <div class="bar10-lbl" id="q13lbl">Clique sur une barre pour noter</div>
+    </div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">14. Un mot ou une suggestion libre pour améliorer la PlaZma ? <span class="req">*</span></div>
+    <textarea class="q-textarea" id="q14" rows="3" maxlength="600" placeholder="Tout ce qui te passe par la tête — c’est lu avec attention." oninput="cc('q14','cc14',600)"></textarea>
+    <div class="char-count" id="cc14">0 / 600</div>
+  </div>
+  <div class="q-block">
+    <div class="q-label">15. Quel rôle tu aimerais que Haito (Vincent) joue au sein de l’équipe pour aider au mieux les joueurs ? <span class="req">*</span></div>
+    <textarea class="q-textarea" id="q15" rows="3" maxlength="500" placeholder="Manager, Head Coach, Coach individuel, Analyste, autre…" oninput="cc('q15','cc15',500)"></textarea>
+    <div class="char-count" id="cc15">0 / 500</div>
+  </div>
+</div>
+
+<!-- SUBMIT -->
+<div class="submit-area">
+  <div class="submit-error" id="submitError"></div>
+  <button class="btn-submit" id="submitBtn" onclick="submitForm()">📩 Envoyer mon questionnaire</button>
+  <div class="submit-note">Tes réponses sont confidentielles — visibles uniquement par le staff PlaZma.</div>
+</div>
+</div></div></div>
+<div class="admin-toggle-bar">
+  <button class="btn-admin-view" id="adminBtn" onclick="toggleAdmin()">👁 Résultats staff</button>
+</div>
+<div class="results-panel" id="resultsPanel">
+  <div class="rp-header"><div class="rp-title">📊 Réponses — Staff uniquement</div><button class="rp-close" onclick="closeAdmin()">✕</button></div>
+  <div class="rp-body" id="rpBody"></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const ROSTER=[{id:'boulou',name:'boulou',role:'Top',emoji:'⚔️',color:'#f97316'},{id:'zugu',name:'Zugu',role:'Jungle',emoji:'🌿',color:'#22c55e'},{id:'lakrael',name:'Lakraël',role:'Mid',emoji:'💎',color:'#3b82f6'},{id:'ke1do',name:'Ke1do',role:'ADC',emoji:'🏹',color:'#ef4444'},{id:'sayro',name:'Sayro',role:'Support',emoji:'🛡️',color:'#a855f7'}];
+const ADMIN_PASS='plazma2026';
+let adminUnlocked=false,selectedPlayer=null;
+
+// ─── État des réponses
+let ans={q1:'',q2:'',q3:'',q4:0,q5:0,q6:0,q7:0,q8:'',q9:new Set(),q10:'',q11:'',q12:new Set(),q13:0,q14:'',q15:''};
+let criteria={};  // {id: val 0-5}
+
+// ─── Critères d’évaluation (section dédiée)
+const CRITERIA=[
+  {id:'coaching',   label:'Qualité du coaching',                      color:'#6366f1'},
+  {id:'orga',       label:'Organisation du club',                        color:'#06b6d4'},
+  {id:'esprit',     label:'Esprit d’équipe &amp; cohésion',                 color:'#22c55e'},
+  {id:'comstaff',   label:'Communication du staff',                      color:'#ec4899'},
+  {id:'planning',   label:'Planning &amp; sessions d’entraînement',           color:'#f59e0b'},
+  {id:'progress',   label:'Progression personnelle ressentie',           color:'#a78bfa'},
+];
+CRITERIA.forEach(c=>{criteria[c.id]=0;});
+
+// ─── Barres simples /5 (Q4, Q5, Q6, Q7)
+const SINGLE_BARS=[
+  {wrap:'q4wrap',  key:'q4',  label:'Ambiance générale', color:'#06b6d4', max:5, labLeft:'Très mauvaise', labRight:'Excellente'},
+  {wrap:'q5wrap',  key:'q5',  label:'Motivation',           color:'#22c55e', max:5, labLeft:'Très faible',    labRight:'Très élevée'},
+  {wrap:'q6wrap',  key:'q6',  label:'Fatigue &amp; stress',      color:'#f97316', max:5, labLeft:'Très stressé',  labRight:'Aucun stress'},
+  {wrap:'q7wrap',  key:'q7',  label:'Utilité entraînements',color:'#8b5cf6', max:5, labLeft:'Pas du tout',   labRight:'Énormément'},
+];
+
+// ─── Note /10 couleurs par valeur
+const BAR10_COLORS=['#ef4444','#ef4444','#f97316','#f97316','#f59e0b','#f59e0b','#84cc16','#22c55e','#22c55e','#06b6d4'];
+const NOTE10_LABELS={1:'😞 Décevant',2:'😕 Insuffisant',3:'😐 Passable',4:'🙂 Correct',5:'👍 Bien',6:'😊 Assez bien',7:'😄 Bon',8:'🔥 Très bien',9:'⭐ Excellent',10:'🏆 Exceptionnel'};
+
+// ═══════════════════════════════════════════
+// BUILD UI
+// ═══════════════════════════════════════════
+function buildPlayerSelector(){
+  document.getElementById('playerSelector').innerHTML=ROSTER.map(p=>`<div class="player-btn" id="pb_${p.id}" style="--role-color:${p.color}" onclick="selectPlayer('${p.id}')"><div class="pb-emoji">${p.emoji}</div><div class="pb-name" style="color:${p.color}">${p.name}</div><div class="pb-role" style="color:${p.color}">${p.role}</div></div>`).join('');
+}
+function selectPlayer(id){
+  selectedPlayer=ROSTER.find(p=>p.id===id);
+  document.querySelectorAll('.player-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pb_'+id).classList.add('active');
+  const p=selectedPlayer;
+  document.getElementById('q1').value=p.name; ans.q1=p.name;
+  document.getElementById('fhAvatar').textContent=p.emoji;
+  document.getElementById('fhAvatar').style.cssText=`color:${p.color};border-color:${p.color}44;background:${p.color}11`;
+  document.getElementById('fhName').textContent=p.name; document.getElementById('fhName').style.color=p.color;
+  document.getElementById('fhRole').textContent=p.role;
+  document.getElementById('fhDate').textContent=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('formHeader').style.setProperty('--rc',p.color);
+  document.getElementById('formWrap').style.display='';
+  setTimeout(()=>document.getElementById('formWrap').scrollIntoView({behavior:'smooth',block:'start'}),80);
+}
+
+// ─── Barre colorée générique (1 à max segments)
+function buildBar(containerId, id, color, max, val, onClick){
+  const wrap=document.getElementById(containerId); if(!wrap)return;
+  const segsWrap=document.createElement('div'); segsWrap.className='bar-segs'; segsWrap.id='segs_'+id;
+  const numEl=document.createElement('div'); numEl.className='bar-num'; numEl.id='num_'+id;
+  numEl.style.color=val>0?color:'var(--text3)'; numEl.textContent=val>0?val:'0';
+  for(let i=1;i<=max;i++){
+    const seg=document.createElement('div'); seg.className='bseg'+(val>=i?' on':'');
+    seg.style.background=color; seg.dataset.n=i;
+    seg.addEventListener('click',()=>onClick(i));
+    segsWrap.appendChild(seg);
+  }
+  wrap.innerHTML=''; wrap.appendChild(segsWrap); wrap.appendChild(numEl);
+}
+function refreshBar(segsId, numId, color, val){
+  document.querySelectorAll('#'+segsId+' .bseg').forEach(s=>{const n=parseInt(s.dataset.n);s.classList.toggle('on',n<=val);});
+  const numEl=document.getElementById(numId); if(numEl){numEl.textContent=val>0?val:'0';numEl.style.color=val>0?color:'var(--text3)';}
+}
+
+// ─── Build simple bar rows (Q4 Q5 Q6 Q7)
+function buildSingleBars(){
+  SINGLE_BARS.forEach(b=>{
+    const container=document.getElementById(b.wrap); if(!container)return;
+    container.innerHTML='';
+    const row=document.createElement('div'); row.className='bar-row';
+    const lbl=document.createElement('div'); lbl.className='bar-label w-full'; lbl.innerHTML=b.label;
+    const segs=document.createElement('div'); segs.className='bar-segs'; segs.id='segs_'+b.key;
+    const num=document.createElement('div'); num.className='bar-num'; num.id='num_'+b.key;
+    num.style.color='var(--text3)'; num.textContent='0';
+    for(let i=1;i<=b.max;i++){
+      const seg=document.createElement('div'); seg.className='bseg'; seg.style.background=b.color; seg.dataset.n=i;
+      const k=b.key; const bc=b.color;
+      seg.addEventListener('click',()=>{ans[k]=ans[k]===i?0:i;refreshBar('segs_'+k,'num_'+k,bc,ans[k]);});
+      segs.appendChild(seg);
+    }
+    row.appendChild(lbl); row.appendChild(segs); row.appendChild(num);
+    // sub labels
+    const sub=document.createElement('div'); sub.style.cssText='display:flex;justify-content:space-between;font-size:9px;color:var(--text3);padding:4px 0 0 0;width:100%';
+    sub.innerHTML=`<span>${b.labLeft}</span><span>${b.labRight}</span>`;
+    const wrapper=document.createElement('div'); wrapper.style.cssText='display:flex;flex-direction:column;gap:2px;width:100%';
+    // Just use the row directly with the sub below
+    container.appendChild(row);
+    const subRow=document.createElement('div'); subRow.style.cssText='display:flex;justify-content:space-between;font-size:9px;color:var(--text3);padding:2px 16px 0';
+    subRow.innerHTML=`<span>${b.labLeft}</span><span>${b.labRight}</span>`;
+    container.appendChild(subRow);
+  });
+}
+
+// ─── Build criteria bars
+function buildCriteria(){
+  const list=document.getElementById('criteriaList'); list.innerHTML='';
+  CRITERIA.forEach(c=>{
+    const row=document.createElement('div'); row.className='bar-row';
+    const lbl=document.createElement('div'); lbl.className='bar-label w-full'; lbl.innerHTML=c.label;
+    const segs=document.createElement('div'); segs.className='bar-segs'; segs.id='csegs_'+c.id;
+    const num=document.createElement('div'); num.className='bar-num'; num.id='cnum_'+c.id;
+    num.style.color='var(--text3)'; num.textContent='0';
+    for(let i=1;i<=5;i++){
+      const seg=document.createElement('div'); seg.className='bseg'; seg.style.background=c.color; seg.dataset.n=i;
+      const ci=c.id; const cc=c.color;
+      seg.addEventListener('click',()=>{criteria[ci]=criteria[ci]===i?0:i;refreshBar('csegs_'+ci,'cnum_'+ci,cc,criteria[ci]);});
+      segs.appendChild(seg);
+    }
+    row.appendChild(lbl); row.appendChild(segs); row.appendChild(num);
+    list.appendChild(row);
+  });
+}
+
+// ─── Build bar 1-10 (Q13)
+function buildBar10(){
+  const segsWrap=document.getElementById('q13segs'); segsWrap.innerHTML='';
+  const val=ans.q13;
+  for(let i=1;i<=10;i++){
+    const seg=document.createElement('div'); seg.className='b10'+(val>=i?' on':'');
+    seg.style.background=BAR10_COLORS[i-1]; seg.dataset.n=i;
+    seg.addEventListener('click',()=>{ans.q13=ans.q13===i?0:i;buildBar10();});
+    segsWrap.appendChild(seg);
+  }
+  const numEl=document.getElementById('q13num'); const lblEl=document.getElementById('q13lbl');
+  if(val>0){numEl.textContent=val;numEl.style.color=BAR10_COLORS[val-1];lblEl.textContent=NOTE10_LABELS[val]||'';lblEl.style.color=BAR10_COLORS[val-1];}
+  else{numEl.textContent='0';numEl.style.color='var(--text3)';lblEl.textContent='Clique sur une barre pour noter';lblEl.style.color='var(--text3)';}
+}
+
+// ─── Radio / checkbox builders
+function buildQ2(){const o=[{v:'Oui',c:'#22c55e'},{v:'Souvent',c:'#3b82f6'},{v:'Parfois',c:'#f59e0b'},{v:'Non',c:'#ef4444'}];document.getElementById('q2').innerHTML=o.map(x=>`<div class="radio-pill${ans.q2===x.v?' selected':''}" style="--pill-c:${x.c}" onclick="sr('q2','${x.v}')"><div class="pip"></div>${x.v}</div>`).join('');}
+function buildQ8(){const o=[{v:'Trop faible',c:'#3b82f6'},{v:'Correct',c:'#22c55e'},{v:'Trop élevée',c:'#ef4444'}];document.getElementById('q8').innerHTML=o.map(x=>`<div class="radio-pill${ans.q8===x.v?' selected':''}" style="--pill-c:${x.c}" onclick="sr('q8','${x.v}')"><div class="pip"></div>${x.v}</div>`).join('');}
+function buildQ9(){const o=['Communication','Mécanique','Macro','Vision','Autre'];document.getElementById('q9').innerHTML=o.map(x=>`<div class="cb-tag${ans.q9.has(x)?' sel':''}" onclick="tc('q9','${x}')"><div class="cb-box">${ans.q9.has(x)?'✓':''}</div>${x}</div>`).join('');}
+function buildQ10(){const o=[{v:'Oui',c:'#22c55e'},{v:'Plutôt oui',c:'#3b82f6'},{v:'Plutôt non',c:'#f59e0b'},{v:'Non',c:'#ef4444'}];document.getElementById('q10').innerHTML=o.map(x=>`<div class="radio-pill${ans.q10===x.v?' selected':''}" style="--pill-c:${x.c}" onclick="sr('q10','${x.v}')"><div class="pip"></div>${x.v}</div>`).join('');}
+function buildQ12(){const o=['Manager','Head Coach (équipe)','Positionnal Coach (individuel)','Analyste','Aucun'];document.getElementById('q12').innerHTML=o.map(x=>`<div class="cb-tag${ans.q12.has(x)?' sel':''}" onclick="tc('q12','${x}')"><div class="cb-box">${ans.q12.has(x)?'✓':''}</div>${x}</div>`).join('');}
+
+// ─── Interactions
+function sr(qid,val){ans[qid]=ans[qid]===val?'':val;if(qid==='q2')buildQ2();else if(qid==='q8')buildQ8();else if(qid==='q10')buildQ10();}
+function tc(qid,val){
+  if(qid==='q12'&&val==='Aucun'){if(ans.q12.has('Aucun'))ans.q12.delete('Aucun');else{ans.q12.clear();ans.q12.add('Aucun');}}
+  else if(qid==='q12'){ans.q12.delete('Aucun');if(ans.q12.has(val))ans.q12.delete(val);else ans.q12.add(val);}
+  else{if(ans[qid].has(val))ans[qid].delete(val);else ans[qid].add(val);}
+  if(qid==='q9')buildQ9();else buildQ12();
+}
+function cc(fid,cid,max){document.getElementById(cid).textContent=document.getElementById(fid).value.length+' / '+max;}
+
+// ═══════════════════════════════════════════
+// VALIDATION & SUBMIT
+// ═══════════════════════════════════════════
+function validate(){
+  const e=[];
+  if(!document.getElementById('q1').value.trim())e.push('Q1 Pseudo');
+  if(!ans.q2)e.push('Q2 Écouté');
+  if(!ans.q4)e.push('Q4 Ambiance');
+  if(!ans.q10)e.push('Q10 Direction');
+  if(!ans.q13)e.push('Q13 Note');
+  if(!document.getElementById('q14').value.trim())e.push('Q14 Suggestion');
+  if(!document.getElementById('q15').value.trim())e.push('Q15 Rôle Haito');
+  return e;
+}
+async function submitForm(){
+  ans.q1=document.getElementById('q1').value.trim();
+  ans.q3=document.getElementById('q3').value.trim();
+  ans.q11=document.getElementById('q11').value.trim();
+  ans.q14=document.getElementById('q14').value.trim();
+  ans.q15=document.getElementById('q15').value.trim();
+  const errs=validate(); const errEl=document.getElementById('submitError');
+  if(errs.length){errEl.textContent='⚠ Réponses obligatoires manquantes : '+errs.join(' · ');errEl.classList.add('show');errEl.scrollIntoView({behavior:'smooth',block:'center'});return;}
+  errEl.classList.remove('show');
+  const btn=document.getElementById('submitBtn'); btn.disabled=true; btn.textContent='⏳ Envoi…';
+  const data={
+    pseudo:ans.q1, playerId:selectedPlayer?.id||null, playerEmoji:selectedPlayer?.emoji||'🎮',
+    q2_ecoute:ans.q2, q3_tensions:ans.q3,
+    q4_ambiance:ans.q4, q5_motivation:ans.q5, q6_fatigue:ans.q6, q7_entrainement:ans.q7, q8_charge:ans.q8,
+    criteria:{...criteria},
+    q9_domaines:[...ans.q9], q10_direction:ans.q10, q11_objectif:ans.q11,
+    q12_staff:[...ans.q12], q13_note:ans.q13, q14_suggestion:ans.q14, q15_haito:ans.q15,
+    submittedAt:firebase.firestore.FieldValue.serverTimestamp(), date:new Date().toLocaleDateString('fr-FR')
+  };
+  try{
+    await db.collection('plazma-satisfaction').add(data);
+    document.getElementById('formBody').style.display='none';
+    document.getElementById('successScreen').classList.add('show');
+  }catch(e){showToast('Erreur : '+e.message);btn.disabled=false;btn.textContent='📩 Envoyer mon questionnaire';}
+}
+function resetForm(){
+  selectedPlayer=null;
+  ans={q1:'',q2:'',q3:'',q4:0,q5:0,q6:0,q7:0,q8:'',q9:new Set(),q10:'',q11:'',q12:new Set(),q13:0,q14:'',q15:''};
+  CRITERIA.forEach(c=>{criteria[c.id]=0;});
+  document.querySelectorAll('.player-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('formWrap').style.display='none';
+  document.getElementById('formBody').style.display='';
+  document.getElementById('successScreen').classList.remove('show');
+  document.getElementById('submitBtn').disabled=false;
+  document.getElementById('submitBtn').textContent='📩 Envoyer mon questionnaire';
+  ['q1','q3','q11','q14','q15'].forEach(id=>document.getElementById(id).value='');
+  initAll(); window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ═══════════════════════════════════════════
+// ADMIN PANEL
+// ═══════════════════════════════════════════
+let responses=[],rpFilter='all';
+function toggleAdmin(){if(!adminUnlocked){const pass=prompt('Mot de passe staff :');if(pass!==ADMIN_PASS){if(pass!==null)showToast('Mot de passe incorrect');return;}adminUnlocked=true;document.getElementById('adminBtn').classList.add('active');}loadAdmin();}
+function closeAdmin(){document.getElementById('resultsPanel').classList.remove('open');}
+async function loadAdmin(){
+  document.getElementById('resultsPanel').classList.add('open');
+  document.getElementById('rpBody').innerHTML='<div class="empty-rp">Chargement…</div>';
+  try{const snap=await db.collection('plazma-satisfaction').orderBy('submittedAt','desc').get();responses=[];snap.forEach(doc=>responses.push({id:doc.id,...doc.data()}));}
+  catch{const snap=await db.collection('plazma-satisfaction').get();responses=[];snap.forEach(doc=>responses.push({id:doc.id,...doc.data()}));}
+  renderAdmin();
+}
+function renderAdmin(){
+  const f=rpFilter==='all'?responses:responses.filter(r=>r.playerId===rpFilter);
+  const avg=key=>{const v=f.filter(r=>r[key]);return v.length?(v.reduce((s,r)=>s+(r[key]||0),0)/v.length).toFixed(1):'—';};
+  const avgCrit=id=>{const v=f.filter(r=>r.criteria&&r.criteria[id]);return v.length?(v.reduce((s,r)=>s+(r.criteria[id]||0),0)/v.length).toFixed(1):'—';};
+  const rpBody=document.getElementById('rpBody');
+  rpBody.innerHTML=`<div class="rp-filters"><button class="rpf${rpFilter==='all'?' active':''}" onclick="setRpFilter('all')">Tous (${responses.length})</button>${ROSTER.map(p=>`<button class="rpf${rpFilter===p.id?' active':''}" onclick="setRpFilter('${p.id}')">${p.emoji} ${p.name} (${responses.filter(r=>r.playerId===p.id).length})</button>`).join('')}</div>
+<div class="rp-kpis">
+  <div class="rp-kpi"><div class="rp-kpi-val">${f.length}</div><div class="rp-kpi-lbl">Réponses</div></div>
+  <div class="rp-kpi"><div class="rp-kpi-val" style="color:var(--yellow)">${avg('q13_note')}/10</div><div class="rp-kpi-lbl">Note PlaZma</div></div>
+  <div class="rp-kpi"><div class="rp-kpi-val" style="color:var(--cyan)">${avg('q4_ambiance')}/5</div><div class="rp-kpi-lbl">Ambiance</div></div>
+  <div class="rp-kpi"><div class="rp-kpi-val" style="color:var(--green)">${avg('q5_motivation')}/5</div><div class="rp-kpi-lbl">Motivation</div></div>
+</div>
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:4px">
+  <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:12px;font-weight:700">MOYENNES ÉVALUATION PAR CRITÈRE</div>
+  ${CRITERIA.map(c=>`<div style="display:flex;align-items:center;gap:12px;margin-bottom:7px">
+    <div style="font-size:11px;color:var(--text2);min-width:220px">${c.label.replace('&amp;','&')}</div>
+    <div style="display:flex;gap:3px;flex:1">${Array.from({length:5},(_,i)=>`<div style="flex:1;height:6px;border-radius:2px;background:${c.color};opacity:${parseFloat(avgCrit(c.id))>i?1:.12}"></div>`).join('')}</div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:${c.color};min-width:28px;text-align:right">${avgCrit(c.id)}/5</div>
+  </div>`).join('')}
+</div>
+${f.length===0?'<div class="empty-rp">Aucune réponse pour ce filtre.</div>':f.map(r=>rCard(r)).join('')}`;
+}
+
+function miniBar(val,max,color){if(!val)return `<span style="color:var(--text3)">—</span>`;return `<div class="admbar-mini">${Array.from({length:max},(_,i)=>`<div class="${i<val?'ab-seg-lit':'ab-seg-off'}" style="${i<val?'background:'+color:''}"></div>`).join('')}<span style="font-size:10px;color:var(--text2);margin-left:4px;font-family:'Barlow Condensed',sans-serif;font-weight:700">${val}/${max}</span></div>`;}
+
+function rCard(r){
+  const p=ROSTER.find(x=>x.id===r.playerId); const rc=p?.color||'var(--v6)';
+  const critRows=CRITERIA.map(c=>`<div class="rc-row"><div class="rc-q">${c.label.replace('&amp;','&')}</div><div class="rc-a">${miniBar(r.criteria?.[c.id]||0,5,c.color)}</div></div>`).join('');
+  const mainRows=[
+    ['Q2 · Écouté & respecté',r.q2_ecoute||'—'],
+    ['Q3 · Tensions / conflits',r.q3_tensions||`<em style="color:var(--text3)">Aucune</em>`],
+    ['Q4 · Ambiance',miniBar(r.q4_ambiance,5,'#06b6d4')],
+    ['Q5 · Motivation',miniBar(r.q5_motivation,5,'#22c55e')],
+    ['Q6 · Fatigue & stress',miniBar(r.q6_fatigue,5,'#f97316')],
+    ['Q7 · Entraînements utiles',miniBar(r.q7_entrainement,5,'#8b5cf6')],
+    ['Q8 · Charge à 5',r.q8_charge||'—'],
+    ['Q9 · Domaines',(r.q9_domaines||[]).join(', ')||'—'],
+    ['Q10 · Bonne direction',r.q10_direction||'—'],
+    ['Q11 · Objectif perso',r.q11_objectif||`<em style="color:var(--text3)">Non renseigné</em>`],
+    ['Q12 · Staff nécessaire',(r.q12_staff||[]).join(', ')||'—'],
+    ['Q14 · Suggestion',esc(r.q14_suggestion||'—')],
+    ['Q15 · Rôle Haito',esc(r.q15_haito||'—')],
+  ];
+  return `<div class="resp-card">
+    <div class="rc-head">
+      <div style="font-size:20px">${r.playerEmoji||'🎮'}</div>
+      <div class="rc-pseudo" style="color:${rc}">${esc(r.pseudo||'—')}</div>
+      <div class="rc-note">${miniBar(r.q13_note,10,'#f59e0b').replace('10',10)} <span style="font-size:12px;color:var(--text3)">/10</span></div>
+      <div class="rc-date">${r.date||'—'}</div>
+      <button class="btn-del-r" onclick="delResp('${r.id}')">🗑 Suppr.</button>
+    </div>
+    <div class="rc-body">
+      ${mainRows.map(([q,a])=>`<div class="rc-row"><div class="rc-q">${q}</div><div class="rc-a">${a}</div></div>`).join('')}
+      <div class="rc-row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:8px;flex-direction:column;gap:6px"><div class="rc-q" style="color:var(--v6);font-weight:700;letter-spacing:1px;text-transform:uppercase;font-size:9px">Critères</div>${critRows}</div>
+    </div>
+  </div>`;
+}
+
+function setRpFilter(f){rpFilter=f;renderAdmin();}
+async function delResp(id){if(!confirm('Supprimer ?'))return;await db.collection('plazma-satisfaction').doc(id).delete();showToast('Supprimé');await loadAdmin();}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
+
+function initAll(){
+  buildQ2();buildQ8();buildQ9();buildQ10();buildQ12();
+  buildSingleBars();
+  buildCriteria();
+  buildBar10();
+}
+buildPlayerSelector();
+initAll();
+</script>
+</body>
+</html>
