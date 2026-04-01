@@ -579,8 +579,19 @@ async function fetchPlayerRiotData(player) {
 let _riotFetching = false;
 async function fetchAllRiotData() {
   if (_riotFetching) return;
-  if (!state.apiKey?.trim()) {
-    showToast('⚠ Ajoute ta clé API Riot dans Paramètres');
+
+  // Auto-lecture des champs : pas besoin de cliquer Enregistrer avant de fetch
+  const inputKey = document.getElementById('p_apiKey')?.value.trim();
+  if (inputKey) state.apiKey = inputKey;
+  state.roster.forEach(p => {
+    const rid  = document.getElementById('rid_'  + p.id)?.value.trim();
+    const rtag = document.getElementById('rtag_' + p.id)?.value.trim();
+    if (rid)  p.riotId  = rid;
+    if (rtag) p.riotTag = rtag;
+  });
+
+  if (!state.apiKey) {
+    showToast('⚠ Entre ta clé API Riot dans Paramètres');
     document.getElementById('s-params').scrollIntoView({behavior:'smooth'});
     return;
   }
