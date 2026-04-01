@@ -372,7 +372,7 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
       <!-- API Riot -->
       <div class="scard">
         <div class="scard-title">⚡ API Riot Games</div>
-        <div class="field"><label>Clé API (developer.riotgames.com)</label><input type="text" id="p_apiKey" placeholder="RGAPI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></div>
+        <div class="field"><label>Clé API (developer.riotgames.com)</label><input type="text" id="p_apiKey" placeholder="RGAPI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" oninput="this._dirty=true" autocomplete="off"></div>
         <div class="api-hint">
           Obtenez une clé gratuite sur <a href="https://developer.riotgames.com" target="_blank">developer.riotgames.com</a>.<br>
           Les clés de dev expirent toutes les 24h. Pour une clé permanente, faites une demande de Personal API Key sur le portail.
@@ -512,12 +512,29 @@ const PROXIES = [
 let _activeProxy = 0;
 
 async function riotFetch(url) {
+  // Extrait la clé API de l'URL pour l'envoyer aussi en header
+  // (X-Riot-Token est plus fiable que le query param via proxy)
+  let apiKey = '';
+  let cleanUrl = url;
+  try {
+    const u = new URL(url);
+    apiKey = u.searchParams.get('api_key') || '';
+    // On garde la clé dans l'URL ET on l'ajoute en header pour max compatibilité
+  } catch {}
+
   const proxyUrl = PROXIES[_activeProxy](url);
+  const fetchOpts = {};
+  if (apiKey) {
+    // corsproxy.io supporte x-cors-headers pour forwarder des headers custom à l'API cible
+    fetchOpts.headers = {
+      'x-cors-headers': JSON.stringify({ 'X-Riot-Token': apiKey }),
+    };
+  }
+
   let res;
   try {
-    res = await fetch(proxyUrl);
+    res = await fetch(proxyUrl, fetchOpts);
   } catch(networkErr) {
-    // Si le proxy actuel est inaccessible, essaie le suivant
     if (_activeProxy < PROXIES.length - 1) {
       _activeProxy++;
       return riotFetch(url);
@@ -525,19 +542,19 @@ async function riotFetch(url) {
     throw new Error('Proxy inaccessible — vérifie ta connexion');
   }
 
+  // Certains proxies retournent 200 avec une erreur dans le body
+  const text = await res.text();
+
   if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try { const j = await res.json(); msg = j?.status?.message || msg; } catch {}
-    // 403 = clé expirée ou invalide
-    if (res.status === 403) throw new Error('Clé API invalide ou expirée (403)');
-    if (res.status === 401) throw new Error('Clé API manquante (401)');
-    if (res.status === 404) throw new Error('Joueur introuvable (404)');
-    if (res.status === 429) throw new Error('Rate limit atteint — réessaie dans 2 min');
+    let msg = `Erreur ${res.status}`;
+    try { const j = JSON.parse(text); msg = j?.status?.message || j?.error || msg; } catch {}
+    if (res.status === 403) throw new Error('Clé API invalide ou expirée — régénère sur developer.riotgames.com');
+    if (res.status === 401) throw new Error('Clé API manquante');
+    if (res.status === 404) throw new Error('Joueur introuvable (vérifie GameName#Tag)');
+    if (res.status === 429) throw new Error('Rate limit — réessaie dans 2 min');
     throw new Error(msg);
   }
 
-  // allorigins renvoie parfois du JSON encapsulé
-  const text = await res.text();
   try { return JSON.parse(text); }
   catch { throw new Error('Réponse invalide du proxy'); }
 }
@@ -951,7 +968,9 @@ function renderObjectives() {
 }
 
 function renderSettingsForm() {
-  document.getElementById('p_apiKey').value = state.apiKey || '';
+  // Ne pas écraser si l'utilisateur est en train de saisir une nouvelle clé
+  const apiKeyEl = document.getElementById('p_apiKey');
+  if (apiKeyEl && !apiKeyEl._dirty) apiKeyEl.value = state.apiKey || '';
   document.getElementById('p_baseElo').value = state.baseElo;
   document.getElementById('p_kFactor').value = state.kFactor;
   document.getElementById('p_defaultOppElo').value = state.defaultOppElo;
