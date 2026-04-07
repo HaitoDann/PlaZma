@@ -9,8 +9,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
-const firebaseConfig={apiKey:"AIzaSyAKwNEbNa6f40oSMwGp6dcDY1ZY6hUN1Ks",authDomain:"plazma-esport.firebaseapp.com",projectId:"plazma-esport",storageBucket:"plazma-esport.firebasestorage.app",messagingSenderId:"534325929279",appId:"1:534325929279:web:b507a46c601fa6625edf8a"};
-firebase.initializeApp(firebaseConfig);
+firebase.initializeApp({apiKey:"AIzaSyAKwNEbNa6f40oSMwGp6dcDY1ZY6hUN1Ks",authDomain:"plazma-esport.firebaseapp.com",projectId:"plazma-esport",storageBucket:"plazma-esport.firebasestorage.app",messagingSenderId:"534325929279",appId:"1:534325929279:web:b507a46c601fa6625edf8a"});
 const db=firebase.firestore();
 </script>
 <style>
@@ -18,19 +17,23 @@ const db=firebase.firestore();
 :root{
   --bg:#07070f;--bg2:#0c0b18;--surface:#10101e;--surface2:#141428;
   --border:#1c1b33;--border2:#252444;
-  --v1:#6d28d9;--v2:#7c3aed;--v3:#8b5cf6;--v4:#a78bfa;
+  --v1:#6d28d9;--v2:#7c3aed;--v3:#8b5cf6;--v4:#a78bfa;--v5:#c4b5fd;
   --green:#22c55e;--red:#ef4444;--orange:#f97316;--cyan:#06b6d4;--yellow:#f59e0b;--blue:#3b82f6;--pink:#ec4899;
-  --text:#e8e6f4;--text2:#8b82b0;--text3:#45405e;
+  --tx:#e8e6f4;--tx2:#8b82b0;--tx3:#45405e;
 }
-body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 20px 80px}
+body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--tx);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 20px 80px}
+
+/* LOADING */
 .loading-screen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .5s}
 .loading-screen.hidden{opacity:0;pointer-events:none}
 .loading-logo{font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:800;letter-spacing:4px;background:linear-gradient(135deg,#fff,var(--v4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .loading-bar{width:200px;height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
 .loading-fill{height:100%;background:linear-gradient(90deg,var(--v2),var(--v4));border-radius:2px;animation:loadbar 1.5s ease infinite}
 @keyframes loadbar{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
-.loading-text{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase}
-.hub-link{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:var(--text3);text-decoration:none;letter-spacing:1px;transition:color .15s;margin-bottom:10px}
+.loading-text{font-size:10px;color:var(--tx3);letter-spacing:2px;text-transform:uppercase}
+
+/* CHROME */
+.hub-link{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:var(--tx3);text-decoration:none;letter-spacing:1px;transition:color .15s;margin-bottom:10px}
 .hub-link:hover{color:var(--v4)}
 .sync-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
 .sync-indicator{display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:7px;background:var(--surface2);border:1px solid var(--border2)}
@@ -38,24 +41,33 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 .sync-dot.connected{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,.5)}
 .sync-dot.syncing{background:var(--yellow);animation:pulse .8s infinite}
 .sync-dot.error{background:var(--red)}
-.sync-dot.offline{background:var(--text3)}
+.sync-dot.offline{background:var(--tx3)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .sync-text{font-size:10px;font-weight:600;letter-spacing:.5px}
-.sync-time{font-size:9px;color:var(--text3)}
+.sync-time{font-size:9px;color:var(--tx3)}
 .btn-save-fb{background:rgba(109,40,217,.18);border:1px solid rgba(109,40,217,.35);color:var(--v4);padding:7px 18px;border-radius:7px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .2s}
 .btn-save-fb:hover{background:rgba(109,40,217,.3)}
 .btn-save-fb.saved{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.3);color:var(--green)}
 .btn-mini-row{display:flex;gap:5px}
-.btn-mini{background:var(--surface2);border:1px solid var(--border2);color:var(--text3);padding:6px 12px;border-radius:6px;font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:color .15s}
-.btn-mini:hover{color:var(--text2)}
+.btn-mini{background:var(--surface2);border:1px solid var(--border2);color:var(--tx3);padding:6px 12px;border-radius:6px;font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:color .15s}
+.btn-mini:hover{color:var(--tx2)}
 .btn-mini.red{border-color:rgba(239,68,68,.12);color:rgba(239,68,68,.3)}
 .btn-mini.red:hover{color:#ef4444}
-.toolbar{display:flex;gap:10px;margin-bottom:16px;justify-content:center}
+.toolbar{display:flex;gap:10px;margin-bottom:10px;justify-content:center;flex-wrap:wrap}
 .btn{padding:9px 22px;border-radius:7px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:none;font-family:'Barlow',sans-serif;transition:all .2s}
 .btn-export{background:var(--v2);color:#fff;box-shadow:0 0 28px rgba(124,58,237,.4)}
 .btn-export:hover{background:var(--v3);transform:translateY(-1px)}
 .btn-export:disabled{opacity:.4;cursor:default;transform:none}
-.card{width:100%;max-width:960px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 0 0 1px rgba(109,40,217,.08),0 40px 100px rgba(0,0,0,.6)}
+.btn-new-sheet{background:rgba(34,197,94,.14);border:1px solid rgba(34,197,94,.28);color:var(--green);padding:9px 18px;border-radius:7px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .2s}
+.btn-new-sheet:hover{background:rgba(34,197,94,.26)}
+.btn-hist{background:rgba(109,40,217,.14);border:1px solid rgba(109,40,217,.3);color:var(--v4);padding:9px 18px;border-radius:7px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .2s}
+.btn-hist:hover{background:rgba(109,40,217,.26)}
+.btn-hist.active{background:rgba(109,40,217,.22);border-color:rgba(109,40,217,.5)}
+.sheet-chip{display:flex;justify-content:center;margin-bottom:10px}
+.chip-inner{display:inline-flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border2);border-radius:5px;padding:4px 12px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--v5)}
+
+/* CARD */
+.card{width:100%;max-width:1000px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 0 0 1px rgba(109,40,217,.08),0 40px 100px rgba(0,0,0,.6)}
 .card-header{position:relative;overflow:hidden;padding:26px 32px 22px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between}
 .card-header::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 55% 180% at 0% 50%,rgba(109,40,217,.18) 0%,transparent 65%)}
 .card-header::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--v1) 0%,var(--v3) 35%,transparent 70%)}
@@ -64,68 +76,143 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 .club-name{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:800;letter-spacing:4px;text-transform:uppercase;background:linear-gradient(135deg,#fff 0%,var(--v4) 40%,var(--v3) 75%,#fff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 16px rgba(139,92,246,.4))}
 .doc-type{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--v4);margin-top:4px}
 .threat-badge{padding:4px 14px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border:1px solid;cursor:pointer;transition:all .2s}
+
+/* META BAR */
 .meta-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
-.meta-cell{background:var(--surface);padding:14px 16px}
-.meta-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
-.meta-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-size:13px;font-family:'Barlow',sans-serif;padding:3px 0;outline:none;transition:border-color .2s}
+.meta-cell{background:var(--surface);padding:13px 16px}
+.meta-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--tx3);margin-bottom:6px}
+.meta-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--tx);font-size:13px;font-family:'Barlow',sans-serif;padding:3px 0;outline:none;transition:border-color .2s}
 .meta-input:focus{border-bottom-color:var(--v3)}
 .meta-input option{background:var(--surface)}
+
+/* CARD BODY */
 .card-body{padding:28px 32px;display:flex;flex-direction:column;gap:24px}
 .section-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .section-dot{width:6px;height:6px;border-radius:50%}
-.roster-table{width:100%;border-collapse:separate;border-spacing:0}
-.roster-table thead tr{background:var(--surface2)}
-.roster-table th{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);padding:10px 12px;text-align:left;font-weight:600;border-bottom:1px solid var(--border)}
-.roster-table td{border-bottom:1px solid var(--border)}
-.roster-table tbody tr:last-child td{border-bottom:none}
-.td-input{width:100%;background:transparent;border:none;color:var(--text2);font-size:12px;font-family:'Barlow',sans-serif;padding:10px 12px;outline:none;transition:background .2s}
-.td-input:focus{background:rgba(139,92,246,.05)}
-.role-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
-.danger-bar{display:flex;gap:4px;padding:8px 12px}
-.danger-dot{width:12px;height:12px;border-radius:3px;cursor:pointer;transition:all .15s;opacity:.25}
-.danger-dot.on{opacity:1}
-.draft-split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* ═══ PLAYER CARDS ═══ */
+.player-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.player-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .15s}
+.player-card:hover{border-color:var(--border2)}
+.pc-header{padding:10px 12px 9px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.pc-role{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:2px 8px;border-radius:4px}
+.pc-danger{display:flex;gap:3px}
+.pc-dot{width:10px;height:10px;border-radius:2px;cursor:pointer;opacity:.18;transition:all .15s}
+.pc-dot.on{opacity:1}
+.pc-dot:hover{opacity:.7}
+.pc-body{padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.pc-field{display:flex;flex-direction:column;gap:3px}
+.pc-lbl{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);font-weight:600}
+.pc-inp{background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--tx);font-size:11px;font-family:'Barlow',sans-serif;padding:2px 0;outline:none;width:100%;transition:border-color .15s}
+.pc-inp:focus{border-bottom-color:var(--v3)}
+.pc-inp::placeholder{color:var(--tx3)}
+/* Side & Temperament pill groups */
+.pc-pills{display:flex;gap:4px;flex-wrap:wrap}
+.pc-pill{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 7px;border-radius:4px;border:1px solid var(--border2);cursor:pointer;transition:all .12s;color:var(--tx3);background:var(--surface2);user-select:none}
+.pc-pill:hover{border-color:var(--border2);color:var(--tx2)}
+.pc-pill.on-blue{background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.4);color:var(--blue)}
+.pc-pill.on-red{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.4);color:var(--red)}
+.pc-pill.on-both{background:rgba(139,92,246,.15);border-color:rgba(139,92,246,.4);color:var(--v4)}
+.pc-pill.on-tilt{background:rgba(239,68,68,.13);border-color:rgba(239,68,68,.35);color:var(--red)}
+.pc-pill.on-calm{background:rgba(34,197,94,.13);border-color:rgba(34,197,94,.35);color:var(--green)}
+.pc-pill.on-neutral{background:rgba(245,158,11,.13);border-color:rgba(245,158,11,.35);color:var(--yellow)}
+
+/* DRAFT */
+.draft-split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .draft-block{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px}
-.draft-block-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:12px}
-.champ-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;min-height:32px}
-.champ-tag{background:var(--surface2);border:1px solid var(--border2);border-radius:5px;padding:3px 8px;font-size:11px;color:var(--text2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px}
-.champ-tag:hover{border-color:var(--v3);color:var(--text)}
-.champ-tag .del{color:var(--text3);font-size:10px}
+.draft-block-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.champ-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;min-height:28px}
+.champ-tag{background:var(--surface2);border:1px solid var(--border2);border-radius:5px;padding:3px 8px;font-size:11px;color:var(--tx2);display:flex;align-items:center;gap:4px}
+.champ-tag .del{color:var(--tx3);font-size:10px;cursor:pointer;transition:color .12s}
 .champ-tag .del:hover{color:var(--red)}
 .add-champ{display:flex;gap:6px;align-items:center}
-.add-champ-input{flex:1;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-size:11px;font-family:'Barlow',sans-serif;padding:5px 9px;border-radius:5px;outline:none;transition:border-color .2s}
+.add-champ-input{flex:1;background:var(--surface2);border:1px solid var(--border2);color:var(--tx);font-size:11px;font-family:'Barlow',sans-serif;padding:5px 8px;border-radius:5px;outline:none;transition:border-color .2s}
 .add-champ-input:focus{border-color:var(--v3)}
 .add-champ-btn{background:var(--v1);color:#fff;border:none;border-radius:5px;padding:5px 10px;cursor:pointer;font-size:13px;transition:background .15s}
 .add-champ-btn:hover{background:var(--v2)}
+
+/* SWOT */
 .swot-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .swot-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;border-left:3px solid}
 .swot-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px}
-.fiche-textarea{width:100%;background:transparent;border:none;color:var(--text2);font-size:12px;font-family:'Barlow',sans-serif;line-height:1.7;resize:none;outline:none;min-height:80px}
-.fiche-textarea::placeholder{color:var(--text3)}
+.fiche-textarea{width:100%;background:transparent;border:none;color:var(--tx2);font-size:12px;font-family:'Barlow',sans-serif;line-height:1.7;resize:none;outline:none;min-height:80px}
+.fiche-textarea::placeholder{color:var(--tx3)}
+
+/* PLAN D'APPROCHE */
 .plan-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 .plan-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px}
 .plan-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px}
+
+/* CONTRE-PICKS TABLE */
 .cp-table{width:100%;border-collapse:separate;border-spacing:0}
 .cp-table thead tr{background:var(--surface2)}
-.cp-table th{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);padding:9px 12px;text-align:left;font-weight:600;border-bottom:1px solid var(--border)}
+.cp-table th{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--tx3);padding:9px 12px;text-align:left;font-weight:600;border-bottom:1px solid var(--border)}
 .cp-table td{border-bottom:1px solid var(--border)}
 .cp-table tbody tr:last-child td{border-bottom:none}
-.threat-section{display:flex;align-items:center;gap:20px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px}
-.threat-label{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--v4);min-width:120px}
+.td-input{width:100%;background:transparent;border:none;color:var(--tx2);font-size:12px;font-family:'Barlow',sans-serif;padding:10px 12px;outline:none}
+.td-input:focus{background:rgba(139,92,246,.04)}
+.role-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+
+/* JAUGE MENACE */
+.threat-section{display:flex;align-items:center;gap:20px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px 20px}
+.threat-label{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--v4);min-width:110px}
 .threat-gauge{flex:1;display:flex;gap:6px}
-.gauge-step{flex:1;height:20px;border-radius:4px;cursor:pointer;transition:all .2s;opacity:.2;border:1px solid transparent}
+.gauge-step{flex:1;height:20px;border-radius:4px;cursor:pointer;transition:all .2s;opacity:.18;border:1px solid transparent}
 .gauge-step.active{opacity:1}
-.threat-text{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;min-width:80px;text-align:right}
+.threat-text{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;min-width:100px;text-align:right}
+
+/* CONCLUSION */
 .note-globale{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;display:flex;align-items:center;gap:24px}
 .note-val{font-family:'Barlow Condensed',sans-serif;font-size:56px;font-weight:800;color:var(--v4);line-height:1;background:transparent;border:none;border-bottom:2px solid var(--border2);outline:none;width:80px;text-align:center}
 .note-val:focus{border-bottom-color:var(--v3)}
-.note-sep{font-family:'Barlow Condensed',sans-serif;font-size:32px;color:var(--text3);font-weight:700}
+.note-sep{font-family:'Barlow Condensed',sans-serif;font-size:32px;color:var(--tx3);font-weight:700}
 .note-right{flex:1}
 .note-label-big{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--v4);margin-bottom:8px}
-.note-comment{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text2);font-size:13px;font-family:'Barlow',sans-serif;padding:4px 0;outline:none}
+.note-comment{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--tx2);font-size:13px;font-family:'Barlow',sans-serif;padding:4px 0;outline:none}
 .note-comment:focus{border-bottom-color:var(--v3)}
+
+/* FOOTER */
 .card-footer{border-top:1px solid var(--border);background:var(--surface);padding:12px 32px;display:flex;align-items:center;justify-content:space-between}
-.footer-brand{font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
+.footer-brand{font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--tx3)}
+
+/* ═══ HISTORY DRAWER ═══ */
+.hist-overlay{position:fixed;inset:0;background:rgba(7,7,15,.6);backdrop-filter:blur(5px);z-index:400;opacity:0;pointer-events:none;transition:opacity .25s}
+.hist-overlay.open{opacity:1;pointer-events:all}
+.hist-drawer{position:fixed;top:0;right:0;bottom:0;width:400px;max-width:95vw;background:var(--bg2);border-left:1px solid var(--border2);z-index:401;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.hist-drawer.open{transform:translateX(0)}
+.hd-head{padding:20px 22px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--surface)}
+.hd-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--v5)}
+.hd-close{background:none;border:none;color:var(--tx3);font-size:20px;cursor:pointer;transition:color .15s;line-height:1}
+.hd-close:hover{color:var(--tx)}
+.hd-actions{margin:14px 16px 8px;display:flex;flex-direction:column;gap:8px}
+.btn-hd-new{width:100%;background:linear-gradient(135deg,rgba(34,197,94,.15),rgba(34,197,94,.08));border:1px solid rgba(34,197,94,.3);color:var(--green);padding:11px;border-radius:9px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-hd-new:hover{background:rgba(34,197,94,.22)}
+.hd-sep{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--tx3);padding:4px 6px;font-weight:700}
+.hd-list{flex:1;overflow-y:auto;padding:0 16px 20px;display:flex;flex-direction:column;gap:8px;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+.hd-empty{text-align:center;padding:40px 20px;color:var(--tx3);font-size:12px;line-height:1.6}
+.scard{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:all .15s}
+.scard:hover{border-color:var(--border2)}
+.scard.active{border-color:var(--v3);box-shadow:0 0 0 1px var(--v3)}
+.scard-body{padding:13px 15px;display:flex;align-items:flex-start;gap:11px}
+.scard-threat{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.scard-info{flex:1;min-width:0}
+.scard-team{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scard-meta{font-size:10px;color:var(--tx3);margin-top:3px}
+.scard-badges{display:flex;gap:6px;margin-top:5px;flex-wrap:wrap}
+.scard-badge{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:3px}
+.scard-score{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;flex-shrink:0}
+.scard-actions{display:flex;border-top:1px solid var(--border)}
+.scard-act{flex:1;background:none;border:none;padding:9px 0;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .15s;color:var(--tx3)}
+.scard-act:hover{color:var(--tx);background:rgba(255,255,255,.02)}
+.scard-act.open:hover{color:var(--v5)}
+.scard-act.del:hover{color:var(--red)}
+.scard-act+.scard-act{border-left:1px solid var(--border)}
+
+.toast-notif{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 18px;font-size:11px;font-weight:600;color:var(--tx);z-index:600;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast-notif.show{opacity:1}
+
+@media(max-width:900px){.player-cards{grid-template-columns:repeat(3,1fr)}.plan-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.player-cards{grid-template-columns:1fr 1fr}.meta-bar{grid-template-columns:1fr 1fr}.swot-grid,.draft-split{grid-template-columns:1fr}.plan-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -141,21 +228,41 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 <div class="sync-bar">
   <div class="sync-indicator">
     <div class="sync-dot offline" id="syncDot"></div>
-    <span class="sync-text" id="syncText" style="color:var(--text3)">En attente…</span>
+    <span class="sync-text" id="syncText" style="color:var(--tx3)">En attente…</span>
     <span class="sync-time" id="syncTime"></span>
   </div>
   <button class="btn-save-fb" id="saveFbBtn" onclick="save()">💾 Sauvegarder</button>
   <div class="btn-mini-row">
     <div class="btn-mini" onclick="exportBackup()">📦 Backup</div>
     <div class="btn-mini" onclick="importBackup()">📥 Import</div>
-    <div class="btn-mini red" onclick="resetData()">🗑 Reset</div>
+    <div class="btn-mini red" onclick="resetCurrentSheet()">🗑 Vider</div>
   </div>
 </div>
 
 <div class="toolbar">
+  <button class="btn-new-sheet" onclick="newSheet()">＋ Nouvelle équipe</button>
+  <button class="btn-hist" id="histBtn" onclick="openDrawer()">📋 Toutes les fiches <span id="sheetCount" style="opacity:.6"></span></button>
   <button class="btn btn-export" id="exportBtn">⬇ Exporter PNG</button>
 </div>
 
+<div class="sheet-chip"><div class="chip-inner" id="sheetChip">⏳ Chargement…</div></div>
+
+<!-- HISTORY DRAWER -->
+<div class="hist-overlay" id="histOverlay" onclick="closeDrawer()"></div>
+<div class="hist-drawer" id="histDrawer">
+  <div class="hd-head">
+    <div class="hd-title">📋 Fiches scouting</div>
+    <button class="hd-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="hd-actions">
+    <button class="btn-hd-new" onclick="newSheet();closeDrawer()">＋ Créer une nouvelle fiche</button>
+    <div class="hd-sep">Équipes analysées</div>
+  </div>
+  <div class="hd-list" id="hdList"><div class="hd-empty">Chargement…</div></div>
+</div>
+<div class="toast-notif" id="toastNotif"></div>
+
+<!-- CARD -->
 <div class="card" id="card">
   <div class="card-header">
     <div>
@@ -166,150 +273,108 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
       <div class="doc-type">Fiche de Scouting Adverse</div>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3)">Niveau de menace</div>
+      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--tx3)">Niveau de menace</div>
       <div style="display:flex;gap:6px">
-        <div class="threat-badge" id="tb_low" style="color:var(--green);border-color:rgba(34,197,94,.3)" onclick="setThreat('low')">Faible</div>
-        <div class="threat-badge" id="tb_med" style="color:var(--yellow);border-color:rgba(245,158,11,.3)" onclick="setThreat('med')">Moyen</div>
-        <div class="threat-badge" id="tb_high" style="color:var(--red);border-color:rgba(239,68,68,.3)" onclick="setThreat('high')">Élevé</div>
+        <div class="threat-badge" id="tb_low"  style="color:var(--green);border-color:rgba(34,197,94,.3)"  onclick="setThreat('low')">Faible</div>
+        <div class="threat-badge" id="tb_med"  style="color:var(--yellow);border-color:rgba(245,158,11,.3)" onclick="setThreat('med')">Moyen</div>
+        <div class="threat-badge" id="tb_high" style="color:var(--red);border-color:rgba(239,68,68,.3)"   onclick="setThreat('high')">Elevé</div>
       </div>
     </div>
   </div>
 
+  <!-- META -->
   <div class="meta-bar">
-    <div class="meta-cell"><div class="meta-label">Équipe adverse</div><input class="meta-input" id="m_team" type="text" placeholder="Nom de l'équipe"></div>
-    <div class="meta-cell"><div class="meta-label">Coach / Manager</div><input class="meta-input" id="m_coach" type="text" placeholder="Nom"></div>
-    <div class="meta-cell"><div class="meta-label">Rang estimé</div><input class="meta-input" id="m_rank" type="text" placeholder="ex: Platine ~ Émeraude"></div>
-    <div class="meta-cell"><div class="meta-label">Prochain tournoi</div><input class="meta-input" id="m_tournoi" type="text" placeholder="ex: Nexus Tour Phase 1"></div>
-    <div class="meta-cell"><div class="meta-label">Analyste</div><input class="meta-input" id="m_analyst" type="text" placeholder="Qui rédige la fiche"></div>
+    <div class="meta-cell"><div class="meta-label">Équipe adverse</div><input class="meta-input" id="m_team"    type="text" placeholder="Nom de l'équipe" oninput="debounceSave()"></div>
+    <div class="meta-cell"><div class="meta-label">Coach / Manager</div><input class="meta-input" id="m_coach"   type="text" placeholder="Nom" oninput="debounceSave()"></div>
+    <div class="meta-cell"><div class="meta-label">Rang estimé</div><input class="meta-input"  id="m_rank"    type="text" placeholder="ex: Platine ~ Émeraude" oninput="debounceSave()"></div>
+    <div class="meta-cell"><div class="meta-label">Prochain tournoi</div><input class="meta-input" id="m_tournoi" type="text" placeholder="ex: Nexus Tour Phase 1" oninput="debounceSave()"></div>
+    <div class="meta-cell"><div class="meta-label">Analyste</div><input class="meta-input"         id="m_analyst" type="text" placeholder="Qui rédige" oninput="debounceSave()"></div>
   </div>
 
   <div class="card-body">
 
-    <!-- ROSTER -->
+    <!-- 1. ROSTER EN CARTES -->
     <div>
       <div class="section-title"><div class="section-dot" style="background:var(--blue)"></div>Roster adverse</div>
-      <table class="roster-table">
-        <thead><tr>
-          <th style="width:90px">Rôle</th><th>Pseudo</th><th>Champion pool</th>
-          <th style="width:90px">Rang</th><th style="width:70px">WR</th>
-          <th style="width:120px">Dangerosité</th><th>Commentaire</th>
-        </tr></thead>
-        <tbody id="rosterBody"></tbody>
-      </table>
+      <div class="player-cards" id="playerCards"></div>
     </div>
 
-    <!-- TENDANCES DRAFT -->
+    <!-- 2. TENDANCES DRAFT -->
     <div>
       <div class="section-title"><div class="section-dot" style="background:var(--v3)"></div>Tendances de draft</div>
       <div class="draft-split">
         <div class="draft-block">
           <div class="draft-block-title" style="color:var(--v4)">🏆 Picks prioritaires (souvent joués)</div>
           <div class="champ-tags" id="tagsPrio"></div>
-          <div class="add-champ">
-            <input class="add-champ-input" id="inputPrio" placeholder="Ajouter un champion…" onkeydown="if(event.key==='Enter')addTag('Prio')">
-            <button class="add-champ-btn" onclick="addTag('Prio')">+</button>
-          </div>
+          <div class="add-champ"><input class="add-champ-input" id="inputPrio" placeholder="Ajouter un champion…" onkeydown="if(event.key==='Enter')addTag('Prio')"><button class="add-champ-btn" onclick="addTag('Prio')">+</button></div>
         </div>
         <div class="draft-block">
           <div class="draft-block-title" style="color:var(--red)">🚫 Bans habituels (à anticiper)</div>
           <div class="champ-tags" id="tagsBans"></div>
-          <div class="add-champ">
-            <input class="add-champ-input" id="inputBans" placeholder="Ajouter un champion…" onkeydown="if(event.key==='Enter')addTag('Bans')">
-            <button class="add-champ-btn" onclick="addTag('Bans')">+</button>
-          </div>
+          <div class="add-champ"><input class="add-champ-input" id="inputBans" placeholder="Ajouter un champion…" onkeydown="if(event.key==='Enter')addTag('Bans')"><button class="add-champ-btn" onclick="addTag('Bans')">+</button></div>
         </div>
         <div class="draft-block">
           <div class="draft-block-title" style="color:var(--yellow)">⚠️ Faiblesse vs certains types</div>
           <div class="champ-tags" id="tagsWeak"></div>
-          <div class="add-champ">
-            <input class="add-champ-input" id="inputWeak" placeholder="Ex: split-push, poke comp…" onkeydown="if(event.key==='Enter')addTag('Weak')">
-            <button class="add-champ-btn" onclick="addTag('Weak')">+</button>
-          </div>
+          <div class="add-champ"><input class="add-champ-input" id="inputWeak" placeholder="Ex: split-push, poke comp…" onkeydown="if(event.key==='Enter')addTag('Weak')"><button class="add-champ-btn" onclick="addTag('Weak')">+</button></div>
         </div>
         <div class="draft-block">
           <div class="draft-block-title" style="color:var(--green)">✅ Nos counter-picks recommandés</div>
           <div class="champ-tags" id="tagsCp"></div>
-          <div class="add-champ">
-            <input class="add-champ-input" id="inputCp" placeholder="Champion fort contre eux…" onkeydown="if(event.key==='Enter')addTag('Cp')">
-            <button class="add-champ-btn" onclick="addTag('Cp')">+</button>
-          </div>
+          <div class="add-champ"><input class="add-champ-input" id="inputCp" placeholder="Champion fort contre eux…" onkeydown="if(event.key==='Enter')addTag('Cp')"><button class="add-champ-btn" onclick="addTag('Cp')">+</button></div>
         </div>
       </div>
     </div>
 
-    <!-- SWOT -->
+    <!-- 3. FORCES / FAIBLESSES -->
     <div>
       <div class="section-title"><div class="section-dot" style="background:var(--yellow)"></div>Analyse Forces / Faiblesses</div>
       <div class="swot-grid">
-        <div class="swot-card" style="border-color:var(--green)">
-          <div class="swot-title" style="color:var(--green)">✦ Leurs forces</div>
-          <textarea class="fiche-textarea" id="sw_forces" placeholder="Points forts identifiés (teamfight, early game, communication…)"></textarea>
-        </div>
-        <div class="swot-card" style="border-color:var(--red)">
-          <div class="swot-title" style="color:var(--red)">✦ Leurs faiblesses</div>
-          <textarea class="fiche-textarea" id="sw_weak" placeholder="Vulnérabilités exploitables (poke, split, objectifs…)"></textarea>
-        </div>
-        <div class="swot-card" style="border-color:var(--v3)">
-          <div class="swot-title" style="color:var(--v3)">✦ Stratégie typique</div>
-          <textarea class="fiche-textarea" id="sw_strat" placeholder="Style de jeu habituel, win condition préférée…"></textarea>
-        </div>
-        <div class="swot-card" style="border-color:var(--cyan)">
-          <div class="swot-title" style="color:var(--cyan)">✦ Comment les contrer</div>
-          <textarea class="fiche-textarea" id="sw_counter" placeholder="Notre approche optimale face à eux…"></textarea>
-        </div>
+        <div class="swot-card" style="border-color:var(--green)"><div class="swot-title" style="color:var(--green)">❆ Leurs forces</div><textarea class="fiche-textarea" id="sw_forces" placeholder="Points forts identifiés (teamfight, early game…)" oninput="debounceSave()"></textarea></div>
+        <div class="swot-card" style="border-color:var(--red)"><div class="swot-title" style="color:var(--red)">❆ Leurs faiblesses</div><textarea class="fiche-textarea" id="sw_weak" placeholder="Vulnérabilités exploitables (poke, split…)" oninput="debounceSave()"></textarea></div>
+        <div class="swot-card" style="border-color:var(--v3)"><div class="swot-title" style="color:var(--v3)">❆ Stratégie typique</div><textarea class="fiche-textarea" id="sw_strat" placeholder="Style de jeu habituel, win condition préférée…" oninput="debounceSave()"></textarea></div>
+        <div class="swot-card" style="border-color:var(--cyan)"><div class="swot-title" style="color:var(--cyan)">❆ Comment les contrer</div><textarea class="fiche-textarea" id="sw_counter" placeholder="Notre approche optimale face à eux…" oninput="debounceSave()"></textarea></div>
       </div>
     </div>
 
-    <!-- PLAN D'APPROCHE -->
+    <!-- 4. PLAN D'APPROCHE -->
     <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--orange)"></div>Plan d'approche par phase</div>
+      <div class="section-title"><div class="section-dot" style="background:var(--orange)"></div>Plan d’approche par phase</div>
       <div class="plan-grid">
-        <div class="plan-card" style="border-left:3px solid var(--green)">
-          <div class="plan-title" style="color:var(--green)">🌅 Early Game (0–15 min)</div>
-          <textarea class="fiche-textarea" id="pl_early" placeholder="Priorités de laning, jungle path, 2v2…" style="min-height:80px"></textarea>
-        </div>
-        <div class="plan-card" style="border-left:3px solid var(--yellow)">
-          <div class="plan-title" style="color:var(--yellow)">⚔️ Mid Game / Teamfight</div>
-          <textarea class="fiche-textarea" id="pl_mid" placeholder="Contrôle des objectifs, rotations, fights à éviter…" style="min-height:80px"></textarea>
-        </div>
-        <div class="plan-card" style="border-left:3px solid var(--v4)">
-          <div class="plan-title" style="color:var(--v4)">🏆 Win Condition</div>
-          <textarea class="fiche-textarea" id="pl_win" placeholder="Comment on gagne cette partie…" style="min-height:80px"></textarea>
-        </div>
+        <div class="plan-card" style="border-left:3px solid var(--green)"><div class="plan-title" style="color:var(--green)">🌅 Early Game (0–15 min)</div><textarea class="fiche-textarea" id="pl_early" placeholder="Priorités de laning, jungle path, 2v2…" style="min-height:80px" oninput="debounceSave()"></textarea></div>
+        <div class="plan-card" style="border-left:3px solid var(--yellow)"><div class="plan-title" style="color:var(--yellow)">⚔️ Mid Game / Teamfight</div><textarea class="fiche-textarea" id="pl_mid" placeholder="Contrôle des objectifs, rotations…" style="min-height:80px" oninput="debounceSave()"></textarea></div>
+        <div class="plan-card" style="border-left:3px solid var(--v4)"><div class="plan-title" style="color:var(--v4)">🏆 Win Condition</div><textarea class="fiche-textarea" id="pl_win" placeholder="Comment on gagne cette partie…" style="min-height:80px" oninput="debounceSave()"></textarea></div>
       </div>
     </div>
 
-    <!-- CONTRA PICKS TABLE -->
+    <!-- 5. CONTRE-PICKS TABLE -->
     <div>
       <div class="section-title"><div class="section-dot" style="background:var(--pink)"></div>Tableau de contre-picks par rôle</div>
       <table class="cp-table">
-        <thead><tr>
-          <th style="width:90px">Rôle</th><th>Leur pick habituel</th>
-          <th>Notre contre-pick</th><th>Raison / Avantage</th>
-        </tr></thead>
+        <thead><tr><th style="width:90px">Rôle</th><th>Leur pick habituel</th><th>Notre contre-pick</th><th>Raison / Avantage</th></tr></thead>
         <tbody id="cpBody"></tbody>
       </table>
     </div>
 
-    <!-- JAUGE MENACE -->
+    <!-- 6. JAUGE MENACE -->
     <div>
       <div class="section-title"><div class="section-dot" style="background:var(--red)"></div>Jauge de menace globale</div>
       <div class="threat-section">
         <div class="threat-label">Niveau de menace</div>
         <div class="threat-gauge" id="threatGauge"></div>
-        <div class="threat-text" id="threatText" style="color:var(--text3)">—</div>
+        <div class="threat-text" id="threatText" style="color:var(--tx3)">—</div>
       </div>
     </div>
 
-    <!-- CONCLUSION -->
+    <!-- 7. CONCLUSION -->
     <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--v4)"></div>Conclusion & probabilité de victoire estimée</div>
+      <div class="section-title"><div class="section-dot" style="background:var(--v4)"></div>Conclusion &amp; probabilité de victoire estimée</div>
       <div class="note-globale">
-        <input class="note-val" id="f_note" type="text" value="—" maxlength="3">
+        <input class="note-val" id="f_note" type="text" value="—" maxlength="3" oninput="debounceSave()">
         <div class="note-sep">%</div>
         <div class="note-right">
           <div class="note-label-big">Estimation de victoire</div>
-          <input class="note-comment" id="f_comment" type="text" placeholder="Résumé de l'analyse, niveau perçu, confiance dans notre préparation…">
+          <input class="note-comment" id="f_comment" type="text" placeholder="Résumé de l’analyse, niveau perçu, confiance…" oninput="debounceSave()">
         </div>
       </div>
     </div>
@@ -318,241 +383,436 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 
   <div class="card-footer">
     <div class="footer-brand">PlaZma Esport · plazma-esport.fr</div>
-    <div style="font-size:10px;color:var(--text3);letter-spacing:1px" id="footerDate"></div>
+    <div style="font-size:10px;color:var(--tx3);letter-spacing:1px" id="footerDate"></div>
   </div>
 </div>
 
 <script>
-const COL='plazma', DOC_ID='scouting';
-const ROLES=[
-  {role:'Top',    color:'#f97316'},
-  {role:'Jungle', color:'#22c55e'},
-  {role:'Mid',    color:'#3b82f6'},
-  {role:'ADC',    color:'#ef4444'},
-  {role:'Support',color:'#a855f7'},
+'use strict';
+const SCOUT_COL = 'plazma-scouting';
+let currentDocId = null;
+let _unsub = null;
+
+const ROLES = [
+  {role:'Top',     color:'#f97316'},
+  {role:'Jungle',  color:'#22c55e'},
+  {role:'Mid',     color:'#3b82f6'},
+  {role:'ADC',     color:'#ef4444'},
+  {role:'Support', color:'#a855f7'},
 ];
 
-// tag state
-const tagData={Prio:[],Bans:[],Weak:[],Cp:[]};
-// danger state per role [0-4]
-const dangerState=[0,0,0,0,0];
-// gauge state [0-10]
-let gaugeVal=0;
-// threat badge
-let threatLevel='';
+// ── PER-PLAYER STATE ──────────────────────────────────────────
+// dangerState: 0-7, sideState: ''|'blue'|'red'|'both', tempState: ''|'tilt'|'calm'|'neutral'
+const dangerState = [0,0,0,0,0];
+const sideState   = ['','','','',''];
+const tempState   = ['','','','',''];
 
-// ── BUILD ROSTER ──────────────────────────────────────────────
-function buildRoster(){
-  const tbody=document.getElementById('rosterBody');
-  tbody.innerHTML='';
-  ROLES.forEach((r,i)=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td><div style="padding:9px 12px"><span class="role-badge" style="background:${r.color}22;color:${r.color}">${r.role}</span></div></td>
-      <td><input class="td-input" id="ro${i}_pseudo" type="text" placeholder="Pseudo…" oninput="debounceSave()"></td>
-      <td><input class="td-input" id="ro${i}_pool" type="text" placeholder="Champ1, Champ2, Champ3" oninput="debounceSave()"></td>
-      <td><input class="td-input" id="ro${i}_rank" type="text" placeholder="Gold IV…" oninput="debounceSave()"></td>
-      <td><input class="td-input" id="ro${i}_wr" type="text" placeholder="55%" oninput="debounceSave()"></td>
-      <td>
-        <div class="danger-bar" id="danger${i}">
-          <div class="danger-dot" style="background:var(--green)"  data-v="1" onclick="setDanger(${i},1)"></div>
-          <div class="danger-dot" style="background:var(--yellow)" data-v="2" onclick="setDanger(${i},2)"></div>
-          <div class="danger-dot" style="background:var(--orange)" data-v="3" onclick="setDanger(${i},3)"></div>
-          <div class="danger-dot" style="background:var(--red)"    data-v="4" onclick="setDanger(${i},4)"></div>
+// ── TAG STATE ─────────────────────────────────────────────────
+const tagData = {Prio:[],Bans:[],Weak:[],Cp:[]};
+
+// ── GAUGE + THREAT ─────────────────────────────────────────────
+let gaugeVal   = 0;
+let threatLevel = '';
+
+// ── BUILD PLAYER CARDS ────────────────────────────────────────
+const DANGER_COLORS = ['#22c55e','#22c55e','#84cc16','#eab308','#f97316','#f97316','#ef4444','#ef4444'];
+
+function buildPlayerCards() {
+  const grid = document.getElementById('playerCards');
+  grid.innerHTML = '';
+  ROLES.forEach((r, i) => {
+    const card = document.createElement('div');
+    card.className = 'player-card';
+    card.innerHTML = `
+      <div class="pc-header">
+        <span class="pc-role" style="background:${r.color}22;color:${r.color}">${r.role}</span>
+        <div class="pc-danger" id="danger${i}"></div>
+      </div>
+      <div class="pc-body">
+        <div class="pc-field">
+          <div class="pc-lbl">Pseudo</div>
+          <input class="pc-inp" id="ro${i}_pseudo" placeholder="Pseudo…" oninput="debounceSave()">
         </div>
-      </td>
-      <td><input class="td-input" id="ro${i}_comm" type="text" placeholder="Commentaire…" oninput="debounceSave()"></td>`;
-    tbody.appendChild(tr);
+        <div class="pc-field">
+          <div class="pc-lbl">Champion pool</div>
+          <input class="pc-inp" id="ro${i}_pool" placeholder="Champ1, Champ2…" oninput="debounceSave()">
+        </div>
+        <div class="pc-field">
+          <div class="pc-lbl">Rang / WR</div>
+          <input class="pc-inp" id="ro${i}_rank" placeholder="Gold IV · 55%" oninput="debounceSave()">
+        </div>
+        <div class="pc-field">
+          <div class="pc-lbl">Side favori</div>
+          <div class="pc-pills">
+            <div class="pc-pill" id="side${i}_blue" onclick="setSide(${i},'blue')">Blue</div>
+            <div class="pc-pill" id="side${i}_red"  onclick="setSide(${i},'red')">Red</div>
+            <div class="pc-pill" id="side${i}_both" onclick="setSide(${i},'both')">Les deux</div>
+          </div>
+        </div>
+        <div class="pc-field">
+          <div class="pc-lbl">Tempérament</div>
+          <div class="pc-pills">
+            <div class="pc-pill" id="temp${i}_tilt"    onclick="setTemp(${i},'tilt')">Tiltable</div>
+            <div class="pc-pill" id="temp${i}_calm"    onclick="setTemp(${i},'calm')">Calme</div>
+            <div class="pc-pill" id="temp${i}_neutral" onclick="setTemp(${i},'neutral')">Neutre</div>
+          </div>
+        </div>
+        <div class="pc-field">
+          <div class="pc-lbl">Commentaire</div>
+          <input class="pc-inp" id="ro${i}_comm" placeholder="Note rapide…" oninput="debounceSave()">
+        </div>
+      </div>`;
+    grid.appendChild(card);
+    buildDangerDots(i);
+    applySideUI(i);
+    applyTempUI(i);
   });
 }
 
-function setDanger(idx,val){
-  dangerState[idx]=dangerState[idx]===val?0:val;
-  applyDangerUI(idx);
+function buildDangerDots(idx) {
+  const bar = document.getElementById('danger' + idx);
+  bar.innerHTML = '';
+  for (let d = 1; d <= 7; d++) {
+    const dot = document.createElement('div');
+    dot.className = 'pc-dot' + (d <= dangerState[idx] ? ' on' : '');
+    dot.style.background = DANGER_COLORS[d-1];
+    dot.dataset.v = d;
+    dot.addEventListener('click', () => { dangerState[idx] = dangerState[idx] === d ? 0 : d; buildDangerDots(idx); debounceSave(); });
+    bar.appendChild(dot);
+  }
+}
+
+function setSide(idx, val) {
+  sideState[idx] = sideState[idx] === val ? '' : val;
+  applySideUI(idx);
   debounceSave();
 }
-function applyDangerUI(idx){
-  const dots=document.querySelectorAll('#danger'+idx+' .danger-dot');
-  dots.forEach(d=>d.classList.toggle('on',parseInt(d.dataset.v)<=dangerState[idx]));
+function applySideUI(idx) {
+  ['blue','red','both'].forEach(v => {
+    const el = document.getElementById('side' + idx + '_' + v);
+    if (!el) return;
+    el.className = 'pc-pill' + (sideState[idx] === v ? ' on-' + v : '');
+  });
 }
 
-// ── BUILD CP TABLE ────────────────────────────────────────────
-function buildCPTable(){
-  const tbody=document.getElementById('cpBody');
-  tbody.innerHTML='';
-  ROLES.forEach((r,i)=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`
+function setTemp(idx, val) {
+  tempState[idx] = tempState[idx] === val ? '' : val;
+  applyTempUI(idx);
+  debounceSave();
+}
+function applyTempUI(idx) {
+  ['tilt','calm','neutral'].forEach(v => {
+    const el = document.getElementById('temp' + idx + '_' + v);
+    if (!el) return;
+    el.className = 'pc-pill' + (tempState[idx] === v ? ' on-' + v : '');
+  });
+}
+
+// ── BUILD CP TABLE ─────────────────────────────────────────────
+function buildCPTable() {
+  const tbody = document.getElementById('cpBody');
+  tbody.innerHTML = '';
+  ROLES.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
       <td><div style="padding:9px 12px"><span class="role-badge" style="background:${r.color}22;color:${r.color}">${r.role}</span></div></td>
-      <td><input class="td-input" id="cp${i}_their" type="text" placeholder="Leur champion habituel…" oninput="debounceSave()"></td>
-      <td><input class="td-input" id="cp${i}_our" type="text" placeholder="Notre pick recommandé…" oninput="debounceSave()"></td>
-      <td><input class="td-input" id="cp${i}_why" type="text" placeholder="Avantage en lane, teamfight…" oninput="debounceSave()"></td>`;
+      <td><input class="td-input" id="cp${i}_their" placeholder="Leur champion habituel…" oninput="debounceSave()"></td>
+      <td><input class="td-input" id="cp${i}_our"   placeholder="Notre pick recommandé…" oninput="debounceSave()"></td>
+      <td><input class="td-input" id="cp${i}_why"   placeholder="Avantage en lane, teamfight…" oninput="debounceSave()"></td>`;
     tbody.appendChild(tr);
   });
 }
 
-// ── BUILD GAUGE ───────────────────────────────────────────────
-const GAUGE_COLORS=['#22c55e','#22c55e','#22c55e','#84cc16','#eab308','#f97316','#f97316','#ef4444','#ef4444','#ef4444'];
-const GAUGE_LABELS={0:'—',1:'Très faible',2:'Faible',3:'Modéré',4:'Moyen',5:'Moyen+',6:'Préoccupant',7:'Dangereux',8:'Très dangereux',9:'Critique',10:'Critique'};
-function buildGauge(){
-  const g=document.getElementById('threatGauge');g.innerHTML='';
-  for(let i=1;i<=10;i++){
-    const s=document.createElement('div');
-    s.className='gauge-step';
-    s.style.background=GAUGE_COLORS[i-1];
-    s.style.borderColor=GAUGE_COLORS[i-1];
-    s.dataset.v=i;
-    s.addEventListener('click',()=>{gaugeVal=gaugeVal===i?0:i;applyGaugeUI();debounceSave();});
+// ── GAUGE ──────────────────────────────────────────────────────
+const GAUGE_COLORS = ['#22c55e','#22c55e','#22c55e','#84cc16','#eab308','#f97316','#f97316','#ef4444','#ef4444','#ef4444'];
+const GAUGE_LABELS = {0:'—',1:'Très faible',2:'Faible',3:'Modéré',4:'Moyen',5:'Moyen+',6:'Préoccupant',7:'Dangereux',8:'Très dangereux',9:'Critique',10:'Critique'};
+
+function buildGauge() {
+  const g = document.getElementById('threatGauge'); g.innerHTML = '';
+  for (let i = 1; i <= 10; i++) {
+    const s = document.createElement('div');
+    s.className = 'gauge-step';
+    s.style.background = GAUGE_COLORS[i-1];
+    s.style.borderColor = GAUGE_COLORS[i-1];
+    s.dataset.v = i;
+    s.addEventListener('click', () => { gaugeVal = gaugeVal === i ? 0 : i; applyGaugeUI(); debounceSave(); });
     g.appendChild(s);
   }
   applyGaugeUI();
 }
-function applyGaugeUI(){
-  document.querySelectorAll('.gauge-step').forEach(s=>s.classList.toggle('active',parseInt(s.dataset.v)<=gaugeVal));
-  const tt=document.getElementById('threatText');
-  tt.textContent=gaugeVal>0?gaugeVal+'/10 — '+GAUGE_LABELS[gaugeVal]:'—';
-  tt.style.color=gaugeVal>0?GAUGE_COLORS[gaugeVal-1]:'var(--text3)';
+function applyGaugeUI() {
+  document.querySelectorAll('.gauge-step').forEach(s => s.classList.toggle('active', parseInt(s.dataset.v) <= gaugeVal));
+  const tt = document.getElementById('threatText');
+  tt.textContent = gaugeVal > 0 ? gaugeVal + '/10 — ' + GAUGE_LABELS[gaugeVal] : '—';
+  tt.style.color = gaugeVal > 0 ? GAUGE_COLORS[gaugeVal-1] : 'var(--tx3)';
 }
 
-// ── THREAT BADGES ─────────────────────────────────────────────
-function setThreat(level){
-  threatLevel=threatLevel===level?'':level;
+// ── THREAT BADGES ──────────────────────────────────────────────
+function setThreat(level) {
+  threatLevel = threatLevel === level ? '' : level;
   applyThreatUI();
   debounceSave();
 }
-function applyThreatUI(){
-  ['low','med','high'].forEach(l=>{
-    const b=document.getElementById('tb_'+l);
-    if(b){b.style.opacity=threatLevel===l||threatLevel===''?'1':'.35';b.style.fontWeight=threatLevel===l?'800':'600';}
+function applyThreatUI() {
+  ['low','med','high'].forEach(l => {
+    const b = document.getElementById('tb_' + l);
+    if (b) { b.style.opacity = threatLevel === l || !threatLevel ? '1' : '.35'; b.style.fontWeight = threatLevel === l ? '800' : '600'; }
   });
 }
 
-// ── TAGS ──────────────────────────────────────────────────────
-function addTag(type){
-  const input=document.getElementById('input'+type);
-  const val=input.value.trim();if(!val)return;
-  tagData[type].push(val);renderTags(type);input.value='';debounceSave();
+// ── TAGS ───────────────────────────────────────────────────────
+function addTag(type) {
+  const input = document.getElementById('input' + type);
+  const val = input.value.trim(); if (!val) return;
+  tagData[type].push(val); renderTags(type); input.value = ''; debounceSave();
 }
-function removeTag(type,i){tagData[type].splice(i,1);renderTags(type);debounceSave();}
-function renderTags(type){
-  const c=document.getElementById('tags'+type);if(!c)return;
-  c.innerHTML=tagData[type].map((t,i)=>
-    `<div class="champ-tag">${t}<span class="del" onclick="removeTag('${type}',${i})"> ✕</span></div>`
+function removeTag(type, i) { tagData[type].splice(i, 1); renderTags(type); debounceSave(); }
+function renderTags(type) {
+  const c = document.getElementById('tags' + type); if (!c) return;
+  c.innerHTML = tagData[type].map((t, i) =>
+    `<div class="champ-tag">${esc(t)}<span class="del" onclick="removeTag('${type}',${i})"> ✕</span></div>`
   ).join('');
 }
 
-// ── GET / APPLY STATE ─────────────────────────────────────────
-function v(id){const e=document.getElementById(id);return e?e.value:'';}
-function sv(id,val){const e=document.getElementById(id);if(e)e.value=val||'';}
+// ── GET / APPLY STATE ──────────────────────────────────────────
+function v(id)          { const e = document.getElementById(id); return e ? e.value : ''; }
+function sv(id, val)    { const e = document.getElementById(id); if (e) e.value = val || ''; }
 
-function getState(){
-  const roster={};
-  ROLES.forEach((_,i)=>{
-    ['pseudo','pool','rank','wr','comm'].forEach(k=>{roster[`ro${i}_${k}`]=v(`ro${i}_${k}`);});
-    roster[`danger${i}`]=dangerState[i];
+function getState() {
+  const roster = {};
+  ROLES.forEach((_, i) => {
+    ['pseudo','pool','rank','comm'].forEach(k => { roster[`ro${i}_${k}`] = v(`ro${i}_${k}`); });
+    roster[`danger${i}`] = dangerState[i];
+    roster[`side${i}`]   = sideState[i];
+    roster[`temp${i}`]   = tempState[i];
   });
-  const cp={};
-  ROLES.forEach((_,i)=>['their','our','why'].forEach(k=>{cp[`cp${i}_${k}`]=v(`cp${i}_${k}`);}));
-  return{
-    m_team:v('m_team'),m_coach:v('m_coach'),m_rank:v('m_rank'),m_tournoi:v('m_tournoi'),m_analyst:v('m_analyst'),
-    sw_forces:v('sw_forces'),sw_weak:v('sw_weak'),sw_strat:v('sw_strat'),sw_counter:v('sw_counter'),
-    pl_early:v('pl_early'),pl_mid:v('pl_mid'),pl_win:v('pl_win'),
-    f_note:v('f_note'),f_comment:v('f_comment'),
-    tagData:{...tagData},dangerState:[...dangerState],gaugeVal,threatLevel,
-    ...roster,...cp
+  const cp = {};
+  ROLES.forEach((_, i) => ['their','our','why'].forEach(k => { cp[`cp${i}_${k}`] = v(`cp${i}_${k}`); }));
+  return {
+    m_team:v('m_team'), m_coach:v('m_coach'), m_rank:v('m_rank'), m_tournoi:v('m_tournoi'), m_analyst:v('m_analyst'),
+    sw_forces:v('sw_forces'), sw_weak:v('sw_weak'), sw_strat:v('sw_strat'), sw_counter:v('sw_counter'),
+    pl_early:v('pl_early'), pl_mid:v('pl_mid'), pl_win:v('pl_win'),
+    f_note:v('f_note'), f_comment:v('f_comment'),
+    tagData:{...tagData}, gaugeVal, threatLevel,
+    ...roster, ...cp
   };
 }
 
-function applyState(s){
-  if(!s)return;
-  // simple fields
+function applyState(s) {
+  if (!s) return;
   ['m_team','m_coach','m_rank','m_tournoi','m_analyst',
    'sw_forces','sw_weak','sw_strat','sw_counter',
-   'pl_early','pl_mid','pl_win','f_note','f_comment'].forEach(k=>sv(k,s[k]));
-  // roster
-  ROLES.forEach((_,i)=>{
-    ['pseudo','pool','rank','wr','comm'].forEach(k=>sv(`ro${i}_${k}`,s[`ro${i}_${k}`]));
-    if(s[`danger${i}`]!=null){dangerState[i]=s[`danger${i}`];applyDangerUI(i);}
+   'pl_early','pl_mid','pl_win','f_note','f_comment'].forEach(k => sv(k, s[k]));
+  ROLES.forEach((_, i) => {
+    ['pseudo','pool','rank','comm'].forEach(k => sv(`ro${i}_${k}`, s[`ro${i}_${k}`]));
+    if (s[`danger${i}`] != null) { dangerState[i] = s[`danger${i}`]; buildDangerDots(i); }
+    if (s[`side${i}`]   != null) { sideState[i]   = s[`side${i}`];   applySideUI(i); }
+    if (s[`temp${i}`]   != null) { tempState[i]   = s[`temp${i}`];   applyTempUI(i); }
   });
-  // cp
-  ROLES.forEach((_,i)=>['their','our','why'].forEach(k=>sv(`cp${i}_${k}`,s[`cp${i}_${k}`])));
-  // tags
-  if(s.tagData){Object.assign(tagData,s.tagData);['Prio','Bans','Weak','Cp'].forEach(renderTags);}
-  // gauge
-  if(s.gaugeVal!=null){gaugeVal=s.gaugeVal;applyGaugeUI();}
-  // threat
-  if(s.threatLevel!=null){threatLevel=s.threatLevel;applyThreatUI();}
+  ROLES.forEach((_, i) => ['their','our','why'].forEach(k => sv(`cp${i}_${k}`, s[`cp${i}_${k}`])));
+  if (s.tagData) { Object.assign(tagData, s.tagData); ['Prio','Bans','Weak','Cp'].forEach(renderTags); }
+  if (s.gaugeVal  != null) { gaugeVal   = s.gaugeVal;   applyGaugeUI(); }
+  if (s.threatLevel != null) { threatLevel = s.threatLevel; applyThreatUI(); }
 }
 
-// ── FIREBASE ──────────────────────────────────────────────────
-function setSyncState(state,text,time=''){
-  const dot=document.getElementById('syncDot'),txt=document.getElementById('syncText'),tim=document.getElementById('syncTime');
-  if(!dot)return;
-  dot.className='sync-dot '+state;
-  txt.textContent=text;
-  txt.style.color=state==='connected'?'var(--green)':state==='syncing'?'var(--yellow)':state==='error'?'var(--red)':'var(--text3)';
-  tim.textContent=time;
+// ── FIREBASE MULTI-FICHES ──────────────────────────────────────
+function newDocId() { return 'scout-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6); }
+
+function setSyncState(state, text, time) {
+  const dot = document.getElementById('syncDot'), txt = document.getElementById('syncText'), tim = document.getElementById('syncTime');
+  if (!dot) return;
+  dot.className = 'sync-dot ' + ({connected:'connected',syncing:'syncing',error:'error'}[state] || 'offline');
+  txt.textContent = text;
+  txt.style.color = state==='connected'?'var(--green)':state==='syncing'?'var(--yellow)':state==='error'?'var(--red)':'var(--tx3)';
+  if (tim) tim.textContent = time || '';
 }
-function hideLoading(){const ls=document.getElementById('loadingScreen');if(ls){ls.classList.add('hidden');setTimeout(()=>ls.style.display='none',500);}}
-function save(){
-  setSyncState('syncing','Sauvegarde…');
-  db.collection(COL).doc(DOC_ID).set(getState())
-    .then(()=>{setSyncState('connected','Synchronisé');flashSave(true);})
-    .catch(e=>{setSyncState('error','Erreur Firebase');flashSave(false);console.error(e);});
+function hideLoading() { const ls = document.getElementById('loadingScreen'); if (ls) { ls.classList.add('hidden'); setTimeout(() => ls.style.display='none', 500); } }
+
+function updateChip() {
+  const chip = document.getElementById('sheetChip'); if (!chip) return;
+  const team = document.getElementById('m_team')?.value || 'Sans nom';
+  const tournoi = document.getElementById('m_tournoi')?.value;
+  chip.textContent = '📄 ' + team + (tournoi ? ' — ' + tournoi : '');
 }
-function startSync(){
-  setSyncState('syncing','Connexion…');
-  db.collection(COL).doc(DOC_ID).onSnapshot(doc=>{
-    if(doc.metadata.hasPendingWrites)return;
-    if(doc.exists){applyState(doc.data());const now=new Date();setSyncState('connected','Synchronisé',now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));}
-    else setSyncState('connected','Prêt','');
+
+function save() {
+  if (!currentDocId) currentDocId = newDocId();
+  setSyncState('syncing', 'Sauvegarde…');
+  const state = getState();
+  state._savedAt = firebase.firestore.FieldValue.serverTimestamp();
+  db.collection(SCOUT_COL).doc(currentDocId).set(state)
+    .then(() => { setSyncState('connected', 'Synchronisé'); flashSave(true); updateChip(); })
+    .catch(e => { setSyncState('error', 'Erreur Firebase'); flashSave(false); console.error(e); });
+}
+
+function startSync(docId) {
+  if (_unsub) { _unsub(); _unsub = null; }
+  currentDocId = docId;
+  setSyncState('syncing', 'Connexion…');
+  _unsub = db.collection(SCOUT_COL).doc(docId).onSnapshot(doc => {
+    if (doc.metadata.hasPendingWrites) return;
+    if (doc.exists) {
+      applyState(doc.data());
+      updateChip();
+      setSyncState('connected', 'Synchronisé', new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));
+    } else {
+      setSyncState('connected', 'Prêt', '');
+      updateChip();
+    }
     hideLoading();
-  },err=>{console.error(err);setSyncState('error','Erreur connexion');hideLoading();});
+  }, err => { console.error(err); setSyncState('error', 'Erreur connexion'); hideLoading(); });
 }
-function flashSave(ok){
-  const btn=document.getElementById('saveFbBtn');if(!btn)return;
-  btn.classList.add('saved');btn.textContent=ok?'✓ Sauvegardé':'⚠ Erreur';if(!ok)btn.style.color='#ef4444';
-  setTimeout(()=>{btn.classList.remove('saved');btn.textContent='💾 Sauvegarder';btn.style.color='';},1600);
+
+function fullReset() {
+  ['m_team','m_coach','m_rank','m_tournoi','m_analyst',
+   'sw_forces','sw_weak','sw_strat','sw_counter','pl_early','pl_mid','pl_win','f_comment'].forEach(id => sv(id, ''));
+  sv('f_note', '—');
+  ROLES.forEach((_, i) => {
+    ['pseudo','pool','rank','comm'].forEach(k => sv(`ro${i}_${k}`, ''));
+    dangerState[i] = 0; buildDangerDots(i);
+    sideState[i]   = ''; applySideUI(i);
+    tempState[i]   = ''; applyTempUI(i);
+    ['their','our','why'].forEach(k => sv(`cp${i}_${k}`, ''));
+  });
+  Object.keys(tagData).forEach(k => { tagData[k] = []; renderTags(k); });
+  gaugeVal = 0; applyGaugeUI();
+  threatLevel = ''; applyThreatUI();
 }
-let _st=null;
-function debounceSave(){clearTimeout(_st);_st=setTimeout(save,1000);}
-function exportBackup(){
-  const b=new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(b);
-  a.download='plazma-scouting-backup-'+new Date().toISOString().split('T')[0]+'.json';a.click();
+
+function newSheet() {
+  if (!confirm('Créer une nouvelle fiche ? La fiche actuelle reste sauvegardée.')) return;
+  fullReset(); startSync(newDocId()); showToast('Nouvelle fiche créée ✓');
 }
-function importBackup(){
-  const input=document.createElement('input');input.type='file';input.accept='.json';
-  input.addEventListener('change',async()=>{try{applyState(JSON.parse(await input.files[0].text()));save();}catch(e){alert('Fichier invalide');}});
+function loadSheet(docId) {
+  if (docId === currentDocId) { closeDrawer(); return; }
+  fullReset(); startSync(docId); closeDrawer(); showToast('Fiche chargée ✓');
+}
+async function deleteSheet(docId, e) {
+  e.stopPropagation();
+  if (!confirm('Supprimer définitivement cette fiche ?')) return;
+  await db.collection(SCOUT_COL).doc(docId).delete();
+  if (docId === currentDocId) newSheet();
+  loadDrawer(); showToast('Fiche supprimée');
+}
+function resetCurrentSheet() {
+  if (!confirm('Vider la fiche actuelle ?')) return;
+  fullReset(); save();
+}
+
+// ── DRAWER ─────────────────────────────────────────────────────
+function openDrawer() {
+  document.getElementById('histOverlay').classList.add('open');
+  document.getElementById('histDrawer').classList.add('open');
+  document.getElementById('histBtn').classList.add('active');
+  loadDrawer();
+}
+function closeDrawer() {
+  document.getElementById('histOverlay').classList.remove('open');
+  document.getElementById('histDrawer').classList.remove('open');
+  document.getElementById('histBtn').classList.remove('active');
+}
+async function loadDrawer() {
+  const list = document.getElementById('hdList');
+  list.innerHTML = '<div class="hd-empty">Chargement…</div>';
+  let docs = [];
+  try {
+    const snap = await db.collection(SCOUT_COL).orderBy('_savedAt','desc').get();
+    snap.forEach(d => docs.push({id:d.id,...d.data()}));
+  } catch {
+    const snap = await db.collection(SCOUT_COL).get();
+    snap.forEach(d => docs.push({id:d.id,...d.data()}));
+    docs.sort((a,b) => (b._savedAt?.toMillis?.() || 0) - (a._savedAt?.toMillis?.() || 0));
+  }
+  const cnt = document.getElementById('sheetCount');
+  if (cnt) cnt.textContent = docs.length ? `(${docs.length})` : '';
+  if (!docs.length) { list.innerHTML = '<div class="hd-empty">Aucune fiche sauvegardée.<br>Crée ta première équipe !</div>'; return; }
+  list.innerHTML = '';
+  const TC = {low:'var(--green)', med:'var(--yellow)', high:'var(--red)'};
+  const TL = {low:'Faible', med:'Moyen', high:'Élevé'};
+  docs.forEach(doc => {
+    const isActive = doc.id === currentDocId;
+    const team = doc.m_team || 'Sans nom';
+    const tournoi = doc.m_tournoi || '';
+    const threat = doc.threatLevel || '';
+    const score = doc.f_note || '—';
+    const gaugeN = doc.gaugeVal || 0;
+    const date = doc._savedAt?.toDate?.()?.toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}) || '';
+    const gc = gaugeN > 0 ? GAUGE_COLORS[gaugeN-1] : 'var(--tx3)';
+    const card = document.createElement('div'); card.className = 'scard' + (isActive?' active':'');
+    card.innerHTML = `
+      <div class="scard-body">
+        <div class="scard-threat" style="background:${threat?TC[threat]:'var(--tx3)'}"></div>
+        <div class="scard-info">
+          <div class="scard-team">${esc(team)}</div>
+          <div class="scard-meta">${date}${tournoi?' · '+esc(tournoi):''}</div>
+          <div class="scard-badges">
+            ${threat?`<span class="scard-badge" style="background:${TC[threat]}18;color:${TC[threat]}">${TL[threat]}</span>`:''}
+            ${gaugeN>0?`<span class="scard-badge" style="background:${gc}18;color:${gc}">Menace ${gaugeN}/10</span>`:''}
+            ${isActive?'<span class="scard-badge" style="background:rgba(139,92,246,.15);color:var(--v5)">En cours</span>':''}
+          </div>
+        </div>
+        <div class="scard-score" style="color:${gc}">${esc(score)}<span style="font-size:12px;color:var(--tx3);font-weight:400">%</span></div>
+      </div>
+      <div class="scard-actions">
+        <button class="scard-act open" onclick="loadSheet('${doc.id}')">${isActive?'✎ Modifier':'📂 Ouvrir'}</button>
+        <button class="scard-act del"  onclick="deleteSheet('${doc.id}',event)">🗑 Supprimer</button>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function flashSave(ok) {
+  const btn = document.getElementById('saveFbBtn'); if (!btn) return;
+  btn.classList.add('saved'); btn.textContent = ok ? '✓ Sauvegardé' : '⚠ Erreur'; if (!ok) btn.style.color='#ef4444';
+  setTimeout(() => { btn.classList.remove('saved'); btn.textContent = '💾 Sauvegarder'; btn.style.color=''; }, 1600);
+}
+let _st = null;
+function debounceSave() { clearTimeout(_st); _st = setTimeout(save, 1000); }
+function showToast(msg) { const t = document.getElementById('toastNotif'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2600); }
+
+function exportBackup() {
+  const b = new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(b);
+  const team = document.getElementById('m_team')?.value?.replace(/\s+/g,'_') || 'scouting';
+  a.download = 'plazma-scout-' + team + '-' + new Date().toISOString().split('T')[0] + '.json'; a.click();
+}
+function importBackup() {
+  const input = document.createElement('input'); input.type='file'; input.accept='.json';
+  input.addEventListener('change', async () => { try { applyState(JSON.parse(await input.files[0].text())); save(); } catch(e) { alert('Fichier invalide'); } });
   input.click();
 }
-function resetData(){if(!confirm('Effacer cette fiche scouting ?'))return;db.collection(COL).doc(DOC_ID).delete().then(()=>location.reload());}
-
-// Global input listener
-document.addEventListener('input',e=>{
-  if(e.target.matches('.meta-input,.td-input,.note-val,.note-comment,.fiche-textarea')) debounceSave();
-});
 
 // Export PNG
-document.getElementById('exportBtn').addEventListener('click',async()=>{
-  const btn=document.getElementById('exportBtn');
-  btn.disabled=true;btn.textContent='Export…';
-  document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(b=>b.style.visibility='hidden');
+document.getElementById('exportBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('exportBtn');
+  btn.disabled=true; btn.textContent='Export…';
+  document.querySelectorAll('.btn,.btn-new-sheet,.btn-hist,.btn-save-fb,.btn-mini-row,.sync-bar,.hub-link,.sheet-chip').forEach(b=>b.style.visibility='hidden');
   await new Promise(r=>setTimeout(r,80));
-  const canvas=await html2canvas(document.getElementById('card'),{scale:2,backgroundColor:'#0c0b18',useCORS:true,logging:false});
-  document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(b=>b.style.visibility='');
-  btn.disabled=false;btn.textContent='⬇ Exporter PNG';
-  const link=document.createElement('a');link.download='plazma-scouting.png';link.href=canvas.toDataURL('image/png');link.click();
+  const canvas = await html2canvas(document.getElementById('card'),{scale:2,backgroundColor:'#0c0b18',useCORS:true,logging:false});
+  document.querySelectorAll('.btn,.btn-new-sheet,.btn-hist,.btn-save-fb,.btn-mini-row,.sync-bar,.hub-link,.sheet-chip').forEach(b=>b.style.visibility='');
+  btn.disabled=false; btn.textContent='⬇ Exporter PNG';
+  const link=document.createElement('a'); link.download='plazma-scouting.png'; link.href=canvas.toDataURL('image/png'); link.click();
 });
 
 // INIT
-document.getElementById('footerDate').textContent='Fiche créée le '+new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
-buildRoster();
+document.getElementById('footerDate').textContent = 'Fiche créée le ' + new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+buildPlayerCards();
 buildCPTable();
 buildGauge();
 applyThreatUI();
-startSync();
-setTimeout(()=>{const ls=document.getElementById('loadingScreen');if(ls&&!ls.classList.contains('hidden')){hideLoading();setSyncState('error','Firebase inaccessible');}},8000);
+
+(async () => {
+  try {
+    const snap = await db.collection(SCOUT_COL).orderBy('_savedAt','desc').limit(1).get();
+    startSync(!snap.empty ? snap.docs[0].id : newDocId());
+    const all = await db.collection(SCOUT_COL).get();
+    const cnt = document.getElementById('sheetCount');
+    if (cnt) cnt.textContent = all.size ? `(${all.size})` : '';
+  } catch { startSync(newDocId()); }
+})();
+
+setTimeout(() => { const ls=document.getElementById('loadingScreen'); if(ls&&!ls.classList.contains('hidden')){hideLoading();setSyncState('error','Firebase inaccessible');} }, 8000);
 </script>
 </body>
 </html>
