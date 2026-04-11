@@ -8,285 +8,291 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
-firebase.initializeApp({
-  apiKey:"AIzaSyAKwNEbNa6f40oSMwGp6dcDY1ZY6hUN1Ks",authDomain:"plazma-esport.firebaseapp.com",
-  projectId:"plazma-esport",storageBucket:"plazma-esport.firebasestorage.app",
-  messagingSenderId:"534325929279",appId:"1:534325929279:web:b507a46c601fa6625edf8a"
-});
-const db = firebase.firestore();
+if(sessionStorage.getItem('pz_auth')!=='1')location.replace('login.html');
+firebase.initializeApp({apiKey:"AIzaSyAKwNEbNa6f40oSMwGp6dcDY1ZY6hUN1Ks",authDomain:"plazma-esport.firebaseapp.com",projectId:"plazma-esport",storageBucket:"plazma-esport.firebasestorage.app",messagingSenderId:"534325929279",appId:"1:534325929279:web:b507a46c601fa6625edf8a"});
+const db=firebase.firestore();
 </script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#05050d;--bg2:#080815;--surface:#0d0d1e;--s2:#111125;--s3:#161632;
-  --border:#191830;--b2:#21204a;--b3:#2e2e60;
+  --bg:#05050d;--bg2:#080815;--sf:#0d0d1e;--s2:#111125;--s3:#161632;
+  --bd:#191830;--b2:#21204a;--b3:#2e2e60;
   --v1:#5b21b6;--v2:#6d28d9;--v3:#7c3aed;--v4:#8b5cf6;--v5:#a78bfa;--v6:#c4b5fd;
-  --blue:#3b82f6;--cyan:#06b6d4;--green:#22c55e;--orange:#f97316;--red:#ef4444;--pink:#ec4899;--yellow:#f59e0b;--teal:#2dd4bf;
-  --text:#eeeaf8;--text2:#9b93c4;--text3:#45405e;
-  --top:#f97316;--jgl:#22c55e;--mid:#3b82f6;--adc:#ef4444;--sup:#a855f7;
+  --blue:#3b82f6;--cyan:#06b6d4;--green:#22c55e;--orange:#f97316;--red:#ef4444;--pink:#ec4899;--yellow:#f59e0b;
+  --tx:#eeeaf8;--tx2:#9b93c4;--tx3:#45405e;
   --sbw:230px;
 }
 html{scroll-behavior:smooth}
-body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-height:100vh}
+body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--tx);min-height:100vh}
 
-/* ════ LOADING ════ */
+/* ═══ LOADING ═══ */
 .ls{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .5s}
 .ls.hidden{opacity:0;pointer-events:none}
 .ls-logo{font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:900;letter-spacing:5px;background:linear-gradient(135deg,#fff,var(--v5));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .ls-bar{width:200px;height:3px;background:var(--s2);border-radius:2px;overflow:hidden}
 .ls-fill{height:100%;background:linear-gradient(90deg,var(--v2),var(--v5));border-radius:2px;animation:lba 1.5s ease infinite}
 @keyframes lba{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
-.ls-txt{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase}
+.ls-txt{font-size:10px;color:var(--tx3);letter-spacing:2px;text-transform:uppercase}
 
-/* ════ SIDEBAR ════ */
-.sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sbw);background:var(--bg2);border-right:1px solid var(--border);z-index:100;display:flex;flex-direction:column}
-.sb-logo{display:flex;align-items:center;gap:11px;padding:20px 18px 18px;border-bottom:1px solid var(--border)}
+/* ═══ SIDEBAR ═══ */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sbw);background:var(--bg2);border-right:1px solid var(--bd);z-index:100;display:flex;flex-direction:column}
+.sb-logo{display:flex;align-items:center;gap:11px;padding:20px 18px 18px;border-bottom:1px solid var(--bd)}
 .sb-badge{width:34px;height:34px;background:linear-gradient(135deg,var(--v2),var(--v4));border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;box-shadow:0 0 16px rgba(109,40,217,.45)}
 .sb-name{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;letter-spacing:3px;text-transform:uppercase;background:linear-gradient(135deg,#fff,var(--v5));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.sb-sub{font-size:8px;color:var(--text3);letter-spacing:2px;text-transform:uppercase}
+.sb-sub{font-size:8px;color:var(--tx3);letter-spacing:2px;text-transform:uppercase}
 .sb-nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:1px;overflow-y:auto;scrollbar-width:none}
 .sb-nav::-webkit-scrollbar{display:none}
-.nav-sep{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text3);padding:8px 8px 4px;margin-top:6px}
-.nav-a{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;cursor:pointer;transition:all .15s;color:var(--text2);font-size:12px;font-weight:500;border:1px solid transparent;text-decoration:none;user-select:none}
-.nav-a:hover{background:rgba(139,92,246,.08);color:var(--text);border-color:rgba(139,92,246,.12)}
-.nav-a.active{background:rgba(109,40,217,.15);color:var(--v5);border-color:rgba(109,40,217,.25)}
+.nav-sep{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--tx3);padding:8px 8px 4px;margin-top:6px}
+.nav-a{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;cursor:pointer;transition:all .15s;color:var(--tx2);font-size:12px;font-weight:500;border:1px solid transparent;text-decoration:none;user-select:none}
+.nav-a:hover{background:rgba(139,92,246,.08);color:var(--tx);border-color:rgba(139,92,246,.14)}
+.nav-a.active{background:rgba(139,92,246,.14);color:var(--v5);border-color:rgba(139,92,246,.22)}
 .nav-ic{font-size:13px;width:18px;text-align:center;flex-shrink:0}
-.nav-badge{margin-left:auto;background:var(--s3);border-radius:99px;padding:1px 7px;font-size:9px;font-weight:700;color:var(--text3)}
-.nav-live{margin-left:auto;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);border-radius:99px;padding:1px 7px;font-size:8px;font-weight:700;color:var(--green);letter-spacing:1px;animation:livep .8s ease infinite}
-@keyframes livep{0%,100%{opacity:1}50%{opacity:.5}}
-.sb-foot{padding:10px 10px 14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:5px}
-.sync-row{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:7px;background:var(--s2);border:1px solid var(--b2)}
-.sync-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;transition:background .3s}
-.sync-dot.connected{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,.5)}
+.nav-badge{margin-left:auto;background:var(--s3);border-radius:99px;padding:1px 7px;font-size:9px;font-weight:700;color:var(--tx3)}
+.sb-foot{padding:12px;border-top:1px solid var(--bd)}
+.sync-row{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:6px;background:var(--s2);border:1px solid var(--b2);margin-bottom:8px}
+.sync-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;transition:background .3s}
+.sync-dot.connected{background:var(--green);box-shadow:0 0 5px rgba(34,197,94,.5)}
 .sync-dot.syncing{background:var(--yellow);animation:pulse .8s infinite}
 .sync-dot.error{background:var(--red)}
-.sync-dot.offline{background:var(--text3)}
+.sync-dot.offline{background:var(--tx3)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.sync-txt{font-size:10px;font-weight:600;flex:1}
-.sync-t{font-size:9px;color:var(--text3)}
-.btn-save{width:100%;background:rgba(109,40,217,.18);border:1px solid rgba(109,40,217,.32);color:var(--v5);padding:8px;border-radius:7px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .2s}
+.sync-txt{font-size:9px;font-weight:600;flex:1}
+.sync-t{font-size:8px;color:var(--tx3)}
+.btn-save{width:100%;background:rgba(109,40,217,.18);border:1px solid rgba(109,40,217,.35);color:var(--v5);padding:8px;border-radius:7px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .2s;margin-bottom:6px}
 .btn-save:hover{background:rgba(109,40,217,.3)}
-.btn-save.saved{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.28);color:var(--green)}
+.btn-save.saved{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.3);color:var(--green)}
 .btn-row{display:flex;gap:4px}
-.btn-mini{flex:1;background:var(--s2);border:1px solid var(--b2);color:var(--text3);padding:5px 3px;border-radius:6px;font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;text-align:center;transition:color .15s}
-.btn-mini:hover{color:var(--text2)}
+.btn-mini{flex:1;background:var(--s2);border:1px solid var(--b2);color:var(--tx3);padding:5px;border-radius:5px;font-size:8px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;text-align:center;transition:color .15s}
+.btn-mini:hover{color:var(--tx2)}
 .btn-mini.red:hover{color:var(--red)}
 
-/* ════ MAIN ════ */
-.main{margin-left:var(--sbw);min-height:100vh;padding:22px 28px 80px}
-.hub-link{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:var(--text3);text-decoration:none;letter-spacing:1px;transition:color .15s;margin-bottom:16px}
+/* ═══ MAIN ═══ */
+.main{margin-left:var(--sbw);padding:24px 28px 80px;display:flex;flex-direction:column;gap:24px}
+.hub-link{font-size:10px;color:var(--tx3);text-decoration:none;letter-spacing:1px;transition:color .15s}
 .hub-link:hover{color:var(--v5)}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:12px;flex-wrap:wrap}
-.topbar-left{display:flex;flex-direction:column;gap:3px}
-.pg-title{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
-.pg-sub{font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.pg-title{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+.pg-sub{font-size:10px;color:var(--tx3);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
 .topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.date-chip{background:var(--s2);border:1px solid var(--b2);border-radius:7px;padding:6px 12px;font-size:11px;color:var(--text2)}
-.btn{padding:7px 15px;border-radius:7px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border:none;font-family:'Barlow',sans-serif;transition:all .2s}
-.btn-primary{background:var(--v3);color:#fff}
+.date-chip{background:var(--s2);border:1px solid var(--b2);border-radius:6px;padding:6px 12px;font-size:11px;color:var(--tx2)}
+.btn{padding:8px 18px;border-radius:7px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border:none;font-family:'Barlow',sans-serif;transition:all .18s}
+.btn-primary{background:var(--v3);color:#fff;box-shadow:0 0 20px rgba(124,58,237,.35)}
 .btn-primary:hover{background:var(--v4);transform:translateY(-1px)}
-.btn-ghost{background:var(--s2);color:var(--text2);border:1px solid var(--b2)}
-.btn-ghost:hover{border-color:var(--v4);color:var(--v5)}
-.btn-riot{background:rgba(6,182,212,.12);border:1px solid rgba(6,182,212,.3);color:var(--cyan);padding:7px 14px;border-radius:7px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .2s;display:flex;align-items:center;gap:6px}
-.btn-riot:hover{background:rgba(6,182,212,.22)}
-.btn-riot:disabled{opacity:.4;cursor:default}
 
-/* ════ SECTIONS ════ */
-.sec{margin-bottom:28px}
-.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
-.sec-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--text2);display:flex;align-items:center;gap:8px}
-.sec-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
-.sec-action{font-size:10px;color:var(--v5);cursor:pointer;letter-spacing:1px;text-transform:uppercase;font-weight:600;background:none;border:none;font-family:'Barlow',sans-serif;transition:color .15s}
-.sec-action:hover{color:var(--v6)}
+/* ═══ SECTIONS ═══ */
+.sec{background:var(--bg2);border:1px solid var(--bd);border-radius:14px;overflow:hidden}
+.sec-head{padding:16px 20px 14px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--sf)}
+.sec-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;display:flex;align-items:center;gap:7px;color:var(--tx2)}
+.sec-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sec-action{background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.25);color:var(--v5);padding:5px 13px;border-radius:6px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .15s}
+.sec-action:hover{background:rgba(139,92,246,.22)}
 
-/* ════ KPI STRIP ════ */
-.kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
-.kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:15px;position:relative;overflow:hidden;transition:all .18s}
-.kpi:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.3);border-color:var(--b2)}
-.kpi-glow{position:absolute;bottom:-24px;right:-24px;width:72px;height:72px;border-radius:50%;opacity:.06;pointer-events:none}
-.kpi-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:7px}
-.kpi-val{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:800;line-height:1;margin-bottom:4px}
-.kpi-sub{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:5px}
-.delta{font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;font-family:'Barlow Condensed',sans-serif}
-.up{background:rgba(34,197,94,.12);color:var(--green)}
-.dn{background:rgba(239,68,68,.12);color:var(--red)}
-.neu{background:rgba(148,163,184,.08);color:var(--text3)}
+/* ═══ KPI STRIP — GRAND FORMAT PRO ═══ */
+.kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.kpi{background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:20px 20px 18px;position:relative;overflow:hidden;transition:border-color .15s}
+.kpi:hover{border-color:var(--b2)}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0}
+.kpi.kpi-wr::after{background:linear-gradient(90deg,var(--green),transparent)}
+.kpi.kpi-scrims::after{background:linear-gradient(90deg,var(--orange),transparent)}
+.kpi.kpi-elo::after{background:linear-gradient(90deg,var(--v4),transparent)}
+.kpi.kpi-streak::after{background:linear-gradient(90deg,var(--yellow),transparent)}
+.kpi.kpi-month::after{background:linear-gradient(90deg,var(--cyan),transparent)}
+.kpi.kpi-event::after{background:linear-gradient(90deg,var(--pink),transparent)}
+.kpi-glow{position:absolute;bottom:-20px;right:-20px;width:90px;height:90px;border-radius:50%;opacity:.06;pointer-events:none}
+.kpi-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--tx3);margin-bottom:10px;font-weight:600}
+.kpi-val{font-family:'Barlow Condensed',sans-serif;font-size:42px;font-weight:900;line-height:1;margin-bottom:6px;letter-spacing:-1px}
+.kpi-sub{font-size:10px;color:var(--tx3);line-height:1.4}
+.kpi-sub b{color:var(--tx2)}
+.delta{font-family:'Barlow Condensed',sans-serif;font-weight:800}
+.delta.up{color:var(--green)}.delta.dn{color:var(--red)}.delta.neu{color:var(--tx3)}
 
-/* ════ ELO BOX ════ */
-.elo-section{display:grid;grid-template-columns:280px 1fr;gap:12px;margin-bottom:22px}
-.elo-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:14px}
-.elo-box::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 90% at 10% 50%,rgba(109,40,217,.08),transparent 65%);pointer-events:none}
-.elo-num{font-family:'Barlow Condensed',sans-serif;font-size:60px;font-weight:900;line-height:1;background:linear-gradient(135deg,var(--v5),var(--v3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.elo-tier-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;width:fit-content}
-.elo-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.em{background:var(--s2);border:1px solid var(--border);border-radius:7px;padding:8px 10px;text-align:center}
-.em-val{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800}
-.em-lbl{font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-top:2px}
-.elo-chart-wrap{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;height:80px;position:relative;overflow:hidden}
-.elo-chart-svg{width:100%;height:100%}
-/* Ref table */
-.elo-ref-panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px}
-.ref-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
-.ref-row{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:var(--s2);border-radius:5px}
-.ref-lbl{font-size:11px;font-weight:600}
-.ref-pts{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--text2)}
-.formula-box{background:var(--s2);border:1px solid var(--b2);border-radius:7px;padding:10px 12px;font-size:10px;color:var(--text3);line-height:1.7}
-.formula-box code{color:var(--v5);font-family:monospace;font-size:11px}
+/* ═══ ROSTER GRID ═══ */
+.roster-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:16px}
+.pcard{background:var(--sf);border:1px solid var(--bd);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .18s}
+.pcard:hover{border-color:var(--b2)}
+.pc-strip{height:3px}
+.pc-head{padding:12px 14px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--bd)}
+.pc-emo{font-size:22px}
+.pc-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:.5px}
+.pc-role{font-size:8px;letter-spacing:2px;text-transform:uppercase;font-weight:600;margin-top:1px}
+.pc-body{padding:10px 14px;flex:1;display:flex;flex-direction:column;gap:8px}
+.pc-lbl{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);font-weight:600;margin-bottom:3px}
+.pc-rank-display{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;line-height:1.2}
+.pc-lp{font-size:10px;color:var(--tx3);margin-top:2px}
+.pc-wr{font-size:10px;font-weight:700;margin-top:1px}
+.pc-sel{background:var(--s2);border:1px solid var(--b2);color:var(--tx);font-size:11px;font-family:'Barlow',sans-serif;padding:5px 8px;border-radius:6px;outline:none;transition:border-color .15s;width:100%}
+.pc-sel:focus{border-color:var(--v4)}
+.pc-sel option{background:var(--s2)}
+.pc-row{display:flex;gap:6px}
+.pc-inp{flex:1;background:var(--s2);border:1px solid var(--b2);color:var(--tx);font-size:11px;font-family:'Barlow',sans-serif;padding:5px 8px;border-radius:6px;outline:none;transition:border-color .15s;width:100%}
+.pc-inp:focus{border-color:var(--v4)}
+.pc-inp::placeholder{color:var(--tx3)}
+.btn-opgg{background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.25);color:var(--cyan);padding:6px 10px;border-radius:6px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px;width:100%;text-decoration:none;margin-top:4px}
+.btn-opgg:hover{background:rgba(6,182,212,.2)}
+.btn-opgg.disabled{opacity:.35;cursor:default;pointer-events:none}
+.roster-save-bar{padding:10px 16px;border-top:1px solid var(--bd);background:var(--s2);display:flex;justify-content:flex-end}
 
-/* ════ PLAYER CARDS ════ */
-.roster-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-.pcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all .18s;cursor:pointer;position:relative}
-.pcard:hover{border-color:var(--b2);transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.35)}
-.pc-strip{height:3px;width:100%}
-.pc-head{padding:13px 13px 10px;display:flex;align-items:center;gap:9px;border-bottom:1px solid var(--border)}
-.pc-emo{font-size:22px;flex-shrink:0}
-.pc-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:.5px;line-height:1}
-.pc-role{font-size:8px;letter-spacing:2px;text-transform:uppercase;margin-top:2px}
-.pc-body{padding:10px 13px 12px;display:flex;flex-direction:column;gap:7px}
-/* Live rank block */
-.rank-block{background:var(--s2);border:1px solid var(--border);border-radius:7px;padding:9px 10px;display:flex;flex-direction:column;gap:4px;min-height:58px;justify-content:center}
-.rank-loading{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text3)}
-.rank-loading-dot{width:5px;height:5px;border-radius:50%;background:var(--text3);animation:pulse .6s ease infinite}
-.rank-tier{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:.5px}
-.rank-lp{font-size:10px;color:var(--text3)}
-.rank-winrate{font-size:10px;font-weight:600}
-.rank-err{font-size:10px;color:var(--text3);font-style:italic}
-.live-tag{position:absolute;top:8px;right:8px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);border-radius:4px;padding:2px 6px;font-size:8px;font-weight:700;color:var(--green);letter-spacing:1px;text-transform:uppercase}
-.pc-elo-contrib{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--text3);padding-top:2px}
-.contrib-val{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700}
+/* ═══ ELO SECTION ═══ */
+.elo-layout{display:grid;grid-template-columns:1fr 260px;gap:0}
+.elo-main{padding:20px 24px;display:flex;flex-direction:column;gap:18px}
+.elo-num{font-family:'Barlow Condensed',sans-serif;font-size:72px;font-weight:900;line-height:1;letter-spacing:-2px}
+.elo-tier-badge{display:inline-block;padding:3px 14px;border-radius:5px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+.elo-stats{display:flex;gap:24px}
+.es{display:flex;flex-direction:column;gap:2px}
+.es-val{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800}
+.es-lbl{font-size:9px;color:var(--tx3);letter-spacing:1.5px;text-transform:uppercase}
+.chart-wrap{background:var(--s2);border-radius:8px;padding:8px;height:90px;display:flex;align-items:center}
+.chart-wrap svg{width:100%;height:100%;display:block}
+.elo-ref{border-left:1px solid var(--bd);padding:16px;background:var(--s2)}
+.ref-grid{display:flex;flex-direction:column;gap:4px}
+.ref-row{display:flex;align-items:center;justify-content:space-between;padding:4px 6px;border-radius:5px;transition:background .12s}
+.ref-row:hover{background:rgba(255,255,255,.03)}
+.ref-lbl{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.ref-pts{font-size:10px;font-weight:600}
+.formula-box{background:var(--sf);border:1px solid var(--bd);border-radius:7px;padding:10px 12px;font-size:10px;color:var(--tx3);line-height:1.7;margin-top:10px}
+.formula-box code{font-family:monospace;font-size:10px;color:var(--tx2)}
 
-/* ════ MATCH HISTORY ════ */
-.mfilter-row{display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap}
-.mfbtn{background:var(--s2);border:1px solid var(--border);color:var(--text3);padding:5px 13px;border-radius:6px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .15s}
-.mfbtn:hover{color:var(--text2)}
-.mfbtn.active{background:rgba(109,40,217,.15);border-color:rgba(109,40,217,.3);color:var(--v5)}
-.match-table{width:100%;border-collapse:collapse}
-.mt-head{display:grid;grid-template-columns:90px 1fr 90px 70px 90px 70px 80px;gap:0;padding:0 12px;margin-bottom:4px}
-.mt-col{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);font-weight:600;padding:0 6px}
-.match-row{display:grid;grid-template-columns:90px 1fr 90px 70px 90px 70px 80px;gap:0;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0 12px;margin-bottom:5px;min-height:48px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
-.match-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
-.match-row.win::before{background:var(--green)}
-.match-row.loss::before{background:var(--red)}
-.match-row.draw::before{background:var(--text3)}
-.match-row:hover{border-color:var(--b2);background:var(--s2)}
-.mc{padding:0 6px;font-size:12px;color:var(--text2)}
-.mc.date{font-size:10px;color:var(--text3)}
-.mc.opp{font-weight:600;color:var(--text)}
-.mc.result-badge span{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;padding:3px 9px;border-radius:5px}
-.result-W{background:rgba(34,197,94,.15);color:var(--green)}
-.result-L{background:rgba(239,68,68,.15);color:var(--red)}
-.result-D{background:rgba(148,163,184,.1);color:var(--text3)}
-.mc.type-tag span{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:4px}
-.type-Scrim{background:rgba(59,130,246,.12);color:var(--blue)}
-.type-Officiel{background:rgba(249,115,22,.12);color:var(--orange)}
-.type-Amical{background:rgba(34,197,94,.1);color:var(--green)}
-.mc.note-cell{font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.match-empty{background:var(--surface);border:1px dashed var(--border);border-radius:8px;padding:28px;text-align:center;color:var(--text3);font-size:12px}
+/* ═══ SCRIMS ═══ */
+.scrims-layout{display:grid;grid-template-columns:1fr 280px;gap:0}
+.mfilter-row{display:flex;gap:6px;padding:12px 20px;flex-wrap:wrap;border-bottom:1px solid var(--bd)}
+.mfbtn{background:var(--s2);border:1px solid var(--b2);color:var(--tx3);padding:4px 12px;border-radius:5px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .15s}
+.mfbtn:hover{color:var(--tx2)}
+.mfbtn.active{background:rgba(139,92,246,.15);border-color:rgba(139,92,246,.3);color:var(--v5)}
+.match-head{display:grid;grid-template-columns:80px 1fr 110px 80px 110px 60px 1fr;padding:8px 20px;background:var(--s2);border-bottom:2px solid var(--b2)}
+.match-head div{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--tx3);font-weight:700}
+.match-row{display:grid;grid-template-columns:80px 1fr 110px 80px 110px 60px 1fr;padding:11px 20px;border-bottom:1px solid var(--bd);cursor:pointer;transition:background .12s;align-items:center;border-left:3px solid transparent}
+.match-row:hover{background:rgba(255,255,255,.015)}
+.match-row.win{border-left-color:var(--green)}
+.match-row.loss{border-left-color:var(--red)}
+.match-row.draw{border-left-color:var(--tx3)}
+.mc{font-size:12px;color:var(--tx2)}
+.mc.date{color:var(--tx3);font-size:11px}
+.mc.opp{font-weight:600;color:var(--tx)}
+.mc.note-cell{font-size:10px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.result-W{color:var(--green);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;letter-spacing:1px}
+.result-L{color:var(--red);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;letter-spacing:1px}
+.result-D{color:var(--tx3);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;letter-spacing:1px}
+.type-Scrim{background:rgba(99,102,241,.12);color:#818cf8;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.type-Officiel{background:rgba(245,158,11,.12);color:var(--yellow);padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.type-Amical{background:rgba(34,197,94,.1);color:var(--green);padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.match-empty{padding:32px;text-align:center;color:var(--tx3);font-size:12px}
+/* WL Panel */
+.wl-panel{border-left:1px solid var(--bd);padding:18px;background:var(--s2);display:flex;flex-direction:column;gap:16px}
+.wl-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--tx3);font-weight:700;margin-bottom:2px}
+.wl-summary{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:14px;text-align:center}
+.wl-wr{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;line-height:1}
+.wl-wr-sub{font-size:10px;color:var(--tx3);letter-spacing:1px;text-transform:uppercase;margin-top:3px}
+.wl-dots{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px;justify-content:center}
+.wl-dot{width:11px;height:11px;border-radius:2px}
+.wl-bar-row{display:flex;align-items:center;gap:8px}
+.wl-bar-lbl{min-width:30px;font-size:9px;color:var(--tx3);letter-spacing:1px;text-transform:uppercase}
+.wl-bar-group{flex:1;display:flex;flex-direction:column;gap:2px}
+.wl-bar-track{height:7px;background:var(--sf);border-radius:3px;overflow:hidden}
+.wl-bar-fill{height:100%;border-radius:3px;transition:width .4s}
+.wl-bar-nums{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.wl-bar-n{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;line-height:1}
 
-/* ════ OBJECTIVES ════ */
-.obj-list{display:flex;flex-direction:column;gap:8px}
-.obj-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px 15px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
-.obj-card:hover{border-color:var(--b2);background:var(--s2)}
-.obj-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
-.obj-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
-.obj-name{font-size:13px;font-weight:600;color:var(--text);flex:1}
-.obj-badges{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.prio-badge{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:2px 7px;border-radius:4px}
+/* ═══ OBJECTIFS ═══ */
+.obj-list{padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.obj-card{background:var(--sf);border:1px solid var(--bd);border-radius:9px;padding:13px 16px 13px 18px;cursor:pointer;transition:all .15s;position:relative}
+.obj-card:hover{border-color:var(--b2)}
+.obj-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.obj-name{font-size:13px;font-weight:600;color:var(--tx);flex:1}
+.obj-badges{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap}
+.prio-badge{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:3px}
 .prio-high{background:rgba(239,68,68,.12);color:var(--red)}
 .prio-medium{background:rgba(245,158,11,.12);color:var(--yellow)}
-.prio-low{background:rgba(34,197,94,.1);color:var(--green)}
-.status-badge{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:2px 7px;border-radius:4px}
-.st-todo{background:rgba(148,163,184,.08);color:var(--text3)}
+.prio-low{background:rgba(34,197,94,.12);color:var(--green)}
+.status-badge{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:3px}
+.st-todo{background:rgba(148,163,184,.1);color:var(--tx3)}
 .st-progress{background:rgba(59,130,246,.12);color:var(--blue)}
 .st-done{background:rgba(34,197,94,.12);color:var(--green)}
 .obj-bar-wrap{display:flex;align-items:center;gap:10px}
-.obj-bar-bg{flex:1;height:5px;background:var(--s3);border-radius:3px;overflow:hidden}
-.obj-bar-fill{height:100%;border-radius:3px;transition:width .4s ease}
-.obj-pct{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;min-width:30px;text-align:right}
-.obj-dl{font-size:9px;color:var(--text3);margin-top:5px}
+.obj-bar-bg{flex:1;height:6px;background:var(--b2);border-radius:3px;overflow:hidden}
+.obj-bar-fill{height:100%;border-radius:3px;transition:width .3s}
+.obj-pct{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;min-width:36px;text-align:right}
+.obj-dl{font-size:9px;color:var(--tx3);margin-top:6px}
 
-/* ════ SETTINGS SECTION ════ */
-.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.scard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
-.scard-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--text2);margin-bottom:14px;display:flex;align-items:center;gap:7px}
-.field{margin-bottom:12px}
-.field label{display:block;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;font-weight:600}
-.field input,.field select,.field textarea{width:100%;background:var(--s2);border:1px solid var(--b2);color:var(--text);padding:8px 11px;border-radius:7px;font-size:12px;font-family:'Barlow',sans-serif;outline:none;transition:border-color .2s}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--v3)}
+/* ═══ PARAMS ═══ */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px}
+.scard{background:var(--sf);border:1px solid var(--bd);border-radius:9px;padding:14px}
+.scard-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--v5);margin-bottom:12px}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--tx3);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;background:var(--s2);border:1px solid var(--b2);color:var(--tx);padding:7px 10px;border-radius:6px;font-size:12px;font-family:'Barlow',sans-serif;outline:none;transition:border-color .2s;resize:none}
+.field input:focus,.field select:focus{border-color:var(--v3)}
 .field select option{background:var(--s2)}
-.roster-config-row{display:grid;grid-template-columns:28px 80px 1fr 1fr;gap:8px;align-items:center;margin-bottom:8px;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:7px}
-.rcr-emo{font-size:16px;text-align:center}
-.rcr-name{font-size:11px;font-weight:600;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rcr-inp{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;font-size:11px;font-family:'Barlow',sans-serif;outline:none;transition:border-color .2s;width:100%}
-.rcr-inp:focus{border-color:var(--v3)}
-.api-hint{font-size:10px;color:var(--text3);line-height:1.6;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:7px}
-.api-hint a{color:var(--v5);text-decoration:none}
-.api-hint a:hover{text-decoration:underline}
-
-/* ════ MODALS ════ */
-.overlay{display:none;position:fixed;inset:0;background:rgba(5,5,13,.9);backdrop-filter:blur(10px);z-index:300;align-items:center;justify-content:center;padding:20px}
-.overlay.open{display:flex}
-.modal{background:var(--s2);border:1px solid var(--b2);border-radius:14px;width:480px;max-width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 0 80px rgba(0,0,0,.7),0 0 40px rgba(109,40,217,.15);scrollbar-width:thin;scrollbar-color:var(--b2) transparent}
-.modal-head{padding:22px 24px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--v5)}
-.modal-close{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:2px;transition:color .15s}
-.modal-close:hover{color:var(--text)}
-.modal-body{padding:20px 24px;display:flex;flex-direction:column;gap:12px}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.modal-foot{padding:0 24px 20px;display:flex;gap:8px;justify-content:flex-end}
-.btn-cancel{background:var(--surface);color:var(--text2);border:1px solid var(--border);padding:9px 18px;border-radius:7px;cursor:pointer;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:'Barlow',sans-serif;transition:all .15s}
-.btn-cancel:hover{border-color:var(--b2);color:var(--text)}
-.btn-confirm{background:var(--v2);color:#fff;border:none;padding:9px 20px;border-radius:7px;cursor:pointer;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:'Barlow',sans-serif;transition:all .15s}
-.btn-confirm:hover{background:var(--v3)}
-.btn-danger{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:var(--red);padding:9px 18px;border-radius:7px;cursor:pointer;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:'Barlow',sans-serif;transition:all .15s;margin-right:auto}
-.btn-danger:hover{background:rgba(239,68,68,.25)}
-.elo-prev{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:10px;font-size:11px;color:var(--text2);text-align:center;line-height:1.6}
-.elo-prev strong{color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:14px}
+.rcr{display:grid;grid-template-columns:24px 110px 1fr 1fr;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--bd)}
+.rcr:last-child{border-bottom:none}
+.rcr-emo{font-size:15px}
+.rcr-name{font-size:11px;color:var(--tx2)}
+.rcr-inp{background:var(--s2);border:1px solid var(--b2);color:var(--tx);padding:5px 8px;border-radius:5px;font-size:11px;font-family:'Barlow',sans-serif;outline:none;transition:border-color .15s;width:100%}
+.rcr-inp:focus{border-color:var(--v3)}
 
-/* ════ TOAST ════ */
-.toast{position:fixed;bottom:28px;left:calc(var(--sbw) + 28px);background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:10px 16px;font-size:11px;font-weight:600;color:var(--text);letter-spacing:.5px;z-index:600;opacity:0;transition:opacity .3s;pointer-events:none}
+/* ═══ MODAL ═══ */
+.overlay{display:none;position:fixed;inset:0;background:rgba(5,5,13,.88);backdrop-filter:blur(8px);z-index:300;align-items:center;justify-content:center;padding:20px}
+.overlay.open{display:flex}
+.modal{background:var(--s2);border:1px solid var(--b2);border-radius:14px;width:500px;max-width:100%;box-shadow:0 0 80px rgba(0,0,0,.7)}
+.modal-head{padding:18px 22px 14px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--v5)}
+.modal-close{background:none;border:none;color:var(--tx3);font-size:18px;cursor:pointer;transition:color .15s;line-height:1}
+.modal-close:hover{color:var(--tx)}
+.modal-body{padding:18px 22px;display:flex;flex-direction:column;gap:10px}
+.modal-foot{padding:0 22px 18px;display:flex;gap:8px;justify-content:flex-end}
+.btn-danger{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--red);padding:8px 16px;border-radius:7px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .15s;margin-right:auto}
+.btn-cancel{background:var(--sf);color:var(--tx2);border:1px solid var(--bd);padding:8px 16px;border-radius:7px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .15s}
+.btn-cancel:hover{border-color:var(--b2);color:var(--tx)}
+.btn-confirm{background:var(--v3);color:#fff;border:none;padding:8px 20px;border-radius:7px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .15s}
+.btn-confirm:hover{background:var(--v4)}
+.elo-prev{background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--tx3);margin-top:4px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:calc(var(--sbw) + 24px);background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:10px 16px;font-size:11px;font-weight:600;color:var(--tx);z-index:500;opacity:0;transition:opacity .3s;pointer-events:none}
 .toast.show{opacity:1}
 
-/* ════ RESPONSIVE ════ */
-@media(max-width:1100px){.kpi-strip{grid-template-columns:repeat(2,1fr)}.elo-section{grid-template-columns:1fr}.roster-grid{grid-template-columns:repeat(3,1fr)}.settings-grid{grid-template-columns:1fr}}
-@media(max-width:800px){:root{--sbw:0px}.sidebar{display:none}.main{margin-left:0;padding:16px}.roster-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:1280px){.kpi-strip{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){.kpi-strip{grid-template-columns:repeat(2,1fr)}.roster-grid{grid-template-columns:repeat(3,1fr)}.scrims-layout,.elo-layout{grid-template-columns:1fr}}
+@media(max-width:700px){:root{--sbw:0px}.sidebar{display:none}.main{margin-left:0;padding:16px}}
 </style>
 </head>
 <body>
 
-<!-- LOADING -->
-<div class="ls" id="loadingScreen">
+<div class="ls" id="ls">
   <div class="ls-logo">PlaZma</div>
   <div class="ls-bar"><div class="ls-fill"></div></div>
-  <div class="ls-txt" id="lsTxt">Connexion Firebase…</div>
+  <div class="ls-txt">Chargement du dashboard…</div>
 </div>
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sb-logo">
     <div class="sb-badge">PZ</div>
-    <div><div class="sb-name">PlaZma</div><div class="sb-sub">Esport Club</div></div>
+    <div><div class="sb-name">PlaZma</div><div class="sb-sub">Esport · LoL</div></div>
   </div>
   <nav class="sb-nav">
-    <div class="nav-a active" onclick="scrollTo('s-kpi')"><span class="nav-ic">🏠</span>Vue d'ensemble</div>
-    <div class="nav-sep">Performance</div>
-    <div class="nav-a" onclick="scrollTo('s-elo')"><span class="nav-ic">📊</span>ELO & Classement</div>
-    <div class="nav-a" onclick="scrollTo('s-roster')"><span class="nav-ic">👥</span>Roster <span class="nav-live" id="liveTag" style="display:none">LIVE</span></div>
-    <div class="nav-a" onclick="scrollTo('s-matches')"><span class="nav-ic">🏆</span>Historique <span class="nav-badge" id="matchCountBadge">0</span></div>
-    <div class="nav-sep">Gestion</div>
-    <div class="nav-a" onclick="scrollTo('s-obj')"><span class="nav-ic">🎯</span>Objectifs <span class="nav-badge" id="objCountBadge">0</span></div>
-    <div class="nav-a" onclick="scrollTo('s-params')"><span class="nav-ic">⚙️</span>Paramètres</div>
-    <div class="nav-sep">Outils</div>
+    <div class="nav-a active" onclick="scrollTo('s-kpi')"><span class="nav-ic">📊</span>Dashboard</div>
+    <div class="nav-sep">Sections</div>
+    <div class="nav-a" onclick="scrollTo('s-roster')"><span class="nav-ic">👥</span>Roster<span class="nav-badge">5</span></div>
+    <div class="nav-a" onclick="scrollTo('s-elo')"><span class="nav-ic">📈</span>ELO Équipe</div>
+    <div class="nav-a" onclick="scrollTo('s-scrims')"><span class="nav-ic">⚔️</span>Scrims<span class="nav-badge" id="matchCountBadge">0</span></div>
+    <div class="nav-a" onclick="scrollTo('s-obj')"><span class="nav-ic">🎯</span>Objectifs<span class="nav-badge" id="objCountBadge">0</span></div>
+    <div class="nav-sep">Navigation</div>
+    <a href="plazma-scrim.html" class="nav-a"><span class="nav-ic">🔬</span>CR Scrim</a>
+    <a href="plazma-scouting.html" class="nav-a"><span class="nav-ic">🔍</span>Scouting</a>
     <a href="plazma-schedule.html" class="nav-a"><span class="nav-ic">📅</span>Planning</a>
+    <a href="plazma-satisfaction.html" class="nav-a"><span class="nav-ic">💬</span>Satisfaction</a>
+    <a href="plazma-organisation.html" class="nav-a"><span class="nav-ic">🗂️</span>Organisation</a>
+    <a href="plazma-draft.html" class="nav-a"><span class="nav-ic">🗺️</span>Draft</a>
     <a href="plazma-news.html" class="nav-a"><span class="nav-ic">📰</span>Actualités</a>
-    <a href="plazma-draft.html" class="nav-a"><span class="nav-ic">⚔️</span>Draft</a>
-    <a href="plazma-scrim.html" class="nav-a"><span class="nav-ic">🔬</span>Scrim</a>
-    <a href="index.html" class="nav-a" style="margin-top:6px"><span class="nav-ic">🗂️</span>Hub PlaZma</a>
+    <a href="plazma-staff.html" class="nav-a"><span class="nav-ic">👔</span>Staff</a>
+    <div class="nav-a" onclick="scrollTo('s-params')"><span class="nav-ic">⚙️</span>Paramètres</div>
+    <a href="index.html" class="nav-a" style="margin-top:8px"><span class="nav-ic">🏠</span>Hub PlaZma</a>
   </nav>
   <div class="sb-foot">
     <div class="sync-row">
       <div class="sync-dot offline" id="syncDot"></div>
-      <span class="sync-txt" id="syncTxt" style="color:var(--text3)">En attente…</span>
+      <span class="sync-txt" id="syncTxt" style="color:var(--tx3)">En attente…</span>
       <span class="sync-t" id="syncTime"></span>
     </div>
     <button class="btn-save" id="saveFbBtn" onclick="save()">💾 Sauvegarder</button>
@@ -303,22 +309,28 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
   <a href="index.html" class="hub-link">← Hub PlaZma</a>
 
   <div class="topbar">
-    <div class="topbar-left">
+    <div>
       <div class="pg-title">Dashboard</div>
       <div class="pg-sub" id="dateSub">—</div>
     </div>
     <div class="topbar-right">
       <div class="date-chip" id="dateChip">—</div>
-      <button class="btn-riot" id="riotRefreshBtn" onclick="fetchAllRiotData()" title="Actualiser les stats Riot Games">
-        ⚡ Actualiser stats Riot
-      </button>
-      <button class="btn btn-primary" onclick="openAddMatch()">＋ Match</button>
+      <button class="btn btn-primary" onclick="openAddMatch()">＋ Ajouter un match</button>
     </div>
   </div>
 
-  <!-- KPI -->
+  <!-- KPIs -->
   <section id="s-kpi">
     <div class="kpi-strip" id="kpiStrip"></div>
+  </section>
+
+  <!-- ROSTER -->
+  <section class="sec" id="s-roster">
+    <div class="sec-head">
+      <div class="sec-title"><div class="sec-dot" style="background:var(--cyan)"></div>Roster — Rangs SoloQ EUW</div>
+      <button class="sec-action" onclick="saveRoster()">✓ Enregistrer les rangs</button>
+    </div>
+    <div class="roster-grid" id="rosterGrid"></div>
   </section>
 
   <!-- ELO -->
@@ -326,37 +338,31 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
     <div class="sec-head">
       <div class="sec-title"><div class="sec-dot" style="background:var(--v4)"></div>ELO Équipe — Système K=32</div>
     </div>
-    <div class="elo-section">
-      <div class="elo-box" id="eloBox"></div>
-      <div class="elo-ref-panel" id="eloRef"></div>
+    <div class="elo-layout">
+      <div class="elo-main" id="eloMain"></div>
+      <div class="elo-ref" id="eloRef"></div>
     </div>
   </section>
 
-  <!-- ROSTER -->
-  <section class="sec" id="s-roster">
-    <div class="sec-head">
-      <div class="sec-title"><div class="sec-dot" style="background:var(--cyan)"></div>Roster — Stats Live</div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <div id="riotFetchStatus" style="font-size:10px;color:var(--text3)"></div>
-      </div>
-    </div>
-    <div class="roster-grid" id="rosterGrid"></div>
-  </section>
-
-  <!-- MATCHES -->
-  <section class="sec" id="s-matches">
+  <!-- SCRIMS -->
+  <section class="sec" id="s-scrims">
     <div class="sec-head">
       <div class="sec-title"><div class="sec-dot" style="background:var(--orange)"></div>Historique des matchs</div>
       <button class="sec-action" onclick="openAddMatch()">＋ Ajouter</button>
     </div>
-    <div class="mfilter-row" id="matchFilters"></div>
-    <div id="matchList"></div>
+    <div class="scrims-layout">
+      <div>
+        <div class="mfilter-row" id="matchFilters"></div>
+        <div id="matchList"></div>
+      </div>
+      <div class="wl-panel" id="wlPanel"></div>
+    </div>
   </section>
 
-  <!-- OBJECTIVES -->
+  <!-- OBJECTIFS -->
   <section class="sec" id="s-obj">
     <div class="sec-head">
-      <div class="sec-title"><div class="sec-dot" style="background:var(--green)"></div>Objectifs de la semaine</div>
+      <div class="sec-title"><div class="sec-dot" style="background:var(--green)"></div>Objectifs de la saison</div>
       <button class="sec-action" onclick="openAddObj()">＋ Ajouter</button>
     </div>
     <div class="obj-list" id="objList"></div>
@@ -365,20 +371,10 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
   <!-- PARAMS -->
   <section class="sec" id="s-params">
     <div class="sec-head">
-      <div class="sec-title"><div class="sec-dot" style="background:var(--text3)"></div>Paramètres</div>
+      <div class="sec-title"><div class="sec-dot" style="background:var(--tx3)"></div>Paramètres</div>
       <button class="sec-action" onclick="saveSettings()">✓ Enregistrer</button>
     </div>
     <div class="settings-grid">
-      <!-- API Riot -->
-      <div class="scard">
-        <div class="scard-title">⚡ API Riot Games</div>
-        <div class="field"><label>Clé API (developer.riotgames.com)</label><input type="text" id="p_apiKey" placeholder="RGAPI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" oninput="this._dirty=true" autocomplete="off"></div>
-        <div class="api-hint">
-          Obtenez une clé gratuite sur <a href="https://developer.riotgames.com" target="_blank">developer.riotgames.com</a>.<br>
-          Les clés de dev expirent toutes les 24h. Pour une clé permanente, faites une demande de Personal API Key sur le portail.
-        </div>
-      </div>
-      <!-- ELO Config -->
       <div class="scard">
         <div class="scard-title">📊 Configuration ELO</div>
         <div class="field-row">
@@ -387,10 +383,15 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
         </div>
         <div class="field"><label>ELO adversaire par défaut</label><input type="number" id="p_defaultOppElo" placeholder="1200"></div>
       </div>
-      <!-- Roster Riot IDs -->
+      <div class="scard">
+        <div class="scard-title">🎯 Prochain événement</div>
+        <div class="field"><label>Nom de l'événement</label><input type="text" id="p_nextEvent" placeholder="ex: Nexus Tour Phase 1"></div>
+        <div class="field"><label>Date</label><input type="date" id="p_nextEventDate"></div>
+        <div class="field"><label>Objectif tournoi</label><input type="text" id="p_goal" placeholder="ex: Top 4, Qualification…"></div>
+      </div>
       <div class="scard" style="grid-column:span 2">
-        <div class="scard-title">👥 Identifiants Riot des joueurs</div>
-        <p style="font-size:10px;color:var(--text3);margin-bottom:12px">Format : Pseudo Riot (gameName) et #Tag (sans le #). Ex : pour "PlaZmaBoulou#EUW1" → gameName = PlaZmaBoulou, tag = EUW1</p>
+        <div class="scard-title">🔗 Identifiants op.gg des joueurs</div>
+        <p style="font-size:10px;color:var(--tx3);margin-bottom:12px">Format : PseudoTag-EUW (ex: PlaZmaBoulou-EUW) → lien op.gg/summoners/euw/[id]</p>
         <div id="rosterConfig"></div>
       </div>
     </div>
@@ -416,9 +417,9 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
       </div>
       <div class="field-row">
         <div class="field"><label>Durée (minutes)</label><input type="number" id="mDur" placeholder="30"></div>
-        <div class="field"><label>ELO adversaire (ELO K=32)</label><input type="number" id="mOppElo" placeholder="1200" oninput="updateEloPrev()"></div>
+        <div class="field"><label>ELO adversaire (K=32)</label><input type="number" id="mOppElo" placeholder="1200" oninput="updateEloPrev()"></div>
       </div>
-      <div class="field"><label>Note / Observation post-match</label><textarea id="mNote" rows="2" placeholder="Résumé de la game, points forts/faibles…"></textarea></div>
+      <div class="field"><label>Note / Observation</label><textarea id="mNote" rows="2" placeholder="Résumé, points forts/faibles…"></textarea></div>
       <div class="elo-prev" id="eloPrev">Sélectionne un résultat pour voir la variation d'ELO</div>
     </div>
     <div class="modal-foot">
@@ -429,7 +430,7 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
   </div>
 </div>
 
-<!-- MODAL OBJECTIVE -->
+<!-- MODAL OBJECTIF -->
 <div class="overlay" id="ovObj">
   <div class="modal">
     <div class="modal-head"><div class="modal-title" id="oTitle">Ajouter un objectif</div><button class="modal-close" onclick="closeModals()">✕</button></div>
@@ -455,422 +456,166 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════════════════════════
+'use strict';
 const COL='plazma', DOC='dashboard';
-let _editId = null;
-let matchFilter = 'all';
+let _editId=null, matchFilter='all';
 
-// ── TIER DISPLAY ──────────────────────────────────────────
-const TIER = {
-  IRON:        { fr:'FER',       color:'#9ca3af', bg:'rgba(156,163,175,.12)' },
-  BRONZE:      { fr:'BRONZE',    color:'#b45309', bg:'rgba(180,83,9,.12)'    },
-  SILVER:      { fr:'ARGENT',    color:'#94a3b8', bg:'rgba(148,163,184,.12)' },
-  GOLD:        { fr:'OR',        color:'#f59e0b', bg:'rgba(245,158,11,.12)'  },
-  PLATINUM:    { fr:'PLATINE',   color:'#06b6d4', bg:'rgba(6,182,212,.12)'   },
-  EMERALD:     { fr:'ÉMERAUDE',  color:'#22c55e', bg:'rgba(34,197,94,.12)'   },
-  DIAMOND:     { fr:'DIAMANT',   color:'#3b82f6', bg:'rgba(59,130,246,.12)'  },
-  MASTER:      { fr:'MASTER',    color:'#a855f7', bg:'rgba(168,85,247,.12)'  },
-  GRANDMASTER: { fr:'GM',        color:'#ef4444', bg:'rgba(239,68,68,.12)'   },
-  CHALLENGER:  { fr:'CHALL',     color:'#f59e0b', bg:'rgba(245,158,11,.15)'  },
-  UNRANKED:    { fr:'NON CLASSÉ',color:'#45405e', bg:'rgba(69,64,94,.12)'    },
+const TIER={
+  IRON:       {fr:'FER',        color:'#9ca3af',bg:'rgba(156,163,175,.12)'},
+  BRONZE:     {fr:'BRONZE',     color:'#b45309',bg:'rgba(180,83,9,.12)'},
+  SILVER:     {fr:'ARGENT',     color:'#94a3b8',bg:'rgba(148,163,184,.12)'},
+  GOLD:       {fr:'OR',         color:'#f59e0b',bg:'rgba(245,158,11,.12)'},
+  PLATINUM:   {fr:'PLATINE',    color:'#06b6d4',bg:'rgba(6,182,212,.12)'},
+  EMERALD:    {fr:'ÉMERAUDE',   color:'#22c55e',bg:'rgba(34,197,94,.12)'},
+  DIAMOND:    {fr:'DIAMANT',    color:'#3b82f6',bg:'rgba(59,130,246,.12)'},
+  MASTER:     {fr:'MASTER',     color:'#a855f7',bg:'rgba(168,85,247,.12)'},
+  GRANDMASTER:{fr:'GRAND MAÎTRE',color:'#ef4444',bg:'rgba(239,68,68,.12)'},
+  CHALLENGER: {fr:'CHALLENGER', color:'#f59e0b',bg:'rgba(245,158,11,.15)'},
+  UNRANKED:   {fr:'NON CLASSÉ', color:'#45405e',bg:'rgba(69,64,94,.12)'},
 };
 
-// ── INITIAL STATE ─────────────────────────────────────────
-let state = {
-  teamElo: 1200,
-  baseElo: 1200,
-  kFactor: 32,
-  defaultOppElo: 1200,
-  apiKey: '',
-  roster: [
-    {id:'boulou',  name:'boulou',  role:'Top',    emoji:'⚔️', color:'#f97316', riotId:'', riotTag:'EUW1'},
-    {id:'zugu',    name:'Zugu',    role:'Jungle', emoji:'🌿', color:'#22c55e', riotId:'', riotTag:'EUW1'},
-    {id:'lakrael', name:'Lakraël', role:'Mid',    emoji:'💎', color:'#3b82f6', riotId:'', riotTag:'EUW1'},
-    {id:'ke1do',   name:'Ke1do',   role:'ADC',    emoji:'🏹', color:'#ef4444', riotId:'', riotTag:'EUW1'},
-    {id:'sayro',   name:'Sayro',   role:'Support',emoji:'🛡️',color:'#a855f7', riotId:'', riotTag:'EUW1'},
+let state={
+  teamElo:1200, baseElo:1200, kFactor:32, defaultOppElo:1200,
+  nextEvent:'', nextEventDate:'', goal:'',
+  roster:[
+    {id:'boulou',  name:'boulou',  role:'Top',    emoji:'⚔️', color:'#f97316', opgg:'', tier:'UNRANKED', rank:'', lp:0, wr:null},
+    {id:'zugu',    name:'Zugu',    role:'Jungle', emoji:'🌿', color:'#22c55e', opgg:'', tier:'UNRANKED', rank:'', lp:0, wr:null},
+    {id:'lakrael', name:'Lakraël', role:'Mid',    emoji:'💎', color:'#3b82f6', opgg:'', tier:'UNRANKED', rank:'', lp:0, wr:null},
+    {id:'ke1do',   name:'Ke1do',   role:'ADC',    emoji:'🏹', color:'#ef4444', opgg:'', tier:'UNRANKED', rank:'', lp:0, wr:null},
+    {id:'sayro',   name:'Sayro',   role:'Support',emoji:'🛡️',color:'#a855f7', opgg:'', tier:'UNRANKED', rank:'', lp:0, wr:null},
   ],
-  riotCache: {},
-  matches: [],
-  objectives: [],
-  eloHistory: [1200],
+  matches:[], objectives:[], eloHistory:[1200],
 };
 
-// ═══════════════════════════════════════════════════════════
-// RIOT API
-// ═══════════════════════════════════════════════════════════
-// ═══════════════════════════════════════════════════════════
-// RIOT API  — proxy CORS requis pour les appels navigateur
-// ═══════════════════════════════════════════════════════════
-// L'API Riot bloque les requêtes directes depuis un browser (CORS).
-// On passe par corsproxy.io qui relaie la requête côté serveur.
-const PROXIES = [
-  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-];
-let _activeProxy = 0;
-
-async function riotFetch(url) {
-  // Extrait la clé API de l'URL pour l'envoyer aussi en header
-  // (X-Riot-Token est plus fiable que le query param via proxy)
-  let apiKey = '';
-  let cleanUrl = url;
-  try {
-    const u = new URL(url);
-    apiKey = u.searchParams.get('api_key') || '';
-    // On garde la clé dans l'URL ET on l'ajoute en header pour max compatibilité
-  } catch {}
-
-  const proxyUrl = PROXIES[_activeProxy](url);
-  const fetchOpts = {};
-  if (apiKey) {
-    // corsproxy.io supporte x-cors-headers pour forwarder des headers custom à l'API cible
-    fetchOpts.headers = {
-      'x-cors-headers': JSON.stringify({ 'X-Riot-Token': apiKey }),
-    };
-  }
-
-  let res;
-  try {
-    res = await fetch(proxyUrl, fetchOpts);
-  } catch(networkErr) {
-    if (_activeProxy < PROXIES.length - 1) {
-      _activeProxy++;
-      return riotFetch(url);
-    }
-    throw new Error('Proxy inaccessible — vérifie ta connexion');
-  }
-
-  // Certains proxies retournent 200 avec une erreur dans le body
-  const text = await res.text();
-
-  if (!res.ok) {
-    let msg = `Erreur ${res.status}`;
-    try { const j = JSON.parse(text); msg = j?.status?.message || j?.error || msg; } catch {}
-    if (res.status === 403) throw new Error('Clé API invalide ou expirée — régénère sur developer.riotgames.com');
-    if (res.status === 401) throw new Error('Clé API manquante');
-    if (res.status === 404) throw new Error('Joueur introuvable (vérifie GameName#Tag)');
-    if (res.status === 429) throw new Error('Rate limit — réessaie dans 2 min');
-    throw new Error(msg);
-  }
-
-  try { return JSON.parse(text); }
-  catch { throw new Error('Réponse invalide du proxy'); }
+// ═══ ELO ═══
+function calcEloChange(te,oe,res,K){
+  const ea=1/(1+Math.pow(10,(oe-te)/400));
+  return Math.round(K*((res==='W'?1:res==='D'?.5:0)-ea));
 }
-
-async function fetchPlayerRiotData(player) {
-  const key = state.apiKey?.trim();
-  if (!key) return null;
-  const gn  = encodeURIComponent(player.riotId?.trim());
-  const tag = encodeURIComponent(player.riotTag?.trim().replace('#',''));
-  if (!gn || !tag) return null;
-
-  try {
-    const account = await riotFetch(
-      `https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${gn}/${tag}?api_key=${key}`
-    );
-    const summoner = await riotFetch(
-      `https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${account.puuid}?api_key=${key}`
-    );
-    const entries = await riotFetch(
-      `https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/${summoner.id}?api_key=${key}`
-    );
-    const soloQ = entries.find(e => e.queueType === 'RANKED_SOLO_5x5');
-    return {
-      tier:         soloQ?.tier || 'UNRANKED',
-      rank:         soloQ?.rank || '',
-      lp:           soloQ?.leaguePoints ?? 0,
-      wins:         soloQ?.wins ?? 0,
-      losses:       soloQ?.losses ?? 0,
-      winRate:      soloQ ? Math.round(soloQ.wins / (soloQ.wins + soloQ.losses) * 100) : null,
-      summonerLevel: summoner.summonerLevel,
-      fetchedAt:    Date.now(),
-    };
-  } catch(e) {
-    console.warn(`Riot fetch failed for ${player.name}:`, e.message);
-    return { error: e.message };
-  }
-}
-
-let _riotFetching = false;
-async function fetchAllRiotData() {
-  if (_riotFetching) return;
-
-  // Auto-lecture des champs : pas besoin de cliquer Enregistrer avant de fetch
-  const inputKey = document.getElementById('p_apiKey')?.value.trim();
-  if (inputKey) state.apiKey = inputKey;
-  state.roster.forEach(p => {
-    const rid  = document.getElementById('rid_'  + p.id)?.value.trim();
-    const rtag = document.getElementById('rtag_' + p.id)?.value.trim();
-    if (rid)  p.riotId  = rid;
-    if (rtag) p.riotTag = rtag;
-  });
-
-  if (!state.apiKey) {
-    showToast('⚠ Entre ta clé API Riot dans Paramètres');
-    document.getElementById('s-params').scrollIntoView({behavior:'smooth'});
-    return;
-  }
-  const configured = state.roster.filter(p => p.riotId?.trim());
-  if (configured.length === 0) {
-    showToast('⚠ Configure les Riot IDs des joueurs dans Paramètres');
-    document.getElementById('s-params').scrollIntoView({behavior:'smooth'});
-    return;
-  }
-
-  _riotFetching = true;
-  _activeProxy = 0;
-  const btn = document.getElementById('riotRefreshBtn');
-  const statusEl = document.getElementById('riotFetchStatus');
-  btn.disabled = true; btn.textContent = '⏳ Récupération…';
-
-  state.roster.forEach(p => {
-    state.riotCache[p.id] = { ...(state.riotCache[p.id]||{}), loading: true };
-  });
-  renderRoster();
-
-  let ok = 0, fail = 0;
-  for (const p of state.roster) {
-    if (!p.riotId?.trim()) {
-      state.riotCache[p.id] = { error: 'Riot ID non configuré', loading: false };
-      fail++; renderRoster(); continue;
-    }
-    statusEl.textContent = `⏳ ${p.name} (${p.role})…`;
-    statusEl.style.color = 'var(--text3)';
-    const data = await fetchPlayerRiotData(p);
-    state.riotCache[p.id] = { ...(data||{error:'Pas de données'}), loading: false };
-    if (data && !data.error) ok++; else fail++;
-    await new Promise(r => setTimeout(r, 350));
-    renderRoster();
-  }
-
-  if (ok > 0 && fail === 0) {
-    statusEl.textContent = `✅ ${ok} joueur${ok>1?'s':''} mis à jour`;
-    statusEl.style.color = 'var(--green)';
-  } else if (ok > 0) {
-    statusEl.textContent = `✅ ${ok} OK · ⚠ ${fail} erreur${fail>1?'s':''}`;
-    statusEl.style.color = 'var(--yellow)';
-  } else {
-    statusEl.textContent = `⚠ Échec — vérifie la clé API et les Riot IDs`;
-    statusEl.style.color = 'var(--red)';
-  }
-  document.getElementById('liveTag').style.display = ok > 0 ? '' : 'none';
-  btn.disabled = false; btn.textContent = '⚡ Actualiser stats Riot';
-  _riotFetching = false;
-  if (ok > 0) save();
-}
-
-// ═══════════════════════════════════════════════════════════
-// ELO
-// ═══════════════════════════════════════════════════════════
-function calcEloChange(teamElo, oppElo, result, K) {
-  const ea = 1 / (1 + Math.pow(10, (oppElo - teamElo) / 400));
-  const w = result === 'W' ? 1 : result === 'D' ? 0.5 : 0;
-  return Math.round(K * (w - ea));
-}
-
-function recomputeElo() {
-  let elo = state.baseElo;
-  const hist = [elo];
-  const sorted = [...state.matches].sort((a,b) => a.date > b.date ? 1 : -1);
-  for (const m of sorted) {
-    const delta = calcEloChange(elo, m.oppElo ?? state.defaultOppElo, m.result, state.kFactor);
-    elo = Math.max(0, elo + delta);
+function recomputeElo(){
+  let elo=state.baseElo; const hist=[elo];
+  [...state.matches].sort((a,b)=>a.date>b.date?1:-1).forEach(m=>{
+    elo=Math.max(0,elo+calcEloChange(elo,m.oppElo??state.defaultOppElo,m.result,state.kFactor));
     hist.push(elo);
-  }
-  state.teamElo = elo;
-  state.eloHistory = hist;
-}
-
-function getEloTier(elo) {
-  if (elo >= 2600) return {tier:'CHALLENGER', label:'Challenger'};
-  if (elo >= 2400) return {tier:'GRANDMASTER', label:'Grand Master'};
-  if (elo >= 2200) return {tier:'MASTER', label:'Master'};
-  if (elo >= 2000) return {tier:'DIAMOND', label:'Diamant'};
-  if (elo >= 1800) return {tier:'EMERALD', label:'Émeraude'};
-  if (elo >= 1600) return {tier:'PLATINUM', label:'Platine'};
-  if (elo >= 1400) return {tier:'GOLD', label:'Or'};
-  if (elo >= 1200) return {tier:'SILVER', label:'Argent'};
-  if (elo >= 1000) return {tier:'BRONZE', label:'Bronze'};
-  return {tier:'IRON', label:'Fer'};
-}
-
-function drawEloChart(history) {
-  if (history.length < 2) return '<div style="color:var(--text3);font-size:10px;text-align:center;padding-top:28px">Ajoutez des matchs pour voir la courbe</div>';
-  const w = 400, h = 60;
-  const min = Math.min(...history) - 20;
-  const max = Math.max(...history) + 20;
-  const pts = history.map((v, i) => {
-    const x = (i / (history.length - 1)) * w;
-    const y = h - ((v - min) / (max - min)) * h;
-    return `${x},${y}`;
   });
-  const last = history[history.length - 1];
-  const prev = history[history.length - 2] ?? last;
-  const lineColor = last >= prev ? 'var(--green)' : 'var(--red)';
-  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" class="elo-chart-svg">
-    <defs>
-      <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="${lineColor}" stop-opacity=".3"/>
-        <stop offset="100%" stop-color="${lineColor}" stop-opacity="0"/>
-      </linearGradient>
-    </defs>
-    <polygon points="${pts[0]},${h} ${pts.join(' ')} ${pts[pts.length-1].split(',')[0]},${h}" fill="url(#cg)"/>
-    <polyline points="${pts.join(' ')}" fill="none" stroke="${lineColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  state.teamElo=elo; state.eloHistory=hist;
+}
+function getEloTier(e){
+  if(e>=2600)return{tier:'CHALLENGER',label:'Challenger'};
+  if(e>=2400)return{tier:'GRANDMASTER',label:'Grand Maître'};
+  if(e>=2200)return{tier:'MASTER',label:'Master'};
+  if(e>=2000)return{tier:'DIAMOND',label:'Diamant'};
+  if(e>=1800)return{tier:'EMERALD',label:'Émeraude'};
+  if(e>=1600)return{tier:'PLATINUM',label:'Platine'};
+  if(e>=1400)return{tier:'GOLD',label:'Or'};
+  if(e>=1200)return{tier:'SILVER',label:'Argent'};
+  if(e>=1000)return{tier:'BRONZE',label:'Bronze'};
+  return{tier:'IRON',label:'Fer'};
+}
+function eloRange(t){return{IRON:'0–999',BRONZE:'1000–1199',SILVER:'1200–1399',GOLD:'1400–1599',PLATINUM:'1600–1799',EMERALD:'1800–1999',DIAMOND:'2000–2199',MASTER:'2200–2399',GRANDMASTER:'2400–2599',CHALLENGER:'2600+'}[t]||'—';}
+function drawChart(hist){
+  if(hist.length<2)return '<div style="color:var(--tx3);font-size:10px;text-align:center;padding-top:32px">Ajoutez des matchs pour voir la courbe ELO</div>';
+  const W=420,H=80,mn=Math.min(...hist)-30,mx=Math.max(...hist)+30;
+  const px=hist.map((v,i)=>[(i/(hist.length-1))*W,H-((v-mn)/(mx-mn))*H]);
+  const last=hist[hist.length-1],prev=hist[hist.length-2];
+  const lc=last>=prev?'var(--green)':'var(--red)';
+  const ps=px.map(p=>p.join(',')).join(' ');
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${lc}" stop-opacity=".25"/><stop offset="100%" stop-color="${lc}" stop-opacity="0"/></linearGradient></defs>
+    <polygon points="${px[0][0]},${H} ${ps} ${px[px.length-1][0]},${H}" fill="url(#cg)"/>
+    <polyline points="${ps}" fill="none" stroke="${lc}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${px[px.length-1][0]}" cy="${px[px.length-1][1]}" r="4" fill="${lc}"/>
   </svg>`;
 }
 
-// ═══════════════════════════════════════════════════════════
-// RENDER
-// ═══════════════════════════════════════════════════════════
-function render() {
+// ═══ RENDER ═══
+function render(){
   recomputeElo();
   renderKPIs();
-  renderElo();
   renderRoster();
+  renderElo();
   renderMatches();
+  renderWL();
   renderObjectives();
   renderSettingsForm();
   updateBadges();
 }
 
-function renderKPIs() {
-  const wins = state.matches.filter(m=>m.result==='W').length;
-  const losses = state.matches.filter(m=>m.result==='L').length;
-  const total = wins + losses;
-  const wr = total > 0 ? Math.round(wins/total*100) : 0;
-  const t = getEloTier(state.teamElo);
-  const tc = TIER[t.tier]||TIER.UNRANKED;
-
+function renderKPIs(){
+  const wins=state.matches.filter(m=>m.result==='W').length;
+  const losses=state.matches.filter(m=>m.result==='L').length;
+  const total=wins+losses;
+  const wr=total>0?Math.round(wins/total*100):null;
+  const t=getEloTier(state.teamElo), tc=TIER[t.tier]||TIER.UNRANKED;
+  // Scrims semaine
+  const now=new Date();
+  const mon=new Date(now); mon.setDate(now.getDate()-(now.getDay()||7)+1); mon.setHours(0,0,0,0);
+  const wk=state.matches.filter(m=>m.date&&new Date(m.date)>=mon);
+  const wW=wk.filter(m=>m.result==='W').length, wL=wk.filter(m=>m.result==='L').length;
   // Streak
-  let streak = 0, streakType = '';
-  const sorted = [...state.matches].sort((a,b)=>b.date>a.date?1:-1);
-  for (const m of sorted) {
-    if (streak === 0) { streakType = m.result; streak = 1; }
-    else if (m.result === streakType) streak++;
-    else break;
-  }
-  const streakTxt = streak === 0 ? '—' : (streakType==='W'?`${streak}W`:streakType==='L'?`${streak}L`:`${streak}N`);
-  const streakCls = streakType==='W'?'up':streakType==='L'?'dn':'neu';
+  let streak=0,sType='';
+  [...state.matches].sort((a,b)=>b.date>a.date?1:-1).forEach(m=>{
+    if(!sType){sType=m.result;streak=1;}else if(m.result===sType)streak++;
+  });
+  const sTxt=streak===0?'—':(sType==='W'?`${streak}W`:sType==='L'?`${streak}L`:`${streak}N`);
+  const sCls=sType==='W'?'up':sType==='L'?'dn':'neu';
+  // Scrims mois
+  const mo=now.toISOString().slice(0,7);
+  const moScrims=state.matches.filter(m=>m.date?.startsWith(mo)).length;
+  // Événement
+  const evtName=state.nextEvent||'Non configuré';
+  const evtDate=state.nextEventDate?new Date(state.nextEventDate+'T12:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}):'';
+  const daysLeft=state.nextEventDate?Math.ceil((new Date(state.nextEventDate+'T12:00')-now)/86400000):null;
 
-  document.getElementById('kpiStrip').innerHTML = `
-    <div class="kpi">
-      <div class="kpi-glow" style="background:var(--v4)"></div>
+  document.getElementById('kpiStrip').innerHTML=`
+    <div class="kpi kpi-wr">
+      <div class="kpi-glow" style="background:${wr!==null&&wr>=50?'var(--green)':'var(--red)'}"></div>
+      <div class="kpi-label">Win Rate global</div>
+      <div class="kpi-val" style="color:${wr!==null&&wr>=50?'var(--green)':'var(--red)'}">${wr!==null?wr+'%':'—'}</div>
+      <div class="kpi-sub"><b>${wins}V</b> — <b>${losses}D</b> · ${total} match${total>1?'s':''}</div>
+    </div>
+    <div class="kpi kpi-scrims">
+      <div class="kpi-glow" style="background:var(--orange)"></div>
+      <div class="kpi-label">Scrims cette semaine</div>
+      <div class="kpi-val" style="color:${wW>wL?'var(--green)':wL>wW?'var(--red)':'var(--tx2)'}; font-size:32px">${wk.length>0?wW+'V '+wL+'D':'—'}</div>
+      <div class="kpi-sub">${wk.length} scrim${wk.length>1?'s':''} joué${wk.length>1?'s':''}</div>
+    </div>
+    <div class="kpi kpi-elo">
+      <div class="kpi-glow" style="background:${tc.color}"></div>
       <div class="kpi-label">ELO Équipe</div>
       <div class="kpi-val" style="color:${tc.color}">${state.teamElo}</div>
-      <div class="kpi-sub">${t.label}</div>
+      <div class="kpi-sub"><b style="color:${tc.color}">${t.label}</b></div>
     </div>
-    <div class="kpi">
-      <div class="kpi-glow" style="background:var(--green)"></div>
-      <div class="kpi-label">Win Rate (officiel)</div>
-      <div class="kpi-val" style="color:${wr>=50?'var(--green)':'var(--red)'}">${wr}%</div>
-      <div class="kpi-sub">${wins}V – ${losses}D · ${total} matchs</div>
-    </div>
-    <div class="kpi">
+    <div class="kpi kpi-streak">
       <div class="kpi-glow" style="background:var(--yellow)"></div>
       <div class="kpi-label">Série en cours</div>
-      <div class="kpi-val"><span class="delta ${streakCls}">${streakTxt}</span></div>
+      <div class="kpi-val"><span class="delta ${sCls}">${sTxt}</span></div>
       <div class="kpi-sub">Dernière forme</div>
     </div>
-    <div class="kpi">
+    <div class="kpi kpi-month">
       <div class="kpi-glow" style="background:var(--cyan)"></div>
-      <div class="kpi-label">Objectifs actifs</div>
-      <div class="kpi-val" style="color:var(--cyan)">${state.objectives.filter(o=>o.status!=='done').length}</div>
-      <div class="kpi-sub">${state.objectives.filter(o=>o.status==='done').length} terminé${state.objectives.filter(o=>o.status==='done').length>1?'s':''}</div>
+      <div class="kpi-label">Scrims ce mois</div>
+      <div class="kpi-val" style="color:var(--cyan)">${moScrims}</div>
+      <div class="kpi-sub">${state.matches.filter(m=>m.type==='Officiel'&&m.date?.startsWith(mo)).length} officiel${state.matches.filter(m=>m.type==='Officiel'&&m.date?.startsWith(mo)).length>1?'s':''}</div>
+    </div>
+    <div class="kpi kpi-event" onclick="${state.nextEvent?'':'scrollTo(\"s-params\")'}" style="cursor:${state.nextEvent?'default':'pointer'}">
+      <div class="kpi-glow" style="background:var(--pink)"></div>
+      <div class="kpi-label">Prochain événement</div>
+      <div class="kpi-val" style="font-size:${evtName.length>12?'16px':'22px'};color:var(--pink);line-height:1.15;margin-bottom:8px">${esc(evtName)}</div>
+      <div class="kpi-sub">${evtDate?`📅 ${evtDate}${daysLeft!==null?' · <b>J-'+daysLeft+'</b>':''}`:state.nextEvent?'':'<span style="font-style:italic">Configurer dans Paramètres</span>'}</div>
     </div>`;
 }
 
-function renderElo() {
-  const t = getEloTier(state.teamElo);
-  const tc = TIER[t.tier]||TIER.UNRANKED;
-  const wins = state.matches.filter(m=>m.result==='W').length;
-  const losses = state.matches.filter(m=>m.result==='L').length;
-  const draws = state.matches.filter(m=>m.result==='D').length;
-  const total = wins + losses + draws;
-  const wr = total > 0 ? Math.round(wins/total*100) : 0;
-  const lastDelta = (() => {
-    const h = state.eloHistory;
-    if (h.length < 2) return null;
-    return h[h.length-1] - h[h.length-2];
-  })();
-
-  document.getElementById('eloBox').innerHTML = `
-    <div>
-      <div class="kpi-label">ELO interne — Saison 2026</div>
-      <div class="elo-num">${state.teamElo}</div>
-      <div class="elo-tier-badge" style="background:${tc.bg};color:${tc.color}">${t.label}</div>
-    </div>
-    <div class="elo-meta">
-      <div class="em"><div class="em-val" style="color:var(--green)">${wins}</div><div class="em-lbl">Victoires</div></div>
-      <div class="em"><div class="em-val" style="color:var(--red)">${losses}</div><div class="em-lbl">Défaites</div></div>
-      <div class="em"><div class="em-val" style="color:var(--text2)">${wr}%</div><div class="em-lbl">Win Rate</div></div>
-      <div class="em"><div class="em-val" style="color:${lastDelta===null?'var(--text3)':lastDelta>=0?'var(--green)':'var(--red)'}">${lastDelta===null?'—':(lastDelta>=0?'+':'')+lastDelta}</div><div class="em-lbl">Dernier match</div></div>
-    </div>
-    <div>
-      <div class="kpi-label" style="margin-bottom:6px">Courbe ELO (${state.eloHistory.length-1} matchs)</div>
-      <div class="elo-chart-wrap">${drawEloChart(state.eloHistory)}</div>
-    </div>`;
-
-  document.getElementById('eloRef').innerHTML = `
-    <div class="sec-title" style="font-size:10px;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:4px">
-      <div class="sec-dot" style="background:var(--v4)"></div>Table de référence ELO
-    </div>
-    <div class="ref-grid">
-      ${Object.entries(TIER).filter(([k])=>k!=='UNRANKED').reverse().map(([k,v])=>`
-        <div class="ref-row">
-          <div class="ref-lbl" style="color:${v.color}">${v.fr}</div>
-          <div class="ref-pts" style="color:${v.color}">${eloRangeFor(k)}</div>
-        </div>`).join('')}
-    </div>
-    <div class="formula-box" style="margin-top:10px">
-      <strong style="color:var(--v5);font-size:11px">Formule ELO (K=${state.kFactor})</strong><br>
-      <code>ΔElo = K × (résultat − Ea)</code><br>
-      <code>Ea = 1 / (1 + 10^((oppElo − teamElo) / 400))</code>
-    </div>`;
-}
-
-function eloRangeFor(tier) {
-  const ranges = {IRON:'0 – 999',BRONZE:'1000 – 1199',SILVER:'1200 – 1399',GOLD:'1400 – 1599',PLATINUM:'1600 – 1799',EMERALD:'1800 – 1999',DIAMOND:'2000 – 2199',MASTER:'2200 – 2399',GRANDMASTER:'2400 – 2599',CHALLENGER:'2600+'};
-  return ranges[tier] || '—';
-}
-
-function renderRoster() {
-  const grid = document.getElementById('rosterGrid');
-  grid.innerHTML = '';
-  state.roster.forEach(p => {
-    const cache = state.riotCache[p.id] || {};
-    const t = TIER[cache.tier || 'UNRANKED'] || TIER.UNRANKED;
-    const card = document.createElement('div');
-    card.className = 'pcard';
-
-    let rankHTML = '';
-    if (cache.loading) {
-      rankHTML = `<div class="rank-loading"><div class="rank-loading-dot"></div>Chargement…</div>`;
-    } else if (cache.error) {
-      rankHTML = `<div class="rank-err">⚠ ${cache.error.length>40?cache.error.slice(0,40)+'…':cache.error}</div>`;
-    } else if (cache.tier) {
-      const tierCfg = TIER[cache.tier] || TIER.UNRANKED;
-      const wrColor = cache.winRate >= 55 ? 'var(--green)' : cache.winRate >= 50 ? 'var(--yellow)' : 'var(--red)';
-      rankHTML = `
-        <div class="rank-tier" style="color:${tierCfg.color}">${tierCfg.fr}${cache.rank?' '+cache.rank:''}</div>
-        <div class="rank-lp">${cache.lp} LP${cache.winRate!==null ? ` · <span style="color:${wrColor};font-weight:700">${cache.winRate}% WR</span>` : ''}</div>
-        <div class="rank-lp">${cache.wins ?? 0}V ${cache.losses ?? 0}D · Nv.${cache.summonerLevel ?? '—'}</div>`;
-    } else if (p.riotId) {
-      rankHTML = `<div class="rank-err">Clique ⚡ pour récupérer</div>`;
-    } else {
-      rankHTML = `<div class="rank-err">Riot ID non configuré</div>`;
-    }
-
-    const freshTag = cache.fetchedAt ? `<div class="live-tag">LIVE</div>` : '';
-    const eloContrib = (() => {
-      const pMatches = state.matches.filter(m => true); // all matches affect team ELO
-      if (pMatches.length === 0) return null;
-      return state.teamElo - state.baseElo;
-    })();
-
-    card.innerHTML = `
-      ${freshTag}
+function renderRoster(){
+  const grid=document.getElementById('rosterGrid');
+  grid.innerHTML='';
+  state.roster.forEach(p=>{
+    const tc=TIER[p.tier||'UNRANKED']||TIER.UNRANKED;
+    const wrColor=p.wr>=55?'var(--green)':p.wr>=50?'var(--yellow)':'var(--red)';
+    const opggUrl=p.opgg?`https://www.op.gg/summoners/euw/${encodeURIComponent(p.opgg)}`:'';
+    const card=document.createElement('div');
+    card.className='pcard';
+    card.innerHTML=`
       <div class="pc-strip" style="background:${p.color}"></div>
       <div class="pc-head">
         <div class="pc-emo">${p.emoji}</div>
@@ -880,377 +625,388 @@ function renderRoster() {
         </div>
       </div>
       <div class="pc-body">
-        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:2px">Rang SoloQ EUW</div>
-        <div class="rank-block" style="border-color:${cache.tier&&cache.tier!=='UNRANKED'?t.color+'44':''}">${rankHTML}</div>
+        <div>
+          <div class="pc-lbl">Rang SoloQ</div>
+          <select class="pc-sel" onchange="setRF('${p.id}','tier',this.value)">
+            ${Object.entries(TIER).map(([k,v])=>`<option value="${k}"${p.tier===k?' selected':''}>${v.fr}</option>`).join('')}
+          </select>
+        </div>
+        <div class="pc-row">
+          <div style="flex:1">
+            <div class="pc-lbl">Div.</div>
+            <select class="pc-sel" onchange="setRF('${p.id}','rank',this.value)">
+              <option value="">-</option>
+              ${['IV','III','II','I'].map(r=>`<option value="${r}"${p.rank===r?' selected':''}>${r}</option>`).join('')}
+            </select>
+          </div>
+          <div style="flex:1">
+            <div class="pc-lbl">LP</div>
+            <input class="pc-inp" type="number" min="0" max="100" placeholder="0" value="${p.lp||''}" oninput="setRF('${p.id}','lp',+this.value)">
+          </div>
+          <div style="flex:1">
+            <div class="pc-lbl">WR%</div>
+            <input class="pc-inp" type="number" min="0" max="100" placeholder="—" value="${p.wr??''}" oninput="setRF('${p.id}','wr',+this.value)">
+          </div>
+        </div>
+        <div style="padding-top:4px;border-top:1px solid var(--bd)">
+          <div class="pc-rank-display" style="color:${tc.color}">${tc.fr}${p.rank?' '+p.rank:''}</div>
+          <div class="pc-lp">${p.lp||0} LP${p.wr!=null&&p.wr>0?' · <span style="color:'+wrColor+';font-weight:700">'+p.wr+'% WR</span>':''}</div>
+        </div>
+        ${opggUrl
+          ?`<a class="btn-opgg" href="${opggUrl}" target="_blank">🔗 Voir sur op.gg</a>`
+          :`<button class="btn-opgg disabled" onclick="scrollTo('s-params');showToast('Configure l\\'id op.gg dans Paramètres')">Configurer op.gg →</button>`}
       </div>`;
     grid.appendChild(card);
   });
 }
 
-function renderMatches() {
-  const filters = document.getElementById('matchFilters');
-  const types = ['all', ...new Set(state.matches.map(m=>m.type))];
-  const counts = {};
-  state.matches.forEach(m => counts[m.type] = (counts[m.type]||0)+1);
-  filters.innerHTML = types.map(t=>`
-    <button class="mfbtn${matchFilter===t?' active':''}" onclick="setFilter('${t}',this)">
-      ${t==='all'?`Tous (${state.matches.length})`:t+` (${counts[t]||0})`}
-    </button>`).join('') +
-    `<button class="mfbtn" onclick="openAddMatch()" style="margin-left:auto;background:rgba(109,40,217,.12);border-color:rgba(109,40,217,.28);color:var(--v5)">＋ Ajouter</button>`;
+function setRF(id,field,value){
+  const p=state.roster.find(x=>x.id===id);
+  if(p) p[field]=value;
+}
+function saveRoster(){render();save();showToast('Rangs sauvegardés ✓');}
 
-  const list = document.getElementById('matchList');
-  const filtered = matchFilter === 'all' ? state.matches : state.matches.filter(m=>m.type===matchFilter);
-  const sorted = [...filtered].sort((a,b) => b.date > a.date ? 1 : -1);
-
-  if (sorted.length === 0) {
-    list.innerHTML = `<div class="match-empty">Aucun match enregistré${matchFilter!=='all'?' pour ce filtre':''}. Clique sur + Ajouter !</div>`;
-    return;
-  }
-
-  list.innerHTML = `
-    <div class="mt-head">
-      <div class="mt-col">Date</div>
-      <div class="mt-col">Adversaire</div>
-      <div class="mt-col">Résultat</div>
-      <div class="mt-col">Type</div>
-      <div class="mt-col">Score / Durée</div>
-      <div class="mt-col">Patch</div>
-      <div class="mt-col">Note</div>
+function renderElo(){
+  const t=getEloTier(state.teamElo),tc=TIER[t.tier]||TIER.UNRANKED;
+  const wins=state.matches.filter(m=>m.result==='W').length;
+  const losses=state.matches.filter(m=>m.result==='L').length;
+  const wr=wins+losses>0?Math.round(wins/(wins+losses)*100):0;
+  const lastD=state.eloHistory.length>=2?state.eloHistory[state.eloHistory.length-1]-state.eloHistory[state.eloHistory.length-2]:null;
+  document.getElementById('eloMain').innerHTML=`
+    <div>
+      <div class="kpi-label">ELO interne — Saison 2026</div>
+      <div class="elo-num" style="color:${tc.color}">${state.teamElo}</div>
+      <div class="elo-tier-badge" style="background:${tc.bg};color:${tc.color}">${t.label}</div>
     </div>
-    ${sorted.map(m => {
-      const eDelta = calcEloChange(state.teamElo, m.oppElo??state.defaultOppElo, m.result, state.kFactor);
-      const deltaStr = m.result==='W'?`+${Math.abs(eDelta)}`:m.result==='L'?`-${Math.abs(eDelta)}`:'±0';
-      const deltaCls = m.result==='W'?'up':m.result==='L'?'dn':'neu';
+    <div class="elo-stats">
+      <div class="es"><div class="es-val" style="color:var(--green)">${wins}</div><div class="es-lbl">Victoires</div></div>
+      <div class="es"><div class="es-val" style="color:var(--red)">${losses}</div><div class="es-lbl">Défaites</div></div>
+      <div class="es"><div class="es-val" style="color:var(--tx2)">${wr}%</div><div class="es-lbl">Win Rate</div></div>
+      <div class="es"><div class="es-val" style="color:${lastD===null?'var(--tx3)':lastD>=0?'var(--green)':'var(--red)'}">${lastD===null?'—':(lastD>=0?'+':'')+lastD}</div><div class="es-lbl">Dernier</div></div>
+    </div>
+    <div>
+      <div class="kpi-label" style="margin-bottom:6px">Courbe ELO — ${state.eloHistory.length-1} matchs</div>
+      <div class="chart-wrap">${drawChart(state.eloHistory)}</div>
+    </div>`;
+  document.getElementById('eloRef').innerHTML=`
+    <div class="sec-title" style="font-size:10px;padding-bottom:10px;border-bottom:1px solid var(--bd);margin-bottom:8px"><div class="sec-dot" style="background:var(--v4)"></div>Table ELO</div>
+    <div class="ref-grid">
+      ${Object.entries(TIER).filter(([k])=>k!=='UNRANKED').reverse().map(([k,v])=>`
+        <div class="ref-row"><div class="ref-lbl" style="color:${v.color}">${v.fr}</div><div class="ref-pts" style="color:${v.color}">${eloRange(k)}</div></div>`).join('')}
+    </div>
+    <div class="formula-box">
+      <strong style="color:var(--v5);font-size:11px">Formule ELO (K=${state.kFactor})</strong><br>
+      <code>ΔElo = K × (résultat − Ea)</code><br>
+      <code>Ea = 1 / (1 + 10^(ΔElo/400))</code>
+    </div>`;
+}
+
+function renderMatches(){
+  const filters=document.getElementById('matchFilters');
+  const types=['all',...new Set(state.matches.map(m=>m.type))];
+  const counts={};state.matches.forEach(m=>counts[m.type]=(counts[m.type]||0)+1);
+  filters.innerHTML=types.map(t=>`<button class="mfbtn${matchFilter===t?' active':''}" onclick="setFilter('${t}')">${t==='all'?`Tous (${state.matches.length})`:t+` (${counts[t]||0})`}</button>`).join('')+
+    `<button class="mfbtn" onclick="openAddMatch()" style="margin-left:auto;background:rgba(109,40,217,.12);border-color:rgba(109,40,217,.28);color:var(--v5)">＋ Ajouter</button>`;
+  const list=document.getElementById('matchList');
+  const filtered=matchFilter==='all'?state.matches:state.matches.filter(m=>m.type===matchFilter);
+  const sorted=[...filtered].sort((a,b)=>b.date>a.date?1:-1);
+  if(!sorted.length){list.innerHTML='<div class="match-empty">Aucun match enregistré. Clique sur + Ajouter !</div>';return;}
+  list.innerHTML=`
+    <div class="match-head">
+      <div>Date</div><div>Adversaire</div><div>Résultat</div><div>Type</div><div>Score / Durée</div><div>Patch</div><div>Note</div>
+    </div>
+    ${sorted.map(m=>{
+      const d=calcEloChange(state.teamElo,m.oppElo??state.defaultOppElo,m.result,state.kFactor);
+      const ds=m.result==='W'?`+${Math.abs(d)}`:m.result==='L'?`-${Math.abs(d)}`:'±0';
+      const dc=m.result==='W'?'up':m.result==='L'?'dn':'neu';
       return `<div class="match-row ${m.result==='W'?'win':m.result==='L'?'loss':'draw'}" onclick="openEditMatch('${m.id}')">
-        <div class="mc date">${m.date ? new Date(m.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}) : '—'}</div>
+        <div class="mc date">${m.date?new Date(m.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}):'—'}</div>
         <div class="mc opp">${esc(m.opp)}</div>
-        <div class="mc result-badge"><span class="result-${m.result}">${m.result==='W'?'VICTOIRE':m.result==='L'?'DÉFAITE':'NUL'}</span></div>
-        <div class="mc type-tag"><span class="type-${m.type}">${m.type}</span></div>
-        <div class="mc" style="font-size:11px">${m.score||'—'} · ${m.duration?m.duration+'min':'—'} · <span class="delta ${deltaCls}">${deltaStr}</span></div>
-        <div class="mc" style="font-size:11px;color:var(--text3)">${m.patch||'—'}</div>
+        <div class="mc"><span class="result-${m.result}">${m.result==='W'?'VICTOIRE':m.result==='L'?'DÉFAITE':'NUL'}</span></div>
+        <div class="mc"><span class="type-${m.type}">${m.type}</span></div>
+        <div class="mc" style="font-size:11px">${m.score||'—'} · ${m.duration?m.duration+'min':'—'} · <span class="delta ${dc}">${ds}</span></div>
+        <div class="mc" style="font-size:11px;color:var(--tx3)">${m.patch||'—'}</div>
         <div class="mc note-cell">${esc(m.note||'')}</div>
       </div>`;
     }).join('')}`;
 }
 
-function renderObjectives() {
-  const list = document.getElementById('objList');
-  if (state.objectives.length === 0) {
-    list.innerHTML = `<div class="match-empty">Aucun objectif. Clique sur + Ajouter !</div>`;
-    return;
+function renderWL(){
+  const panel=document.getElementById('wlPanel');
+  const now=new Date();
+  const months=[];
+  for(let i=0;i<4;i++){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const key=d.toISOString().slice(0,7);
+    const lbl=d.toLocaleDateString('fr-FR',{month:'short',year:'2-digit'});
+    const mm=state.matches.filter(m=>m.date?.startsWith(key));
+    months.push({lbl,w:mm.filter(m=>m.result==='W').length,l:mm.filter(m=>m.result==='L').length,t:mm.length});
   }
-  const sorted = [...state.objectives].sort((a,b) => {
-    const p = {high:0,medium:1,low:2};
-    return (p[a.priority]??1) - (p[b.priority]??1);
-  });
-  list.innerHTML = sorted.map(o => {
-    const color = o.priority==='high'?'var(--red)':o.priority==='low'?'var(--green)':'var(--yellow)';
-    const stClass = `st-${o.status}`;
-    const stLabel = o.status==='done'?'Terminé':o.status==='progress'?'En cours':'À faire';
-    const today = new Date().toISOString().split('T')[0];
-    const overdue = o.deadline && o.deadline < today && o.status !== 'done';
-    return `<div class="obj-card" style="--obj-color:${color}" onclick="openEditObj('${o.id}')">
-      <div style="content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:${color};border-radius:3px 0 0 3px"></div>
+  const maxT=Math.max(...months.map(r=>r.t),1);
+  const last10=[...state.matches].sort((a,b)=>b.date>a.date?1:-1).slice(0,10).reverse();
+  const tW=state.matches.filter(m=>m.result==='W').length;
+  const tL=state.matches.filter(m=>m.result==='L').length;
+  const tT=tW+tL;
+  const wrAll=tT>0?Math.round(tW/tT*100):0;
+  panel.innerHTML=`
+    <div>
+      <div class="wl-title">Win Rate global</div>
+      <div class="wl-summary">
+        <div class="wl-wr" style="color:${wrAll>=50?'var(--green)':'var(--red)'}">${tT>0?wrAll+'%':'—'}</div>
+        <div class="wl-wr-sub">${tW}V — ${tL}D · ${tT} matchs</div>
+        <div class="wl-dots">${last10.map(m=>`<div class="wl-dot" title="${esc(m.opp)} · ${m.result}" style="background:${m.result==='W'?'var(--green)':m.result==='L'?'var(--red)':'var(--tx3)'}"></div>`).join('')}</div>
+      </div>
+    </div>
+    <div>
+      <div class="wl-title">Par mois (4 derniers)</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${months.map(r=>r.t===0?'':`
+          <div class="wl-bar-row">
+            <div class="wl-bar-lbl">${r.lbl}</div>
+            <div class="wl-bar-group">
+              <div class="wl-bar-track"><div class="wl-bar-fill" style="width:${r.w/maxT*100}%;background:var(--green)"></div></div>
+              <div class="wl-bar-track"><div class="wl-bar-fill" style="width:${r.l/maxT*100}%;background:var(--red)"></div></div>
+            </div>
+            <div class="wl-bar-nums">
+              <span class="wl-bar-n" style="color:var(--green)">${r.w}V</span>
+              <span class="wl-bar-n" style="color:var(--red)">${r.l}D</span>
+            </div>
+          </div>`).join('')}
+        ${months.every(r=>r.t===0)?'<div style="color:var(--tx3);font-size:10px;text-align:center;padding:12px 0">Aucun match ce mois</div>':''}
+      </div>
+    </div>`;
+}
+
+function renderObjectives(){
+  const list=document.getElementById('objList');
+  if(!state.objectives.length){list.innerHTML='<div class="match-empty">Aucun objectif. Clique sur + Ajouter !</div>';return;}
+  const sorted=[...state.objectives].sort((a,b)=>({high:0,medium:1,low:2}[a.priority??'medium'])-({high:0,medium:1,low:2}[b.priority??'medium']));
+  const today=new Date().toISOString().split('T')[0];
+  list.innerHTML=sorted.map(o=>{
+    const color=o.priority==='high'?'var(--red)':o.priority==='low'?'var(--green)':'var(--yellow)';
+    const stLbl=o.status==='done'?'Terminé':o.status==='progress'?'En cours':'À faire';
+    const overdue=o.deadline&&o.deadline<today&&o.status!=='done';
+    return `<div class="obj-card" onclick="openEditObj('${o.id}')">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${color};border-radius:3px 0 0 3px"></div>
       <div class="obj-top">
         <div class="obj-name">${esc(o.name)}</div>
         <div class="obj-badges">
           <span class="prio-badge prio-${o.priority}">${o.priority==='high'?'🔴 Urgent':o.priority==='low'?'🟢 Faible':'🟠 Normal'}</span>
-          <span class="status-badge ${stClass}">${stLabel}</span>
+          <span class="status-badge st-${o.status}">${stLbl}</span>
         </div>
       </div>
       <div class="obj-bar-wrap">
         <div class="obj-bar-bg"><div class="obj-bar-fill" style="width:${o.pct||0}%;background:${color}"></div></div>
         <div class="obj-pct" style="color:${color}">${o.pct||0}%</div>
       </div>
-      ${o.deadline ? `<div class="obj-dl" style="color:${overdue?'var(--red)':'var(--text3)'}">📅 ${overdue?'⚠ En retard · ':''}Échéance : ${new Date(o.deadline).toLocaleDateString('fr-FR',{day:'2-digit',month:'long'})}</div>` : ''}
+      ${o.deadline?`<div class="obj-dl" style="color:${overdue?'var(--red)':'var(--tx3)'}">📅 ${overdue?'⚠ En retard · ':''}Échéance : ${new Date(o.deadline).toLocaleDateString('fr-FR',{day:'2-digit',month:'long'})}</div>`:''}
     </div>`;
   }).join('');
 }
 
-function renderSettingsForm() {
-  // Ne pas écraser si l'utilisateur est en train de saisir une nouvelle clé
-  const apiKeyEl = document.getElementById('p_apiKey');
-  if (apiKeyEl && !apiKeyEl._dirty) apiKeyEl.value = state.apiKey || '';
-  document.getElementById('p_baseElo').value = state.baseElo;
-  document.getElementById('p_kFactor').value = state.kFactor;
-  document.getElementById('p_defaultOppElo').value = state.defaultOppElo;
-
-  const rc = document.getElementById('rosterConfig');
-  rc.innerHTML = state.roster.map(p => `
-    <div class="roster-config-row">
+function renderSettingsForm(){
+  document.getElementById('p_baseElo').value=state.baseElo;
+  document.getElementById('p_kFactor').value=state.kFactor;
+  document.getElementById('p_defaultOppElo').value=state.defaultOppElo;
+  document.getElementById('p_nextEvent').value=state.nextEvent||'';
+  document.getElementById('p_nextEventDate').value=state.nextEventDate||'';
+  document.getElementById('p_goal').value=state.goal||'';
+  document.getElementById('rosterConfig').innerHTML=state.roster.map(p=>`
+    <div class="rcr">
       <div class="rcr-emo">${p.emoji}</div>
       <div class="rcr-name">${p.name} <span style="color:${p.color};font-size:9px">${p.role}</span></div>
-      <input class="rcr-inp" id="rid_${p.id}" value="${p.riotId||''}" placeholder="GameName">
-      <input class="rcr-inp" id="rtag_${p.id}" value="${p.riotTag||''}" placeholder="Tag (ex: EUW1)">
+      <input class="rcr-inp" id="opgg_${p.id}" value="${p.opgg||''}" placeholder="PseudoTag-EUW">
+      <span style="font-size:9px;color:var(--tx3)">→ op.gg/summoners/euw/[id]</span>
     </div>`).join('');
 }
 
-function updateBadges() {
-  document.getElementById('matchCountBadge').textContent = state.matches.length;
-  document.getElementById('objCountBadge').textContent = state.objectives.filter(o=>o.status!=='done').length;
+function updateBadges(){
+  document.getElementById('matchCountBadge').textContent=state.matches.length;
+  document.getElementById('objCountBadge').textContent=state.objectives.filter(o=>o.status!=='done').length;
 }
 
-// ═══════════════════════════════════════════════════════════
-// MATCH MODAL
-// ═══════════════════════════════════════════════════════════
-function openAddMatch() {
-  _editId = null;
-  document.getElementById('mTitle').textContent = 'Ajouter un match';
-  document.getElementById('mOpp').value = '';
-  document.getElementById('mType').value = 'Scrim';
-  document.getElementById('mRes').value = 'W';
-  document.getElementById('mScore').value = '';
-  document.getElementById('mDate').value = new Date().toISOString().split('T')[0];
-  document.getElementById('mPatch').value = '';
-  document.getElementById('mDur').value = '';
-  document.getElementById('mOppElo').value = state.defaultOppElo;
-  document.getElementById('mNote').value = '';
-  document.getElementById('mDel').style.display = 'none';
-  document.getElementById('mConf').textContent = 'Ajouter';
+// ═══ MODALS ═══
+function openAddMatch(){
+  _editId=null;
+  ['mOpp','mScore','mPatch','mNote'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('mType').value='Scrim';
+  document.getElementById('mRes').value='W';
+  document.getElementById('mDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('mDur').value='';
+  document.getElementById('mOppElo').value=state.defaultOppElo;
+  document.getElementById('mTitle').textContent='Ajouter un match';
+  document.getElementById('mDel').style.display='none';
+  document.getElementById('mConf').textContent='Ajouter';
   updateEloPrev();
   document.getElementById('ovMatch').classList.add('open');
-  setTimeout(() => document.getElementById('mOpp').focus(), 50);
+  setTimeout(()=>document.getElementById('mOpp').focus(),50);
 }
-function openEditMatch(id) {
-  const m = state.matches.find(x => x.id === id);
-  if (!m) return;
-  _editId = id;
-  document.getElementById('mTitle').textContent = 'Modifier le match';
-  document.getElementById('mOpp').value = m.opp;
-  document.getElementById('mType').value = m.type;
-  document.getElementById('mRes').value = m.result;
-  document.getElementById('mScore').value = m.score || '';
-  document.getElementById('mDate').value = m.date || '';
-  document.getElementById('mPatch').value = m.patch || '';
-  document.getElementById('mDur').value = m.duration || '';
-  document.getElementById('mOppElo').value = m.oppElo ?? state.defaultOppElo;
-  document.getElementById('mNote').value = m.note || '';
-  document.getElementById('mDel').style.display = 'block';
-  document.getElementById('mConf').textContent = 'Enregistrer';
+function openEditMatch(id){
+  const m=state.matches.find(x=>x.id===id);if(!m)return;
+  _editId=id;
+  document.getElementById('mTitle').textContent='Modifier le match';
+  document.getElementById('mOpp').value=m.opp;
+  document.getElementById('mType').value=m.type;
+  document.getElementById('mRes').value=m.result;
+  document.getElementById('mScore').value=m.score||'';
+  document.getElementById('mDate').value=m.date||'';
+  document.getElementById('mPatch').value=m.patch||'';
+  document.getElementById('mDur').value=m.duration||'';
+  document.getElementById('mOppElo').value=m.oppElo??state.defaultOppElo;
+  document.getElementById('mNote').value=m.note||'';
+  document.getElementById('mDel').style.display='block';
+  document.getElementById('mConf').textContent='Enregistrer';
   updateEloPrev();
   document.getElementById('ovMatch').classList.add('open');
 }
-function updateEloPrev() {
-  const res = document.getElementById('mRes')?.value;
-  const oppElo = parseInt(document.getElementById('mOppElo')?.value) || state.defaultOppElo;
-  const delta = calcEloChange(state.teamElo, oppElo, res, state.kFactor);
-  const col = delta > 0 ? 'var(--green)' : delta < 0 ? 'var(--red)' : 'var(--text3)';
-  const newElo = state.teamElo + delta;
-  document.getElementById('eloPrev').innerHTML =
-    `ELO actuel : <strong>${state.teamElo}</strong> → <strong style="color:${col}">${newElo}</strong> <span style="color:${col}">(${delta>0?'+':''}${delta})</span>`;
+function updateEloPrev(){
+  const res=document.getElementById('mRes')?.value;
+  const oe=parseInt(document.getElementById('mOppElo')?.value)||state.defaultOppElo;
+  const d=calcEloChange(state.teamElo,oe,res,state.kFactor);
+  const col=d>0?'var(--green)':d<0?'var(--red)':'var(--tx3)';
+  document.getElementById('eloPrev').innerHTML=`ELO actuel : <strong>${state.teamElo}</strong> → <strong style="color:${col}">${state.teamElo+d}</strong> <span style="color:${col}">(${d>0?'+':''}${d})</span>`;
 }
-document.getElementById('mRes').addEventListener('change', updateEloPrev);
-document.getElementById('mOppElo').addEventListener('input', updateEloPrev);
-document.getElementById('mConf').addEventListener('click', () => {
-  const opp = document.getElementById('mOpp').value.trim();
-  if (!opp) { showToast('L\'adversaire est requis'); return; }
-  const data = {
-    opp, type: document.getElementById('mType').value,
-    result: document.getElementById('mRes').value,
-    score: document.getElementById('mScore').value.trim(),
-    date: document.getElementById('mDate').value,
-    patch: document.getElementById('mPatch').value.trim(),
-    duration: parseInt(document.getElementById('mDur').value) || null,
-    oppElo: parseInt(document.getElementById('mOppElo').value) || state.defaultOppElo,
-    note: document.getElementById('mNote').value.trim(),
-  };
-  if (_editId) Object.assign(state.matches.find(m=>m.id===_editId), data);
-  else state.matches.push({ id: uid(), ...data });
-  closeModals(); render(); save();
+document.getElementById('mRes').addEventListener('change',updateEloPrev);
+document.getElementById('mOppElo').addEventListener('input',updateEloPrev);
+document.getElementById('mConf').addEventListener('click',()=>{
+  const opp=document.getElementById('mOpp').value.trim();if(!opp){showToast('L\'adversaire est requis');return;}
+  const data={opp,type:document.getElementById('mType').value,result:document.getElementById('mRes').value,
+    score:document.getElementById('mScore').value.trim(),date:document.getElementById('mDate').value,
+    patch:document.getElementById('mPatch').value.trim(),duration:parseInt(document.getElementById('mDur').value)||null,
+    oppElo:parseInt(document.getElementById('mOppElo').value)||state.defaultOppElo,note:document.getElementById('mNote').value.trim()};
+  if(_editId)Object.assign(state.matches.find(m=>m.id===_editId),data);
+  else state.matches.push({id:uid(),...data});
+  closeModals();render();save();
 });
-function deleteMatch() {
-  if (!confirm('Supprimer ce match ?')) return;
-  state.matches = state.matches.filter(m => m.id !== _editId);
-  closeModals(); render(); save();
-}
+function deleteMatch(){if(!confirm('Supprimer ce match ?'))return;state.matches=state.matches.filter(m=>m.id!==_editId);closeModals();render();save();}
 
-// ═══════════════════════════════════════════════════════════
-// OBJECTIVE MODAL
-// ═══════════════════════════════════════════════════════════
-function openAddObj() {
-  _editId = null;
-  document.getElementById('oTitle').textContent = 'Ajouter un objectif';
-  document.getElementById('oName').value = '';
-  document.getElementById('oPrio').value = 'medium';
-  document.getElementById('oStatus').value = 'todo';
-  document.getElementById('oPct').value = '0';
-  document.getElementById('oDl').value = '';
-  document.getElementById('oDel').style.display = 'none';
-  document.getElementById('oConf').textContent = 'Ajouter';
+function openAddObj(){
+  _editId=null;
+  document.getElementById('oTitle').textContent='Ajouter un objectif';
+  document.getElementById('oName').value='';
+  document.getElementById('oPrio').value='medium';
+  document.getElementById('oStatus').value='todo';
+  document.getElementById('oPct').value='0';
+  document.getElementById('oDl').value='';
+  document.getElementById('oDel').style.display='none';
+  document.getElementById('oConf').textContent='Ajouter';
   document.getElementById('ovObj').classList.add('open');
-  setTimeout(() => document.getElementById('oName').focus(), 50);
+  setTimeout(()=>document.getElementById('oName').focus(),50);
 }
-function openEditObj(id) {
-  const o = state.objectives.find(x => x.id === id);
-  if (!o) return;
-  _editId = id;
-  document.getElementById('oTitle').textContent = "Modifier l'objectif";
-  document.getElementById('oName').value = o.name;
-  document.getElementById('oPrio').value = o.priority;
-  document.getElementById('oStatus').value = o.status;
-  document.getElementById('oPct').value = o.pct ?? 0;
-  document.getElementById('oDl').value = o.deadline || '';
-  document.getElementById('oDel').style.display = 'block';
-  document.getElementById('oConf').textContent = 'Enregistrer';
+function openEditObj(id){
+  const o=state.objectives.find(x=>x.id===id);if(!o)return;
+  _editId=id;
+  document.getElementById('oTitle').textContent="Modifier l'objectif";
+  document.getElementById('oName').value=o.name;
+  document.getElementById('oPrio').value=o.priority;
+  document.getElementById('oStatus').value=o.status;
+  document.getElementById('oPct').value=o.pct??0;
+  document.getElementById('oDl').value=o.deadline||'';
+  document.getElementById('oDel').style.display='block';
+  document.getElementById('oConf').textContent='Enregistrer';
   document.getElementById('ovObj').classList.add('open');
 }
-document.getElementById('oConf').addEventListener('click', () => {
-  const name = document.getElementById('oName').value.trim();
-  if (!name) { showToast('L\'objectif est requis'); return; }
-  const data = {
-    name, priority: document.getElementById('oPrio').value,
-    status: document.getElementById('oStatus').value,
-    pct: Math.min(100, Math.max(0, parseInt(document.getElementById('oPct').value) || 0)),
-    deadline: document.getElementById('oDl').value,
-  };
-  if (_editId) Object.assign(state.objectives.find(o=>o.id===_editId), data);
-  else state.objectives.push({ id: uid(), ...data });
-  closeModals(); render(); save();
+document.getElementById('oConf').addEventListener('click',()=>{
+  const name=document.getElementById('oName').value.trim();if(!name){showToast('L\'objectif est requis');return;}
+  const data={name,priority:document.getElementById('oPrio').value,status:document.getElementById('oStatus').value,
+    pct:Math.min(100,Math.max(0,parseInt(document.getElementById('oPct').value)||0)),deadline:document.getElementById('oDl').value};
+  if(_editId)Object.assign(state.objectives.find(o=>o.id===_editId),data);
+  else state.objectives.push({id:uid(),...data});
+  closeModals();render();save();
 });
-function deleteObj() {
-  if (!confirm('Supprimer cet objectif ?')) return;
-  state.objectives = state.objectives.filter(o => o.id !== _editId);
-  closeModals(); render(); save();
+function deleteObj(){if(!confirm('Supprimer cet objectif ?'))return;state.objectives=state.objectives.filter(o=>o.id!==_editId);closeModals();render();save();}
+
+function saveSettings(){
+  state.baseElo=parseInt(document.getElementById('p_baseElo').value)||1200;
+  state.kFactor=parseInt(document.getElementById('p_kFactor').value)||32;
+  state.defaultOppElo=parseInt(document.getElementById('p_defaultOppElo').value)||1200;
+  state.nextEvent=document.getElementById('p_nextEvent').value.trim();
+  state.nextEventDate=document.getElementById('p_nextEventDate').value;
+  state.goal=document.getElementById('p_goal').value.trim();
+  state.roster.forEach(p=>{p.opgg=document.getElementById('opgg_'+p.id)?.value.trim()||'';});
+  render();save();showToast('Paramètres enregistrés ✓');
 }
 
-// ═══════════════════════════════════════════════════════════
-// SETTINGS
-// ═══════════════════════════════════════════════════════════
-function saveSettings() {
-  state.apiKey = document.getElementById('p_apiKey').value.trim();
-  state.baseElo = parseInt(document.getElementById('p_baseElo').value) || 1200;
-  state.kFactor = parseInt(document.getElementById('p_kFactor').value) || 32;
-  state.defaultOppElo = parseInt(document.getElementById('p_defaultOppElo').value) || 1200;
-  state.roster.forEach(p => {
-    p.riotId = document.getElementById('rid_'+p.id)?.value.trim() || '';
-    p.riotTag = document.getElementById('rtag_'+p.id)?.value.trim() || '';
-  });
-  render(); save(); showToast('Paramètres enregistrés ✓');
+// ═══ FIREBASE ═══
+function getStateForSave(){
+  return{teamElo:state.teamElo,baseElo:state.baseElo,kFactor:state.kFactor,defaultOppElo:state.defaultOppElo,
+    nextEvent:state.nextEvent,nextEventDate:state.nextEventDate,goal:state.goal,
+    roster:state.roster,matches:state.matches,objectives:state.objectives,eloHistory:state.eloHistory};
 }
-
-// ═══════════════════════════════════════════════════════════
-// FIREBASE
-// ═══════════════════════════════════════════════════════════
-function getStateForSave() {
-  return {
-    teamElo: state.teamElo, baseElo: state.baseElo,
-    kFactor: state.kFactor, defaultOppElo: state.defaultOppElo,
-    apiKey: state.apiKey,
-    roster: state.roster, riotCache: state.riotCache,
-    matches: state.matches, objectives: state.objectives,
-    eloHistory: state.eloHistory,
-  };
+function applyState(s){
+  if(!s)return;
+  Object.assign(state,{teamElo:s.teamElo??1200,baseElo:s.baseElo??1200,kFactor:s.kFactor??32,
+    defaultOppElo:s.defaultOppElo??1200,nextEvent:s.nextEvent||'',nextEventDate:s.nextEventDate||'',
+    goal:s.goal||'',matches:s.matches??[],objectives:s.objectives??[],eloHistory:s.eloHistory??[s.baseElo??1200]});
+  if(s.roster?.length){s.roster.forEach((sr,i)=>{if(state.roster[i])Object.assign(state.roster[i],
+    {opgg:sr.opgg||'',tier:sr.tier||'UNRANKED',rank:sr.rank||'',lp:sr.lp||0,wr:sr.wr??null});});}
 }
-function applyState(s) {
-  if (!s) return;
-  Object.assign(state, {
-    teamElo: s.teamElo ?? 1200, baseElo: s.baseElo ?? 1200,
-    kFactor: s.kFactor ?? 32, defaultOppElo: s.defaultOppElo ?? 1200,
-    apiKey: s.apiKey ?? '',
-    riotCache: s.riotCache ?? {},
-    matches: s.matches ?? [], objectives: s.objectives ?? [],
-    eloHistory: s.eloHistory ?? [s.baseElo ?? 1200],
-  });
-  if (s.roster?.length) {
-    s.roster.forEach((sr, i) => {
-      const local = state.roster[i];
-      if (local) Object.assign(local, { riotId: sr.riotId || local.riotId, riotTag: sr.riotTag || local.riotTag });
-    });
-  }
-  // Check if any cached data is fresh (< 1 hour)
-  const anyLive = Object.values(state.riotCache).some(c => c.fetchedAt && Date.now() - c.fetchedAt < 3600000 && !c.error);
-  if (anyLive) document.getElementById('liveTag').style.display = '';
+function setSyncState(s,text,time=''){
+  const dot=document.getElementById('syncDot'),txt=document.getElementById('syncTxt'),t=document.getElementById('syncTime');
+  if(!dot)return;
+  dot.className='sync-dot '+s;
+  txt.textContent=text;
+  txt.style.color=s==='connected'?'var(--green)':s==='syncing'?'var(--yellow)':s==='error'?'var(--red)':'var(--tx3)';
+  t.textContent=time;
 }
-function setSyncState(s, text, time = '') {
-  const dot = document.getElementById('syncDot'), txt = document.getElementById('syncTxt'), t = document.getElementById('syncTime');
-  if (!dot) return;
-  dot.className = 'sync-dot ' + s;
-  txt.textContent = text;
-  txt.style.color = s==='connected'?'var(--green)':s==='syncing'?'var(--yellow)':s==='error'?'var(--red)':'var(--text3)';
-  t.textContent = time;
-}
-function hideLoading() {
-  const ls = document.getElementById('loadingScreen');
-  if (ls) { ls.classList.add('hidden'); setTimeout(() => ls.style.display = 'none', 500); }
-}
-function save() {
-  setSyncState('syncing', 'Sauvegarde…');
+function hideLoading(){const ls=document.getElementById('ls');if(ls){ls.classList.add('hidden');setTimeout(()=>ls.style.display='none',500);}}
+function save(){
+  setSyncState('syncing','Sauvegarde…');
   db.collection(COL).doc(DOC).set(getStateForSave())
-    .then(() => { setSyncState('connected', 'Synchronisé'); flashSave(true); })
-    .catch(e => { setSyncState('error', 'Erreur Firebase'); flashSave(false); console.error(e); });
+    .then(()=>{setSyncState('connected','Synchronisé');flashSave(true);})
+    .catch(e=>{setSyncState('error','Erreur Firebase');flashSave(false);console.error(e);});
 }
-function startSync() {
-  setSyncState('syncing', 'Connexion…');
-  db.collection(COL).doc(DOC).onSnapshot(doc => {
-    if (doc.metadata.hasPendingWrites) return;
-    if (doc.exists) { applyState(doc.data()); render(); const now = new Date(); setSyncState('connected', 'Synchronisé', now.toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'})); }
-    else setSyncState('connected', 'Prêt', '');
+function startSync(){
+  setSyncState('syncing','Connexion…');
+  db.collection(COL).doc(DOC).onSnapshot(doc=>{
+    if(doc.metadata.hasPendingWrites)return;
+    if(doc.exists){applyState(doc.data());render();setSyncState('connected','Synchronisé',new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));}
+    else setSyncState('connected','Prêt','');
     hideLoading();
-  }, err => { console.error(err); setSyncState('error', 'Erreur connexion'); hideLoading(); render(); });
+  },err=>{console.error(err);setSyncState('error','Erreur connexion');hideLoading();render();});
 }
-function flashSave(ok) {
-  const btn = document.getElementById('saveFbBtn'); if (!btn) return;
-  btn.classList.add('saved'); btn.textContent = ok ? '✓ Sauvegardé' : '⚠ Erreur';
-  if (!ok) btn.style.color = '#ef4444';
-  setTimeout(() => { btn.classList.remove('saved'); btn.textContent = '💾 Sauvegarder'; btn.style.color = ''; }, 1600);
+function flashSave(ok){
+  const btn=document.getElementById('saveFbBtn');if(!btn)return;
+  btn.classList.add('saved');btn.textContent=ok?'✓ Sauvegardé':'⚠ Erreur';if(!ok)btn.style.color='#ef4444';
+  setTimeout(()=>{btn.classList.remove('saved');btn.textContent='💾 Sauvegarder';btn.style.color='';},1600);
 }
-function exportBackup() {
-  const b = new Blob([JSON.stringify(getStateForSave(), null, 2)], {type:'application/json'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(b);
-  a.download = 'plazma-dashboard-' + new Date().toISOString().split('T')[0] + '.json'; a.click();
+function exportBackup(){
+  const b=new Blob([JSON.stringify(getStateForSave(),null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='plazma-dashboard-'+new Date().toISOString().split('T')[0]+'.json';a.click();
 }
-function importBackup() {
-  const input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
-  input.addEventListener('change', async () => {
-    try { applyState(JSON.parse(await input.files[0].text())); render(); save(); showToast('Backup importé ✓'); }
-    catch(e) { alert('Fichier invalide'); }
-  }); input.click();
+function importBackup(){
+  const i=document.createElement('input');i.type='file';i.accept='.json';
+  i.addEventListener('change',async()=>{try{applyState(JSON.parse(await i.files[0].text()));render();save();showToast('Backup importé ✓');}catch(e){alert('Fichier invalide');}});
+  i.click();
 }
-function resetData() {
-  if (!confirm('Réinitialiser tout le dashboard ?')) return;
-  state = { teamElo:1200, baseElo:1200, kFactor:32, defaultOppElo:1200, apiKey:'', roster:state.roster, riotCache:{}, matches:[], objectives:[], eloHistory:[1200] };
-  db.collection(COL).doc(DOC).delete().then(() => { render(); setSyncState('connected', 'Réinitialisé', ''); });
-}
-
-// ═══════════════════════════════════════════════════════════
-// UTILS
-// ═══════════════════════════════════════════════════════════
-let _uidC = 0;
-function uid() { return Date.now().toString(36) + (++_uidC).toString(36); }
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function closeModals() { document.querySelectorAll('.overlay').forEach(o => o.classList.remove('open')); }
-function setFilter(f, btn) {
-  matchFilter = f;
-  renderMatches();
-}
-function scrollTo(id) {
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
-  document.querySelectorAll('.nav-a').forEach(a => a.classList.remove('active'));
-  event?.currentTarget?.classList?.add('active');
-}
-function showToast(msg) {
-  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2600);
+function resetData(){
+  if(!confirm('Réinitialiser tout le dashboard ?'))return;
+  state={teamElo:1200,baseElo:1200,kFactor:32,defaultOppElo:1200,nextEvent:'',nextEventDate:'',goal:'',
+    roster:state.roster.map(p=>({...p,tier:'UNRANKED',rank:'',lp:0,wr:null})),
+    matches:[],objectives:[],eloHistory:[1200]};
+  db.collection(COL).doc(DOC).delete().then(()=>{render();setSyncState('connected','Réinitialisé','');});
 }
 
-// Close on overlay click / Escape
-document.querySelectorAll('.overlay').forEach(ov => {
-  ov.addEventListener('click', e => { if (e.target === ov) closeModals(); });
-});
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModals(); });
+// ═══ UTILS ═══
+let _uidC=0;
+function uid(){return Date.now().toString(36)+(++_uidC).toString(36);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function closeModals(){document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('open'));}
+function setFilter(f){matchFilter=f;renderMatches();}
+function scrollTo(id){const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
+document.querySelectorAll('.overlay').forEach(ov=>ov.addEventListener('click',e=>{if(e.target===ov)closeModals();}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModals();});
+document.getElementById('mOpp')?.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('mConf').click();});
 
-// ─── Init
-const now = new Date();
-document.getElementById('dateChip').textContent = now.toLocaleDateString('fr-FR', {weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+// INIT
+const _now=new Date();
+document.getElementById('dateChip').textContent=_now.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 function gwn(d){const dt=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const day=dt.getUTCDay()||7;dt.setUTCDate(dt.getUTCDate()+4-day);const y1=new Date(Date.UTC(dt.getUTCFullYear(),0,1));return Math.ceil((((dt-y1)/86400000)+1)/7);}
-document.getElementById('dateSub').textContent = 'Semaine ' + gwn(now) + ' · ' + now.toLocaleDateString('fr-FR', {month:'long', year:'numeric'});
-
+document.getElementById('dateSub').textContent='Semaine '+gwn(_now)+' · '+_now.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
 startSync();
-setTimeout(() => {
-  const ls = document.getElementById('loadingScreen');
-  if (ls && !ls.classList.contains('hidden')) { hideLoading(); setSyncState('error', 'Firebase inaccessible'); render(); }
-}, 8000);
+setTimeout(()=>{const ls=document.getElementById('ls');if(ls&&!ls.classList.contains('hidden')){hideLoading();setSyncState('error','Firebase inaccessible');render();}},8000);
 </script>
 </body>
 </html>
