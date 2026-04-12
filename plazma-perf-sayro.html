@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PlaZma — Fiche Support · Sayro</title>
+<title>PlaZma — Fiche Support · Joordy</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -232,9 +232,9 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
     </div>
     <div class="header-right">
       <div class="player-badge">
-        <div class="player-emoji">🌸</div>
+        <div class="player-emoji">🥀</div>
         <div class="player-info">
-          <div class="player-pseudo">Sayro</div>
+          <div class="player-pseudo">Joordy</div>
           <div class="player-role">Support · League of Legends</div>
         </div>
       </div>
@@ -625,7 +625,7 @@ function importBackup(){
   input.click();
 }
 function resetData(){
-  if(!confirm('Effacer la fiche de Sayro sur Firebase ?'))return;
+  if(!confirm('Effacer la fiche de Joordy sur Firebase ?'))return;
   db.collection(COL).doc(DOC_ID).delete().then(()=>location.reload());
 }
 
