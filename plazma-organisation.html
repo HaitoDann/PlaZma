@@ -410,7 +410,7 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--tx);min-he
       <div class="field"><label>Priorité</label><select id="kc-prio"><option value="urgent">🔴 Urgent</option><option value="normal" selected>🟠 Normal</option><option value="low">🟢 Faible</option></select></div>
     </div>
     <div class="two-col">
-      <div class="field"><label>Assigné à</label><select id="kc-assign"><option value="">Non assigné</option><option value="boulou">⚔️ boulou</option><option value="zugu">🌿 Zugu</option><option value="lakrael">💎 Lakraël</option><option value="ke1do">🏹 Ke1do</option><option value="sayro">🛡️ Joordy</option><option value="staff">🎯 Staff</option></select></div>
+      <div class="field"><label>Assigné à</label><select id="kc-assign"><option value="">Non assigné</option><option value="boulou">👍 boulou</option><option value="zugu">🌿 Zugu</option><option value="lakrael">👀 Lakraël</option><option value="ke1do">🐯 Ke1do</option><option value="sayro">🛡️ Joordy</option><option value="staff">🎯 Staff</option></select></div>
       <div class="field"><label>Échéance</label><input id="kc-due" type="date"></div>
     </div>
     <div class="modal-foot">
@@ -951,7 +951,7 @@ let kCards = [
 
 const PRIO_COLOR = {urgent:'#ef4444', normal:'#f97316', low:'#22c55e'};
 const PRIO_LBL   = {urgent:'🔴 Urgent', normal:'🟠 Normal', low:'🟢 Faible'};
-const ASSIGN_EMO = {boulou:'⚔️',zugu:'🌿',lakrael:'💎',ke1do:'🏹',sayro:'🛡️',staff:'🎯'};
+const ASSIGN_EMO = {boulou:'👍',zugu:'🌿',lakrael:'👀',ke1do:'🐯',sayro:'🛡️',staff:'🎯'};
 
 function kRender() {
   const board = document.getElementById('kanbanBoard'); board.innerHTML = '';
