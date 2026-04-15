@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlaZma — Compétences Collectives</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({apiKey:"AIzaSyAKwNEbNa6f40oSMwGp6dcDY1ZY6hUN1Ks",authDomain:"plazma-esport.firebaseapp.com",projectId:"plazma-esport",storageBucket:"plazma-esport.firebasestorage.app",messagingSenderId:"534325929279",appId:"1:534325929279:web:b507a46c601fa6625edf8a"});
+const db=firebase.firestore();
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#07070f;--bg2:#0c0b18;--surface:#10101e;--surface2:#141428;--border:#1c1b33;--border2:#252444;--v1:#6d28d9;--v2:#7c3aed;--v3:#8b5cf6;--v4:#a78bfa;--v5:#c4b5fd;--green:#22c55e;--red:#ef4444;--orange:#f97316;--cyan:#06b6d4;--yellow:#f59e0b;--blue:#3b82f6;--pink:#ec4899;--text:#e8e6f4;--text2:#8b82b0;--text3:#45405e;}
+html{scroll-behavior:smooth}
+body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 20px 80px}
+.ls{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .5s}
+.ls.hidden{opacity:0;pointer-events:none}
+.ls-logo{font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:800;letter-spacing:4px;background:linear-gradient(135deg,#fff,var(--v4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.ls-bar{width:200px;height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.ls-fill{height:100%;background:linear-gradient(90deg,var(--v2),var(--v4));animation:lb 1.5s ease infinite}
+@keyframes lb{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
+.ls-txt{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase}
+.hub-link{font-size:10px;color:var(--text3);text-decoration:none;letter-spacing:1px;transition:color .15s;margin-bottom:14px}
+.hub-link:hover{color:var(--v4)}
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;justify-content:center}
+.btn{padding:9px 22px;border-radius:7px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:none;font-family:'Barlow',sans-serif;transition:all .2s}
+.btn-export{background:var(--v2);color:#fff;box-shadow:0 0 28px rgba(124,58,237,.4)}
+.btn-export:hover{background:var(--v3);transform:translateY(-1px)}
+.btn-export:disabled{opacity:.4;cursor:default;transform:none}
+.sync-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:20px}
+.sync-indicator{display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:7px;background:var(--surface2);border:1px solid var(--border2)}
+.sync-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;transition:background .3s}
+.sync-dot.connected{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,.5)}
+.sync-dot.syncing{background:var(--yellow);animation:pulse .8s infinite}
+.sync-dot.error{background:var(--red)}
+.sync-dot.offline{background:var(--text3)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.sync-text{font-size:10px;font-weight:600}
+.sync-time{font-size:9px;color:var(--text3)}
+.btn-save-fb{background:rgba(109,40,217,.18);border:1px solid rgba(109,40,217,.35);color:var(--v4);padding:7px 18px;border-radius:7px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .2s}
+.btn-save-fb:hover{background:rgba(109,40,217,.3)}
+.btn-save-fb.saved{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.3);color:var(--green)}
+.btn-mini-row{display:flex;gap:5px}
+.btn-mini{background:var(--surface2);border:1px solid var(--border2);color:var(--text3);padding:6px 12px;border-radius:6px;font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:color .15s}
+.btn-mini:hover{color:var(--text2)}
+.btn-mini.red{border-color:rgba(239,68,68,.12);color:rgba(239,68,68,.3)}
+.btn-mini.red:hover{color:#ef4444}
+.card{width:100%;max-width:1060px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 0 0 1px rgba(109,40,217,.08),0 40px 100px rgba(0,0,0,.6)}
+.card-header{position:relative;overflow:hidden;padding:26px 32px 22px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+.card-header::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 200% at 0% 50%,rgba(109,40,217,.16) 0%,rgba(6,182,212,.05) 55%,transparent 70%)}
+.card-header::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--v1) 0%,var(--cyan) 45%,transparent 70%)}
+.logo-row{display:flex;align-items:center;gap:12px}
+.logo-badge{width:40px;height:40px;background:linear-gradient(135deg,var(--v1),var(--v3));border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:#fff;box-shadow:0 0 20px rgba(124,58,237,.5)}
+.club-name{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:800;letter-spacing:4px;text-transform:uppercase;background:linear-gradient(135deg,#fff 0%,var(--v4) 40%,var(--cyan) 75%,#fff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.doc-type{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--cyan);margin-top:4px}
+.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:9px}
+.roster-pills{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.roster-pill{padding:4px 10px;border-radius:6px;border:1px solid;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px}
+.season-tag{background:rgba(109,40,217,.15);border:1px solid rgba(109,40,217,.3);border-radius:4px;padding:3px 10px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--v4)}
+.meta-bar{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
+.meta-cell{background:var(--surface);padding:14px 18px}
+.meta-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.meta-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-size:13px;font-family:'Barlow',sans-serif;padding:3px 0;outline:none;transition:border-color .2s}
+.meta-input:focus{border-bottom-color:var(--cyan)}
+/* WEIGHT LEGEND */
+.wlegend{padding:10px 32px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.wl-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);font-weight:700}
+.wl-item{display:flex;align-items:center;gap:7px;font-size:10px;color:var(--text2)}
+.wb{padding:2px 8px;border-radius:4px;font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase}
+.wb-crit{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.35);color:#ef4444}
+.wb-prio{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.35);color:#f59e0b}
+.wb-norm{background:rgba(69,64,94,.25);border:1px solid rgba(69,64,94,.5);color:var(--text3)}
+/* SCORE GLOBAL */
+.score-global{padding:20px 32px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:28px}
+.sg-left{flex-shrink:0}
+.sg-sm{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:4px;font-weight:600}
+.sg-wrap{display:flex;align-items:baseline;gap:6px}
+.sg-num{font-family:'Barlow Condensed',sans-serif;font-size:64px;font-weight:900;line-height:1;transition:color .3s}
+.sg-over{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;color:var(--text3)}
+.sg-right{flex:1;display:flex;flex-direction:column;gap:10px}
+.sg-bar-track{height:10px;background:var(--border2);border-radius:5px;overflow:hidden}
+.sg-bar-fill{height:100%;border-radius:5px;transition:width .6s cubic-bezier(.4,0,.2,1),background .3s}
+.cat-mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.cmg{background:var(--surface2);border:1px solid var(--border2);border-radius:7px;padding:7px 10px;transition:border-color .2s}
+.cmg-score{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;line-height:1}
+.cmg-name{font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-top:3px}
+/* BODY */
+.card-body{padding:24px 32px;display:flex;flex-direction:column;gap:10px}
+.sec-sep{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--text3);padding:14px 0 6px;border-bottom:1px solid var(--border);margin-bottom:4px}
+/* CATEGORY */
+.cat-block{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.cat-head{padding:12px 20px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.cat-icon{font-size:18px;flex-shrink:0}
+.cat-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;flex:1}
+.cat-avg-wrap{text-align:right;flex-shrink:0}
+.cat-avg{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900}
+.cat-avg-lbl{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-top:1px}
+.cat-items{background:var(--surface);display:flex;flex-direction:column}
+/* JAUGE ROW */
+.jr{display:flex;align-items:center;gap:12px;padding:10px 20px;border-bottom:1px solid rgba(28,27,51,.5);transition:background .12s}
+.jr:last-child{border-bottom:none}
+.jr:hover{background:rgba(255,255,255,.007)}
+.jr-left{display:flex;align-items:flex-start;gap:7px;min-width:340px;flex-shrink:0}
+.jr-wb{padding:2px 6px;border-radius:3px;font-size:8px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;flex-shrink:0;margin-top:3px;white-space:nowrap}
+.jr-label{font-size:12px;color:var(--text2);font-weight:500;line-height:1.35}
+.jr-sub{font-size:9px;color:var(--text3);margin-top:2px;line-height:1.4}
+.jr-dots{display:flex;gap:4px;flex:1}
+.jd{flex:1;height:9px;border-radius:3px;cursor:pointer;opacity:.14;transition:opacity .1s,transform .1s}
+.jd:hover{transform:scaleY(1.5);opacity:.65}
+.jd.on{opacity:1}
+.jr-num{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;min-width:22px;text-align:right;transition:color .15s}
+/* COMPS */
+.comp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.cc{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .15s}
+.cc:hover{border-color:var(--border2)}
+.cc-head{padding:12px 14px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px}
+.cc-icon{font-size:20px}
+.cc-name{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;flex:1}
+.cc-score{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900}
+.cc-body{padding:10px 14px}
+.cc-desc{font-size:9px;color:var(--text3);line-height:1.55;margin-bottom:10px}
+.cc-bars{display:flex;gap:4px;margin-bottom:6px}
+.cs{flex:1;height:8px;border-radius:3px;cursor:pointer;opacity:.14;transition:opacity .12s,transform .1s}
+.cs:hover{transform:scaleY(1.5);opacity:.65}
+.cs.on{opacity:1}
+.cc-keys{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.ck{font-size:8px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 6px;border-radius:3px;color:var(--text3);background:var(--surface2);border:1px solid var(--border2)}
+.cc-note{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text2);font-size:11px;font-family:'Barlow',sans-serif;padding:3px 0;outline:none;margin-top:8px;transition:border-color .15s}
+.cc-note:focus{border-bottom-color:var(--v3)}
+.cc-note::placeholder{color:var(--text3)}
+/* OBS */
+.obs-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.obs-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.obs-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700}
+.obs-ta{width:100%;background:transparent;border:none;color:var(--text2);font-size:12px;font-family:'Barlow',sans-serif;line-height:1.7;resize:none;outline:none;min-height:90px}
+.obs-ta::placeholder{color:var(--text3)}
+/* NOTE */
+.note-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;display:flex;align-items:center;gap:24px}
+.nb-wrap{display:flex;align-items:baseline;gap:8px;flex-shrink:0}
+.nb-input{background:transparent;border:none;border-bottom:2px solid var(--border2);color:var(--v4);font-family:'Barlow Condensed',sans-serif;font-size:64px;font-weight:800;line-height:1;width:84px;text-align:center;outline:none;transition:border-color .2s}
+.nb-input:focus{border-bottom-color:var(--v3)}
+.nb-over{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:700;color:var(--text3)}
+.nb-right{flex:1;display:flex;flex-direction:column;gap:7px}
+.nb-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--v4)}
+.nb-comment{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text2);font-size:13px;font-family:'Barlow',sans-serif;padding:4px 0;outline:none;transition:border-color .2s}
+.nb-comment:focus{border-bottom-color:var(--v3)}
+.nb-comment::placeholder{color:var(--text3)}
+.nb-scale{margin-top:4px;font-size:10px;color:var(--text3);line-height:1.6}
+/* FOOTER */
+.card-footer{border-top:1px solid var(--border);background:var(--surface);padding:13px 32px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.footer-brand{font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
+@media(max-width:1000px){.comp-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.jr-left{min-width:180px}.comp-grid{grid-template-columns:1fr 1fr}.obs-grid{grid-template-columns:1fr}.card-body{padding:14px 16px}.card-header{flex-direction:column;align-items:flex-start}.header-right{align-items:flex-start}.cat-mini-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="ls" id="ls">
+  <div class="ls-logo">PlaZma</div>
+  <div class="ls-bar"><div class="ls-fill"></div></div>
+  <div class="ls-txt">Connexion Firebase…</div>
+</div>
+<a href="index.html" class="hub-link">← Hub PlaZma</a>
+<div class="toolbar"><button class="btn btn-export" id="exportBtn">⬇ Exporter PNG</button></div>
+<div class="sync-bar">
+  <div class="sync-indicator">
+    <div class="sync-dot offline" id="syncDot"></div>
+    <span class="sync-text" id="syncText" style="color:var(--text3)">En attente…</span>
+    <span class="sync-time" id="syncTime"></span>
+  </div>
+  <button class="btn-save-fb" id="saveFbBtn" onclick="save()">💾 Sauvegarder</button>
+  <div class="btn-mini-row">
+    <div class="btn-mini" onclick="exportBackup()">📦 Backup</div>
+    <div class="btn-mini" onclick="importBackup()">📥 Import</div>
+    <div class="btn-mini red" onclick="resetData()">🗑 Reset</div>
+  </div>
+</div>
+<div class="card" id="card">
+  <div class="card-header">
+    <div>
+      <div class="logo-row"><div class="logo-badge">PZ</div><div><div class="club-name">PlaZma</div><div class="doc-type">Compétences Collectives — Équipe</div></div></div>
+    </div>
+    <div class="header-right">
+      <div class="roster-pills">
+        <div class="roster-pill" style="color:#f97316;border-color:rgba(249,115,22,.3);background:rgba(249,115,22,.07)">⚔️ boulou</div>
+        <div class="roster-pill" style="color:#22c55e;border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.07)">🌿 Zugu</div>
+        <div class="roster-pill" style="color:#3b82f6;border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.07)">💎 Lakraël</div>
+        <div class="roster-pill" style="color:#ef4444;border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.07)">🏹 Ke1do</div>
+        <div class="roster-pill" style="color:#a855f7;border-color:rgba(168,85,247,.3);background:rgba(168,85,247,.07)">🥀 Joordy</div>
+      </div>
+      <div class="season-tag">League of Legends · Saison 2026</div>
+    </div>
+  </div>
+  <div class="meta-bar">
+    <div class="meta-cell"><div class="meta-label">Période évaluée</div><input class="meta-input" id="f_periode" type="text" placeholder="ex : Semaine 14 — Avril 2026" oninput="debounceSave()"></div>
+    <div class="meta-cell"><div class="meta-label">Évaluateur</div><input class="meta-input" id="f_eval" type="text" placeholder="Coach / Manager" oninput="debounceSave()"></div>
+  </div>
+  <div class="wlegend">
+    <div class="wl-lbl">Pondération</div>
+    <div class="wl-item"><div class="wb wb-crit">×2 Critique</div>Déterminant pour gagner ou perdre une partie</div>
+    <div class="wl-item"><div class="wb wb-prio">×1.5 Prioritaire</div>Impact fort, à travailler en priorité</div>
+    <div class="wl-item"><div class="wb wb-norm">×1 Standard</div>Important, moins décisif à court terme</div>
+  </div>
+  <div class="score-global">
+    <div class="sg-left">
+      <div class="sg-sm">Score pondéré</div>
+      <div class="sg-wrap">
+        <div class="sg-num" id="scoreGlobal" style="color:var(--cyan)">—</div>
+        <div class="sg-over">/ 10</div>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:4px" id="scoreQualLbl">—</div>
+    </div>
+    <div class="sg-right">
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px"><span>Niveau global</span><span id="sgPct"></span></div>
+      <div class="sg-bar-track"><div class="sg-bar-fill" id="sgFill" style="width:0%"></div></div>
+      <div class="cat-mini-grid" id="catMini"></div>
+    </div>
+  </div>
+  <div class="card-body" id="cardBody"></div>
+  <div style="padding:0 32px 8px">
+    <div class="sec-sep" style="margin-top:0">📝 Observations &amp; Axes de travail</div>
+    <div class="obs-grid" style="margin:12px 0 16px">
+      <div class="obs-card" style="border-left:3px solid var(--green)"><div class="obs-title" style="color:var(--green)">✦ Points forts collectifs</div><textarea class="obs-ta" id="t_strengths" placeholder="Ce que l'équipe fait déjà bien collectivement…" oninput="debounceSave()"></textarea></div>
+      <div class="obs-card" style="border-left:3px solid var(--red)"><div class="obs-title" style="color:var(--red)">✦ Points critiques à corriger</div><textarea class="obs-ta" id="t_weak" placeholder="Les erreurs collectives les plus récurrentes…" oninput="debounceSave()"></textarea></div>
+      <div class="obs-card" style="border-left:3px solid var(--cyan)"><div class="obs-title" style="color:var(--cyan)">✦ Priorités d'entraînement</div><textarea class="obs-ta" id="t_prio" placeholder="Les 2-3 axes pour les prochaines sessions…" oninput="debounceSave()"></textarea></div>
+    </div>
+    <div class="note-block">
+      <div class="nb-wrap"><input class="nb-input" id="f_note" type="text" value="—" maxlength="2" oninput="debounceSave()"><div class="nb-over">/ 10</div></div>
+      <div class="nb-right">
+        <div class="nb-label">Appréciation générale</div>
+        <input class="nb-comment" id="f_comment" type="text" placeholder="Résumé de la période, message à l'équipe…" oninput="debounceSave()">
+        <div class="nb-scale">0–4 : pas de cohésion · 5–7 : base solide, synergies à construire · 8–9 : identité de jeu claire · 10 : exécution parfaite</div>
+      </div>
+    </div>
+  </div>
+  <div style="height:20px"></div>
+  <div class="card-footer">
+    <div class="footer-brand">PlaZma Esport · plazma-esport.fr</div>
+    <div style="font-size:10px;color:var(--text3)" id="footerDate"></div>
+  </div>
+</div>
+<script>
+'use strict';
+const COL='plazma',DOC_ID='team-competences';
+const W={C:2,P:1.5,N:1};
+const CATS=[
+  {id:'early',icon:'🌅',name:'Early Game',col:'#3b82f6',bc:'rgba(59,130,246,.25)',bg:'rgba(59,130,246,.05)',items:[
+    {id:'e1',w:W.N,l:'Contrôle niveau 1 & instagate',s:'Setup de buisson, invasion buff adverse, positionnement bot coordonné'},
+    {id:'e2',w:W.P,l:'Création de pression avec le jungler',s:'Synchro gank/dive selon état de wave et summoners adverses'},
+    {id:'e3',w:W.C,l:'Prise du 1er objectif majeur (Dragon / Herald)',s:'Vision posée, timing, smite, spawn contrôlé — structure toute la partie'},
+    {id:'e4',w:W.P,l:'Synergie bot lane 2v2',s:'Trades et all-in coordonnés ADC + support selon le matchup'},
+    {id:'e5',w:W.C,l:'Coordination jungler — 3 lanes',s:'Pathing orienté selon les matchups, appels placés, informations partagées'},
+  ]},
+  {id:'vision',icon:'👁️',name:'Vision & Contrôle de Carte',col:'#f59e0b',bc:'rgba(245,158,11,.25)',bg:'rgba(245,158,11,.05)',items:[
+    {id:'v1',w:W.C,l:'Vision avant chaque objectif majeur',s:'Wards posées 45–60s avant Dragon/Baron/Herald, vision ennemie déniée'},
+    {id:'v2',w:W.P,l:'Déni de vision adverse (sweeper + control ward)',s:'Sweeper actif, control wards en bushes clés, domination de la vision'},
+    {id:'v3',w:W.P,l:'Tracking du jungler ennemi',s:'Position estimée partagée en temps réel, timing reset adverse'},
+    {id:'v4',w:W.N,l:'Contrôle des flancs et passages clés',s:'Bushes de river, tri-brush, couverture autour des objectifs'},
+    {id:'v5',w:W.N,l:'Culture vision partagée (pas que le support)',s:'Chaque joueur pose des wards et utilise le sweeper'},
+  ]},
+  {id:'obj',icon:'🐉',name:'Gestion des Objectifs',col:'#f97316',bc:'rgba(249,115,22,.25)',bg:'rgba(249,115,22,.05)',items:[
+    {id:'o1',w:W.C,l:'Priorité et sécurisation des Drakes',s:'% drakes pris, décision de contester ou non selon état du jeu'},
+    {id:'o2',w:W.C,l:'Prise et conversion du Baron Nashor',s:'Décision collégiale, sécurisation smite, exploitation 3 min de buff'},
+    {id:'o3',w:W.P,l:'Utilisation optimale du Herald (Rift)',s:'Timing recall pour poser Herald, ciblage de la bonne tour'},
+    {id:'o4',w:W.N,l:'Gestion des Void Grubs (early pression)',s:'Priorité top/jungler en début, impact sur side lane pressure'},
+    {id:'o5',w:W.P,l:'Conversion kill → objectif concret',s:'Transformer chaque fight gagné en tour/dragon/baron dans les 30s'},
+    {id:'o6',w:W.P,l:'Exploitation des fenêtres de respawn',s:'Lire les timers ennemis pour prendre objectifs sans fight inutile'},
+  ]},
+  {id:'macro',icon:'🗺️',name:'Macro & Rotations',col:'#22c55e',bc:'rgba(34,197,94,.25)',bg:'rgba(34,197,94,.05)',items:[
+    {id:'m1',w:W.C,l:'Qualité et rapidité des rotations d\'équipe',s:'Décision collective de se regrouper ou rester en side au bon moment'},
+    {id:'m2',w:W.P,l:'Lecture de l\'état des waves avant de bouger',s:'Ne jamais bouger avec une grosse wave qui push sur sa propre tour'},
+    {id:'m3',w:W.P,l:'Coordination du split push / side pression',s:'Choix du splitpusher, signal de regroupement, 4-1 / 1-3-1 exécuté'},
+    {id:'m4',w:W.N,l:'Synchronisation des backs (resets groupés)',s:'Retours en base au même moment pour revenir à pleine puissance'},
+    {id:'m5',w:W.P,l:'Gestion du rythme selon la composition',s:'Accélérer (compo agressive) ou ralentir (compo scaling) selon les picks'},
+    {id:'m6',w:W.C,l:'Décisions de fin de partie (base push)',s:'Reconnaître la fenêtre pour closer — ne pas greed, ne pas hésiter'},
+  ]},
+  {id:'tf',icon:'⚔️',name:'Teamfight & Engagements',col:'#ef4444',bc:'rgba(239,68,68,.25)',bg:'rgba(239,68,68,.05)',items:[
+    {id:'t1',w:W.C,l:'Timing et exécution de l\'engage collectif',s:'Bon moment, bonne cible, bon angle — initiation propre sans mourir pour rien'},
+    {id:'t2',w:W.C,l:'Focus unanime de la cible prioritaire',s:'Toute l\'équipe sur même cible : carry ennemi ou engager ennemi en premier'},
+    {id:'t3',w:W.P,l:'Peel des carries (ADC / mage carry)',s:'Interposition, CC défensifs, priorité survie du damage dealer'},
+    {id:'t4',w:W.P,l:'Positionnement collectif en teamfight',s:'Ni trop groupés (AoE), ni dispersés — angles corrects, flanc couvert'},
+    {id:'t5',w:W.N,l:'Chaîne de CC et gestion cooldowns d\'équipe',s:'CC enchaînés, pas deux ults sur même cible, synergie maximisée'},
+    {id:'t6',w:W.P,l:'Adaptation en cours de fight',s:'Switcher de cible, reculer proprement, stopper un fight déjà perdu'},
+  ]},
+  {id:'comms',icon:'🎙️',name:'Communication & Shotcalling',col:'#06b6d4',bc:'rgba(6,182,212,.25)',bg:'rgba(6,182,212,.05)',items:[
+    {id:'c1',w:W.C,l:'Qualité du shotcalling en jeu',s:'Appels clairs, courts, suivis — un seul leader de décision par situation'},
+    {id:'c2',w:W.C,l:'Appels proactifs sur les objectifs',s:'Annoncer à l\'avance ("Dragon dans 30s"), pas réagir après coup'},
+    {id:'c3',w:W.P,l:'Appels défensifs et gestion du déficit',s:'Savoir appeler le dos, éviter les engage forcés quand on est derrière'},
+    {id:'c4',w:W.N,l:'Culture du ping (informations clés partagées)',s:'Position jungler ennemi, objectifs bientôt dispo, danger sur allié'},
+    {id:'c5',w:W.P,l:'Gestion du tilt collectif',s:'Rester positif après erreur, pas de blame en jeu, rebond rapide'},
+    {id:'c6',w:W.N,l:'Discipline de communication (pas de crosstalk)',s:'Chacun parle au bon moment, silence pendant fight ou engage'},
+  ]},
+  {id:'draft',icon:'📋',name:'Draft & Stratégie',col:'#a855f7',bc:'rgba(168,85,247,.25)',bg:'rgba(168,85,247,.05)',items:[
+    {id:'d1',w:W.C,l:'Exécution de la win condition de la compo',s:'Jouer pour ce que la compo veut faire — cohérence style et champions'},
+    {id:'d2',w:W.P,l:'Utilisation des flex picks & swaps',s:'Picks ambigus, swaps dernière minute, pression psychologique en draft'},
+    {id:'d3',w:W.P,l:'Plan de ban ciblé et cohérent',s:'Bans sur carry adverses, protection de nos faiblesses de matchup'},
+    {id:'d4',w:W.P,l:'Exploitation des matchups favorables',s:'Profiter d\'une lane gagnée en draft, pathing jungle orienté avantages'},
+    {id:'d5',w:W.N,l:'Adaptabilité du style selon la composition',s:'Changer de façon de jouer selon la draft : engage, poke, protect, scale'},
+  ]},
+  {id:'mental',icon:'🧠',name:'Mental & Identité de Jeu',col:'#ec4899',bc:'rgba(236,72,153,.25)',bg:'rgba(236,72,153,.05)',items:[
+    {id:'me1',w:W.P,l:'Identité de jeu définie et assumée',s:"L'équipe sait ce qu'elle est et comment elle veut gagner"},
+    {id:'me2',w:W.P,l:'Adaptabilité en cours de partie',s:'Changer de plan si la stratégie initiale échoue, sans panique ni blame'},
+    {id:'me3',w:W.P,l:'Gestion des déficits et comebacks',s:'Jouer sérieusement quand on est derrière, trouver fenêtres sans mourir'},
+    {id:'me4',w:W.N,l:'Résistance à la pression (tournois officiels)',s:'Performer en match officiel ou LAN, reproduire le niveau des scrims'},
+    {id:'me5',w:W.N,l:"Culture de l'auto-critique collective",s:'Accepter les retours après défaite, revoir erreurs sans ego'},
+    {id:'me6',w:W.N,l:"Régularité et discipline d'entraînement",s:'Présence aux sessions, ponctualité, concentration en scrim'},
+  ]},
+];
+const COMPS=[
+  {id:'cp1',icon:'💥',name:'Engage / CC Chain',col:'#ef4444',desc:'Engagement collectif avec CC enchaînés — Malphite, Leona, Orianna, Amumu.',keys:['Flash R synchro','Setup vision','Angle engage','All-in propre']},
+  {id:'cp2',icon:'🎯',name:'Poke / Siège',col:'#3b82f6',desc:'Harcèlement à distance, réduction de vie avant objectif — Jayce, Ezreal, Karma.',keys:['Espacer trades','Gérer wave','Patience','Poke cohérent']},
+  {id:'cp3',icon:'🛡️',name:'Protect the Carry',col:'#a855f7',desc:'Protection et montée en puissance d\'un hyper-carry — Lulu, Zilean, Kog\'Maw.',keys:['Peel total','Vision flancs','Synchro ADC','Patience scaling']},
+  {id:'cp4',icon:'🗡️',name:'Split Push',col:'#22c55e',desc:'1 joueur crée pression infinie en side lane — Fiora, Tryndamere, Jax.',keys:['Signal split','1-3-1 / 4-1','Communication','Timing TP']},
+  {id:'cp5',icon:'⚡',name:'Pick Comp / Catch',col:'#f59e0b',desc:'Élimination isolée d\'un joueur pour créer fenêtres — Blitzcrank, Zoe, Ahri.',keys:['Vision proactive','CC isolant','Rotation rapide','Convertir kill']},
+  {id:'cp6',icon:'🌙',name:'Scaling / Late Game',col:'#06b6d4',desc:'Jeu défensif early pour puissance maximale en late — Kayle, Kassadin, Vayne.',keys:['Éviter fights','Farm propre','Repérer fenêtres','Patience late']},
+  {id:'cp7',icon:'🏟️',name:'Teamfight 5v5',col:'#f97316',desc:'Composition efficace en fight standard, force brute collective.',keys:['Positionnement','Focus cible','CC chain','Cooldowns']},
+  {id:'cp8',icon:'🚀',name:'Dive / Pression Agressive',col:'#ec4899',desc:'Forte pression early avec dives répétées — Camille, Jarvan, Vi, Hecarim.',keys:['Synchro dive','Timing sums','État wave','Timing tours']},
+];
+
+let jV={};CATS.forEach(c=>c.items.forEach(i=>{jV[i.id]=0;}));
+let cV={};let cN={};COMPS.forEach(c=>{cV[c.id]=0;cN[c.id]='';});
+
+function wBadge(w){
+  if(w===W.C)return '<div class="jr-wb wb-crit">×2</div>';
+  if(w===W.P)return '<div class="jr-wb wb-prio">×1.5</div>';
+  return '<div class="jr-wb wb-norm">×1</div>';
+}
+
+function buildUI(){
+  const body=document.getElementById('cardBody');body.innerHTML='';
+  const s1=document.createElement('div');s1.className='sec-sep';s1.textContent='🏆 Compétences collectives';body.appendChild(s1);
+  CATS.forEach(cat=>{
+    const block=document.createElement('div');block.className='cat-block';block.style.borderColor=cat.bc;
+    const hd=document.createElement('div');hd.className='cat-head';
+    hd.style.cssText='background:linear-gradient(90deg,'+cat.bg+',transparent);border-bottom-color:'+cat.bc;
+    hd.innerHTML='<div class="cat-icon">'+cat.icon+'</div><div><div class="cat-name" style="color:'+cat.col+'">'+cat.name+'</div></div><div class="cat-avg-wrap"><div class="cat-avg" id="ca_'+cat.id+'" style="color:'+cat.col+'">—</div><div class="cat-avg-lbl">moy. pondérée</div></div>';
+    block.appendChild(hd);
+    const items=document.createElement('div');items.className='cat-items';
+    cat.items.forEach(item=>{
+      const row=document.createElement('div');row.className='jr';
+      const left=document.createElement('div');left.className='jr-left';
+      left.innerHTML=wBadge(item.w)+'<div><div class="jr-label">'+item.l+'</div><div class="jr-sub">'+item.s+'</div></div>';
+      const dots=document.createElement('div');dots.className='jr-dots';dots.id='jd_'+item.id;
+      const num=document.createElement('div');num.className='jr-num';num.id='jn_'+item.id;num.style.color='var(--text3)';num.textContent='0';
+      for(let i=1;i<=10;i++){const d=document.createElement('div');d.className='jd';d.style.background=cat.col;d.dataset.n=i;d.addEventListener('click',()=>{jV[item.id]=jV[item.id]===i?0:i;rJauge(item.id,cat.col);upScores();debounceSave();});dots.appendChild(d);}
+      row.appendChild(left);row.appendChild(dots);row.appendChild(num);items.appendChild(row);
+    });
+    block.appendChild(items);body.appendChild(block);
+  });
+  const s2=document.createElement('div');s2.className='sec-sep';s2.textContent='🎮 Maîtrise des compositions';body.appendChild(s2);
+  const intro=document.createElement('div');intro.style.cssText='font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.6';
+  intro.textContent="Évalue la capacité de l'équipe à exécuter chaque archétype. 0 = jamais joué, 10 = maîtrise parfaite.";body.appendChild(intro);
+  const cg=document.createElement('div');cg.className='comp-grid';
+  COMPS.forEach(c=>{
+    const card=document.createElement('div');card.className='cc';
+    card.style.cssText='border-top:2px solid '+c.col;
+    const ch=document.createElement('div');ch.className='cc-head';
+    ch.innerHTML='<div class="cc-icon">'+c.icon+'</div><div class="cc-name" style="color:'+c.col+'">'+c.name+'</div><div class="cc-score" id="cs_'+c.id+'" style="color:var(--text3)">0</div>';
+    const cb=document.createElement('div');cb.className='cc-body';
+    cb.innerHTML='<div class="cc-desc">'+c.desc+'</div>';
+    const bw=document.createElement('div');bw.className='cc-bars';bw.id='cb_'+c.id;
+    for(let i=1;i<=10;i++){const s=document.createElement('div');s.className='cs';s.style.background=c.col;s.dataset.n=i;s.addEventListener('click',()=>{cV[c.id]=cV[c.id]===i?0:i;rComp(c.id,c.col);debounceSave();});bw.appendChild(s);}
+    const keys=document.createElement('div');keys.className='cc-keys';keys.innerHTML=c.keys.map(k=>'<div class="ck">'+k+'</div>').join('');
+    const ni=document.createElement('input');ni.className='cc-note';ni.id='cn_'+c.id;ni.placeholder='Note sur cette composition…';
+    ni.addEventListener('input',()=>{cN[c.id]=ni.value;debounceSave();});
+    cb.appendChild(bw);cb.appendChild(keys);cb.appendChild(ni);card.appendChild(ch);card.appendChild(cb);cg.appendChild(card);
+  });
+  body.appendChild(cg);
+}
+
+function rJauge(id,col){const v=jV[id]||0;document.querySelectorAll('#jd_'+id+' .jd').forEach(d=>d.classList.toggle('on',parseInt(d.dataset.n)<=v));const el=document.getElementById('jn_'+id);if(el){el.textContent=v;el.style.color=v>0?col:'var(--text3)';}}
+function rComp(id,col){const v=cV[id]||0;document.querySelectorAll('#cb_'+id+' .cs').forEach(s=>s.classList.toggle('on',parseInt(s.dataset.n)<=v));const el=document.getElementById('cs_'+id);if(el){el.textContent=v;el.style.color=v>0?col:'var(--text3)';}}
+
+const SLABELS={0:'Non évalué',1:'Très faible',2:'Insuffisant',3:'Insuffisant',4:'Passable',5:'Moyen',6:'Correct',7:'Bon',8:'Très bon',9:'Excellent',10:'Exceptionnel'};
+
+function upScores(){
+  let tW=0,tWS=0;
+  const cm=document.getElementById('catMini');if(cm)cm.innerHTML='';
+  CATS.forEach(cat=>{
+    let cw=0,cws=0;
+    cat.items.forEach(item=>{const v=jV[item.id]||0;cw+=item.w;cws+=v*item.w;tW+=item.w;tWS+=v*item.w;});
+    const avg=cw>0?cws/cw:0;
+    const el=document.getElementById('ca_'+cat.id);if(el)el.textContent=avg>0?avg.toFixed(1):'—';
+    if(cm){const mini=document.createElement('div');mini.className='cmg';if(avg>0)mini.style.borderColor=cat.col+'44';mini.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px"><span style="font-size:14px">'+cat.icon+'</span><span class="cmg-score" style="color:'+(avg>0?cat.col:'var(--text3)')+'">'+( avg>0?avg.toFixed(1):'—')+'</span></div><div class="cmg-name">'+cat.name+'</div>';cm.appendChild(mini);}
+  });
+  const g=tW>0?tWS/tW:0;const r=Math.round(g*10)/10;
+  const col=g>=8?'#22c55e':g>=6?'#06b6d4':g>=4?'#f59e0b':g>0?'#ef4444':'var(--cyan)';
+  const se=document.getElementById('scoreGlobal'),le=document.getElementById('scoreQualLbl'),fe=document.getElementById('sgFill'),pe=document.getElementById('sgPct');
+  if(se){se.textContent=g>0?r.toFixed(1):'—';se.style.color=col;}
+  if(le)le.textContent=SLABELS[Math.round(g)]||'—';
+  if(fe){fe.style.width=(g/10*100)+'%';fe.style.background=col;}
+  if(pe)pe.textContent=g>0?Math.round(g/10*100)+'%':'';
+}
+
+function vg(id){const e=document.getElementById(id);return e?e.value:'';}
+function sv(id,val){const e=document.getElementById(id);if(e)e.value=val||'';}
+function getState(){return{f_periode:vg('f_periode'),f_eval:vg('f_eval'),f_note:vg('f_note'),f_comment:vg('f_comment'),t_strengths:vg('t_strengths'),t_weak:vg('t_weak'),t_prio:vg('t_prio'),jV:{...jV},cV:{...cV},cN:{...cN}};}
+function applyState(s){if(!s)return;['f_periode','f_eval','f_note','f_comment','t_strengths','t_weak','t_prio'].forEach(k=>sv(k,s[k]));if(s.jV){Object.assign(jV,s.jV);CATS.forEach(cat=>cat.items.forEach(item=>rJauge(item.id,cat.col)));upScores();}if(s.cV){Object.assign(cV,s.cV);COMPS.forEach(c=>rComp(c.id,c.col));}if(s.cN){Object.assign(cN,s.cN);COMPS.forEach(c=>sv('cn_'+c.id,cN[c.id]));}}
+function setSS(s,text,time=''){const dot=document.getElementById('syncDot'),txt=document.getElementById('syncText'),t=document.getElementById('syncTime');if(!dot)return;dot.className='sync-dot '+s;txt.textContent=text;txt.style.color=s==='connected'?'var(--green)':s==='syncing'?'var(--yellow)':s==='error'?'var(--red)':'var(--text3)';t.textContent=time;}
+function hideLS(){const ls=document.getElementById('ls');if(ls){ls.classList.add('hidden');setTimeout(()=>ls.style.display='none',500);}}
+function save(){setSS('syncing','Sauvegarde…');db.collection(COL).doc(DOC_ID).set(getState()).then(()=>{setSS('connected','Synchronisé');flashSave(true);}).catch(e=>{setSS('error','Erreur Firebase');flashSave(false);console.error(e);});}
+function startSync(){setSS('syncing','Connexion…');db.collection(COL).doc(DOC_ID).onSnapshot(doc=>{if(doc.metadata.hasPendingWrites)return;if(doc.exists){applyState(doc.data());setSS('connected','Synchronisé',new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));}else setSS('connected','Prêt','');hideLS();},err=>{console.error(err);setSS('error','Erreur connexion');hideLS();});}
+function flashSave(ok){const btn=document.getElementById('saveFbBtn');if(!btn)return;btn.classList.add('saved');btn.textContent=ok?'✓ Sauvegardé':'⚠ Erreur';if(!ok)btn.style.color='#ef4444';setTimeout(()=>{btn.classList.remove('saved');btn.textContent='💾 Sauvegarder';btn.style.color='';},1600);}
+let _st=null;function debounceSave(){clearTimeout(_st);_st=setTimeout(save,1000);}
+function exportBackup(){const b=new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='plazma-team-competences-'+new Date().toISOString().split('T')[0]+'.json';a.click();}
+function importBackup(){const i=document.createElement('input');i.type='file';i.accept='.json';i.addEventListener('change',async()=>{try{applyState(JSON.parse(await i.files[0].text()));save();}catch(e){alert('Fichier invalide');}});i.click();}
+function resetData(){if(!confirm('Réinitialiser toutes les évaluations ?'))return;CATS.forEach(cat=>cat.items.forEach(i=>{jV[i.id]=0;}));CATS.forEach(cat=>cat.items.forEach(i=>rJauge(i.id,cat.col)));COMPS.forEach(c=>{cV[c.id]=0;cN[c.id]='';rComp(c.id,c.col);sv('cn_'+c.id,'');});upScores();db.collection(COL).doc(DOC_ID).delete().then(()=>setSS('connected','Réinitialisé',''));}
+document.getElementById('exportBtn').addEventListener('click',async()=>{const btn=document.getElementById('exportBtn');btn.disabled=true;btn.textContent='Export…';document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(el=>el.style.visibility='hidden');await new Promise(r=>setTimeout(r,80));const canvas=await html2canvas(document.getElementById('card'),{scale:2,backgroundColor:'#0c0b18',useCORS:true,logging:false});document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(el=>el.style.visibility='');btn.disabled=false;btn.textContent='⬇ Exporter PNG';const link=document.createElement('a');link.download='plazma-team-competences.png';link.href=canvas.toDataURL('image/png');link.click();});
+document.getElementById('footerDate').textContent='Mise à jour le '+new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+buildUI();startSync();
+setTimeout(()=>{const ls=document.getElementById('ls');if(ls&&!ls.classList.contains('hidden')){hideLS();setSS('error','Firebase inaccessible');}},8000);
+</script>
+</body>
+</html>
