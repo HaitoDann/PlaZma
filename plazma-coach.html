@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlaZma — Fiche Coach</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({apiKey:"AIzaSyAKwNEbNa6f40oSMwGp6dcDY1ZY6hUN1Ks",authDomain:"plazma-esport.firebaseapp.com",projectId:"plazma-esport",storageBucket:"plazma-esport.firebasestorage.app",messagingSenderId:"534325929279",appId:"1:534325929279:web:b507a46c601fa6625edf8a"});
+const db=firebase.firestore();
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07070f;--bg2:#0c0b18;--surface:#0f0f1c;--surface2:#141426;
+  --border:#1a1930;--border2:#222240;
+  --v1:#6d28d9;--v2:#7c3aed;--v3:#8b5cf6;--v4:#a78bfa;
+  --text:#ece9f8;--text2:#7a7499;--text3:#38344f;
+  --rc:#06b6d4;
+}
+body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 20px 80px}
+
+/* LOADING */
+.ls{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .5s}
+.ls.hidden{opacity:0;pointer-events:none}
+.ls-logo{font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:800;letter-spacing:6px;background:linear-gradient(135deg,#fff,var(--rc));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.ls-bar{width:180px;height:2px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.ls-fill{height:100%;background:var(--rc);animation:lb 1.5s ease infinite}
+@keyframes lb{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
+.ls-txt{font-size:9px;color:var(--text3);letter-spacing:3px;text-transform:uppercase}
+
+/* CHROME */
+.hub-link{font-size:10px;color:var(--text3);text-decoration:none;letter-spacing:1px;transition:color .15s;margin-bottom:12px;display:block}
+.hub-link:hover{color:var(--rc)}
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;justify-content:center}
+.btn{padding:8px 20px;border-radius:7px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:none;font-family:'Barlow',sans-serif;transition:all .2s}
+.btn-export{background:var(--v2);color:#fff}
+.btn-export:hover{background:var(--v3)}
+.btn-export:disabled{opacity:.4;cursor:default}
+.sync-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:18px}
+.sync-indicator{display:flex;align-items:center;gap:7px;padding:5px 11px;border-radius:7px;background:var(--surface2);border:1px solid var(--border)}
+.sync-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sync-dot.connected{background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.5)}
+.sync-dot.syncing{background:#f59e0b;animation:pulse .8s infinite}
+.sync-dot.error{background:#ef4444}
+.sync-dot.offline{background:var(--text3)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.sync-text{font-size:10px;font-weight:600}
+.sync-time{font-size:9px;color:var(--text3)}
+.btn-save-fb{background:rgba(109,40,217,.15);border:1px solid rgba(109,40,217,.3);color:var(--v4);padding:6px 16px;border-radius:7px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .2s}
+.btn-save-fb:hover{background:rgba(109,40,217,.28)}
+.btn-save-fb.saved{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.3);color:#22c55e}
+.btn-mini-row{display:flex;gap:5px}
+.btn-mini{background:var(--surface2);border:1px solid var(--border);color:var(--text3);padding:5px 10px;border-radius:6px;font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:color .15s}
+.btn-mini:hover{color:var(--text2)}
+.btn-mini.red{border-color:rgba(239,68,68,.12);color:rgba(239,68,68,.25)}
+.btn-mini.red:hover{color:#ef4444}
+
+/* CARD */
+.card{width:100%;max-width:880px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 0 0 1px rgba(109,40,217,.06),0 40px 120px rgba(0,0,0,.7)}
+
+/* HEADER */
+.card-header{position:relative;overflow:hidden;background:var(--surface);border-bottom:1px solid var(--border)}
+.card-header::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--rc),var(--v3) 50%,transparent)}
+.header-top{padding:22px 32px 20px;display:flex;align-items:center;gap:18px}
+.logo-badge{width:38px;height:38px;background:linear-gradient(135deg,var(--v1),var(--v3));border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:#fff;flex-shrink:0}
+.header-titles{flex:1}
+.club-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:var(--text3)}
+.doc-type{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--text);line-height:1.1}
+.coach-display{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.coach-name-big{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;letter-spacing:2px;color:var(--rc);line-height:1}
+.coach-role-tag{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
+.season-pill{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--v4);background:rgba(109,40,217,.12);border:1px solid rgba(109,40,217,.25);border-radius:4px;padding:2px 9px;margin-top:2px;display:inline-block}
+
+/* META */
+.meta-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
+.meta-cell{background:var(--surface);padding:12px 18px}
+.meta-lbl{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:5px}
+.meta-inp{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-size:13px;font-family:'Barlow',sans-serif;padding:2px 0;outline:none;transition:border-color .2s}
+.meta-inp:focus{border-bottom-color:var(--rc)}
+.meta-inp::placeholder{color:var(--text3)}
+
+/* SCORE */
+.score-section{padding:22px 32px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:32px}
+.score-num-block{flex-shrink:0;display:flex;align-items:baseline;gap:8px}
+.score-num{font-family:'Barlow Condensed',sans-serif;font-size:78px;font-weight:900;line-height:1;transition:color .4s;color:var(--rc)}
+.score-denom{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:700;color:var(--text3)}
+.score-right{flex:1}
+.score-qual{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;transition:color .3s}
+.score-track{height:7px;background:var(--border2);border-radius:4px;overflow:hidden;margin-bottom:12px}
+.score-fill{height:100%;border-radius:4px;transition:width .7s cubic-bezier(.4,0,.2,1),background .3s}
+.cat-row{display:flex;gap:7px;flex-wrap:wrap}
+.cat-pill{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.5px;padding:4px 10px;border-radius:5px;transition:all .2s}
+
+/* BODY */
+.card-body{padding:22px 32px 30px;display:flex;flex-direction:column;gap:14px}
+
+/* CATEGORY */
+.cat-block{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.cat-head{padding:14px 22px 12px;display:flex;align-items:center;gap:11px}
+.cat-icon-wrap{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.cat-name-col{flex:1}
+.cat-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase}
+.cat-sub{font-size:9.5px;color:var(--text3);letter-spacing:.3px;margin-top:2px}
+.cat-avg-wrap{text-align:right;flex-shrink:0}
+.cat-avg{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;line-height:1}
+.cat-avg-lbl{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-top:2px}
+.cat-items{display:flex;flex-direction:column;background:var(--bg2)}
+
+/* JAUGE ROW — BIGGER & CLEANER */
+.jr{display:grid;grid-template-columns:1fr auto;column-gap:20px;row-gap:6px;padding:13px 22px;border-top:1px solid var(--border);transition:background .12s}
+.jr:hover{background:rgba(255,255,255,.012)}
+.jr-label{font-size:13px;font-weight:600;color:var(--text2);line-height:1.35;align-self:end}
+.jr-sub{font-size:10px;color:var(--text3);line-height:1.45;grid-column:1}
+.jr-right{display:flex;align-items:center;gap:10px;grid-row:1/3;align-self:center;flex-shrink:0}
+.jr-dots{display:flex;gap:5px}
+.jd{width:26px;height:13px;border-radius:4px;cursor:pointer;opacity:.1;transition:opacity .12s,transform .1s}
+.jd:hover{transform:scaleY(1.3);opacity:.6}
+.jd.on{opacity:1}
+.jr-num{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;min-width:28px;text-align:right;transition:color .15s;line-height:1}
+
+/* QUAL SECTION */
+.qual-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.qual-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
+.qual-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:9px}
+.fiche-ta{width:100%;background:transparent;border:none;color:var(--text2);font-size:12px;font-family:'Barlow',sans-serif;line-height:1.75;resize:none;outline:none;min-height:100px}
+.fiche-ta::placeholder{color:var(--text3)}
+
+/* OBJECTIFS */
+.obj-list{display:flex;flex-direction:column;gap:7px}
+.obj-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 16px}
+.obj-n{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--border2);min-width:26px}
+.obj-inp{flex:1;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-size:13px;font-family:'Barlow',sans-serif;padding:2px 0;outline:none;transition:border-color .2s}
+.obj-inp:focus{border-bottom-color:var(--rc)}
+.obj-inp::placeholder{color:var(--text3)}
+
+/* NOTE */
+.note-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;display:flex;align-items:center;gap:20px}
+.nb-wrap{display:flex;align-items:baseline;gap:6px;flex-shrink:0}
+.nb-inp{background:transparent;border:none;border-bottom:2px solid var(--border2);color:var(--rc);font-family:'Barlow Condensed',sans-serif;font-size:60px;font-weight:900;line-height:1;width:78px;text-align:center;outline:none;transition:border-color .2s}
+.nb-inp:focus{border-bottom-color:var(--rc)}
+.nb-over{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;color:var(--text3)}
+.nb-right{flex:1;display:flex;flex-direction:column;gap:6px}
+.nb-lbl{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--rc)}
+.nb-comment{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text2);font-size:13px;font-family:'Barlow',sans-serif;padding:3px 0;outline:none}
+.nb-comment:focus{border-bottom-color:var(--rc)}
+.nb-comment::placeholder{color:var(--text3)}
+.nb-scale{font-size:9.5px;color:var(--text3);line-height:1.65;margin-top:2px}
+
+/* SECTION LABEL */
+.sec-lbl{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--text3);padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:12px}
+
+/* FOOTER */
+.card-footer{border-top:1px solid var(--border);background:var(--surface);padding:12px 32px;display:flex;align-items:center;justify-content:space-between}
+.footer-brand{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
+
+@media(max-width:780px){
+  .qual-grid{grid-template-columns:1fr}
+  .jr{grid-template-columns:1fr}
+  .jr-right{grid-row:auto;justify-content:flex-start;flex-wrap:wrap}
+  .card-body{padding:14px 16px}
+  .score-section{flex-direction:column;align-items:flex-start;gap:14px}
+}
+</style>
+</head>
+<body>
+
+<div class="ls" id="ls">
+  <div class="ls-logo">PlaZma</div>
+  <div class="ls-bar"><div class="ls-fill"></div></div>
+  <div class="ls-txt">Connexion…</div>
+</div>
+
+<a href="index.html" class="hub-link">← Hub PlaZma</a>
+<div class="toolbar"><button class="btn btn-export" id="exportBtn">⬇ Exporter PNG</button></div>
+<div class="sync-bar">
+  <div class="sync-indicator">
+    <div class="sync-dot offline" id="syncDot"></div>
+    <span class="sync-text" id="syncText" style="color:var(--text3)">En attente…</span>
+    <span class="sync-time" id="syncTime"></span>
+  </div>
+  <button class="btn-save-fb" id="saveFbBtn" onclick="save()">💾 Sauvegarder</button>
+  <div class="btn-mini-row">
+    <div class="btn-mini" onclick="exportBackup()">📦 Backup</div>
+    <div class="btn-mini" onclick="importBackup()">📥 Import</div>
+    <div class="btn-mini red" onclick="resetData()">🗑 Reset</div>
+  </div>
+</div>
+
+<div class="card" id="card">
+
+  <!-- HEADER -->
+  <div class="card-header">
+    <div class="header-top">
+      <div class="logo-badge">PZ</div>
+      <div class="header-titles">
+        <div class="club-name">PlaZma Esport</div>
+        <div class="doc-type">Fiche Head Coach</div>
+      </div>
+      <div class="coach-display">
+        <div class="coach-name-big" id="coachNameDisplay">Coach</div>
+        <div class="coach-role-tag">Head Coach · League of Legends</div>
+        <div class="season-pill">Saison 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- META -->
+  <div class="meta-bar">
+    <div class="meta-cell">
+      <div class="meta-lbl">Nom du coach</div>
+      <input class="meta-inp" id="f_name" type="text" placeholder="Pseudo / Prénom Nom" oninput="debounceSave();document.getElementById('coachNameDisplay').textContent=this.value||'Coach'">
+    </div>
+    <div class="meta-cell">
+      <div class="meta-lbl">Période évaluée</div>
+      <input class="meta-inp" id="f_periode" type="text" placeholder="ex : Avril 2026" oninput="debounceSave()">
+    </div>
+    <div class="meta-cell">
+      <div class="meta-lbl">Évaluateur</div>
+      <input class="meta-inp" id="f_eval" type="text" placeholder="Président / Joueur désigné" oninput="debounceSave()">
+    </div>
+  </div>
+
+  <!-- SCORE GLOBAL -->
+  <div class="score-section">
+    <div class="score-num-block">
+      <div class="score-num" id="scoreNum">—</div>
+      <div class="score-denom">/ 10</div>
+    </div>
+    <div class="score-right">
+      <div class="score-qual" id="scoreQual" style="color:var(--rc)">—</div>
+      <div class="score-track"><div class="score-fill" id="scoreFill" style="width:0%"></div></div>
+      <div class="cat-row" id="catRow"></div>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="card-body" id="cardBody"></div>
+
+  <!-- OBS & NOTE -->
+  <div style="padding:0 32px 10px">
+
+    <div class="sec-lbl">📝 Analyse</div>
+    <div class="qual-grid" style="margin-bottom:18px">
+      <div class="qual-card" style="border-left:3px solid #22c55e">
+        <div class="qual-lbl" style="color:#22c55e">✦ Points forts</div>
+        <textarea class="fiche-ta" id="t_forces" placeholder="Ce que le coach maîtrise déjà bien — avec exemples concrets…" oninput="debounceSave()"></textarea>
+      </div>
+      <div class="qual-card" style="border-left:3px solid #ef4444">
+        <div class="qual-lbl" style="color:#ef4444">✦ Points à améliorer</div>
+        <textarea class="fiche-ta" id="t_weak" placeholder="Faiblesses avec impact sur l'équipe, erreurs récurrentes…" oninput="debounceSave()"></textarea>
+      </div>
+      <div class="qual-card" style="border-left:3px solid var(--rc)">
+        <div class="qual-lbl" style="color:var(--rc)">✦ Observations générales</div>
+        <textarea class="fiche-ta" id="t_obs" placeholder="Comportement, relation joueurs, régularité, situations difficiles…" oninput="debounceSave()"></textarea>
+      </div>
+    </div>
+
+    <div class="sec-lbl">🎯 Objectifs pour la prochaine période</div>
+    <div class="obj-list" style="margin-bottom:18px">
+      <div class="obj-row"><div class="obj-n">01</div><input class="obj-inp" id="o1" type="text" placeholder="Ex : Mettre en place une review VOD collective chaque semaine" oninput="debounceSave()"></div>
+      <div class="obj-row"><div class="obj-n">02</div><input class="obj-inp" id="o2" type="text" placeholder="Ex : Préparer 3 compos maîtrisées avec win condition claire" oninput="debounceSave()"></div>
+      <div class="obj-row"><div class="obj-n">03</div><input class="obj-inp" id="o3" type="text" placeholder="Ex : Faire un feedback individuel structuré après chaque match officiel" oninput="debounceSave()"></div>
+    </div>
+
+    <div class="sec-lbl">⭐ Note &amp; appréciation</div>
+    <div class="note-block" style="margin-bottom:22px">
+      <div class="nb-wrap">
+        <input class="nb-inp" id="f_note" type="text" value="—" maxlength="2" oninput="debounceSave()">
+        <div class="nb-over">/ 10</div>
+      </div>
+      <div class="nb-right">
+        <div class="nb-lbl">Appréciation générale</div>
+        <input class="nb-comment" id="f_comment" type="text" placeholder="Résumé, évolution observée, message au coach…" oninput="debounceSave()">
+        <div class="nb-scale">0–4 : impact insuffisant sur l'équipe · 5–6 : bases solides, progression à confirmer · 7–8 : coach structurant, impact mesurable · 9–10 : excellence, équipe en progression constante</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card-footer">
+    <div class="footer-brand">PlaZma Esport · plazma-esport.fr</div>
+    <div style="font-size:9px;color:var(--text3);letter-spacing:1px" id="footerDate"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const COL='plazma', DOC_ID='coach-evaluation';
+
+const CATS = [
+  {
+    id:'prep', icon:'🔬', name:'Préparation & Analyse', col:'#06b6d4',
+    sub:'VOD reviews · scouting · sessions structurées · méta',
+    items:[
+      {id:'p1', l:'Qualité et régularité des reviews VOD',          s:'Fréquence, profondeur, identification des patterns d\'erreur'},
+      {id:'p2', l:'Préparation structurée des sessions',            s:'Chaque session a un objectif clair et des exercices ciblés'},
+      {id:'p3', l:'Scouting adversaires avant les matchs officiels', s:'Fiches préparées, tendances de draft et faiblesses connues'},
+      {id:'p4', l:'Lecture et adaptation à la méta courante',       s:'Savoir ce qui est fort, nerf, et adapter le jeu de l\'équipe'},
+    ]
+  },
+  {
+    id:'draft', icon:'📋', name:'Draft & Stratégie', col:'#a855f7',
+    sub:'Book de draft · win condition · champion pool · adaptation',
+    items:[
+      {id:'d1', l:'Construction et maîtrise du book de draft',      s:'Plans A/B/C préparés, réponses aux drafts adverses connues'},
+      {id:'d2', l:'Communication de la win condition',              s:'Les 5 joueurs savent comment la compo veut gagner avant d\'entrer'},
+      {id:'d3', l:'Adaptation du draft face à l\'adversaire',       s:'Réagir en temps réel aux picks adverses, switcher de plan si besoin'},
+      {id:'d4', l:'Maîtrise du champion pool de chaque joueur',    s:'Savoir quoi mettre à qui, dans quel contexte, à quel niveau'},
+    ]
+  },
+  {
+    id:'coaching', icon:'🎙️', name:'Coaching & Feedback', col:'#f97316',
+    sub:'Feedback individuel · développement joueurs · pédagogie',
+    items:[
+      {id:'c1', l:'Qualité du feedback individuel post-game',       s:'Retours précis, constructifs, actionnables — pas des généralités'},
+      {id:'c2', l:'Clarté des consignes pendant les sessions',      s:'Instructions comprises et appliquées immédiatement par les joueurs'},
+      {id:'c3', l:'Suivi et progression individuelle des joueurs',  s:'Chaque joueur a des axes définis, suivis et mesurés dans le temps'},
+      {id:'c4', l:'Pédagogie et capacité à expliquer simplement',  s:'Traduire la théorie en actions concrètes accessibles à tous'},
+    ]
+  },
+  {
+    id:'leadership', icon:'🤝', name:'Leadership & Gestion du Groupe', col:'#22c55e',
+    sub:'Cohésion · autorité · tilt · conflits',
+    items:[
+      {id:'l1', l:'Autorité naturelle et confiance des joueurs',    s:'Être écouté et suivi — les consignes sont appliquées'},
+      {id:'l2', l:'Maintien de la cohésion d\'équipe',              s:'Dynamique positive, tensions gérées avant qu\'elles explosent'},
+      {id:'l3', l:'Remotivation après défaite et gestion du tilt', s:'Rebond mental rapide, recadrage serein, pas de blame public'},
+      {id:'l4', l:'Gestion des conflits entre joueurs',             s:'Identifier les tensions, intervenir au bon moment, solutions durables'},
+    ]
+  },
+  {
+    id:'tournoi', icon:'🏆', name:'Performance en Matchs Officiels', col:'#ef4444',
+    sub:'Préparation mentale · pauses · adaptations · sérénité',
+    items:[
+      {id:'t1', l:'Préparation mentale de l\'équipe pré-match',     s:'Routines, focus, confiance — l\'équipe entre dans le bon état d\'esprit'},
+      {id:'t2', l:'Gestion des pauses et temps morts',              s:'Infos claires et actionnables dans chaque pause, pas de panique'},
+      {id:'t3', l:'Adaptations tactiques entre les games',          s:'Réagir à ce qui s\'est passé, corriger, anticiper les ajustements adverses'},
+      {id:'t4', l:'Calme et leadership sous pression',              s:'Le coach reste stable — son état d\'esprit se transmet à l\'équipe'},
+    ]
+  },
+];
+
+let jV = {};
+CATS.forEach(cat => cat.items.forEach(item => { jV[item.id] = 0; }));
+
+function buildUI() {
+  const body = document.getElementById('cardBody');
+  body.innerHTML = '';
+  CATS.forEach(cat => {
+    const block = document.createElement('div');
+    block.className = 'cat-block';
+    block.style.borderColor = cat.col + '30';
+
+    const hd = document.createElement('div');
+    hd.className = 'cat-head';
+    hd.style.cssText = 'background:linear-gradient(90deg,' + cat.col + '0c,transparent);border-bottom:1px solid ' + cat.col + '20';
+    hd.innerHTML =
+      '<div class="cat-icon-wrap" style="background:' + cat.col + '18">' + cat.icon + '</div>' +
+      '<div class="cat-name-col"><div class="cat-name" style="color:' + cat.col + '">' + cat.name + '</div><div class="cat-sub">' + cat.sub + '</div></div>' +
+      '<div class="cat-avg-wrap"><div class="cat-avg" id="ca_' + cat.id + '" style="color:' + cat.col + '">—</div><div class="cat-avg-lbl">Moyenne</div></div>';
+    block.appendChild(hd);
+
+    const items = document.createElement('div');
+    items.className = 'cat-items';
+    cat.items.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'jr';
+
+      const dots = document.createElement('div');
+      dots.className = 'jr-dots';
+      dots.id = 'jd_' + item.id;
+      for (let i = 1; i <= 10; i++) {
+        const d = document.createElement('div');
+        d.className = 'jd';
+        d.style.background = cat.col;
+        d.dataset.n = i;
+        d.addEventListener('click', () => {
+          jV[item.id] = jV[item.id] === i ? 0 : i;
+          refreshJauge(item.id, cat.col);
+          updateScore();
+          debounceSave();
+        });
+        dots.appendChild(d);
+      }
+
+      const num = document.createElement('div');
+      num.className = 'jr-num';
+      num.id = 'jn_' + item.id;
+      num.style.color = 'var(--text3)';
+      num.textContent = '0';
+
+      row.innerHTML =
+        '<div class="jr-label">' + item.l + '</div>' +
+        '<div class="jr-sub">' + item.s + '</div>';
+
+      const right = document.createElement('div');
+      right.className = 'jr-right';
+      right.appendChild(dots);
+      right.appendChild(num);
+      row.appendChild(right);
+
+      items.appendChild(row);
+    });
+    block.appendChild(items);
+    body.appendChild(block);
+  });
+}
+
+function refreshJauge(id, col) {
+  const v = jV[id] || 0;
+  document.querySelectorAll('#jd_' + id + ' .jd').forEach(d => d.classList.toggle('on', parseInt(d.dataset.n) <= v));
+  const el = document.getElementById('jn_' + id);
+  if (el) { el.textContent = v; el.style.color = v > 0 ? col : 'var(--text3)'; }
+}
+
+const SLABELS = ['Non évalué','Très insuffisant','Insuffisant','Insuffisant','Passable','Moyen','Correct','Bon','Très bon','Excellent','Exceptionnel'];
+
+function updateScore() {
+  let total = 0, count = 0;
+  const catRow = document.getElementById('catRow');
+  if (catRow) catRow.innerHTML = '';
+
+  CATS.forEach(cat => {
+    let sum = 0, cnt = 0;
+    cat.items.forEach(item => { const v = jV[item.id] || 0; if(v>0){sum+=v;cnt++;} total+=v; count+=cat.items.length; });
+    const avg = cnt > 0 ? sum / cnt : 0;
+    const catEl = document.getElementById('ca_' + cat.id);
+    if (catEl) catEl.textContent = avg > 0 ? avg.toFixed(1) : '—';
+    if (catRow && avg > 0) {
+      const p = document.createElement('div');
+      p.className = 'cat-pill';
+      p.style.cssText = 'background:' + cat.col + '14;color:' + cat.col + ';border:1px solid ' + cat.col + '30';
+      p.textContent = cat.icon + ' ' + avg.toFixed(1);
+      catRow.appendChild(p);
+    }
+  });
+
+  const filledItems = CATS.flatMap(c => c.items).filter(i => (jV[i.id]||0) > 0);
+  const g = filledItems.length > 0 ? filledItems.reduce((s,i) => s + (jV[i.id]||0), 0) / filledItems.length : 0;
+  const r = Math.round(g * 10) / 10;
+  const col = g >= 8 ? '#22c55e' : g >= 6 ? '#06b6d4' : g >= 4 ? '#f59e0b' : g > 0 ? '#ef4444' : 'var(--rc)';
+
+  const sn = document.getElementById('scoreNum');
+  const sq = document.getElementById('scoreQual');
+  const sf = document.getElementById('scoreFill');
+  if (sn) { sn.textContent = g > 0 ? r.toFixed(1) : '—'; sn.style.color = col; }
+  if (sq) { sq.textContent = SLABELS[Math.round(g)] || '—'; sq.style.color = col; }
+  if (sf) { sf.style.width = (g / 10 * 100) + '%'; sf.style.background = col; }
+}
+
+// STATE
+function vg(id) { const e = document.getElementById(id); return e ? e.value : ''; }
+function sv(id, val) { const e = document.getElementById(id); if (e) e.value = val || ''; }
+
+function getState() {
+  return {
+    f_name:vg('f_name'),f_periode:vg('f_periode'),f_eval:vg('f_eval'),
+    t_forces:vg('t_forces'),t_weak:vg('t_weak'),t_obs:vg('t_obs'),
+    o1:vg('o1'),o2:vg('o2'),o3:vg('o3'),
+    f_note:vg('f_note'),f_comment:vg('f_comment'),
+    jV:{...jV},
+  };
+}
+
+function applyState(s) {
+  if (!s) return;
+  ['f_name','f_periode','f_eval','t_forces','t_weak','t_obs','o1','o2','o3','f_note','f_comment'].forEach(k => sv(k, s[k]));
+  const nd = document.getElementById('coachNameDisplay');
+  if (nd && s.f_name) nd.textContent = s.f_name;
+  if (s.jV) {
+    Object.assign(jV, s.jV);
+    CATS.forEach(cat => cat.items.forEach(item => refreshJauge(item.id, cat.col)));
+    updateScore();
+  }
+}
+
+// FIREBASE
+function setSS(s, txt, time='') {
+  const dot=document.getElementById('syncDot'),t=document.getElementById('syncText'),tm=document.getElementById('syncTime');
+  if(!dot)return;
+  dot.className='sync-dot '+s;
+  t.textContent=txt;
+  t.style.color=s==='connected'?'#22c55e':s==='syncing'?'#f59e0b':s==='error'?'#ef4444':'var(--text3)';
+  tm.textContent=time;
+}
+function hideLS(){const ls=document.getElementById('ls');if(ls){ls.classList.add('hidden');setTimeout(()=>ls.style.display='none',500);}}
+function save(){
+  setSS('syncing','Sauvegarde…');
+  db.collection(COL).doc(DOC_ID).set(getState())
+    .then(()=>{setSS('connected','Synchronisé');flashSave(true);})
+    .catch(e=>{setSS('error','Erreur');flashSave(false);console.error(e);});
+}
+function startSync(){
+  setSS('syncing','Connexion…');
+  db.collection(COL).doc(DOC_ID).onSnapshot(doc=>{
+    if(doc.metadata.hasPendingWrites)return;
+    if(doc.exists){applyState(doc.data());setSS('connected','Synchronisé',new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));}
+    else setSS('connected','Prêt','');
+    hideLS();
+  },err=>{console.error(err);setSS('error','Erreur connexion');hideLS();});
+}
+function flashSave(ok){
+  const btn=document.getElementById('saveFbBtn');if(!btn)return;
+  btn.classList.add('saved');btn.textContent=ok?'✓ Sauvegardé':'⚠ Erreur';if(!ok)btn.style.color='#ef4444';
+  setTimeout(()=>{btn.classList.remove('saved');btn.textContent='💾 Sauvegarder';btn.style.color='';},1600);
+}
+let _st=null;
+function debounceSave(){clearTimeout(_st);_st=setTimeout(save,1000);}
+function exportBackup(){const b=new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='plazma-coach-'+new Date().toISOString().split('T')[0]+'.json';a.click();}
+function importBackup(){const i=document.createElement('input');i.type='file';i.accept='.json';i.addEventListener('change',async()=>{try{applyState(JSON.parse(await i.files[0].text()));save();}catch(e){alert('Fichier invalide');}});i.click();}
+function resetData(){
+  if(!confirm('Réinitialiser la fiche coach ?'))return;
+  CATS.forEach(cat=>cat.items.forEach(i=>{jV[i.id]=0;}));
+  CATS.forEach(cat=>cat.items.forEach(i=>refreshJauge(i.id,cat.col)));
+  updateScore();
+  db.collection(COL).doc(DOC_ID).delete().then(()=>setSS('connected','Réinitialisé',''));
+}
+document.getElementById('exportBtn').addEventListener('click',async()=>{
+  const btn=document.getElementById('exportBtn');btn.disabled=true;btn.textContent='Export…';
+  document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(el=>el.style.visibility='hidden');
+  await new Promise(r=>setTimeout(r,80));
+  const canvas=await html2canvas(document.getElementById('card'),{scale:2,backgroundColor:'#07070f',useCORS:true,logging:false});
+  document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(el=>el.style.visibility='');
+  btn.disabled=false;btn.textContent='⬇ Exporter PNG';
+  const link=document.createElement('a');link.download='plazma-coach.png';link.href=canvas.toDataURL('image/png');link.click();
+});
+
+document.getElementById('footerDate').textContent='Mise à jour le '+new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+buildUI();
+startSync();
+setTimeout(()=>{const ls=document.getElementById('ls');if(ls&&!ls.classList.contains('hidden')){hideLS();setSS('error','Firebase inaccessible');}},8000);
+</script>
+</body>
+</html>
