@@ -392,7 +392,7 @@ body{
 
 <script>
 'use strict';
-const COL='plazma', DOC_ID='perf-ke1do';
+const COL='plazma', DOC_ID='perf-boulou';
 
 // ═══════════════════════════════════════════════════════
 // COMPÉTENCES — 14 items, groupés logiquement
@@ -600,7 +600,7 @@ let _st = null;
 function debounceSave() { clearTimeout(_st); _st = setTimeout(save, 1000); }
 function exportBackup() { const b = new Blob([JSON.stringify(getState(), null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'plazma-perf-boulou-' + new Date().toISOString().split('T')[0] + '.json'; a.click(); }
 function importBackup() { const i = document.createElement('input'); i.type = 'file'; i.accept = '.json'; i.addEventListener('change', async () => { try { applyState(JSON.parse(await i.files[0].text())); save(); } catch (e) { alert('Fichier invalide'); } }); i.click(); }
-function resetData() { if (!confirm('Réinitialiser la fiche de Ke1do ?')) return; CATS.forEach(cat => cat.items.forEach(i => { jV[i.id] = 0; })); CATS.forEach(cat => cat.items.forEach(i => refreshJ(i.id, cat.color))); upScore(); db.collection(COL).doc(DOC_ID).delete().then(() => setSS('connected', 'Réinitialisé', '')); }
+function resetData() { if (!confirm('Réinitialiser la fiche de boulou ?')) return; CATS.forEach(cat => cat.items.forEach(i => { jV[i.id] = 0; })); CATS.forEach(cat => cat.items.forEach(i => refreshJ(i.id, cat.color))); upScore(); db.collection(COL).doc(DOC_ID).delete().then(() => setSS('connected', 'Réinitialisé', '')); }
 
 document.getElementById('exportBtn').addEventListener('click', async () => {
   const btn = document.getElementById('exportBtn'); btn.disabled = true; btn.textContent = 'Export…';
@@ -609,7 +609,7 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
   const canvas = await html2canvas(document.getElementById('card'), { scale: 2, backgroundColor: '#04111a', useCORS: true, logging: false });
   document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(el => el.style.visibility = '');
   btn.disabled = false; btn.textContent = '⬇ Exporter PNG';
-  const link = document.createElement('a'); link.download = 'plazma-perf-ke1do.png'; link.href = canvas.toDataURL('image/png'); link.click();
+  const link = document.createElement('a'); link.download = 'plazma-perf-boulou.png'; link.href = canvas.toDataURL('image/png'); link.click();
 });
 
 buildJauges();
