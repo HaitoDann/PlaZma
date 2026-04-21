@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RoZter — Bible PlaZma</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({apiKey:"AIzaSyAKwNEbNa6f40oSMwGp6dcDY1ZY6hUN1Ks",authDomain:"plazma-esport.firebaseapp.com",projectId:"plazma-esport",storageBucket:"plazma-esport.firebasestorage.app",messagingSenderId:"534325929279",appId:"1:534325929279:web:b507a46c601fa6625edf8a"});
+const db=firebase.firestore();
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#020c10;--bg2:#04111a;--surface:#060f18;--surface2:#091420;--surface3:#0b1a28;
+  --border:#0d2030;--border2:#112840;--border3:#153050;
+  --c1:#06b6d4;--c2:#0891b2;--c3:#22d3ee;--c4:#67e8f9;
+  --green:#22c55e;--red:#ef4444;--orange:#f97316;--yellow:#f59e0b;
+  --text:#e0f7fc;--text2:#4b8ea0;--text3:#1a3d4a;
+  --sb-width:258px;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);font-family:'Exo 2',sans-serif;color:var(--text);display:flex;flex-direction:column}
+
+/* ── AUTH OVERLAY ── */
+#authOverlay{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+.auth-logo{font-family:'Rajdhani',sans-serif;font-size:52px;font-weight:700;letter-spacing:6px;color:var(--c1);text-shadow:0 0 32px rgba(6,182,212,.55)}
+.auth-sub{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
+.auth-box{background:var(--surface);border:1px solid var(--border2);padding:24px;display:flex;flex-direction:column;gap:14px;width:320px;position:relative;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px))}
+.auth-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--c1),transparent)}
+.auth-box-title{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--c1)}
+.auth-inp{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-size:13px;font-family:'Exo 2',sans-serif;padding:9px 12px;outline:none;transition:border-color .2s;width:100%}
+.auth-inp:focus{border-color:var(--c1)}
+.auth-inp::placeholder{color:var(--text3)}
+.auth-btn{background:var(--c1);color:#000;border:none;padding:10px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .18s;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)}
+.auth-btn:hover{background:var(--c3)}
+.auth-err{font-size:10px;color:var(--red);text-align:center;display:none}
+.auth-err.show{display:block}
+
+/* ── MAIN APP ── */
+#appMain{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── TOP CHROME ── */
+.top-chrome{display:flex;align-items:center;justify-content:space-between;padding:0 18px;height:46px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;position:relative;z-index:10}
+.top-chrome::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--c1),transparent 40%)}
+.hub-link{font-size:9px;color:var(--text3);text-decoration:none;letter-spacing:2px;text-transform:uppercase;transition:color .15s}
+.hub-link:hover{color:var(--c1)}
+.tc-center{display:flex;align-items:center;gap:10px}
+.tc-title{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--text)}
+.tc-tag{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(6,182,212,.5);border:1px solid rgba(6,182,212,.15);background:rgba(6,182,212,.05);padding:2px 8px;clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%)}
+.tc-right{display:flex;align-items:center;gap:10px}
+.sync-ind{display:flex;align-items:center;gap:5px;padding:3px 8px;background:var(--surface2);border:1px solid var(--border)}
+.sdot{width:5px;height:5px;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);;flex-shrink:0}
+.sdot.ok{background:var(--green);box-shadow:0 0 5px rgba(34,197,94,.5)}
+.sdot.spin{background:var(--yellow);animation:pulse .8s infinite}
+.sdot.err{background:var(--red)}
+.sdot.off{background:var(--text3)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+#syncText{font-size:9px;color:var(--text3)}
+
+/* ── APP BODY ── */
+.app-body{flex:1;display:flex;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sb-width);min-width:var(--sb-width);display:flex;flex-direction:column;background:var(--surface);border-right:1px solid var(--border);overflow:hidden}
+.sb-header{padding:10px 10px 6px;display:flex;flex-direction:column;gap:6px;flex-shrink:0;border-bottom:1px solid var(--border)}
+.sb-search{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:11px;font-family:'Exo 2',sans-serif;padding:6px 10px;outline:none;transition:border-color .2s}
+.sb-search:focus{border-color:var(--c1)}
+.sb-search::placeholder{color:var(--text3)}
+.sb-btns{display:flex;gap:5px}
+.sb-btn{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:5px 7px;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%)}
+.sb-btn:hover{border-color:var(--c1);color:var(--c1)}
+.file-tree{flex:1;overflow-y:auto;padding:6px 0;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+.tree-empty{font-size:10px;color:var(--text3);padding:16px 14px;line-height:1.6;text-align:center}
+
+/* Tree items */
+.t-folder-head,.t-article{display:flex;align-items:center;gap:5px;padding:5px 10px;cursor:pointer;transition:background .1s;user-select:none;position:relative;min-height:28px}
+.t-folder-head:hover,.t-article:hover{background:rgba(6,182,212,.05)}
+.t-article.active{background:rgba(6,182,212,.1);border-right:2px solid var(--c1)}
+.t-arrow{font-size:8px;color:var(--text3);transition:transform .15s;flex-shrink:0;width:10px;text-align:center}
+.t-arrow.open{transform:rotate(90deg)}
+.t-icon{font-size:13px;flex-shrink:0}
+.t-name{font-size:12px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
+.t-folder-head .t-name{color:var(--text);font-weight:600}
+.t-actions{display:none;gap:3px;flex-shrink:0}
+.t-folder-head:hover .t-actions,.t-article:hover .t-actions{display:flex}
+.t-act-btn{background:none;border:none;color:var(--text3);font-size:10px;cursor:pointer;padding:1px 3px;line-height:1;transition:color .12s}
+.t-act-btn:hover{color:var(--c1)}
+.t-children{padding-left:14px}
+.t-article .t-date{font-size:8px;color:var(--text3);flex-shrink:0;display:none}
+.t-article:hover .t-date{display:block}
+
+/* ── EDITOR AREA ── */
+.editor-area{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg2)}
+
+/* Empty state */
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:40px}
+.es-icon{font-size:48px;opacity:.3}
+.es-title{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
+.es-sub{font-size:12px;color:var(--text3);text-align:center;max-width:300px;line-height:1.6}
+.es-btns{display:flex;gap:8px}
+.es-btn{background:var(--surface);border:1px solid var(--border2);color:var(--text2);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 16px;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .15s;clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%)}
+.es-btn:hover{border-color:var(--c1);color:var(--c1)}
+.es-btn-primary{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:var(--c1)}
+
+/* Article view */
+.article-view{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.av-top{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.av-breadcrumb{font-size:10px;color:var(--text3);letter-spacing:.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.av-breadcrumb span{color:var(--text2)}
+.av-view-toggle{display:flex;gap:3px;flex-shrink:0}
+.vt-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text3);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .15s;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%)}
+.vt-btn:hover{color:var(--text2)}
+.vt-btn.active{background:rgba(6,182,212,.12);border-color:rgba(6,182,212,.35);color:var(--c1)}
+
+/* Title bar */
+.title-bar{padding:12px 20px 8px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+.article-title-inp{width:100%;background:transparent;border:none;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;letter-spacing:1px;outline:none;padding:0}
+.article-title-inp::placeholder{color:var(--text3)}
+
+/* Toolbar */
+.editor-toolbar{display:flex;align-items:center;gap:3px;padding:6px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+.tb-btn{background:none;border:none;color:var(--text3);font-size:11px;font-weight:700;padding:4px 8px;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .12s;border-radius:3px;letter-spacing:.5px}
+.tb-btn:hover{background:rgba(6,182,212,.1);color:var(--c1)}
+.tb-btn.mono{font-family:'JetBrains Mono',monospace;font-size:10px}
+.tb-sep{width:1px;height:16px;background:var(--border);margin:0 3px;flex-shrink:0}
+
+/* Editor content */
+.editor-content{flex:1;display:flex;overflow:hidden}
+.editor-pane{flex:1;display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border)}
+.editor-pane:only-child{border-right:none}
+#editorTa{flex:1;background:transparent;border:none;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.75;padding:20px;resize:none;outline:none;tab-size:2}
+#editorTa::placeholder{color:var(--text3)}
+.preview-pane{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+.preview-scroll{padding:24px 32px;max-width:760px;margin:0 auto}
+
+/* ── PREVIEW MARKDOWN STYLES ── */
+.preview-content h1{font-family:'Rajdhani',sans-serif;font-size:34px;font-weight:700;letter-spacing:1px;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:10px;margin:0 0 18px}
+.preview-content h2{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:var(--text);margin:28px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.preview-content h3{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--c1);margin:22px 0 9px}
+.preview-content h4{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;color:var(--text2);text-transform:uppercase;margin:16px 0 7px}
+.preview-content p{font-size:14px;line-height:1.78;color:var(--text2);margin:0 0 14px}
+.preview-content strong{color:var(--text);font-weight:700}
+.preview-content em{color:var(--text2);font-style:italic}
+.preview-content code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--surface2);border:1px solid var(--border2);padding:2px 6px;color:var(--c3)}
+.preview-content pre{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--c1);padding:16px;overflow-x:auto;margin:14px 0}
+.preview-content pre code{background:none;border:none;padding:0;font-size:12px;color:var(--text);line-height:1.65}
+.preview-content blockquote{border-left:3px solid var(--c1);padding:10px 16px;margin:14px 0;background:rgba(6,182,212,.04);color:var(--text2)}
+.preview-content blockquote p{margin:0;color:var(--text2)}
+.preview-content ul,.preview-content ol{padding-left:22px;margin:8px 0 14px}
+.preview-content li{font-size:14px;line-height:1.65;color:var(--text2);margin-bottom:5px}
+.preview-content li strong{color:var(--text)}
+.preview-content table{width:100%;border-collapse:separate;border-spacing:0;margin:16px 0}
+.preview-content th{background:var(--surface2);color:var(--text3);font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);font-family:'Rajdhani',sans-serif;font-weight:700}
+.preview-content td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2)}
+.preview-content tr:last-child td{border-bottom:none}
+.preview-content hr{border:none;height:1px;background:linear-gradient(90deg,var(--c1),var(--c3) 30%,transparent 70%);margin:24px 0}
+.preview-content a{color:var(--c1);text-decoration:underline;text-decoration-color:rgba(6,182,212,.35)}
+.preview-content a:hover{text-decoration-color:var(--c1)}
+.preview-content img{max-width:100%;border:1px solid var(--border)}
+.preview-content .callout{background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.2);border-left:3px solid var(--c1);padding:12px 16px;margin:14px 0}
+
+/* Status bar */
+.status-bar{display:flex;align-items:center;justify-content:space-between;padding:5px 16px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;gap:10px}
+.sb-left{display:flex;align-items:center;gap:7px}
+.sb-lbl{font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.sb-author-inp{background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text2);font-size:11px;font-family:'Exo 2',sans-serif;padding:1px 0;outline:none;width:120px;transition:border-color .2s}
+.sb-author-inp:focus{border-bottom-color:var(--c1)}
+.sb-author-inp::placeholder{color:var(--text3)}
+.sb-right{display:flex;align-items:center;gap:14px}
+.sb-words{font-size:9px;color:var(--text3);letter-spacing:.5px}
+.sb-status{font-size:9px;letter-spacing:.5px}
+.sb-status.saved{color:var(--green)}
+.sb-status.dirty{color:var(--yellow)}
+.sb-status.saving{color:var(--text3)}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(2,12,16,.85);backdrop-filter:blur(6px);z-index:900;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--surface2);border:1px solid var(--border2);padding:22px;width:380px;max-width:100%;position:relative;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px))}
+.modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--c1),transparent)}
+.modal-title{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--c1);margin-bottom:16px}
+.modal-field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.modal-lbl{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
+.modal-inp{background:var(--surface);border:1px solid var(--border2);color:var(--text);font-size:12px;font-family:'Exo 2',sans-serif;padding:8px 10px;outline:none;transition:border-color .2s;width:100%}
+.modal-inp:focus{border-color:var(--c1)}
+.modal-inp option{background:var(--surface)}
+.modal-footer{display:flex;gap:8px;margin-top:16px}
+.modal-btn{flex:1;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:9px;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .18s;border:none;clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%)}
+.modal-btn-cancel{background:var(--surface);color:var(--text2);border:1px solid var(--border2)}
+.modal-btn-cancel:hover{border-color:var(--border3);color:var(--text)}
+.modal-btn-ok{background:var(--c1);color:#000}
+.modal-btn-ok:hover{background:var(--c3)}
+.modal-btn-del{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25);flex:0 0 auto;padding:9px 14px}
+.modal-btn-del:hover{background:rgba(239,68,68,.25)}
+
+/* ── CTX MENU ── */
+.ctx-menu{position:fixed;background:var(--surface2);border:1px solid var(--border2);z-index:800;min-width:160px;padding:4px;display:none;box-shadow:0 8px 28px rgba(0,0,0,.55)}
+.ctx-menu.open{display:block}
+.ctx-item{padding:7px 13px;font-size:11px;color:var(--text2);cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:7px}
+.ctx-item:hover{background:rgba(6,182,212,.07);color:var(--text)}
+.ctx-item.danger{color:rgba(239,68,68,.6)}
+.ctx-item.danger:hover{background:rgba(239,68,68,.09);color:var(--red)}
+.ctx-sep{height:1px;background:var(--border2);margin:3px 0}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border2);padding:9px 18px;font-size:11px;font-weight:600;color:var(--text);z-index:700;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)}
+.toast.show{opacity:1}
+
+@media(max-width:700px){
+  :root{--sb-width:200px}
+  .vt-btn{font-size:8px;padding:3px 7px}
+  .editor-toolbar{padding:5px 10px}
+}
+</style>
+</head>
+<body>
+
+<!-- ── AUTH ── -->
+<div id="authOverlay">
+  <div class="auth-logo">RoZter</div>
+  <div class="auth-sub">Bible PlaZma · Accès restreint</div>
+  <div class="auth-box">
+    <div class="auth-box-title">🔐 Identifie-toi</div>
+    <input class="auth-inp" id="authPass" type="password" placeholder="Mot de passe staff…" onkeydown="if(event.key==='Enter')checkAuth()">
+    <button class="auth-btn" onclick="checkAuth()">Accéder à la Bible →</button>
+    <div class="auth-err" id="authErr">Mot de passe incorrect.</div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="appMain" style="display:none">
+
+  <!-- Top chrome -->
+  <div class="top-chrome">
+    <a href="index.html" class="hub-link">← Hub RoZter</a>
+    <div class="tc-center">
+      <span class="tc-title">⚔️ Bible PlaZma</span>
+      <span class="tc-tag">Wiki interne</span>
+    </div>
+    <div class="tc-right">
+      <div class="sync-ind">
+        <div class="sdot off" id="syncDot"></div>
+        <span id="syncText">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- App body -->
+  <div class="app-body">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sb-header">
+        <input class="sb-search" id="searchInput" placeholder="🔍 Rechercher…" oninput="onSearch(this.value)">
+        <div class="sb-btns">
+          <button class="sb-btn" onclick="promptCreate('folder',null)" title="Nouveau dossier">📁 Dossier</button>
+          <button class="sb-btn" onclick="promptCreate('article',null)" title="Nouvel article">📝 Article</button>
+        </div>
+      </div>
+      <div id="fileTree" class="file-tree"></div>
+    </div>
+
+    <!-- Editor area -->
+    <div class="editor-area">
+
+      <!-- Empty state -->
+      <div id="emptyState" class="empty-state">
+        <div class="es-icon">📚</div>
+        <div class="es-title">Bible PlaZma</div>
+        <div class="es-sub">Sélectionne un article dans la barre latérale, ou crée-en un nouveau pour commencer.</div>
+        <div class="es-btns">
+          <button class="es-btn" onclick="promptCreate('folder',null)">📁 Nouveau dossier</button>
+          <button class="es-btn es-btn-primary" onclick="promptCreate('article',null)">📝 Nouvel article</button>
+        </div>
+      </div>
+
+      <!-- Article view -->
+      <div id="articleView" class="article-view" style="display:none">
+        <div class="av-top">
+          <div class="av-breadcrumb" id="avBreadcrumb">—</div>
+          <div class="av-view-toggle">
+            <button class="vt-btn" id="vtEdit" onclick="setView('edit')">✏ Éditer</button>
+            <button class="vt-btn active" id="vtSplit" onclick="setView('split')">⬛ Split</button>
+            <button class="vt-btn" id="vtPrev" onclick="setView('preview')">👁 Aperçu</button>
+          </div>
+        </div>
+
+        <!-- Title -->
+        <div class="title-bar">
+          <input class="article-title-inp" id="articleTitleInp" placeholder="Titre de l'article…" oninput="onTitleInput()">
+        </div>
+
+        <!-- Toolbar -->
+        <div class="editor-toolbar" id="editorToolbar">
+          <button class="tb-btn" onclick="fmt('# ')">H1</button>
+          <button class="tb-btn" onclick="fmt('## ')">H2</button>
+          <button class="tb-btn" onclick="fmt('### ')">H3</button>
+          <div class="tb-sep"></div>
+          <button class="tb-btn" onclick="fmtWrap('**','**')"><b>G</b></button>
+          <button class="tb-btn" onclick="fmtWrap('*','*')"><i>I</i></button>
+          <button class="tb-btn mono" onclick="fmtWrap('`','`')">code</button>
+          <button class="tb-btn mono" onclick="fmtBlock()">```</button>
+          <div class="tb-sep"></div>
+          <button class="tb-btn" onclick="fmt('- ')">— Liste</button>
+          <button class="tb-btn" onclick="fmt('1. ')">1. Liste</button>
+          <button class="tb-btn" onclick="fmt('> ')">› Quote</button>
+          <div class="tb-sep"></div>
+          <button class="tb-btn" onclick="insertTable()">⊞ Table</button>
+          <button class="tb-btn" onclick="fmt('---\n')">― HR</button>
+        </div>
+
+        <!-- Content -->
+        <div class="editor-content" id="editorContent">
+          <div class="editor-pane" id="editPane">
+            <textarea id="editorTa"
+              spellcheck="false"
+              placeholder="Commence à écrire en Markdown…&#10;&#10;# Titre principal&#10;## Sous-section&#10;**gras** · *italique* · `code`"
+              oninput="onEditorInput()"
+              onkeydown="onEditorKeydown(event)"></textarea>
+          </div>
+          <div class="preview-pane" id="previewPane">
+            <div class="preview-scroll">
+              <div class="preview-content" id="previewContent"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status bar -->
+        <div class="status-bar">
+          <div class="sb-left">
+            <span class="sb-lbl">Auteur</span>
+            <input class="sb-author-inp" id="authorInp" placeholder="Pseudo…" oninput="onAuthorInput()">
+          </div>
+          <div class="sb-right">
+            <span id="wordCount" class="sb-words">0 mot</span>
+            <span id="saveStatus" class="sb-status saving">—</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="modalOverlay" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitle">—</div>
+    <div class="modal-field">
+      <div class="modal-lbl" id="modalLbl">Nom</div>
+      <input class="modal-inp" id="modalInput" type="text" onkeydown="if(event.key==='Enter')confirmModal()">
+    </div>
+    <div id="modalFolderField" class="modal-field" style="display:none">
+      <div class="modal-lbl">Dossier parent</div>
+      <select class="modal-inp" id="modalFolderSel"></select>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn modal-btn-del" id="modalDelBtn" style="display:none" onclick="modalDelete()">🗑</button>
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="modal-btn modal-btn-ok" id="modalOkBtn" onclick="confirmModal()">Créer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Context menu -->
+<div id="ctxMenu" class="ctx-menu">
+  <div class="ctx-item" id="ctxRename">✎ Renommer</div>
+  <div class="ctx-item" id="ctxMove">📁 Déplacer vers…</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item danger" id="ctxDelete">🗑 Supprimer</div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script>
+'use strict';
+
+// ── AUTH ────────────────────────────────────────────────────
+const PASS = 'plazma2026';
+function checkAuth() {
+  const v = document.getElementById('authPass').value;
+  if (v === PASS) {
+    document.getElementById('authOverlay').style.display = 'none';
+    document.getElementById('appMain').style.display = '';
+    initApp();
+  } else {
+    document.getElementById('authErr').classList.add('show');
+    document.getElementById('authPass').value = '';
+    document.getElementById('authPass').focus();
+    setTimeout(() => document.getElementById('authErr').classList.remove('show'), 2000);
+  }
+}
+
+// ── DATA ─────────────────────────────────────────────────────
+const COL = 'plazma', DOC = 'plazma-bible';
+let data = { folders: [], articles: [] };
+let activeId   = null;   // current article id
+let viewMode   = 'split';
+let isDirty    = false;
+let searchQ    = '';
+let expanded   = new Set(); // folder ids that are open
+let ctxCtx     = null;      // {type:'folder'|'article', id}
+let modalCb    = null;
+let modalDelCb = null;
+
+// ── TREE ─────────────────────────────────────────────────────
+function renderTree() {
+  const tree = document.getElementById('fileTree');
+  tree.innerHTML = '';
+  const q = searchQ.toLowerCase();
+
+  const matchArticle = a =>
+    !q || a.title.toLowerCase().includes(q) || (a.content||'').toLowerCase().includes(q);
+
+  // folders that have matching content (or sub-folders with content)
+  function folderHasMatch(fid) {
+    const directArticles = data.articles.filter(a => a.folderId === fid && matchArticle(a));
+    if (directArticles.length) return true;
+    const subFolders = data.folders.filter(f => f.parentId === fid);
+    return subFolders.some(sf => folderHasMatch(sf.id));
+  }
+
+  function renderFolder(f, depth) {
+    const isOpen = expanded.has(f.id) || (q.length > 0 && folderHasMatch(f.id));
+    if (q && !folderHasMatch(f.id)) return null;
+
+    const wrap = document.createElement('div');
+
+    const head = document.createElement('div');
+    head.className = 't-folder-head';
+    head.style.paddingLeft = (8 + depth * 14) + 'px';
+
+    const arrow = document.createElement('span');
+    arrow.className = 't-arrow' + (isOpen ? ' open' : '');
+    arrow.textContent = '▶';
+
+    const icon = document.createElement('span');
+    icon.className = 't-icon';
+    icon.textContent = isOpen ? '📂' : '📁';
+
+    const name = document.createElement('span');
+    name.className = 't-name';
+    name.textContent = f.name;
+
+    const acts = document.createElement('div');
+    acts.className = 't-actions';
+    const addBtn = mkActBtn('+', () => { promptCreate('article', f.id); });
+    addBtn.title = 'Nouvel article ici';
+    const moreBtn = mkActBtn('⋯', (e) => { e.stopPropagation(); showCtx(e, 'folder', f.id); });
+    acts.appendChild(addBtn);
+    acts.appendChild(moreBtn);
+
+    head.appendChild(arrow);
+    head.appendChild(icon);
+    head.appendChild(name);
+    head.appendChild(acts);
+
+    head.addEventListener('click', e => {
+      if (e.target.closest('.t-actions')) return;
+      if (expanded.has(f.id)) expanded.delete(f.id); else expanded.add(f.id);
+      renderTree();
+    });
+    head.addEventListener('contextmenu', e => { e.preventDefault(); showCtx(e, 'folder', f.id); });
+
+    wrap.appendChild(head);
+
+    if (isOpen) {
+      const children = document.createElement('div');
+      children.className = 't-children';
+
+      // Sub-folders
+      data.folders.filter(sf => sf.parentId === f.id)
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .forEach(sf => { const el = renderFolder(sf, depth + 1); if (el) children.appendChild(el); });
+
+      // Articles
+      data.articles.filter(a => a.folderId === f.id && matchArticle(a))
+        .sort((a, b) => a.title.localeCompare(b.title))
+        .forEach(a => children.appendChild(renderArticleNode(a, depth + 1)));
+
+      wrap.appendChild(children);
+    }
+
+    return wrap;
+  }
+
+  // Root folders
+  data.folders.filter(f => !f.parentId)
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .forEach(f => { const el = renderFolder(f, 0); if (el) tree.appendChild(el); });
+
+  // Root articles (no folder)
+  data.articles.filter(a => !a.folderId && matchArticle(a))
+    .sort((a, b) => a.title.localeCompare(b.title))
+    .forEach(a => tree.appendChild(renderArticleNode(a, 0)));
+
+  if (!data.folders.length && !data.articles.length) {
+    tree.innerHTML = '<div class="tree-empty">Aucune note pour l\'instant.<br>Crée un dossier ou un article pour commencer.</div>';
+  }
+}
+
+function renderArticleNode(a, depth) {
+  const el = document.createElement('div');
+  el.className = 'tree-article' + (a.id === activeId ? ' active' : '');
+  el.style.paddingLeft = (20 + depth * 14) + 'px';
+
+  const icon = document.createElement('span');
+  icon.className = 't-icon';
+  icon.textContent = '📄';
+
+  const name = document.createElement('span');
+  name.className = 't-name';
+  name.textContent = a.title || 'Sans titre';
+
+  const acts = document.createElement('div');
+  acts.className = 't-actions';
+  const moreBtn = mkActBtn('⋯', e => { e.stopPropagation(); showCtx(e, 'article', a.id); });
+  acts.appendChild(moreBtn);
+
+  el.appendChild(icon);
+  el.appendChild(name);
+  el.appendChild(acts);
+
+  el.addEventListener('click', () => openArticle(a.id));
+  el.addEventListener('contextmenu', e => { e.preventDefault(); showCtx(e, 'article', a.id); });
+
+  return el;
+}
+
+function mkActBtn(label, handler) {
+  const b = document.createElement('button');
+  b.className = 't-act-btn';
+  b.textContent = label;
+  b.addEventListener('click', handler);
+  return b;
+}
+
+// ── EDITOR ───────────────────────────────────────────────────
+function openArticle(id) {
+  if (isDirty && activeId) flushSave();
+  activeId = id;
+  const a = data.articles.find(x => x.id === id);
+  if (!a) return;
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('articleView').style.display = '';
+
+  document.getElementById('articleTitleInp').value = a.title || '';
+  document.getElementById('editorTa').value = a.content || '';
+  document.getElementById('authorInp').value = a.author || '';
+
+  renderPreview();
+  renderBreadcrumb(a);
+  updateWordCount();
+  updateSaveStatus('saved');
+  isDirty = false;
+  renderTree();
+}
+
+function renderBreadcrumb(a) {
+  const bc = document.getElementById('avBreadcrumb');
+  if (!a.folderId) { bc.innerHTML = '<span>Racine</span> › ' + esc(a.title || 'Sans titre'); return; }
+  const parts = [];
+  let fid = a.folderId;
+  while (fid) {
+    const f = data.folders.find(x => x.id === fid);
+    if (!f) break;
+    parts.unshift(f.name);
+    fid = f.parentId;
+  }
+  bc.innerHTML = parts.map(p => `<span>${esc(p)}</span>`).join(' › ') + ' › ' + esc(a.title || 'Sans titre');
+}
+
+function renderPreview() {
+  const content = document.getElementById('editorTa').value;
+  const title = document.getElementById('articleTitleInp').value;
+  let html = '';
+  if (title) html += `<h1>${esc(title)}</h1>`;
+  if (content && typeof marked !== 'undefined') {
+    html += marked.parse(content);
+  } else if (content) {
+    html += `<p>${content.replace(/\n/g, '<br>')}</p>`;
+  }
+  document.getElementById('previewContent').innerHTML = html;
+}
+
+function setView(mode) {
+  viewMode = mode;
+  const ep = document.getElementById('editPane');
+  const pp = document.getElementById('previewPane');
+  const tb = document.getElementById('editorToolbar');
+  ['vtEdit','vtSplit','vtPrev'].forEach(id => document.getElementById(id).classList.remove('active'));
+
+  if (mode === 'edit') {
+    ep.style.display = ''; pp.style.display = 'none'; tb.style.display = '';
+    document.getElementById('vtEdit').classList.add('active');
+  } else if (mode === 'preview') {
+    ep.style.display = 'none'; pp.style.display = ''; tb.style.display = 'none';
+    renderPreview();
+    document.getElementById('vtPrev').classList.add('active');
+  } else {
+    ep.style.display = ''; pp.style.display = ''; tb.style.display = '';
+    renderPreview();
+    document.getElementById('vtSplit').classList.add('active');
+  }
+}
+
+// ── EDITOR INPUT ──────────────────────────────────────────────
+let _autoSave = null;
+function onEditorInput() {
+  isDirty = true;
+  updateSaveStatus('dirty');
+  updateWordCount();
+  if (viewMode !== 'edit') renderPreview();
+  clearTimeout(_autoSave);
+  _autoSave = setTimeout(flushSave, 1800);
+}
+
+function onTitleInput() {
+  isDirty = true;
+  updateSaveStatus('dirty');
+  if (viewMode !== 'edit') renderPreview();
+  if (activeId) {
+    const a = data.articles.find(x => x.id === activeId);
+    if (a) { a.title = document.getElementById('articleTitleInp').value; renderTree(); }
+  }
+  clearTimeout(_autoSave);
+  _autoSave = setTimeout(flushSave, 1800);
+}
+
+function onAuthorInput() {
+  isDirty = true;
+  clearTimeout(_autoSave);
+  _autoSave = setTimeout(flushSave, 1800);
+}
+
+function onEditorKeydown(e) {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    insertRaw('  ');
+  } else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    flushSave();
+  } else if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+    e.preventDefault(); fmtWrap('**','**');
+  } else if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+    e.preventDefault(); fmtWrap('*','*');
+  }
+}
+
+function updateWordCount() {
+  const text = document.getElementById('editorTa').value;
+  const wc = text.trim() ? text.trim().split(/\s+/).length : 0;
+  document.getElementById('wordCount').textContent = wc + (wc <= 1 ? ' mot' : ' mots');
+}
+
+function updateSaveStatus(state) {
+  const el = document.getElementById('saveStatus');
+  el.className = 'sb-status ' + state;
+  el.textContent = state === 'saved' ? '✓ Sauvegardé' : state === 'dirty' ? '● Non sauvegardé' : 'Sauvegarde…';
+}
+
+// ── TOOLBAR HELPERS ───────────────────────────────────────────
+function fmt(prefix) {
+  const ta = document.getElementById('editorTa');
+  const start = ta.selectionStart;
+  // Find line start
+  const lines = ta.value.split('\n');
+  let pos = 0, lineIdx = 0;
+  for (let i = 0; i < lines.length; i++) {
+    if (pos + lines[i].length >= start) { lineIdx = i; break; }
+    pos += lines[i].length + 1;
+  }
+  lines[lineIdx] = prefix + lines[lineIdx];
+  ta.value = lines.join('\n');
+  ta.focus();
+  onEditorInput();
+}
+
+function fmtWrap(before, after) {
+  const ta = document.getElementById('editorTa');
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  const sel = ta.value.substring(s, e);
+  const newText = before + (sel || 'texte') + after;
+  ta.value = ta.value.substring(0, s) + newText + ta.value.substring(e);
+  ta.focus();
+  ta.setSelectionRange(s + before.length, s + before.length + (sel || 'texte').length);
+  onEditorInput();
+}
+
+function fmtBlock() {
+  const ta = document.getElementById('editorTa');
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  const sel = ta.value.substring(s, e);
+  const block = '```\n' + (sel || 'code ici') + '\n```';
+  ta.value = ta.value.substring(0, s) + block + ta.value.substring(e);
+  ta.focus();
+  onEditorInput();
+}
+
+function insertTable() {
+  const table = '\n| Colonne 1 | Colonne 2 | Colonne 3 |\n|---|---|---|\n| Valeur | Valeur | Valeur |\n';
+  insertRaw(table);
+}
+
+function insertRaw(text) {
+  const ta = document.getElementById('editorTa');
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  ta.value = ta.value.substring(0, s) + text + ta.value.substring(e);
+  ta.focus();
+  ta.setSelectionRange(s + text.length, s + text.length);
+  onEditorInput();
+}
+
+// ── SEARCH ───────────────────────────────────────────────────
+function onSearch(q) {
+  searchQ = q.trim();
+  // expand all when searching
+  if (searchQ) data.folders.forEach(f => expanded.add(f.id));
+  renderTree();
+}
+
+// ── CREATE / RENAME / DELETE ──────────────────────────────────
+function promptCreate(type, folderId) {
+  const isFolder = type === 'folder';
+  modalCb = (name, selFolder) => {
+    const id = genId(type);
+    if (isFolder) {
+      data.folders.push({ id, name, parentId: folderId || null });
+      expanded.add(folderId || 'root');
+      if (folderId) expanded.add(folderId);
+    } else {
+      data.articles.push({ id, title: name, folderId: selFolder || folderId || null, content: '', author: '', createdAt: now(), updatedAt: now() });
+      expanded.add(selFolder || folderId || 'root');
+      if (selFolder || folderId) expanded.add(selFolder || folderId);
+    }
+    saveToFb();
+    renderTree();
+    if (!isFolder) openArticle(id);
+    toast(isFolder ? '📁 Dossier créé' : '📝 Article créé');
+  };
+  modalDelCb = null;
+  showModal(
+    isFolder ? '📁 Nouveau dossier' : '📝 Nouvel article',
+    isFolder ? 'Nom du dossier' : 'Titre de l\'article',
+    '',
+    'Créer',
+    !isFolder  // show folder select for articles
+  );
+}
+
+function promptRename(type, id) {
+  const item = type === 'folder'
+    ? data.folders.find(f => f.id === id)
+    : data.articles.find(a => a.id === id);
+  if (!item) return;
+  const currentName = type === 'folder' ? item.name : item.title;
+  modalCb = (name) => {
+    if (type === 'folder') item.name = name;
+    else { item.title = name; if (activeId === id) document.getElementById('articleTitleInp').value = name; }
+    saveToFb();
+    renderTree();
+    if (activeId === id) renderBreadcrumb(item);
+    toast('✓ Renommé');
+  };
+  modalDelCb = () => deleteItem(type, id);
+  showModal(
+    type === 'folder' ? '✎ Renommer le dossier' : '✎ Renommer l\'article',
+    'Nouveau nom',
+    currentName,
+    'Renommer',
+    false,
+    true
+  );
+}
+
+function promptMove(id) {
+  const a = data.articles.find(x => x.id === id);
+  if (!a) return;
+  modalCb = (_, folderId) => {
+    a.folderId = folderId || null;
+    saveToFb();
+    renderTree();
+    if (activeId === id) renderBreadcrumb(a);
+    toast('📁 Article déplacé');
+  };
+  modalDelCb = null;
+  showModal('📁 Déplacer l\'article', 'Titre', a.title, 'Déplacer', true, false, a.folderId);
+}
+
+function deleteItem(type, id) {
+  closeModal();
+  if (type === 'folder') {
+    // Count items to delete
+    const allFolderIds = collectFolderIds(id);
+    const artCount = data.articles.filter(a => allFolderIds.has(a.folderId)).length;
+    const msg = artCount > 0
+      ? `Supprimer ce dossier et ses ${allFolderIds.size} sous-dossier(s) + ${artCount} article(s) ?`
+      : `Supprimer ce dossier${allFolderIds.size > 1 ? ' et ses sous-dossiers' : ''} ?`;
+    if (!confirm(msg)) return;
+    allFolderIds.forEach(fid => {
+      data.folders = data.folders.filter(f => f.id !== fid);
+      data.articles = data.articles.filter(a => a.folderId !== fid);
+    });
+    if (activeId && !data.articles.find(a => a.id === activeId)) {
+      activeId = null;
+      document.getElementById('articleView').style.display = 'none';
+      document.getElementById('emptyState').style.display = '';
+    }
+  } else {
+    if (!confirm('Supprimer cet article ?')) return;
+    data.articles = data.articles.filter(a => a.id !== id);
+    if (activeId === id) {
+      activeId = null;
+      document.getElementById('articleView').style.display = 'none';
+      document.getElementById('emptyState').style.display = '';
+    }
+  }
+  saveToFb();
+  renderTree();
+  toast('🗑 Supprimé');
+}
+
+function collectFolderIds(rootId) {
+  const ids = new Set([rootId]);
+  const queue = [rootId];
+  while (queue.length) {
+    const pid = queue.shift();
+    data.folders.filter(f => f.parentId === pid).forEach(f => { ids.add(f.id); queue.push(f.id); });
+  }
+  return ids;
+}
+
+// ── MODAL ────────────────────────────────────────────────────
+function showModal(title, lbl, value, okLabel, showFolderSel, showDel = false, currentFolderId = null) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalLbl').textContent = lbl;
+  const inp = document.getElementById('modalInput');
+  inp.value = value;
+  document.getElementById('modalOkBtn').textContent = okLabel;
+  document.getElementById('modalDelBtn').style.display = showDel ? '' : 'none';
+
+  const ff = document.getElementById('modalFolderField');
+  ff.style.display = showFolderSel ? '' : 'none';
+  if (showFolderSel) {
+    const sel = document.getElementById('modalFolderSel');
+    sel.innerHTML = '<option value="">— Racine (sans dossier)</option>';
+    const sorted = [...data.folders].sort((a, b) => a.name.localeCompare(b.name));
+    sorted.forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f.id;
+      opt.textContent = f.name;
+      if (f.id === currentFolderId) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+
+  document.getElementById('modalOverlay').classList.add('open');
+  setTimeout(() => inp.focus(), 60);
+}
+
+function confirmModal() {
+  const val = document.getElementById('modalInput').value.trim();
+  if (!val) return;
+  const folderId = document.getElementById('modalFolderField').style.display !== 'none'
+    ? document.getElementById('modalFolderSel').value || null
+    : null;
+  if (modalCb) modalCb(val, folderId);
+  closeModal();
+}
+
+function modalDelete() {
+  if (modalDelCb) modalDelCb();
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  modalCb = null; modalDelCb = null;
+}
+
+// ── CTX MENU ─────────────────────────────────────────────────
+function showCtx(e, type, id) {
+  e.preventDefault();
+  ctxCtx = { type, id };
+  const menu = document.getElementById('ctxMenu');
+  document.getElementById('ctxMove').style.display = type === 'article' ? '' : 'none';
+  menu.style.left = e.clientX + 'px';
+  menu.style.top = e.clientY + 'px';
+  menu.classList.add('open');
+}
+
+document.addEventListener('click', () => document.getElementById('ctxMenu').classList.remove('open'));
+
+document.getElementById('ctxRename').addEventListener('click', () => {
+  if (ctxCtx) promptRename(ctxCtx.type, ctxCtx.id);
+});
+document.getElementById('ctxMove').addEventListener('click', () => {
+  if (ctxCtx) promptMove(ctxCtx.id);
+});
+document.getElementById('ctxDelete').addEventListener('click', () => {
+  if (ctxCtx) deleteItem(ctxCtx.type, ctxCtx.id);
+});
+
+// ── FIREBASE ─────────────────────────────────────────────────
+function setSS(state, text) {
+  const dot = document.getElementById('syncDot');
+  const txt = document.getElementById('syncText');
+  dot.className = 'sdot ' + ({connected:'ok',syncing:'spin',error:'err'}[state]||'off');
+  txt.textContent = text;
+  txt.style.color = state==='connected'?'var(--green)':state==='syncing'?'var(--yellow)':state==='error'?'var(--red)':'var(--text3)';
+}
+
+let _fbTimer = null;
+function saveToFb() {
+  clearTimeout(_fbTimer);
+  _fbTimer = setTimeout(() => {
+    setSS('syncing', 'Sauvegarde…');
+    db.collection(COL).doc(DOC).set(data)
+      .then(() => { setSS('connected', 'Synchronisé'); updateSaveStatus('saved'); })
+      .catch(e => { setSS('error', 'Erreur'); console.error(e); });
+  }, 400);
+}
+
+function flushSave() {
+  if (!isDirty || !activeId) return;
+  const a = data.articles.find(x => x.id === activeId);
+  if (!a) return;
+  a.content = document.getElementById('editorTa').value;
+  a.title = document.getElementById('articleTitleInp').value || 'Sans titre';
+  a.author = document.getElementById('authorInp').value;
+  a.updatedAt = now();
+  isDirty = false;
+  updateSaveStatus('saving');
+  saveToFb();
+}
+
+function applyData(d) {
+  if (!d) return;
+  if (d.folders) data.folders = d.folders;
+  if (d.articles) data.articles = d.articles;
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+function initApp() {
+  setSS('syncing', 'Connexion…');
+  db.collection(COL).doc(DOC).onSnapshot(snap => {
+    if (snap.metadata.hasPendingWrites) return;
+    if (snap.exists) {
+      applyData(snap.data());
+    } else {
+      // First launch: create welcome article
+      const wid = genId('article');
+      data.articles.push({
+        id: wid, title: 'Bienvenue dans la Bible PlaZma',
+        folderId: null,
+        content: WELCOME_MD,
+        author: 'Staff PlaZma',
+        createdAt: now(), updatedAt: now()
+      });
+      saveToFb();
+    }
+    renderTree();
+    setSS('connected', 'Synchronisé');
+  }, err => { console.error(err); setSS('error', 'Erreur connexion'); });
+
+  // Configure marked
+  if (typeof marked !== 'undefined') {
+    marked.setOptions({ gfm: true, breaks: true });
+  }
+}
+
+// ── HELPERS ──────────────────────────────────────────────────
+function genId(prefix) { return prefix + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+function now() { return new Date().toISOString(); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── WELCOME CONTENT ───────────────────────────────────────────
+const WELCOME_MD = `## 👋 Comment utiliser ce wiki
+
+La Bible PlaZma est le wiki interne de l'équipe. Documentez ici tout ce que vous apprenez sur le jeu — matchups, macro, draft, mental.
+
+---
+
+## Structure suggérée
+
+Crée des dossiers par thème dans la barre latérale :
+
+- 📁 **Macro** — objectifs, rotations, vision
+- 📁 **Laning** — matchups par rôle, wave management
+- 📁 **Draft** — compositions, contre-picks, meta
+- 📁 **Mental** — gestion du tilt, routines
+- 📁 **Revue VOD** — notes par session
+
+---
+
+## Syntaxe Markdown
+
+### Titres
+\`\`\`
+# Titre principal
+## Section
+### Sous-section
+\`\`\`
+
+### Mise en forme
+\`\`\`
+**Gras**   *Italique*   \`code inline\`
+\`\`\`
+
+### Liste
+\`\`\`
+- Élément A
+- Élément B
+  - Sous-élément
+\`\`\`
+
+### Tableau
+\`\`\`
+| Champion | Rôle | Tier |
+|---|---|---|
+| Camille | Top | S |
+\`\`\`
+
+### Citation
+\`\`\`
+> Une note importante à retenir.
+\`\`\`
+
+---
+
+## Raccourcis clavier
+
+| Raccourci | Action |
+|---|---|
+| \`Ctrl + S\` | Sauvegarder |
+| \`Ctrl + B\` | Gras |
+| \`Ctrl + I\` | Italique |
+| \`Tab\` | Indenter |
+
+---
+
+*L'équipe qui documente est l'équipe qui progresse.* ⚔️`;
+
+</script>
+</body>
+</html>
