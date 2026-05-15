@@ -1,0 +1,94 @@
+<template>
+  <div class="login-body">
+    <div class="box">
+      <div class="logo-mark">PZ</div>
+      <h1>RoZter</h1>
+      <div class="sub">Accès staff uniquement · PlaZma Esport</div>
+      <label for="pw">Mot de passe</label>
+      <input
+        id="pw"
+        v-model="password"
+        type="password"
+        placeholder="Entrez le mot de passe"
+        autofocus
+        @keydown.enter="login"
+      />
+      <div class="err" :class="{ show: error }">Mot de passe incorrect</div>
+      <button @click="login">Entrer →</button>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth.js'
+
+const router   = useRouter()
+const auth     = useAuthStore()
+const password = ref('')
+const error    = ref(false)
+
+function login() {
+  if (auth.login(password.value)) {
+    router.push('/')
+  } else {
+    error.value = true
+    password.value = ''
+    setTimeout(() => { error.value = false }, 2500)
+  }
+}
+</script>
+
+<style scoped>
+.login-body {
+  background: var(--bg); font-family: 'Exo 2', sans-serif;
+  min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
+  position: relative;
+}
+.login-body::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(6,182,212,.1) 0%, transparent 70%);
+}
+.box {
+  position: relative; background: var(--bg2);
+  border: 1px solid var(--bd);
+  padding: 44px 40px 36px; width: 380px; max-width: 100%;
+  box-shadow: 0 0 0 1px rgba(6,182,212,.05), 0 40px 80px rgba(0,0,0,.7);
+  clip-path: polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px));
+}
+.logo-mark {
+  width: 52px; height: 52px; background: rgba(6,182,212,.1);
+  border: 1px solid rgba(6,182,212,.3); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700; color: var(--c1);
+  margin: 0 auto 18px;
+  clip-path: polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
+}
+h1 {
+  font-family: 'Rajdhani', sans-serif; font-size: 40px; font-weight: 700;
+  letter-spacing: 5px; text-transform: uppercase; text-align: center;
+  color: var(--c1); text-shadow: 0 0 30px rgba(6,182,212,.5); margin-bottom: 6px;
+}
+.sub { text-align: center; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--tx3); margin-bottom: 32px; }
+label { display: block; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--tx3); margin-bottom: 8px; }
+input {
+  width: 100%; background: var(--sf2); border: 1px solid var(--bd);
+  color: var(--tx); padding: 13px 16px; font-size: 15px; font-family: 'Exo 2', sans-serif;
+  outline: none; transition: border-color .2s; text-align: center; letter-spacing: 3px;
+  clip-path: polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);
+}
+input:focus { border-color: var(--c1); box-shadow: 0 0 0 1px rgba(6,182,212,.2); }
+.err { height: 18px; text-align: center; font-size: 11px; color: #ef4444; margin-top: 10px; opacity: 0; transition: opacity .2s; }
+.err.show { opacity: 1; }
+button {
+  width: 100%; margin-top: 20px; background: transparent;
+  border: 1px solid rgba(6,182,212,.4); color: var(--c1);
+  padding: 14px; font-size: 11px; font-weight: 700; letter-spacing: 3px;
+  text-transform: uppercase; cursor: pointer; font-family: 'Exo 2', sans-serif; transition: all .2s;
+  clip-path: polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%); position: relative;
+}
+button::before { content: ''; position: absolute; inset: 0; background: rgba(6,182,212,.06); transition: background .2s; }
+button:hover::before { background: rgba(6,182,212,.14); }
+button:hover { border-color: var(--c1); text-shadow: 0 0 12px rgba(6,182,212,.6); box-shadow: 0 0 24px rgba(6,182,212,.15); }
+</style>

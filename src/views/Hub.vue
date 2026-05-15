@@ -1,0 +1,214 @@
+<template>
+  <div class="hub-body">
+    <div class="wrap">
+
+      <!-- HERO -->
+      <div class="hero">
+        <img class="logo" src="/assets/logo-plazma.png" width="285" alt="RoZter">
+        <div class="title">RoZter</div>
+        <div class="subtitle">Plateforme de <em>PlaZma Esport</em> · League of Legends</div>
+        <div class="pill">◆ Saison 2026</div>
+      </div>
+
+      <!-- NAV -->
+      <div class="slbl">Navigation</div>
+      <div class="nav">
+        <RouterLink to="/dashboard" class="nc" style="--na:rgba(6,182,212,.45)">
+          <span class="ni">📊</span><span class="nl" style="color:#67e8f9">Dashboard</span>
+          <span class="ns">Stats équipe · ELO · Agenda</span>
+          <div class="nc-line" style="background:linear-gradient(90deg,transparent,#a78bfa,transparent)"></div>
+        </RouterLink>
+        <RouterLink to="/schedule" class="nc" style="--na:rgba(59,130,246,.42)">
+          <span class="ni">📅</span><span class="nl" style="color:#93c5fd">Planning</span>
+          <span class="ns">Programme hebdomadaire</span>
+          <div class="nc-line" style="background:linear-gradient(90deg,transparent,#3b82f6,transparent)"></div>
+        </RouterLink>
+        <RouterLink to="/scrim" class="nc" style="--na:rgba(34,197,94,.38)">
+          <span class="ni">📝</span><span class="nl" style="color:#86efac">CR Scrim</span>
+          <span class="ns">Débriefs · Analyses</span>
+          <div class="nc-line" style="background:linear-gradient(90deg,transparent,#22c55e,transparent)"></div>
+        </RouterLink>
+        <RouterLink to="/scouting" class="nc" style="--na:rgba(249,115,22,.38)">
+          <span class="ni">🔍</span><span class="nl" style="color:#fdba74">Scouting</span>
+          <span class="ns">Analyse adversaires</span>
+          <div class="nc-line" style="background:linear-gradient(90deg,transparent,#f97316,transparent)"></div>
+        </RouterLink>
+        <RouterLink to="/organisation" class="nc" style="--na:rgba(245,158,11,.38)">
+          <span class="ni">🧩</span><span class="nl" style="color:#fcd34d">Organisation</span>
+          <span class="ns">Gantt · RACI · Kanban</span>
+          <div class="nc-line" style="background:linear-gradient(90deg,transparent,#f59e0b,transparent)"></div>
+        </RouterLink>
+        <RouterLink to="/draft" class="nc" style="--na:rgba(168,85,247,.42)">
+          <span class="ni">🧠</span><span class="nl" style="color:#c4b5fd">Draft</span>
+          <span class="ns">Préparation B/P · Champion pool</span>
+          <div class="nc-line" style="background:linear-gradient(90deg,transparent,#a855f7,transparent)"></div>
+        </RouterLink>
+        <RouterLink to="/satisfaction" class="nc" style="--na:rgba(236,72,153,.38)">
+          <span class="ni">😁</span><span class="nl" style="color:#f9a8d4">Satisfaction</span>
+          <span class="ns">Satisfaction joueurs</span>
+          <div class="nc-line" style="background:linear-gradient(90deg,transparent,#ec4899,transparent)"></div>
+        </RouterLink>
+        <RouterLink to="/team" class="nc" style="--na:rgba(6,182,212,.45)">
+          <span class="ni">🧬</span><span class="nl" style="color:#67e8f9">Fiche d'équipe</span>
+          <span class="ns">Évaluation collective équipe</span>
+          <div class="nc-line" style="background:linear-gradient(90deg,transparent,#06b6d4,transparent)"></div>
+        </RouterLink>
+        <RouterLink to="/bible" class="nc" style="--na:rgba(6,182,212,.45)">
+          <span class="ni">📘</span><span class="nl" style="color:#67e8f9">Bible de la PlaZma</span>
+          <span class="ns">Wiki de connaissance de l'équipe</span>
+          <div class="nc-line" style="background:linear-gradient(90deg,transparent,#06b6d4,transparent)"></div>
+        </RouterLink>
+      </div>
+
+      <!-- ROSTER -->
+      <div class="rsec">
+        <div class="slbl">Fiches joueurs · PlaZma</div>
+        <div class="rgrid">
+          <RouterLink to="/perf/top" class="pc" style="--rc:#f97316;--rr:249,115,22">
+            <div class="pc-av">👍</div>
+            <div class="pc-rb">Top</div>
+            <div class="pc-name">Boulou</div>
+            <div class="pc-cta">Voir la fiche →</div>
+            <div class="pc-str"></div>
+          </RouterLink>
+          <RouterLink to="/perf/jungle" class="pc" style="--rc:#22c55e;--rr:34,197,94">
+            <div class="pc-av">🕊️</div>
+            <div class="pc-rb">Jungle</div>
+            <div class="pc-name">Zugu</div>
+            <div class="pc-cta">Voir la fiche →</div>
+            <div class="pc-str"></div>
+          </RouterLink>
+          <RouterLink to="/perf/mid" class="pc" style="--rc:#3b82f6;--rr:59,130,246">
+            <div class="pc-av">👀</div>
+            <div class="pc-rb">Mid</div>
+            <div class="pc-name">Lakraël</div>
+            <div class="pc-cta">Voir la fiche →</div>
+            <div class="pc-str"></div>
+          </RouterLink>
+          <RouterLink to="/perf/adc" class="pc" style="--rc:#ef4444;--rr:239,68,68">
+            <div class="pc-av">🐯</div>
+            <div class="pc-rb">ADC</div>
+            <div class="pc-name">Ke1do</div>
+            <div class="pc-cta">Voir la fiche →</div>
+            <div class="pc-str"></div>
+          </RouterLink>
+          <RouterLink to="/perf/support" class="pc" style="--rc:#a855f7;--rr:168,85,247">
+            <div class="pc-av">🥀</div>
+            <div class="pc-rb">Support</div>
+            <div class="pc-name">Joordy</div>
+            <div class="pc-cta">Voir la fiche →</div>
+            <div class="pc-str"></div>
+          </RouterLink>
+        </div>
+      </div>
+
+      <div class="gdiv"></div>
+
+      <!-- STAFF -->
+      <div class="rsec" style="margin-bottom:44px">
+        <div class="slbl">Staff technique</div>
+        <div style="display:flex;justify-content:center">
+          <RouterLink to="/coach" class="sc">
+            <div class="sc-av">♟️</div>
+            <div class="sc-rb">Head Coach</div>
+            <div class="sc-name">Coach</div>
+            <div class="sc-cta">Voir la fiche →</div>
+          </RouterLink>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="foot">
+        <RouterLink to="/dashboard" class="fl">Dashboard</RouterLink>
+        <span class="fs">◆</span>
+        <RouterLink to="/schedule" class="fl">Planning</RouterLink>
+        <span class="fs">◆</span>
+        <RouterLink to="/scrim" class="fl">Scrim</RouterLink>
+        <span class="fs">◆</span>
+        <RouterLink to="/scouting" class="fl">Scouting</RouterLink>
+        <span class="fs">◆</span>
+        <RouterLink to="/draft" class="fl">Draft</RouterLink>
+        <span class="fs">◆</span>
+        <RouterLink to="/coach" class="fl">Coach</RouterLink>
+        <span class="fs">◆</span>
+        <button class="fl" style="background:none;border:none;cursor:pointer;font-size:9px" @click="logout">Déconnexion</button>
+      </div>
+
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { RouterLink, useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth.js'
+
+const auth = useAuthStore()
+const router = useRouter()
+function logout() { auth.logout(); router.push('/login') }
+</script>
+
+<style scoped>
+.hub-body {
+  background: var(--bg); font-family: 'Exo 2', sans-serif; color: var(--tx);
+  min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+  padding: 0 20px 80px; overflow-x: hidden;
+}
+.hub-body::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(6,182,212,.08) 0%, transparent 65%);
+}
+.wrap { position: relative; width: 100%; max-width: 940px; display: flex; flex-direction: column; align-items: center; padding-top: 52px; }
+.hero { text-align: center; margin-bottom: 54px; animation: rise .55s ease both; }
+.logo { display: block; margin: 0 auto 14px; animation: lb 5s ease-in-out infinite; }
+@keyframes lb { 0%,100%{filter:drop-shadow(0 0 24px rgba(6,182,212,.55)) drop-shadow(0 0 60px rgba(6,182,212,.22))} 50%{filter:drop-shadow(0 0 42px rgba(6,182,212,.8)) drop-shadow(0 0 95px rgba(6,182,212,.35))} }
+.title { font-family: 'Rajdhani', sans-serif; font-size: 88px; font-weight: 700; letter-spacing: 10px; text-transform: uppercase; line-height: 1; margin-bottom: 8px; color: #06b6d4; filter: drop-shadow(0 0 32px rgba(6,182,212,.6)) drop-shadow(0 0 70px rgba(6,182,212,.25)); }
+.subtitle { font-size: 11px; font-weight: 500; letter-spacing: 5px; text-transform: uppercase; color: var(--tx3); margin-bottom: 14px; }
+.subtitle em { font-style: normal; color: var(--tx2); }
+.pill { display: inline-flex; align-items: center; gap: 7px; background: rgba(6,182,212,.08); border: 1px solid rgba(6,182,212,.2); padding: 5px 16px; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--c3); font-weight: 600; clip-path: polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%); }
+.slbl { width: 100%; font-size: 9px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--tx3); margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+.slbl::before,.slbl::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg,transparent,rgba(6,182,212,.2)); }
+.slbl::after { background: linear-gradient(270deg,transparent,rgba(6,182,212,.2)); }
+.nav { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; width: 100%; margin-bottom: 46px; animation: rise .55s ease .1s both; }
+.nc { position: relative; overflow: hidden; background: rgba(8,6,26,.82); border: 1px solid rgba(6,182,212,.12); padding: 17px 17px 15px; text-decoration: none; color: var(--tx); transition: transform .18s,box-shadow .18s,border-color .18s; clip-path: polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px)); }
+.nc::before { content: ''; position: absolute; inset: 0; background: rgba(6,182,212,.06); opacity: 0; transition: opacity .18s; }
+.nc::after { content: ''; position: absolute; top: 0; right: 0; width: 0; height: 0; border-style: solid; border-width: 0 20px 20px 0; border-color: transparent var(--na,rgba(6,182,212,.3)) transparent transparent; transition: border-color .18s; }
+.nc-line { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; transform: scaleX(0); transform-origin: left; transition: transform .28s ease; }
+.nc:hover { transform: translateY(-4px); box-shadow: 0 14px 44px rgba(0,0,0,.5),0 0 0 1px rgba(6,182,212,.22); border-color: rgba(6,182,212,.32); }
+.nc:hover::before { opacity: 1; }
+.nc:hover::after { border-color: transparent var(--na,rgba(6,182,212,.65)) transparent transparent; }
+.nc:hover .nc-line { transform: scaleX(1); }
+.ni { font-size: 22px; margin-bottom: 9px; display: block; }
+.nl { font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; display: block; margin-bottom: 3px; }
+.ns { font-size: 9px; color: var(--tx3); letter-spacing: .4px; line-height: 1.4; }
+.rsec { width: 100%; margin-bottom: 42px; animation: rise .55s ease .2s both; }
+.rgrid { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
+.pc { position: relative; overflow: hidden; background: rgba(8,6,26,.85); border: 1px solid rgba(var(--rr,6,182,212),.14); padding: 20px 10px 15px; display: flex; flex-direction: column; align-items: center; gap: 9px; text-decoration: none; color: var(--tx); transition: transform .2s,box-shadow .2s,border-color .2s; clip-path: polygon(50% 0%,100% 9px,100% 100%,0 100%,0 9px); }
+.pc::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%,rgba(var(--rr,124,58,237),.11),transparent 68%); opacity: 0; transition: opacity .3s; }
+.pc:hover { transform: translateY(-5px); box-shadow: 0 18px 48px rgba(0,0,0,.55),0 0 38px rgba(var(--rr,6,182,212),.1); border-color: rgba(var(--rr,6,182,212),.38); }
+.pc:hover::before { opacity: 1; }
+.pc-av { width: 48px; height: 48px; font-size: 22px; display: flex; align-items: center; justify-content: center; background: rgba(var(--rr,6,182,212),.1); border: 1px solid rgba(var(--rr,6,182,212),.27); clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); }
+.pc-rb { font-size: 8px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--rc); background: rgba(var(--rr,6,182,212),.09); border: 1px solid rgba(var(--rr,6,182,212),.2); padding: 2px 7px; clip-path: polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%); }
+.pc-name { font-family: 'Rajdhani', sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 1.5px; text-align: center; }
+.pc-cta { font-size: 8px; color: var(--tx3); letter-spacing: 2px; text-transform: uppercase; transition: color .2s; }
+.pc:hover .pc-cta { color: var(--rc); }
+.pc-str { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg,transparent,var(--rc),transparent); opacity: 0; transition: opacity .3s; }
+.pc:hover .pc-str { opacity: 1; }
+.gdiv { width: 100%; height: 1px; margin: 0 0 38px; background: linear-gradient(90deg,transparent,rgba(6,182,212,.2) 25%,rgba(6,182,212,.25) 50%,rgba(6,182,212,.2) 75%,transparent); position: relative; }
+.gdiv::after { content: '◆'; position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); font-size: 8px; color: rgba(6,182,212,.45); background: var(--bg); padding: 0 8px; }
+.sc { position: relative; overflow: hidden; background: rgba(8,6,26,.85); border: 1px solid rgba(6,182,212,.18); padding: 20px 32px 15px; display: flex; flex-direction: column; align-items: center; gap: 9px; text-decoration: none; color: var(--tx); transition: transform .2s,box-shadow .2s,border-color .2s; clip-path: polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px)); min-width: 175px; }
+.sc::before { content: ''; position: absolute; inset: 0; background: rgba(6,182,212,.06); opacity: 0; transition: opacity .3s; }
+.sc:hover { transform: translateY(-4px); box-shadow: 0 18px 48px rgba(0,0,0,.55),0 0 28px rgba(6,182,212,.12); border-color: rgba(6,182,212,.4); }
+.sc:hover::before { opacity: 1; }
+.sc-av { width: 48px; height: 48px; font-size: 22px; display: flex; align-items: center; justify-content: center; background: rgba(6,182,212,.08); border: 1px solid rgba(6,182,212,.22); clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); }
+.sc-rb { font-size: 8px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--c1); background: rgba(6,182,212,.07); border: 1px solid rgba(6,182,212,.18); padding: 2px 7px; clip-path: polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%); }
+.sc-name { font-family: 'Rajdhani', sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 1.5px; }
+.sc-cta { font-size: 8px; color: var(--tx3); letter-spacing: 2px; text-transform: uppercase; transition: color .2s; }
+.sc:hover .sc-cta { color: var(--c1); }
+.foot { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 8px; padding-top: 22px; border-top: 1px solid rgba(6,182,212,.08); width: 100%; }
+.fl { font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--tx3); text-decoration: none; transition: color .15s; }
+.fl:hover { color: var(--c3); }
+.fs { font-size: 8px; color: var(--tx3); }
+@keyframes rise { from { opacity:0;transform:translateY(18px) } to { opacity:1;transform:none } }
+@media(max-width:860px){.nav{grid-template-columns:repeat(2,1fr)}.rgrid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:520px){.rgrid{grid-template-columns:repeat(2,1fr)}.title{font-size:60px}}
+</style>
