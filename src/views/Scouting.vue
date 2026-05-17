@@ -2,8 +2,6 @@
   <div class="page-wrap">
     <LoadingScreen :visible="loading" label="Scout" color="var(--c1)" />
 
-    <RouterLink to="/" class="hub-link">← Hub RoZter</RouterLink>
-
     <div class="toolbar">
       <button class="btn btn-export" :disabled="exporting" @click="exportPng">
         {{ exporting ? 'Export…' : '⬇ Exporter PNG' }}
@@ -283,7 +281,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-import { RouterLink } from 'vue-router'
+import { Search } from 'lucide-vue-next'
 import { doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '../firebase/config.js'
 import SyncStatus from '../components/SyncStatus.vue'

@@ -140,3 +140,18 @@ body { background: var(--bg); font-family: 'Exo 2', sans-serif; color: var(--tx)
 .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--c1); }
 .field select option { background: var(--sf); }
 .field textarea { resize: vertical; }
+
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(90deg, var(--sf) 25%, var(--bd2) 50%, var(--sf) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease infinite;
+  border-radius: 3px;
+}
+@keyframes shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+.sk-line  { height: 11px; margin-bottom: 8px; }
+.sk-line.w40 { width: 40%; }
+.sk-line.w60 { width: 60%; }
+.sk-line.w80 { width: 80%; }
+.sk-block { height: 44px; margin-bottom: 12px; }
+.sk-card  { height: 120px; margin-bottom: 16px; border-radius: 6px; }

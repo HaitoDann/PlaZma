@@ -2,8 +2,6 @@
   <div class="page-wrap">
     <LoadingScreen :visible="loading" color="var(--c1)" />
 
-    <RouterLink to="/" class="hub-link">← Hub RoZter</RouterLink>
-
     <div class="card" id="satisfCard">
 
       <!-- HEADER -->
@@ -16,7 +14,7 @@
           </div>
         </div>
         <div class="header-right">
-          <div class="header-icon">📊</div>
+          <ThumbsUp :size="32" style="color:var(--pink)" />
           <div>
             <div class="header-sub">Sondage d'équipe</div>
             <div class="season-tag">Saison 2026</div>
@@ -165,7 +163,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-import { RouterLink } from 'vue-router'
+import { ThumbsUp } from 'lucide-vue-next'
 import { collection, addDoc, onSnapshot, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase/config.js'
 import LoadingScreen from '../components/LoadingScreen.vue'

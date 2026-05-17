@@ -2,8 +2,6 @@
   <div class="page-wrap">
     <LoadingScreen :visible="loading" />
 
-    <RouterLink to="/" class="hub-link">← Hub RoZter</RouterLink>
-
     <div class="toolbar">
       <label>Semaine</label>
       <div class="week-nav">
@@ -85,7 +83,6 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-import { RouterLink } from 'vue-router'
 import { doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '../firebase/config.js'
 import html2canvas from 'html2canvas'

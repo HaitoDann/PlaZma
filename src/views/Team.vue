@@ -2,8 +2,6 @@
   <div class="page-wrap">
     <LoadingScreen :visible="loading" color="var(--c1)" />
 
-    <RouterLink to="/" class="hub-link">← Hub RoZter</RouterLink>
-
     <div class="toolbar">
       <button class="btn btn-export" :disabled="exporting" @click="exportPng">
         {{ exporting ? 'Export…' : '⬇ Exporter PNG' }}
@@ -33,7 +31,7 @@
           </div>
         </div>
         <div class="header-right">
-          <div class="header-icon">🏆</div>
+          <Users :size="32" style="color:var(--c1)" />
           <div>
             <div class="header-sub">Performance Collective</div>
             <div class="season-tag">Saison 2026</div>
@@ -180,7 +178,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-import { RouterLink } from 'vue-router'
+import { Users } from 'lucide-vue-next'
 import { doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '../firebase/config.js'
 import SyncStatus from '../components/SyncStatus.vue'

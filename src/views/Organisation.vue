@@ -5,8 +5,11 @@
     <!-- HEADER -->
     <div class="org-header">
       <div class="org-title-row">
-        <RouterLink to="/" class="back-link">← Hub</RouterLink>
-        <h1 class="org-title">🗂️ Organisation</h1>
+        <div class="org-page-title">
+          <Layers :size="20" style="color:var(--yellow)" />
+          <span>Organisation</span>
+          <span class="season-tag">Saison 2026</span>
+        </div>
         <div class="tab-switcher">
           <button
             v-for="tab in TABS"
@@ -274,7 +277,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
-import { RouterLink } from 'vue-router'
+import { Layers } from 'lucide-vue-next'
 import { doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '../firebase/config.js'
 import html2canvas from 'html2canvas'
@@ -560,6 +563,14 @@ async function resetData() {
   position: sticky;
   top: 0;
   z-index: 50;
+  overflow: hidden;
+}
+.org-header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--c1), var(--c3) 40%, transparent 70%);
 }
 
 .org-title-row {
@@ -570,20 +581,29 @@ async function resetData() {
   padding-bottom: 12px;
 }
 
-.org-title {
-  font-size: 1.25rem;
+.org-page-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 22px;
   font-weight: 700;
-  margin: 0;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--tx);
 }
 
-.back-link {
-  color: var(--purple, #a855f7);
-  text-decoration: none;
-  font-size: .875rem;
-  opacity: .8;
-  transition: opacity .2s;
+.season-tag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+  padding: 2px 8px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 4px;
+  align-self: center;
 }
-.back-link:hover { opacity: 1; }
 
 .tab-switcher {
   display: flex;
@@ -596,10 +616,11 @@ async function resetData() {
   border: 1px solid rgba(255,255,255,.12);
   background: transparent;
   color: var(--text, #e2e8f0);
-  border-radius: 6px;
+  border-radius: 0;
   cursor: pointer;
   font-size: .85rem;
   transition: background .2s, color .2s, border-color .2s;
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
 }
 .tab-btn.active {
   background: var(--purple, #a855f7);

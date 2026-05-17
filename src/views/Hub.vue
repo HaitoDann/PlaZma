@@ -117,21 +117,8 @@
         </div>
       </div>
 
-      <!-- FOOTER -->
       <div class="foot">
-        <RouterLink to="/dashboard" class="fl">Dashboard</RouterLink>
-        <span class="fs">◆</span>
-        <RouterLink to="/schedule" class="fl">Planning</RouterLink>
-        <span class="fs">◆</span>
-        <RouterLink to="/scrim" class="fl">Scrim</RouterLink>
-        <span class="fs">◆</span>
-        <RouterLink to="/scouting" class="fl">Scouting</RouterLink>
-        <span class="fs">◆</span>
-        <RouterLink to="/draft" class="fl">Draft</RouterLink>
-        <span class="fs">◆</span>
-        <RouterLink to="/coach" class="fl">Coach</RouterLink>
-        <span class="fs">◆</span>
-        <button class="fl" style="background:none;border:none;cursor:pointer;font-size:9px" @click="logout">Déconnexion</button>
+        <span class="fs">◆ PlaZma Esport · Saison 2026 ◆</span>
       </div>
 
     </div>
@@ -139,12 +126,7 @@
 </template>
 
 <script setup>
-import { RouterLink, useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth.js'
-
-const auth = useAuthStore()
-const router = useRouter()
-function logout() { auth.logout(); router.push('/login') }
+import { RouterLink } from 'vue-router'
 </script>
 
 <style scoped>

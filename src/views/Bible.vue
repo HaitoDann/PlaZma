@@ -5,8 +5,7 @@
     <!-- SIDEBAR -->
     <aside class="bible-sidebar">
       <div class="sb-header">
-        <RouterLink to="/" class="back-link">← Hub</RouterLink>
-        <div class="sb-title">📖 Bible</div>
+        <div class="sb-title"><BookOpen :size="16" style="color:var(--purple)" /> Bible</div>
       </div>
 
       <div class="sb-actions">
@@ -119,7 +118,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { RouterLink } from 'vue-router'
+import { BookOpen } from 'lucide-vue-next'
 import { doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '../firebase/config.js'
 import SyncStatus from '../components/SyncStatus.vue'
@@ -435,6 +434,9 @@ async function resetData() {
 .sb-title {
   font-size: 1.1rem;
   font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .sb-actions {

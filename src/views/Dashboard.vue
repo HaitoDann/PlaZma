@@ -42,8 +42,6 @@
 
     <!-- MAIN -->
     <main class="main">
-      <RouterLink to="/" class="hub-link">← Hub PlaZma</RouterLink>
-
       <div class="topbar">
         <div>
           <div class="pg-title">Dashboard</div>

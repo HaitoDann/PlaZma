@@ -2,8 +2,6 @@
   <div class="page-wrap">
     <LoadingScreen :visible="loading" color="var(--purple)" />
 
-    <RouterLink to="/" class="hub-link">← Hub RoZter</RouterLink>
-
     <div class="toolbar">
       <button class="btn btn-export" :disabled="exporting" @click="exportPng">
         {{ exporting ? 'Export…' : '⬇ Exporter PNG' }}
@@ -33,7 +31,7 @@
           </div>
         </div>
         <div class="header-right">
-          <div class="header-icon">🧠</div>
+          <GitBranch :size="32" style="color:var(--purple);opacity:0.7" />
           <div>
             <div class="header-sub">Draft & Champion Pool</div>
             <div class="season-tag">Saison 2026</div>
@@ -195,7 +193,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
-import { RouterLink } from 'vue-router'
+import { GitBranch } from 'lucide-vue-next'
 import { doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '../firebase/config.js'
 import SyncStatus from '../components/SyncStatus.vue'

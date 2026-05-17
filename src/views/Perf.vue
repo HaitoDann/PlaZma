@@ -2,8 +2,6 @@
   <div class="page-wrap">
     <LoadingScreen :visible="loading" :color="player?.color || 'var(--c1)'" />
 
-    <RouterLink to="/" class="hub-link">← Hub RoZter</RouterLink>
-
     <div class="toolbar">
       <button class="btn btn-export" :style="{ background: player?.color }" :disabled="exporting" @click="exportPng">
         {{ exporting ? 'Export…' : '⬇ Exporter PNG' }}
@@ -165,7 +163,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '../firebase/config.js'
 import { getPlayerByRole, QLABELS } from '../data/players.js'
