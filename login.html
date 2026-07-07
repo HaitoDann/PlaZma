@@ -12,11 +12,22 @@
   body{display:flex;align-items:center;justify-content:center;padding:20px}
   .login{width:380px;max-width:100%}
   .login-brand{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:26px}
+  
+  /* Ajustement du conteneur pour accueillir l'image proprement */
   .login-mark{
     width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;
     background:var(--accent-soft);border:1px solid var(--accent-line);
-    color:var(--accent);font-family:var(--font-display);font-size:22px;font-weight:700;
+    overflow:hidden; /* Évite que l'image dépasse des bords arrondis */
   }
+  /* Style appliqué à ton logo */
+  .login-mark img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Ajuste le logo sans le déformer */
+    padding: 8px;        /* Ajoute une légère marge interne pour que le logo respire */
+    box-sizing: border-box;
+  }
+
   .login h1{font-size:2rem;letter-spacing:.05em}
   .login-sub{font-size:12px;color:var(--muted);letter-spacing:.02em}
   .err{min-height:18px;text-align:center;font-size:12.5px;color:var(--err);margin-top:12px;opacity:0;transition:opacity .2s}
@@ -28,7 +39,9 @@
 <div class="login">
   <div class="card" style="padding:34px 30px">
     <div class="login-brand">
-      <div class="login-mark">A</div>
+      <div class="login-mark">
+        <img src="assets/logo-plazma.png" alt="Logo ARCHI">
+      </div>
       <h1>ARCHI</h1>
       <div class="login-sub">Accès staff · PlaZma Esport</div>
     </div>
