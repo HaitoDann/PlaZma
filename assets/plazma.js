@@ -40,11 +40,16 @@
     }
   }
 
-  // ---- Init Firebase (si le SDK est chargé) ----
+  // ---- Init Firebase (si le SDK est complètement chargé) ----
+  // Robuste à un chargement partiel du SDK : PZ doit toujours être défini.
   let db = null;
-  if (window.firebase && firebase.apps) {
-    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-    db = firebase.firestore();
+  try {
+    if (window.firebase && typeof firebase.initializeApp === 'function' && typeof firebase.firestore === 'function') {
+      if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      db = firebase.firestore();
+    }
+  } catch (e) {
+    console.error('Firebase indisponible :', e);
   }
 
   // ---- Navigation partagée ----
