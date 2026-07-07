@@ -3,558 +3,161 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PlaZma — Compétences Collectives</title>
+<title>ARCHI — Équipe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script>
-if(sessionStorage.getItem('pz_auth')!=='1')location.replace('login.html');
-firebase.initializeApp({apiKey:"AIzaSyAKwNEbNa6f40oSMwGp6dcDY1ZY6hUN1Ks",authDomain:"plazma-esport.firebaseapp.com",projectId:"plazma-esport",storageBucket:"plazma-esport.firebasestorage.app",messagingSenderId:"534325929279",appId:"1:534325929279:web:b507a46c601fa6625edf8a"});
-const db=firebase.firestore();
-</script>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#05050e;--bg2:#09091a;--surface:#0d0d1e;--surface2:#111124;
-  --border:#181830;--border2:#1e1e3a;
-  --v1:#6d28d9;--v2:#7c3aed;--v3:#8b5cf6;--v4:#a78bfa;
-  --text:#edeaf8;--text2:#7570a0;--text3:#322e50;
-}
-body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 20px 80px}
+  .content{max-width:var(--page-max);margin:0 auto;padding:24px var(--gut) 80px}
+  .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+  .page-head .eyebrow{margin-bottom:4px}
+  .actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 
-.ls{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .5s}
-.ls.hidden{opacity:0;pointer-events:none}
-.ls-logo{font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:900;letter-spacing:6px;background:linear-gradient(135deg,#fff,var(--v4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.ls-bar{width:160px;height:2px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
-.ls-fill{height:100%;background:var(--v3);animation:lb 1.4s ease infinite}
-@keyframes lb{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
+  .style-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px}
+  .style-grid textarea{min-height:112px}
+  .style-grid .panel h3{font-size:13px;margin-bottom:10px;color:var(--dim)}
 
-.hub-link{font-size:9px;color:var(--text3);text-decoration:none;letter-spacing:2px;text-transform:uppercase;transition:color .15s;margin-bottom:12px;display:block}
-.hub-link:hover{color:var(--v4)}
-.top-bar{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;justify-content:center}
-.btn{padding:7px 18px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:none;font-family:'Barlow',sans-serif;transition:all .2s}
-.btn-export{background:var(--v2);color:#fff}
-.btn-export:hover{background:var(--v3)}
-.btn-export:disabled{opacity:.4;cursor:default}
-.sync-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
-.sync-indicator{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:6px;background:var(--surface2);border:1px solid var(--border)}
-.sync-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.sync-dot.connected{background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.5)}
-.sync-dot.syncing{background:#f59e0b;animation:pulse .8s infinite}
-.sync-dot.error{background:#ef4444}
-.sync-dot.offline{background:var(--text3)}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.sync-text{font-size:10px;font-weight:600}
-.sync-time{font-size:9px;color:var(--text3)}
-.btn-save-fb{background:rgba(109,40,217,.14);border:1px solid rgba(109,40,217,.28);color:var(--v4);padding:6px 14px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .2s}
-.btn-save-fb:hover{background:rgba(109,40,217,.26)}
-.btn-save-fb.saved{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#22c55e}
-.btn-mini-row{display:flex;gap:5px}
-.btn-mini{background:var(--surface2);border:1px solid var(--border);color:var(--text3);padding:5px 10px;border-radius:5px;font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow',sans-serif;transition:color .15s}
-.btn-mini:hover{color:var(--text2)}
-.btn-mini.red{color:rgba(239,68,68,.3)}.btn-mini.red:hover{color:#ef4444}
+  .pools{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .pool{border-top:3px solid var(--role,var(--accent))}
+  .pool-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .pool-row{display:grid;grid-template-columns:1fr 96px 1fr 30px;gap:7px;align-items:center;margin-bottom:7px}
+  .pool-row input{padding:8px 10px;font-size:13px}
+  .pool-row select{padding:8px 8px;font-size:12px}
+  .row-del{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;height:34px;cursor:pointer;font-size:13px}
+  .row-del:hover{color:var(--err);border-color:rgba(239,68,68,.4)}
+  .tier-S{color:var(--top)}.tier-A{color:var(--jungle)}.tier-B{color:var(--mid)}.tier-Flex{color:var(--muted)}
+  .add-row{width:100%;margin-top:4px;background:none;border:1px dashed var(--border);color:var(--muted);
+    border-radius:8px;padding:8px;cursor:pointer;font-family:var(--font);font-size:13px}
+  .add-row:hover{border-color:var(--accent);color:var(--accent)}
 
-/* CARD */
-.card{width:100%;max-width:960px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 0 0 1px rgba(109,40,217,.05),0 50px 140px rgba(0,0,0,.75)}
-
-/* HEADER */
-.card-header{position:relative;overflow:hidden;background:var(--surface);border-bottom:1px solid var(--border);padding:22px 32px 18px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
-.card-header::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--v1),var(--v3) 40%,transparent 70%)}
-.card-header::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 50% 200% at 0% 50%,rgba(109,40,217,.08),transparent 65%)}
-.logo-row{display:flex;align-items:center;gap:10px}
-.logo-badge{width:34px;height:34px;background:linear-gradient(135deg,var(--v1),var(--v3));border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;color:#fff}
-.club-name{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;letter-spacing:4px;text-transform:uppercase;background:linear-gradient(135deg,#fff,var(--v4) 50%,#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.doc-type{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--v4);margin-top:2px}
-.roster-pills{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
-.rp{padding:3px 8px;border-radius:4px;border:1px solid;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px}
-
-/* META */
-.meta-bar{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
-.mc{background:var(--surface);padding:10px 18px}
-.ml{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
-.mi{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-size:13px;font-family:'Barlow',sans-serif;padding:2px 0;outline:none;transition:border-color .2s}
-.mi:focus{border-bottom-color:var(--v3)}
-.mi::placeholder{color:var(--text3)}
-
-/* PANORAMA */
-.panorama{padding:20px 32px;background:var(--surface);border-bottom:1px solid var(--border);display:grid;grid-template-columns:148px 1fr;gap:0 36px;align-items:center}
-.pano-left{}
-.pano-score{font-family:'Barlow Condensed',sans-serif;font-size:82px;font-weight:900;line-height:1;transition:color .4s}
-.pano-denom{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:700;color:var(--text3)}
-.pano-tier{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:3px;text-transform:uppercase;margin-top:3px;transition:color .3s}
-.pano-sublbl{font-size:8.5px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-top:5px}
-.pano-right{display:flex;flex-direction:column;gap:6px}
-.pr{display:grid;grid-template-columns:28px 140px 1fr 40px 50px;align-items:center;gap:9px}
-.pr-icon{font-size:15px;text-align:center}
-.pr-name{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap}
-.pr-track{height:7px;background:var(--border2);border-radius:4px;overflow:hidden}
-.pr-fill{height:100%;border-radius:4px;transition:width .55s cubic-bezier(.4,0,.2,1)}
-.pr-score{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;text-align:right}
-.pr-tier{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:800;letter-spacing:.5px;text-align:center;padding:2px 6px;border-radius:3px;border:1px solid transparent}
-
-/* BODY */
-.card-body{padding:22px 32px 28px;display:flex;flex-direction:column;gap:9px}
-.sec{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--text3);padding-bottom:9px;border-bottom:1px solid var(--border);margin-bottom:6px}
-
-/* CATEGORY */
-.cat-block{border-radius:9px;overflow:hidden;border:1px solid var(--border)}
-.cat-head{padding:12px 20px 10px;display:flex;align-items:center;gap:10px}
-.cat-icon-box{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.cat-info{flex:1}
-.cat-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
-.cat-focus{font-size:9px;color:var(--text3);margin-top:2px;letter-spacing:.2px}
-.cat-score-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.cat-score{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;line-height:1}
-.cat-tier{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;letter-spacing:.5px;padding:3px 8px;border-radius:4px;border:1px solid transparent}
-
-/* JAUGE */
-.jr{display:flex;align-items:center;gap:14px;padding:11px 20px;border-top:1px solid var(--border);transition:background .1s}
-.jr:hover{background:rgba(255,255,255,.012)}
-.jr-label{font-size:13px;font-weight:600;color:var(--text2);min-width:240px;flex-shrink:0;line-height:1.3}
-.jr-hint{font-size:9px;color:var(--text3);display:block;margin-top:2px;font-weight:400}
-.jr-dots{display:flex;gap:5px;flex:1}
-.jd{flex:1;height:13px;border-radius:4px;cursor:pointer;opacity:.1;transition:opacity .1s,transform .1s}
-.jd:hover{transform:scaleY(1.2);opacity:.5}
-.jd.on{opacity:1}
-.jr-num{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;min-width:24px;text-align:right;transition:color .15s}
-
-/* COMPOSITIONS */
-.comp-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-.cc{background:var(--surface);border:1px solid var(--border);border-radius:9px;overflow:hidden;transition:border-color .15s}
-.cc:hover{border-color:var(--border2)}
-.cc-top{padding:10px 12px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
-.cc-icon{font-size:17px}
-.cc-name{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;flex:1;line-height:1.25}
-.cc-score{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;line-height:1}
-.cc-body{padding:9px 12px}
-.cc-bars{display:flex;gap:4px;margin-bottom:7px}
-.cs{flex:1;height:9px;border-radius:3px;cursor:pointer;opacity:.1;transition:opacity .1s,transform .1s}
-.cs:hover{transform:scaleY(1.3);opacity:.5}
-.cs.on{opacity:1}
-.cc-tier{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:800;letter-spacing:.5px;padding:2px 6px;border-radius:3px;border:1px solid transparent;display:inline-block;margin-bottom:6px;transition:all .2s}
-.cc-keys{display:flex;flex-wrap:wrap;gap:3px}
-.ck{font-size:7px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 5px;border-radius:3px;color:var(--text3);background:var(--surface2);border:1px solid var(--border2)}
-.cc-note{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text2);font-size:10.5px;font-family:'Barlow',sans-serif;padding:3px 0;outline:none;margin-top:8px}
-.cc-note::placeholder{color:var(--text3)}
-
-/* OBS & NOTE */
-.obs-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.obs-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:13px 15px}
-.obs-lbl{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:8px}
-.obs-ta{width:100%;background:transparent;border:none;color:var(--text2);font-size:11.5px;font-family:'Barlow',sans-serif;line-height:1.7;resize:none;outline:none;min-height:88px}
-.obs-ta::placeholder{color:var(--text3)}
-
-.note-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 22px;display:flex;align-items:center;gap:22px}
-.nb-wrap{display:flex;align-items:baseline;gap:6px;flex-shrink:0}
-.nb-inp{background:transparent;border:none;border-bottom:2px solid var(--border2);color:var(--v4);font-family:'Barlow Condensed',sans-serif;font-size:58px;font-weight:900;width:76px;text-align:center;outline:none;line-height:1;transition:border-color .2s}
-.nb-inp:focus{border-bottom-color:var(--v3)}
-.nb-over{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700;color:var(--text3)}
-.nb-right{flex:1}
-.nb-lbl{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--v4);margin-bottom:6px}
-.nb-comment{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text2);font-size:13px;font-family:'Barlow',sans-serif;padding:3px 0;outline:none;margin-bottom:6px}
-.nb-comment::placeholder{color:var(--text3)}
-.nb-scale{font-size:9px;color:var(--text3);line-height:1.7}
-
-.card-footer{border-top:1px solid var(--border);background:var(--surface);padding:11px 32px;display:flex;align-items:center;justify-content:space-between}
-.footer-brand{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
-
-@media(max-width:900px){.comp-grid{grid-template-columns:repeat(3,1fr)}.pr{grid-template-columns:24px 110px 1fr 34px 42px}}
-@media(max-width:640px){.card-body{padding:14px 16px}.card-header{flex-direction:column;align-items:flex-start}.panorama{grid-template-columns:1fr}.jr-label{min-width:140px}.comp-grid{grid-template-columns:repeat(2,1fr)}.obs-grid{grid-template-columns:1fr}}
+  @media(max-width:760px){.style-grid,.pools{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<div class="ls" id="ls">
-  <div class="ls-logo">PlaZma</div>
-  <div class="ls-bar"><div class="ls-fill"></div></div>
-</div>
+<div class="loader"><div class="loader-mark">ARCHI</div><div class="loader-bar"></div></div>
+<div id="nav"></div>
 
-<a href="index.html" class="hub-link">← Hub PlaZma</a>
-<div class="top-bar"><button class="btn btn-export" id="exportBtn">⬇ Exporter PNG</button></div>
-<div class="sync-bar">
-  <div class="sync-indicator">
-    <div class="sync-dot offline" id="syncDot"></div>
-    <span class="sync-text" id="syncText" style="color:var(--text3)">En attente…</span>
-    <span class="sync-time" id="syncTime"></span>
-  </div>
-  <button class="btn-save-fb" id="saveFbBtn" onclick="save()">💾 Sauvegarder</button>
-  <div class="btn-mini-row">
-    <div class="btn-mini" onclick="exportBackup()">📦 Backup</div>
-    <div class="btn-mini" onclick="importBackup()">📥 Import</div>
-    <div class="btn-mini red" onclick="resetData()">🗑 Reset</div>
-  </div>
-</div>
-
-<div class="card" id="card">
-
-  <div class="card-header">
+<div class="content" id="capture">
+  <div class="page-head">
     <div>
-      <div class="logo-row">
-        <div class="logo-badge">PZ</div>
-        <div>
-          <div class="club-name">PlaZma</div>
-          <div class="doc-type">Compétences Collectives · Émeraude — Diamant</div>
-        </div>
-      </div>
+      <div class="eyebrow">PlaZma Esport</div>
+      <h1>Identité d'équipe</h1>
     </div>
-    <div>
-      <div class="roster-pills">
-        <div class="rp" style="color:#f97316;border-color:rgba(249,115,22,.3);background:rgba(249,115,22,.07)">⚔️ boulou</div>
-        <div class="rp" style="color:#22c55e;border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.07)">🌿 Zugu</div>
-        <div class="rp" style="color:#3b82f6;border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.07)">💎 Lakraël</div>
-        <div class="rp" style="color:#ef4444;border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.07)">🏹 Ke1do</div>
-        <div class="rp" style="color:#a855f7;border-color:rgba(168,85,247,.3);background:rgba(168,85,247,.07)">🥀 Joordy</div>
-      </div>
+    <div class="actions" data-noexport>
+      <span class="sync-pill">
+        <span class="sync-dot offline" id="syncDot"></span>
+        <span id="syncText">En attente…</span>
+        <span class="sync-time" id="syncTime"></span>
+      </span>
+      <button class="btn btn-sm" id="exportBtn">⬇ PNG</button>
+      <button class="btn btn-sm btn-danger" id="resetBtn">Reset</button>
     </div>
   </div>
 
-  <div class="meta-bar">
-    <div class="mc"><div class="ml">Période évaluée</div><input class="mi" id="f_periode" type="text" placeholder="ex : Avril 2026" oninput="debounceSave()"></div>
-    <div class="mc"><div class="ml">Évaluateur</div><input class="mi" id="f_eval" type="text" placeholder="Coach + validation capitaine" oninput="debounceSave()"></div>
+  <!-- STYLE DE JEU -->
+  <div class="style-grid">
+    <div class="panel"><h3>Style de jeu global</h3>
+      <textarea data-style="identity" placeholder="Tempo, prise d'espace, macro, drafts privilégiées…"></textarea></div>
+    <div class="panel"><h3>Win conditions</h3>
+      <textarea data-style="winconds" placeholder="Comment on gagne nos parties…"></textarea></div>
+    <div class="panel"><h3>Points forts</h3>
+      <textarea data-style="forces" placeholder="Nos atouts collectifs…"></textarea></div>
+    <div class="panel"><h3>À travailler</h3>
+      <textarea data-style="faiblesses" placeholder="Nos axes de progression…"></textarea></div>
   </div>
 
-  <!-- PANORAMA -->
-  <div class="panorama">
-    <div class="pano-left">
-      <div style="display:flex;align-items:baseline;gap:5px">
-        <div class="pano-score" id="panoNum" style="color:var(--v3)">—</div>
-        <div class="pano-denom">/ 10</div>
-      </div>
-      <div class="pano-tier" id="panoTier" style="color:var(--text3)">—</div>
-      <div class="pano-sublbl">Score global équipe</div>
-    </div>
-    <div class="pano-right" id="panoRows"></div>
+  <!-- TIER LIST / POOLS -->
+  <div class="sec-head" style="display:flex;align-items:baseline;gap:12px;margin:8px 0 16px">
+    <h2 style="font-family:var(--font-display);font-size:15px">Tier list par rôle</h2>
+    <span style="flex:1;height:1px;background:var(--border)"></span>
   </div>
-
-  <div class="card-body">
-
-    <div class="sec">📊 Évaluation détaillée</div>
-    <div id="jaugeContainer"></div>
-
-    <div class="sec" style="margin-top:4px">🎮 Maîtrise des compositions</div>
-    <div style="font-size:10px;color:var(--text3);margin-bottom:10px;line-height:1.55">0 = jamais travaillé · 5 = exécution correcte · 10 = maîtrise</div>
-    <div class="comp-grid" id="compGrid"></div>
-
-    <div class="sec" style="margin-top:4px">📝 Bilan mensuel</div>
-    <div class="obs-grid" style="margin-bottom:14px">
-      <div class="obs-card" style="border-left:3px solid #22c55e">
-        <div class="obs-lbl" style="color:#22c55e">✦ Forces de l'équipe</div>
-        <textarea class="obs-ta" id="t_strengths" placeholder="Ce que l'équipe fait bien ce mois-ci…" oninput="debounceSave()"></textarea>
-      </div>
-      <div class="obs-card" style="border-left:3px solid #ef4444">
-        <div class="obs-lbl" style="color:#ef4444">✦ Axes de travail prioritaires</div>
-        <textarea class="obs-ta" id="t_weak" placeholder="Ce qu'on doit corriger en priorité le mois prochain…" oninput="debounceSave()"></textarea>
-      </div>
-    </div>
-
-    <div class="note-block">
-      <div class="nb-wrap">
-        <input class="nb-inp" id="f_note" type="text" value="—" maxlength="2" oninput="debounceSave()">
-        <div class="nb-over">/ 10</div>
-      </div>
-      <div class="nb-right">
-        <div class="nb-lbl">Appréciation du mois</div>
-        <input class="nb-comment" id="f_comment" type="text" placeholder="Message du coach à l'équipe…" oninput="debounceSave()">
-        <div class="nb-scale">
-          D &lt; 4 — Nombreuses lacunes collectives · C 4–5 — Bases en construction · B 6–7 — Synergies qui se mettent en place · A 8–9 — Équipe cohérente et performante · S 10 — Exécution collective proche du parfait
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="card-footer">
-    <div class="footer-brand">PlaZma Esport · Émeraude — Diamant · Saison 2026</div>
-    <div style="font-size:9px;color:var(--text3)" id="footerDate"></div>
-  </div>
+  <div class="pools" id="pools"></div>
 </div>
 
+<script src="assets/plazma.js"></script>
 <script>
-'use strict';
-const COL='plazma', DOC_ID='team-competences';
+PZ.mountNav('team', '#nav');
 
-/* ══════════════════════════════════════════════
-   DONNÉES — construites sur tes réponses
-══════════════════════════════════════════════ */
-const CATS = [
-  {
-    id:'early', icon:'🌅', name:'Early Game', col:'#3b82f6',
-    focus:'Les concepts de début de partie',
-    items:[
-      {id:'e1', l:'Stratégie niveau 1',           h:'Cover, invade, late invade — plan défini et exécuté'},
-      {id:'e2', l:'Solidité des lanes',           h:'Peu de pas de solokill, CS correct'},
-      {id:'e3', l:'Coordination lanes / jungler', h:'Gank, invade, carapateur — timing des priorités'},
-    ]
-  },
-  {
-    id:'vision', icon:'👁️', name:'Vision', col:'#f59e0b',
-    focus:'Wards cohérentes · Tracking jungler · Exploitation info',
-    items:[
-      {id:'v1', l:'Cohérence de la vision', h:'On ward correctement autour de ce qu\'on veut jouer'},
-      {id:'v2', l:'Tracking du jungler ennemi',             h:'Position estimée partagée, prise de décision basée dessus'},
-      {id:'v3', l:'Exploitation de la vision',              h:'L\'info de la vision entraine une réaction adaptée '},
-    ]
-  },
-  {
-    id:'macro', icon:'🗺️', name:'Macro', col:'#22c55e',
-    focus:'Rotations · Split push · Wave state · Tempo',
-    items:[
-      {id:'m1', l:'Rotations',                    h:'Déplacements macro'},
-      {id:'m2', l:'Positionnement map / split',   h:'1-3-1 / 4-1 maîtrisé, side laner qui crée de la pression'},
-      {id:'m3', l:'Wave state',                   h:'Vagues bien positionnées et synchro entre elles'},
-      {id:'m4', l:'Tempo',                        h:'Savoir utiliser la tempo'},
-    ]
-  },
-  {
-    id:'tf', icon:'⚔️', name:'Teamfight', col:'#ef4444',
-    focus:'Focus · Cooldowns · Peel · Positionnement',
-    items:[
-      {id:'t1', l:'Choix du focus',                 h:'Bonne cible tapée au bon moment — pas de switch inutile'},
-      {id:'t2', l:'Prise en compte des CDs clés',   h:'Flash, ult adverses connus — on engage pas à l\'aveugle'},
-      {id:'t3', l:'Peel',                           h:'Protection active des carries, CC défensifs bien placés'},
-      {id:'t4', l:'Positionnement',                 h:'Bonne distance, bon angle, pas de feed d\'AoE gratuit'},
-    ]
-  },
-  {
-    id:'comms', icon:'🎙️', name:'Communication', col:'#06b6d4',
-    focus:'Comm claire · Suivi des calls · Zéro interférence',
-    items:[
-      {id:'c1', l:'Communication claire et sans interférences', h:'Appels concis, pas de crosstalk, info utile uniquement'},
-      {id:'c2', l:'Suivi des calls et coordination',           h:'Ce qui est appelé est suivi — pas de jeu solo parallèle'},
-    ]
-  },
-  {
-    id:'draft', icon:'📋', name:'Draft', col:'#a855f7',
-    focus:'Réflexion draft · Polyvalence picks · Scouting',
-    items:[
-      {id:'d1', l:'Qualité de réflexion de draft', h:'Win condition claire, picks cohérents entre eux'},
-      {id:'d2', l:'Polyvalence des picks',          h:'Flex picks, options multi-lane, pression en draft'},
-      {id:'d3', l:'Scouting',                       h:'Habitudes adverses connues, bans préparés en conséquence'},
-    ]
-  },
-  {
-    id:'mental', icon:'🧠', name:'Mental', col:'#ec4899',
-    focus:'Tilt · Jeu de derrière · Clutch factor',
-    items:[
-      {id:'me1', l:'Gestion du tilt',          h:'Réaction aux erreurs — équipe qui rebondit ou qui s\'effondre'},
-      {id:'me2', l:'Qualité du jeu de derrière', h:'Sérieux en déficit, trouver les fenêtres sans all-in stupide'},
-      {id:'me3', l:'Clutch factor',             h:'Capacité à performer dans les moments vraiment décisifs'},
-    ]
-  },
+const ROLES = [
+  { key:'top',     label:'Top',     color:'var(--top)' },
+  { key:'jungle',  label:'Jungle',  color:'var(--jungle)' },
+  { key:'mid',     label:'Mid',     color:'var(--mid)' },
+  { key:'adc',     label:'ADC',     color:'var(--adc)' },
+  { key:'support', label:'Support', color:'var(--support)' },
 ];
+const TIERS = ['S','A','B','Flex'];
 
-const COMPS = [
-  {id:'cp1', icon:'💥', name:'Engage / TF',       col:'#ef4444', keys:['Flash R synchro','Angle propre','All-in net']},
-  {id:'cp2', icon:'🎯', name:'Poke / Siège',      col:'#3b82f6', keys:['Gérer wave','Patience','Poke cohérent']},
-  {id:'cp3', icon:'🛡️', name:'Protect Carry',    col:'#a855f7', keys:['Peel total','Vision flancs','Scale propre']},
-  {id:'cp4', icon:'🗡️', name:'Split Push',        col:'#22c55e', keys:['Signal clair','1-3-1 / 4-1','Timing TP']},
-  {id:'cp5', icon:'⚡', name:'Pick / Catch',       col:'#f59e0b', keys:['CC isolant','Vision proactive','Convertir kill']},
-];
+let state = {
+  style: { identity:'', winconds:'', forces:'', faiblesses:'' },
+  pools: { top:[], jungle:[], mid:[], adc:[], support:[] }
+};
 
-/* TIERS */
-function getTier(v){
-  if(v<=0)  return {t:'—',  col:'var(--text3)',  bg:'transparent',           bd:'transparent'};
-  if(v<4)   return {t:'D',  col:'#ef4444',       bg:'rgba(239,68,68,.12)',   bd:'rgba(239,68,68,.3)'};
-  if(v<5)   return {t:'C-', col:'#f97316',       bg:'rgba(249,115,22,.12)',  bd:'rgba(249,115,22,.3)'};
-  if(v<6)   return {t:'C',  col:'#f59e0b',       bg:'rgba(245,158,11,.12)',  bd:'rgba(245,158,11,.3)'};
-  if(v<7)   return {t:'B',  col:'#a3e635',       bg:'rgba(163,230,53,.1)',   bd:'rgba(163,230,53,.3)'};
-  if(v<8)   return {t:'B+', col:'#22c55e',       bg:'rgba(34,197,94,.12)',   bd:'rgba(34,197,94,.3)'};
-  if(v<9)   return {t:'A',  col:'#06b6d4',       bg:'rgba(6,182,212,.12)',   bd:'rgba(6,182,212,.3)'};
-  if(v<9.5) return {t:'A+', col:'#a855f7',       bg:'rgba(168,85,247,.12)',  bd:'rgba(168,85,247,.3)'};
-  return           {t:'S',  col:'#fff',           bg:'rgba(109,40,217,.4)',   bd:'rgba(139,92,246,.6)'};
+function getState(){ return state; }
+function applyState(d){
+  state.style = Object.assign({ identity:'',winconds:'',forces:'',faiblesses:'' }, d.style || {});
+  state.pools = Object.assign({ top:[],jungle:[],mid:[],adc:[],support:[] }, d.pools || {});
 }
 
-const SLBLS = ['—','D · À travailler','D · À travailler','D · À travailler','C- · Passable','C · Moyen','B · Correct','B+ · Bon','A · Très bon','A+ · Excellent','S · Exceptionnel'];
+const sync = PZ.sync({ docId:'team-identity', getState, applyState, onData:render });
 
-/* STATE */
-let jV={};
-CATS.forEach(c=>c.items.forEach(i=>{jV[i.id]=0;}));
-let cV={};let cN={};
-COMPS.forEach(c=>{cV[c.id]=0;cN[c.id]='';});
+let saveTimer = null;
+function queueSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(()=>sync.save(), 500); }
 
-/* BUILD */
-function buildJauges(){
-  const cont=document.getElementById('jaugeContainer');
-  cont.innerHTML='';
-  CATS.forEach(cat=>{
-    const block=document.createElement('div');
-    block.className='cat-block';
-    block.style.borderColor=cat.col+'28';
-    block.style.marginBottom='8px';
+function esc(s){ return (s||'').replace(/"/g,'&quot;'); }
 
-    const hd=document.createElement('div');
-    hd.className='cat-head';
-    hd.style.cssText='background:linear-gradient(90deg,'+cat.col+'0e,transparent);border-bottom:1px solid '+cat.col+'20';
-    hd.innerHTML=
-      '<div class="cat-icon-box" style="background:'+cat.col+'18">'+cat.icon+'</div>'+
-      '<div class="cat-info">'+
-        '<div class="cat-name" style="color:'+cat.col+'">'+cat.name+'</div>'+
-        '<div class="cat-focus">'+cat.focus+'</div>'+
-      '</div>'+
-      '<div class="cat-score-wrap">'+
-        '<div class="cat-score" id="ca_'+cat.id+'" style="color:'+cat.col+'">—</div>'+
-        '<div class="cat-tier" id="ct_'+cat.id+'">—</div>'+
-      '</div>';
-    block.appendChild(hd);
-
-    cat.items.forEach(item=>{
-      const row=document.createElement('div');row.className='jr';
-      const lbl=document.createElement('div');lbl.className='jr-label';
-      lbl.innerHTML='<span>'+item.l+'</span><span class="jr-hint">'+item.h+'</span>';
-      const dots=document.createElement('div');dots.className='jr-dots';dots.id='jd_'+item.id;
-      for(let i=1;i<=10;i++){
-        const d=document.createElement('div');d.className='jd';d.style.background=cat.col;d.dataset.n=i;
-        d.addEventListener('click',()=>{jV[item.id]=jV[item.id]===i?0:i;rJ(item.id,cat.col);upScore();debounceSave();});
-        dots.appendChild(d);
-      }
-      const num=document.createElement('div');num.className='jr-num';num.id='jn_'+item.id;num.style.color='var(--text3)';num.textContent='0';
-      row.appendChild(lbl);row.appendChild(dots);row.appendChild(num);
-      block.appendChild(row);
+function render(){
+  // style textareas (ne pas écraser le champ en cours d'édition)
+  document.querySelectorAll('[data-style]').forEach(t=>{
+    if (document.activeElement !== t) t.value = state.style[t.dataset.style] || '';
+  });
+  // pools
+  const host = document.getElementById('pools');
+  host.innerHTML = '';
+  ROLES.forEach(r=>{
+    const rows = state.pools[r.key] || (state.pools[r.key] = []);
+    const card = document.createElement('div');
+    card.className = 'panel pool';
+    card.style.setProperty('--role', r.color);
+    card.innerHTML = `<div class="pool-head">
+        <span class="role-badge" style="--role:${r.color}">${r.label}</span>
+        <span class="muted" style="font-size:12px">${rows.length} champ${rows.length>1?'s':''}</span>
+      </div>`;
+    rows.forEach((row,i)=>{
+      const el = document.createElement('div');
+      el.className = 'pool-row';
+      el.innerHTML = `
+        <input value="${esc(row.champ)}" placeholder="Champion" data-f="champ">
+        <select data-f="tier" class="tier-${row.tier||'A'}">${TIERS.map(t=>`<option${t===(row.tier||'A')?' selected':''}>${t}</option>`).join('')}</select>
+        <input value="${esc(row.note)}" placeholder="Note (match-up, condition…)" data-f="note">
+        <button class="row-del" title="Supprimer">✕</button>`;
+      el.querySelectorAll('[data-f]').forEach(f=>{
+        f.addEventListener('input', ()=>{ row[f.dataset.f] = f.value; if(f.dataset.f==='tier') f.className='tier-'+f.value; queueSave(); });
+      });
+      el.querySelector('.row-del').addEventListener('click', ()=>{ rows.splice(i,1); render(); sync.save(); });
+      card.appendChild(el);
     });
-    cont.appendChild(block);
+    const add = document.createElement('button');
+    add.className = 'add-row'; add.textContent = '+ Ajouter un champion';
+    add.addEventListener('click', ()=>{ rows.push({champ:'',tier:'A',note:''}); render(); });
+    card.appendChild(add);
+    host.appendChild(card);
   });
 }
 
-function buildComps(){
-  const g=document.getElementById('compGrid');g.innerHTML='';
-  COMPS.forEach(c=>{
-    const card=document.createElement('div');card.className='cc';
-    card.style.cssText='border-top:2px solid '+c.col;
-    const top=document.createElement('div');top.className='cc-top';
-    top.innerHTML='<div class="cc-icon">'+c.icon+'</div><div class="cc-name" style="color:'+c.col+'">'+c.name+'</div><div class="cc-score" id="cs_'+c.id+'" style="color:var(--text3)">0</div>';
-    const body=document.createElement('div');body.className='cc-body';
-    const bars=document.createElement('div');bars.className='cc-bars';bars.id='cb_'+c.id;
-    for(let i=1;i<=10;i++){
-      const s=document.createElement('div');s.className='cs';s.style.background=c.col;s.dataset.n=i;
-      s.addEventListener('click',()=>{cV[c.id]=cV[c.id]===i?0:i;rC(c.id,c.col);debounceSave();});
-      bars.appendChild(s);
-    }
-    const tierEl=document.createElement('div');tierEl.className='cc-tier';tierEl.id='ctr_'+c.id;tierEl.textContent='—';
-    const keys=document.createElement('div');keys.className='cc-keys';
-    keys.innerHTML=c.keys.map(k=>'<div class="ck">'+k+'</div>').join('');
-    const ni=document.createElement('input');ni.className='cc-note';ni.id='cn_'+c.id;ni.placeholder='Note…';
-    ni.addEventListener('input',()=>{cN[c.id]=ni.value;debounceSave();});
-    body.appendChild(bars);body.appendChild(tierEl);body.appendChild(keys);body.appendChild(ni);
-    card.appendChild(top);card.appendChild(body);
-    g.appendChild(card);
-  });
-}
-
-function rJ(id,col){
-  const v=jV[id]||0;
-  document.querySelectorAll('#jd_'+id+' .jd').forEach(d=>d.classList.toggle('on',parseInt(d.dataset.n)<=v));
-  const el=document.getElementById('jn_'+id);
-  if(el){el.textContent=v;el.style.color=v>0?col:'var(--text3)';}
-}
-function rC(id,col){
-  const v=cV[id]||0;
-  document.querySelectorAll('#cb_'+id+' .cs').forEach(s=>s.classList.toggle('on',parseInt(s.dataset.n)<=v));
-  const el=document.getElementById('cs_'+id);
-  if(el){el.textContent=v;el.style.color=v>0?col:'var(--text3)';}
-  const tr=document.getElementById('ctr_'+id);
-  if(tr){const t=getTier(v);tr.textContent=t.t;tr.style.cssText='background:'+t.bg+';color:'+t.col+';border-color:'+t.bd;}
-}
-
-function upScore(){
-  const pr=document.getElementById('panoRows');pr.innerHTML='';
-  let allAvgs=[];
-
-  CATS.forEach(cat=>{
-    const vals=cat.items.map(i=>jV[i.id]||0).filter(v=>v>0);
-    const avg=vals.length>0?vals.reduce((a,b)=>a+b)/vals.length:0;
-
-    const caEl=document.getElementById('ca_'+cat.id);
-    const ctEl=document.getElementById('ct_'+cat.id);
-    if(caEl)caEl.textContent=avg>0?avg.toFixed(1):'—';
-    const tier=getTier(avg);
-    if(ctEl){ctEl.textContent=tier.t;ctEl.style.cssText='background:'+tier.bg+';color:'+tier.col+';border-color:'+tier.bd;}
-    if(avg>0)allAvgs.push(avg);
-
-    const row=document.createElement('div');row.className='pr';
-    row.innerHTML=
-      '<div class="pr-icon">'+cat.icon+'</div>'+
-      '<div class="pr-name" style="color:'+cat.col+'">'+cat.name+'</div>'+
-      '<div class="pr-track"><div class="pr-fill" style="width:'+(avg/10*100)+'%;background:'+cat.col+'"></div></div>'+
-      '<div class="pr-score" style="color:'+(avg>0?cat.col:'var(--text3)')+'">'+( avg>0?avg.toFixed(1):'—')+'</div>'+
-      '<div class="pr-tier" style="background:'+tier.bg+';color:'+tier.col+';border-color:'+tier.bd+'">'+tier.t+'</div>';
-    pr.appendChild(row);
-  });
-
-  const g=allAvgs.length>0?allAvgs.reduce((a,b)=>a+b)/allAvgs.length:0;
-  const t=getTier(g);
-  const pn=document.getElementById('panoNum');const pt=document.getElementById('panoTier');
-  if(pn){pn.textContent=g>0?(Math.round(g*10)/10).toFixed(1):'—';pn.style.color=t.col;}
-  if(pt){pt.textContent=g>0?SLBLS[Math.round(g)]:'Non évalué';pt.style.color=t.col;}
-}
-
-/* STATE */
-function vg(id){const e=document.getElementById(id);return e?e.value:'';}
-function sv(id,val){const e=document.getElementById(id);if(e)e.value=val||'';}
-function getState(){
-  return{f_periode:vg('f_periode'),f_eval:vg('f_eval'),f_note:vg('f_note'),f_comment:vg('f_comment'),
-    t_strengths:vg('t_strengths'),t_weak:vg('t_weak'),jV:{...jV},cV:{...cV},cN:{...cN}};
-}
-function applyState(s){
-  if(!s)return;
-  ['f_periode','f_eval','f_note','f_comment','t_strengths','t_weak'].forEach(k=>sv(k,s[k]));
-  if(s.jV){Object.assign(jV,s.jV);CATS.forEach(c=>c.items.forEach(i=>rJ(i.id,c.col)));upScore();}
-  if(s.cV){Object.assign(cV,s.cV);COMPS.forEach(c=>rC(c.id,c.col));}
-  if(s.cN){Object.assign(cN,s.cN);COMPS.forEach(c=>sv('cn_'+c.id,cN[c.id]));}
-}
-
-/* FIREBASE */
-function setSS(s,txt,time=''){
-  const dot=document.getElementById('syncDot'),t=document.getElementById('syncText'),tm=document.getElementById('syncTime');
-  if(!dot)return;dot.className='sync-dot '+s;t.textContent=txt;
-  t.style.color=s==='connected'?'#22c55e':s==='syncing'?'#f59e0b':s==='error'?'#ef4444':'var(--text3)';tm.textContent=time;
-}
-function hideLS(){const ls=document.getElementById('ls');if(ls){ls.classList.add('hidden');setTimeout(()=>ls.style.display='none',500);}}
-function save(){
-  setSS('syncing','Sauvegarde…');
-  db.collection(COL).doc(DOC_ID).set(getState())
-    .then(()=>{setSS('connected','Synchronisé');flashSave(true);})
-    .catch(e=>{setSS('error','Erreur');flashSave(false);console.error(e);});
-}
-function startSync(){
-  setSS('syncing','Connexion…');
-  db.collection(COL).doc(DOC_ID).onSnapshot(doc=>{
-    if(doc.metadata.hasPendingWrites)return;
-    if(doc.exists){applyState(doc.data());setSS('connected','Synchronisé',new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));}
-    else setSS('connected','Prêt','');
-    hideLS();
-  },err=>{console.error(err);setSS('error','Erreur connexion');hideLS();});
-}
-function flashSave(ok){
-  const btn=document.getElementById('saveFbBtn');if(!btn)return;
-  btn.classList.add('saved');btn.textContent=ok?'✓ Sauvegardé':'⚠ Erreur';if(!ok)btn.style.color='#ef4444';
-  setTimeout(()=>{btn.classList.remove('saved');btn.textContent='💾 Sauvegarder';btn.style.color='';},1600);
-}
-let _st=null;
-function debounceSave(){clearTimeout(_st);_st=setTimeout(save,1000);}
-function exportBackup(){const b=new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='plazma-team-'+new Date().toISOString().split('T')[0]+'.json';a.click();}
-function importBackup(){const i=document.createElement('input');i.type='file';i.accept='.json';i.addEventListener('change',async()=>{try{applyState(JSON.parse(await i.files[0].text()));save();}catch(e){alert('Fichier invalide');}});i.click();}
-function resetData(){
-  if(!confirm('Réinitialiser ?'))return;
-  CATS.forEach(c=>c.items.forEach(i=>{jV[i.id]=0;}));
-  CATS.forEach(c=>c.items.forEach(i=>rJ(i.id,c.col)));
-  COMPS.forEach(c=>{cV[c.id]=0;cN[c.id]='';rC(c.id,c.col);sv('cn_'+c.id,'');});
-  upScore();
-  db.collection(COL).doc(DOC_ID).delete().then(()=>setSS('connected','Réinitialisé',''));
-}
-document.getElementById('exportBtn').addEventListener('click',async()=>{
-  const btn=document.getElementById('exportBtn');btn.disabled=true;btn.textContent='Export…';
-  document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(el=>el.style.visibility='hidden');
-  await new Promise(r=>setTimeout(r,80));
-  const canvas=await html2canvas(document.getElementById('card'),{scale:2,backgroundColor:'#05050e',useCORS:true,logging:false});
-  document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(el=>el.style.visibility='');
-  btn.disabled=false;btn.textContent='⬇ Exporter PNG';
-  const link=document.createElement('a');link.download='plazma-team-competences.png';link.href=canvas.toDataURL('image/png');link.click();
+// style textareas -> state
+document.querySelectorAll('[data-style]').forEach(t=>{
+  t.addEventListener('input', ()=>{ state.style[t.dataset.style] = t.value; queueSave(); });
 });
 
-document.getElementById('footerDate').textContent='Mis à jour le '+new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
-buildJauges();buildComps();startSync();upScore();
-setTimeout(()=>{const ls=document.getElementById('ls');if(ls&&!ls.classList.contains('hidden')){hideLS();setSS('error','Firebase inaccessible');}},8000);
+document.getElementById('exportBtn').addEventListener('click', ()=>PZ.exportPNG(document.getElementById('capture'),'archi-equipe'));
+document.getElementById('resetBtn').addEventListener('click', ()=>sync.reset('Réinitialiser l\'identité d\'équipe ?'));
+
+render();
 </script>
 </body>
 </html>
