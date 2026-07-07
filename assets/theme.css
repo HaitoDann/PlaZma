@@ -110,11 +110,9 @@ h3{font-size:1.02rem}
 }
 .pz-brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700}
 .pz-brand-mark{
-  width:30px;height:30px;border-radius:8px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  background:var(--accent-soft);border:1px solid var(--accent-line);
-  color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.02em;
+  height:30px;width:auto;flex-shrink:0;display:block;
 }
+.pz-brand-mark img{height:30px;width:auto;display:block;object-fit:contain}
 .pz-brand-name{font-size:17px;letter-spacing:.04em}
 .pz-brand-sub{font-size:10px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;font-family:var(--font)}
 .pz-nav{display:flex;align-items:center;gap:2px;flex-wrap:wrap}

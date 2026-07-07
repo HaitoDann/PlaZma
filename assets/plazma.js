@@ -72,7 +72,7 @@
     const html =
       `<div class="pz-topbar"><div class="pz-topbar-inner">
         <a class="pz-brand" href="index.html">
-          <span class="pz-brand-mark">A</span>
+          <span class="pz-brand-mark"><img src="assets/logo-plazma.png" alt="ARCHI"></span>
           <span><span class="pz-brand-name">ARCHI</span></span>
         </a>
         <nav class="pz-nav">${links}</nav>
