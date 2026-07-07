@@ -26,13 +26,23 @@
   .redit-row input{padding:8px 10px}
   .redit-emoji{text-align:center;font-size:19px}
 
-  /* Tier list drag & drop */
+  /* Onglets joueurs */
+  .tl-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .tl-tab{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:999px;cursor:pointer;
+    background:var(--surface-2);border:1px solid var(--border);color:var(--dim);font-family:var(--font);font-size:13px;font-weight:600}
+  .tl-tab:hover{border-color:var(--border-2);color:var(--text)}
+  .tl-tab.active{color:var(--text);border-color:var(--pc,var(--accent));background:color-mix(in srgb,var(--pc,var(--accent)) 14%,transparent)}
+  .tl-tab .em{font-size:16px}
+
+  /* Tier list */
   .tierlist{display:flex;flex-direction:column;gap:8px}
   .tl-row{display:flex;align-items:stretch;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
-  .tl-label{width:64px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
-    font-family:var(--font-display);font-size:1.5rem;font-weight:700;color:#0a0f14;background:var(--tlc,var(--accent))}
+  .tl-label{width:118px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    padding:8px;text-align:center;font-family:var(--font-display);font-weight:700;color:#0a0f14;background:var(--tlc,var(--accent))}
+  .tl-label .t{font-size:15px;line-height:1.1}
+  .tl-label .cap{font-size:11px;font-weight:600;opacity:.8}
   .tl-zone{flex:1;min-height:66px;display:flex;flex-wrap:wrap;gap:6px;padding:9px;align-content:flex-start}
-  .tl-zone.drop,.tl-pool.drop{background:var(--accent-soft);outline:2px dashed var(--accent);outline-offset:-4px}
+  .tl-zone.drop{background:var(--accent-soft);outline:2px dashed var(--accent);outline-offset:-4px}
   .tl-tile{position:relative;width:50px;height:50px;border-radius:10px;overflow:hidden;cursor:grab;
     border:1px solid var(--border-2);background:var(--surface-2);display:flex;align-items:center;justify-content:center}
   .tl-tile:active{cursor:grabbing}
@@ -42,12 +52,13 @@
   .tl-x{position:absolute;top:0;right:0;width:17px;height:17px;line-height:15px;text-align:center;font-size:10px;
     background:rgba(6,10,14,.82);color:#fff;border:none;cursor:pointer;border-radius:0 0 0 7px;opacity:0;transition:opacity .1s}
   .tl-tile:hover .tl-x{opacity:1}
-  .tl-poolwrap{margin-top:16px}
-  .tl-pool{border:1px dashed var(--border);border-radius:var(--r);padding:9px;min-height:66px;
-    display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
+  .tl-add{width:50px;height:50px;border-radius:10px;border:1px dashed var(--border-2);background:none;color:var(--muted);
+    cursor:pointer;font-size:20px;line-height:1}
+  .tl-add:hover{border-color:var(--accent);color:var(--accent)}
+  .tl-add:disabled{opacity:.3;cursor:default}
   .tl-hint{font-size:12px;color:var(--muted);margin:8px 0 12px}
 
-  @media(max-width:760px){.style-grid{grid-template-columns:1fr}.redit-row{grid-template-columns:52px 1fr}.redit-row .role-badge{display:none}}
+  @media(max-width:760px){.style-grid{grid-template-columns:1fr}.redit-row{grid-template-columns:52px 1fr}.redit-row .role-badge{display:none}.tl-label{width:92px}}
 </style>
 </head>
 <body>
@@ -97,19 +108,14 @@
       <textarea data-style="faiblesses" placeholder="Nos axes de progression…"></textarea></div>
   </div>
 
-  <!-- TIER LIST -->
-  <div class="sec-head" style="display:flex;align-items:baseline;gap:12px;margin:8px 0 10px">
-    <h2 style="font-family:var(--font-display);font-size:15px">Tier list champions</h2>
+  <!-- TIER LIST PAR JOUEUR -->
+  <div class="sec-head" style="display:flex;align-items:baseline;gap:12px;margin:8px 0 12px">
+    <h2 style="font-family:var(--font-display);font-size:15px">Tier list champions par joueur</h2>
     <span style="flex:1;height:1px;background:var(--border)"></span>
-    <button class="btn btn-sm btn-primary" id="addChampBtn" data-noexport>+ Ajouter des champions</button>
   </div>
-  <div class="tl-hint" data-noexport>Glisse-dépose les icônes entre les tiers. Survole une icône pour la retirer.</div>
+  <div class="tl-tabs" id="tlTabs" data-noexport></div>
+  <div class="tl-hint" data-noexport>« + » ajoute un champion dans le tier · glisse-dépose une icône pour la changer de tier · survole pour retirer.</div>
   <div class="tierlist" id="tierlist"></div>
-
-  <div class="tl-poolwrap">
-    <div class="eyebrow" style="margin-bottom:8px">Banc · non classés</div>
-    <div class="tl-pool" id="tlPool" data-zone="pool"></div>
-  </div>
 </div>
 
 <script src="assets/plazma.js"></script>
@@ -119,47 +125,70 @@ PZ.mountNav('team', '#nav');
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
 
 // ---- Éditeur de roster (mercato) ----
-PZ.onRoster((roster, coach) => {
-  const editing = document.activeElement && document.activeElement.closest('#rosterEditor');
-  if (editing) return;
-  document.getElementById('rosterEditor').innerHTML = roster.concat(coach).map(p => `
-    <div class="redit-row" data-id="${p.id}">
-      <input class="redit-emoji" maxlength="6" value="${esc(p.emoji)}" data-f="emoji" aria-label="Emoji ${p.role}">
-      <input class="redit-name" value="${esc(p.name)}" data-f="name" aria-label="Nom ${p.role}">
-      <span class="role-badge" style="--role:${p.color}">${p.role}</span>
-    </div>`).join('');
-  document.querySelectorAll('#rosterEditor .redit-row').forEach(row => {
-    row.querySelectorAll('input').forEach(inp =>
-      inp.addEventListener('input', () => PZ.setPlayer(row.dataset.id, { [inp.dataset.f]: inp.value })));
+// (enregistré plus bas via registerRoster(), une fois toutes les variables définies)
+function registerRoster(){
+  PZ.onRoster((roster, coach) => {
+    const editing = document.activeElement && document.activeElement.closest('#rosterEditor');
+    if (!editing) {
+      document.getElementById('rosterEditor').innerHTML = roster.concat(coach).map(p => `
+        <div class="redit-row" data-id="${p.id}">
+          <input class="redit-emoji" maxlength="6" value="${esc(p.emoji)}" data-f="emoji" aria-label="Emoji ${p.role}">
+          <input class="redit-name" value="${esc(p.name)}" data-f="name" aria-label="Nom ${p.role}">
+          <span class="role-badge" style="--role:${p.color}">${p.role}</span>
+        </div>`).join('');
+      document.querySelectorAll('#rosterEditor .redit-row').forEach(row => {
+        row.querySelectorAll('input').forEach(inp =>
+          inp.addEventListener('input', () => PZ.setPlayer(row.dataset.id, { [inp.dataset.f]: inp.value })));
+      });
+    }
+    if (!currentPlayer && roster[0]) currentPlayer = roster[0].id;
+    renderTabs(); renderTiers();
   });
-});
+}
 document.getElementById('saveRosterBtn').addEventListener('click', () => {
   const btn = document.getElementById('saveRosterBtn');
   PZ.saveRoster().then(() => { btn.textContent = '✓ Enregistré'; setTimeout(() => btn.textContent = 'Enregistrer le roster', 1500); });
 });
 
-// ---- Tier list ----
-const TIER_ROWS = [
-  { key:'S', color:'#ef4444' }, { key:'A', color:'#f97316' }, { key:'B', color:'#eab308' },
-  { key:'C', color:'#22c55e' }, { key:'D', color:'#3b82f6' },
+// ---- Tier list par joueur ----
+const TIERS = [
+  { key:'top3',   label:'Top 3',        color:'#ef4444', max:3 },
+  { key:'offi',   label:'Offi ready',   color:'#f97316' },
+  { key:'scrim',  label:'Scrim ready',  color:'#eab308' },
+  { key:'soloq',  label:'SoloQ ready',  color:'#22c55e' },
+  { key:'future', label:'À travailler', color:'#3b82f6' },
 ];
-const ZONES = TIER_ROWS.map(t => t.key).concat('pool');
-const emptyTiers = () => ({ S:[], A:[], B:[], C:[], D:[], pool:[] });
+const TIER_KEYS = TIERS.map(t => t.key);
+const emptyTiers = () => ({ top3:[], offi:[], scrim:[], soloq:[], future:[] });
+let currentPlayer = null;
 
-let state = { style:{ identity:'', winconds:'', forces:'', faiblesses:'' }, tiers: emptyTiers() };
+let state = { style:{ identity:'', winconds:'', forces:'', faiblesses:'' }, playerTiers:{} };
+
+function tiersFor(pid){
+  let t = state.playerTiers[pid];
+  if (!t) { t = state.playerTiers[pid] = emptyTiers(); }
+  TIER_KEYS.forEach(k => { if (!Array.isArray(t[k])) t[k] = []; });
+  return t;
+}
+const allChampsOf = pid => TIER_KEYS.reduce((a,k)=>a.concat(tiersFor(pid)[k]), []);
 
 function getState(){ return state; }
 function applyState(d){
   state.style = Object.assign({ identity:'',winconds:'',forces:'',faiblesses:'' }, d.style || {});
-  if (d.tiers) {
-    state.tiers = Object.assign(emptyTiers(), d.tiers);
+  if (d.playerTiers) {
+    state.playerTiers = d.playerTiers;
   } else if (d.pools) {
-    // Migration depuis l'ancien format (pools par rôle) → banc
-    const t = emptyTiers();
-    Object.values(d.pools).forEach(arr => (arr||[]).forEach(row => { if (row && row.champ) t.pool.push(row.champ); }));
-    state.tiers = t;
+    // Migration : ancien pool par rôle → SoloQ ready du joueur correspondant
+    state.playerTiers = {};
+    const roster = PZ.getRoster();
+    Object.keys(d.pools).forEach(roleKey => {
+      const pl = roster.find(p => p.roleKey === roleKey); if (!pl) return;
+      const t = emptyTiers();
+      (d.pools[roleKey]||[]).forEach(row => { if (row && row.champ) t.soloq.push(row.champ); });
+      state.playerTiers[pl.id] = t;
+    });
   } else {
-    state.tiers = emptyTiers();
+    state.playerTiers = {};
   }
 }
 
@@ -167,22 +196,53 @@ const sync = PZ.sync({ docId:'team-identity', getState, applyState, onData:rende
 let saveTimer = null;
 function queueSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(()=>sync.save(), 500); }
 
-const allChamps = () => ZONES.reduce((a,z)=>a.concat(state.tiers[z]||[]), []);
+// ---- Onglets ----
+function renderTabs(){
+  const roster = PZ.getRoster();
+  if (!currentPlayer && roster[0]) currentPlayer = roster[0].id;
+  document.getElementById('tlTabs').innerHTML = roster.map(p =>
+    `<button class="tl-tab${p.id===currentPlayer?' active':''}" style="--pc:${p.color}" data-player="${p.id}">
+      <span class="em">${p.emoji}</span>${esc(p.name)}</button>`).join('');
+  document.querySelectorAll('#tlTabs .tl-tab').forEach(b =>
+    b.addEventListener('click', () => { currentPlayer = b.dataset.player; renderTabs(); renderTiers(); }));
+}
 
+// ---- Tuiles + tiers ----
 function tileHtml(id, zone){
   const u = window.Champions.iconUrl(id);
   return `<div class="tl-tile" draggable="true" data-champ="${esc(id)}" data-from="${zone}" title="${esc(window.Champions.nameOf(id))}">
     ${u ? `<img src="${u}" alt="">` : `<span class="lbl">${esc(window.Champions.nameOf(id))}</span>`}
     <button class="tl-x" title="Retirer">✕</button></div>`;
 }
-
 function renderTiers(){
   const host = document.getElementById('tierlist');
-  host.innerHTML = TIER_ROWS.map(t =>
-    `<div class="tl-row"><div class="tl-label" style="background:${t.color}">${t.key}</div>
-      <div class="tl-zone" data-zone="${t.key}">${(state.tiers[t.key]||[]).map(id=>tileHtml(id,t.key)).join('')}</div></div>`).join('');
-  document.getElementById('tlPool').innerHTML = (state.tiers.pool||[]).map(id=>tileHtml(id,'pool')).join('');
+  if (!currentPlayer) { host.innerHTML = ''; return; }
+  const t = tiersFor(currentPlayer);
+  host.innerHTML = TIERS.map(tier => {
+    const arr = t[tier.key];
+    const full = tier.max && arr.length >= tier.max;
+    const cap = tier.max ? `<span class="cap">${arr.length}/${tier.max}</span>` : '';
+    return `<div class="tl-row">
+      <div class="tl-label" style="background:${tier.color}"><span class="t">${tier.label}</span>${cap}</div>
+      <div class="tl-zone" data-zone="${tier.key}">
+        ${arr.map(id=>tileHtml(id, tier.key)).join('')}
+        <button class="tl-add" data-add="${tier.key}" data-noexport ${full?'disabled title="Limité à '+tier.max+'"':''}>+</button>
+      </div></div>`;
+  }).join('');
   wireDnD();
+  host.querySelectorAll('.tl-add').forEach(btn => btn.addEventListener('click', () => addToTier(btn.dataset.add)));
+}
+
+function addToTier(tierKey){
+  const tier = TIERS.find(t=>t.key===tierKey);
+  const t = tiersFor(currentPlayer);
+  if (tier.max && t[tierKey].length >= tier.max) { alert('Le tier « '+tier.label+' » est limité à '+tier.max+' champions.'); return; }
+  window.Champions.open(id => {
+    if (!id) return;
+    if (allChampsOf(currentPlayer).includes(id)) { alert('Ce champion est déjà dans la tier list de ce joueur.'); return; }
+    if (tier.max && t[tierKey].length >= tier.max) { alert('Le tier « '+tier.label+' » est limité à '+tier.max+' champions.'); return; }
+    t[tierKey].push(id); renderTiers(); queueSave();
+  });
 }
 
 let dragChamp = null, dragFrom = null;
@@ -192,30 +252,27 @@ function wireDnD(){
     tile.addEventListener('dragend', () => { tile.classList.remove('dragging'); document.querySelectorAll('.drop').forEach(z=>z.classList.remove('drop')); });
     tile.querySelector('.tl-x').addEventListener('click', e => { e.stopPropagation(); removeChamp(tile.dataset.from, tile.dataset.champ); });
   });
-  document.querySelectorAll('[data-zone]').forEach(zone => {
+  document.querySelectorAll('.tl-zone').forEach(zone => {
     zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drop'); e.dataTransfer.dropEffect = 'move'; });
     zone.addEventListener('dragleave', () => zone.classList.remove('drop'));
     zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drop'); moveChamp(dragFrom, zone.dataset.zone, dragChamp); });
   });
 }
 function moveChamp(from, to, id){
-  if (!id || !from || !to || from === to) { if(from===to){ /* no-op */ } return; }
-  const src = state.tiers[from]; const i = src.indexOf(id); if (i > -1) src.splice(i, 1);
-  if (!state.tiers[to].includes(id)) state.tiers[to].push(id);
+  if (!id || !from || !to || from === to) return;
+  const t = tiersFor(currentPlayer);
+  const tier = TIERS.find(x=>x.key===to);
+  if (tier.max && t[to].length >= tier.max) { alert('Le tier « '+tier.label+' » est limité à '+tier.max+' champions.'); return; }
+  const i = t[from].indexOf(id); if (i > -1) t[from].splice(i, 1);
+  if (!t[to].includes(id)) t[to].push(id);
   renderTiers(); queueSave();
 }
-function removeChamp(zone, id){ const a = state.tiers[zone]; const i = a.indexOf(id); if (i > -1) a.splice(i, 1); renderTiers(); queueSave(); }
-
-document.getElementById('addChampBtn').addEventListener('click', () => {
-  window.Champions.open(id => {
-    if (id && !allChamps().includes(id)) { state.tiers.pool.push(id); renderTiers(); queueSave(); }
-  });
-});
+function removeChamp(zone, id){ const a = tiersFor(currentPlayer)[zone]; const i = a.indexOf(id); if (i > -1) a.splice(i, 1); renderTiers(); queueSave(); }
 
 // ---- Render global ----
 function render(){
   document.querySelectorAll('[data-style]').forEach(t => { if (document.activeElement !== t) t.value = state.style[t.dataset.style] || ''; });
-  renderTiers();
+  renderTabs(); renderTiers();
 }
 
 document.querySelectorAll('[data-style]').forEach(t => {
@@ -224,6 +281,7 @@ document.querySelectorAll('[data-style]').forEach(t => {
 document.getElementById('exportBtn').addEventListener('click', () => PZ.exportPNG(document.getElementById('capture'), 'archi-equipe'));
 document.getElementById('resetBtn').addEventListener('click', () => sync.reset('Réinitialiser l\'identité d\'équipe ?'));
 
+registerRoster();  // maintenant que state/TIERS/currentPlayer sont définis
 render();
 window.Champions.ready.then(renderTiers); // icônes une fois la liste chargée
 </script>
