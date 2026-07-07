@@ -3,416 +3,93 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RoZter — Programme</title>
+<title>ARCHI — Planning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script>
-firebase.initializeApp({
-  apiKey:"AIzaSyAKwNEbNa6f40oSMwGp6dcDY1ZY6hUN1Ks",
-  authDomain:"plazma-esport.firebaseapp.com",
-  projectId:"plazma-esport",
-  storageBucket:"plazma-esport.firebasestorage.app",
-  messagingSenderId:"534325929279",
-  appId:"1:534325929279:web:b507a46c601fa6625edf8a"
-});
-const db = firebase.firestore();
-</script>
-
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  .content{max-width:1180px;margin:0 auto;padding:22px var(--gut) 80px}
+  .toolbar{justify-content:space-between}
+  .week-nav{display:flex;align-items:center;gap:6px}
+  .week-nav input[type=week]{width:auto}
+  .btn-wk{width:34px;height:34px;padding:0}
+  .actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 
-:root{
-  --bg:#020c10;--bg2:#04111a;--surface:#060f18;--surface2:#091420;
-  --border:#0d2030;--border2:#112840;
-  --c1:#06b6d4;--c2:#0891b2;--c3:#22d3ee;--c4:#67e8f9;
-  --green:#22c55e;--yellow:#f59e0b;--red:#ef4444;
-  --text:#e0f7fc;--text2:#4b8ea0;--text3:#1a3d4a;
-}
+  .card-head .wk-label{font-family:var(--font-mono);color:var(--accent);font-weight:600;font-size:15px}
+  .meta-band{display:flex;gap:22px;flex-wrap:wrap;padding:12px 22px;border-bottom:1px solid var(--border);color:var(--dim);font-size:13px}
+  .meta-band .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;margin-right:7px}
 
-html{scroll-behavior:smooth}
-body{
-  background:var(--bg);font-family:'Exo 2',sans-serif;
-  color:var(--text);min-height:100vh;
-  display:flex;flex-direction:column;align-items:center;
-  padding:28px 20px 80px;
-}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr)}
+  .day{padding:12px 10px;border-right:1px solid var(--border);min-height:190px}
+  .day:last-child{border-right:none}
+  .day-name{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .slot{position:relative;padding:9px 10px;margin-bottom:6px;border-radius:8px;cursor:pointer;
+    background:var(--surface-2);border:1px solid var(--border);border-left:3px solid var(--sc,var(--accent));transition:background .12s}
+  .slot:hover{background:var(--elevated)}
+  .slot-type{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+    padding:2px 7px;border-radius:5px;margin-bottom:5px;color:var(--sc);background:color-mix(in srgb,var(--sc) 15%,transparent)}
+  .slot-time{font-size:11px;color:var(--muted);margin-bottom:2px}
+  .slot-note{font-size:12.5px;color:var(--dim);line-height:1.4}
+  .slot-del{position:absolute;top:5px;right:6px;background:none;border:none;color:var(--muted);cursor:pointer;
+    font-size:11px;opacity:0;transition:opacity .12s}
+  .slot:hover .slot-del{opacity:1}
+  .slot-del:hover{color:var(--err)}
+  .add-slot{width:100%;margin-top:2px;background:none;border:1px dashed var(--border);color:var(--muted);
+    border-radius:7px;padding:6px;cursor:pointer;font-family:var(--font)}
+  .add-slot:hover{border-color:var(--accent);color:var(--accent)}
 
-/* ── LOADING ── */
-.ls{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .5s}
-.ls.hidden{opacity:0;pointer-events:none}
-.ls-logo{font-family:'Rajdhani',sans-serif;font-size:52px;font-weight:700;letter-spacing:6px;color:var(--c1);text-shadow:0 0 30px rgba(6,182,212,.6)}
-.ls-bar{width:160px;height:2px;background:rgba(6,182,212,.1);border-radius:2px;overflow:hidden}
-.ls-fill{height:100%;background:var(--c1);animation:lb 1.4s ease infinite}
-@keyframes lb{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
+  .legend{display:flex;flex-wrap:wrap;gap:7px;padding:14px 22px;border-top:1px solid var(--border)}
+  .leg{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:5px}
 
-/* ── CHROME ── */
-.hub-link{font-size:9px;color:var(--text3);text-decoration:none;letter-spacing:2px;text-transform:uppercase;transition:color .15s;margin-bottom:12px;display:block}
-.hub-link:hover{color:var(--c1)}
-
-.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;justify-content:center}
-.toolbar label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
-
-/* Week picker */
-input[type="week"]{
-  background:var(--surface2);border:1px solid var(--border2);
-  color:var(--text);padding:7px 14px;
-  font-size:12px;font-family:'Exo 2',sans-serif;
-  outline:none;color-scheme:dark;transition:border-color .2s;
-  clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);
-}
-input[type="week"]:focus{border-color:var(--c1)}
-
-/* Week nav buttons */
-.week-nav{display:flex;align-items:center;gap:5px}
-.btn-wk{
-  background:var(--surface2);border:1px solid var(--border2);color:var(--text2);
-  width:32px;height:32px;font-size:14px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:all .15s;
-  clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);
-  font-family:'Exo 2',sans-serif;border:1px solid var(--border2);
-}
-.btn-wk:hover{border-color:var(--c1);color:var(--c1)}
-.btn-today{
-  background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.25);color:var(--c1);
-  padding:0 12px;height:32px;font-size:9px;font-weight:700;letter-spacing:2px;
-  text-transform:uppercase;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .15s;
-  white-space:nowrap;
-  clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);
-}
-.btn-today:hover{background:rgba(6,182,212,.18)}
-
-/* Export button */
-.btn{
-  padding:7px 18px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
-  cursor:pointer;border:none;font-family:'Exo 2',sans-serif;transition:all .2s;
-  clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);
-}
-.btn-export{background:var(--c1);color:#000}
-.btn-export:hover{background:var(--c3);transform:translateY(-1px)}
-.btn-export:disabled{opacity:.4;cursor:default;transform:none}
-
-/* Sync bar */
-.sync-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
-.sync-indicator{display:flex;align-items:center;gap:6px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border)}
-.sync-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.sync-dot.connected{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,.5)}
-.sync-dot.syncing{background:var(--yellow);animation:pulse .8s infinite}
-.sync-dot.error{background:var(--red)}
-.sync-dot.offline{background:var(--text3)}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.sync-text{font-size:10px;font-weight:600}
-.sync-time{font-size:9px;color:var(--text3)}
-
-.btn-save-fb{
-  background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.22);color:var(--c1);
-  padding:6px 14px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
-  cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;
-  clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);
-}
-.btn-save-fb:hover{background:rgba(6,182,212,.18)}
-.btn-save-fb.saved{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:var(--green)}
-.btn-mini-row{display:flex;gap:5px}
-.btn-mini{
-  background:var(--surface2);border:1px solid var(--border);color:var(--text3);
-  padding:5px 10px;font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
-  cursor:pointer;font-family:'Exo 2',sans-serif;transition:color .15s;
-}
-.btn-mini:hover{color:var(--text2)}
-.btn-mini.red{color:rgba(239,68,68,.3)}.btn-mini.red:hover{color:var(--red)}
-
-/* ── CARD ── */
-.card{
-  width:100%;max-width:1060px;
-  background:var(--bg2);
-  border:1px solid rgba(6,182,212,.1);
-  border-radius:12px;overflow:hidden;
-  box-shadow:0 0 0 1px rgba(6,182,212,.04),0 40px 100px rgba(0,0,0,.7);
-}
-
-/* ── HEADER ── */
-.card-header{
-  position:relative;overflow:hidden;
-  padding:24px 32px 20px;
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;gap:20px;
-}
-.card-header::after{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,var(--c1),var(--c3) 40%,transparent 70%);
-}
-.card-header::before{
-  content:'';position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(ellipse 50% 180% at 0% 50%,rgba(6,182,212,.06),transparent 65%);
-}
-.header-left{display:flex;align-items:center;gap:14px;position:relative}
-.logo-mark{
-  font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;
-  color:var(--c1);letter-spacing:2px;
-  width:42px;height:42px;
-  background:rgba(6,182,212,.08);
-  border:1px solid rgba(6,182,212,.22);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
-}
-.header-titles{}
-.club-name{
-  font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;
-  letter-spacing:4px;text-transform:uppercase;color:var(--text3);
-}
-.doc-type{
-  font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;
-  letter-spacing:2px;text-transform:uppercase;color:var(--text);line-height:1.1;
-}
-.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;position:relative}
-.week-label-sm{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
-.week-label-val{
-  font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;
-  color:var(--c1);letter-spacing:1px;white-space:nowrap;
-  text-shadow:0 0 16px rgba(6,182,212,.4);
-}
-.season-tag{
-  font-size:8px;letter-spacing:2px;text-transform:uppercase;
-  color:rgba(6,182,212,.5);
-  border:1px solid rgba(6,182,212,.15);
-  background:rgba(6,182,212,.05);
-  padding:2px 10px;
-  clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%);
-}
-
-/* ── META BAND (week info) ── */
-.meta-band{
-  border-bottom:1px solid var(--border);background:var(--surface);
-  padding:10px 32px;display:flex;align-items:center;gap:24px;
-}
-.mb-item{display:flex;align-items:center;gap:8px}
-.mb-dot{
-  width:5px;height:5px;flex-shrink:0;
-  clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);
-  background:var(--c1);
-}
-.mb-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
-.mb-val{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--text2)}
-
-/* ── GRID ── */
-.grid{display:grid;grid-template-columns:repeat(7,1fr)}
-
-.day-col{
-  padding:14px 10px 12px;
-  border-right:1px solid var(--border);
-  background:var(--bg2);
-  min-height:200px;
-  transition:background .12s;
-}
-.day-col:last-child{border-right:none}
-.day-col:hover{background:rgba(6,182,212,.018)}
-
-.day-head{
-  margin-bottom:12px;padding-bottom:10px;
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:6px;
-}
-.day-head-dot{
-  width:4px;height:4px;flex-shrink:0;border-radius:50%;background:var(--border2);
-  transition:background .15s;
-}
-.day-col:hover .day-head-dot{background:var(--c1)}
-.day-name{
-  font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;
-  letter-spacing:2px;text-transform:uppercase;color:var(--text3);
-}
-.day-col:hover .day-name{color:var(--text2)}
-
-/* ── SLOTS ── */
-.slot{
-  position:relative;
-  padding:9px 10px 9px 12px;
-  margin-bottom:6px;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-left:2px solid var(--slot-color,var(--border));
-  cursor:pointer;
-  transition:background .1s,border-color .1s;
-  clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,0 100%);
-}
-.slot:hover{background:var(--surface2);border-color:var(--border2)}
-
-.slot-type{
-  font-family:'Rajdhani',sans-serif;
-  font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
-  padding:2px 7px;margin-bottom:5px;display:inline-block;
-  clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);
-}
-.slot-time{font-size:9px;color:var(--text3);margin-bottom:3px;letter-spacing:.3px}
-.slot-note{font-size:11px;color:var(--text2);line-height:1.4;font-weight:500}
-
-.slot-del{
-  position:absolute;top:5px;right:6px;
-  background:none;border:none;color:var(--border2);
-  font-size:10px;cursor:pointer;opacity:0;
-  transition:opacity .15s,color .15s;line-height:1;padding:0;
-}
-.slot:hover .slot-del{opacity:1}
-.slot-del:hover{color:var(--red) !important}
-
-.add-slot{
-  width:100%;background:none;
-  border:1px dashed var(--border);
-  color:var(--text3);font-size:14px;
-  padding:5px;cursor:pointer;transition:all .15s;
-  line-height:1;margin-top:4px;font-family:'Exo 2',sans-serif;
-  clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);
-}
-.add-slot:hover{border-color:var(--c1);color:var(--c1)}
-
-/* ── LEGEND ── */
-.legend-bar{
-  border-top:1px solid var(--border);background:var(--surface);
-  padding:12px 32px;
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
-}
-.legend-items{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
-.leg-pill{
-  padding:2px 9px;
-  font-family:'Rajdhani',sans-serif;
-  font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
-  clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);
-}
-.footer-brand{
-  font-family:'Rajdhani',sans-serif;
-  font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);
-}
-
-/* ── MODAL ── */
-.overlay{
-  display:none;position:fixed;inset:0;
-  background:rgba(2,12,16,.92);backdrop-filter:blur(10px);
-  z-index:300;align-items:center;justify-content:center;
-}
-.overlay.open{display:flex}
-
-.modal{
-  background:var(--bg2);
-  border:1px solid var(--border2);
-  padding:28px 26px;width:400px;max-width:95vw;
-  box-shadow:0 0 80px rgba(0,0,0,.8),0 0 30px rgba(6,182,212,.08);
-  clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px));
-}
-.modal-title{
-  font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;
-  letter-spacing:2px;text-transform:uppercase;color:var(--c1);
-  margin-bottom:22px;display:flex;align-items:center;gap:9px;
-}
-.modal-title::before{
-  content:'';width:5px;height:5px;flex-shrink:0;
-  clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);
-  background:var(--c1);
-}
-.field{margin-bottom:14px}
-.field label{
-  display:block;font-size:8.5px;letter-spacing:2px;text-transform:uppercase;
-  color:var(--text3);margin-bottom:6px;
-}
-.field input,.field select{
-  width:100%;background:var(--surface);border:1px solid var(--border2);
-  color:var(--text);padding:9px 12px;
-  font-size:13px;font-family:'Exo 2',sans-serif;outline:none;transition:border-color .2s;
-  clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);
-}
-.field input:focus,.field select:focus{border-color:var(--c1)}
-.field select option{background:var(--surface)}
-.modal-actions{display:flex;gap:8px;margin-top:22px}
-.btn-modal-save{
-  flex:1;background:var(--c1);color:#000;border:none;
-  font-weight:700;letter-spacing:1.5px;
-}
-.btn-modal-save:hover{background:var(--c3)}
-.btn-modal-cancel{
-  flex:1;background:var(--surface);color:var(--text2);border:1px solid var(--border2);
-}
-.btn-modal-cancel:hover{border-color:var(--c1);color:var(--c1)}
-
-@media(max-width:1100px){.grid{grid-template-columns:1fr}.day-col{border-right:none;border-bottom:1px solid var(--border)}.card-header{flex-direction:column;align-items:flex-start}.header-right{align-items:flex-start}}
+  @media(max-width:1000px){.grid{grid-template-columns:1fr}.day{border-right:none;border-bottom:1px solid var(--border);min-height:auto}}
 </style>
 </head>
 <body>
 
-<!-- LOADING -->
-<div class="ls" id="loadingScreen">
-  <div class="ls-logo">RoZter</div>
-  <div class="ls-bar"><div class="ls-fill"></div></div>
-</div>
+<div class="loader"><div class="loader-mark">ARCHI</div><div class="loader-bar"></div></div>
+<div id="nav"></div>
 
-<a href="index.html" class="hub-link">← Hub RoZter</a>
-
-<div class="toolbar">
-  <label>Semaine</label>
-  <div class="week-nav">
-    <button class="btn-wk" id="prevWeekBtn" title="Semaine précédente">‹</button>
-    <input type="week" id="weekPicker">
-    <button class="btn-wk" id="nextWeekBtn" title="Semaine suivante">›</button>
-    <button class="btn-today" id="todayBtn">Aujourd'hui</button>
+<div class="content">
+  <div class="toolbar">
+    <div class="week-nav">
+      <button class="btn btn-wk" id="prevWk" title="Semaine précédente">‹</button>
+      <input type="week" id="weekPicker">
+      <button class="btn btn-wk" id="nextWk" title="Semaine suivante">›</button>
+      <button class="btn btn-sm" id="todayBtn">Aujourd'hui</button>
+    </div>
+    <div class="actions">
+      <span class="sync-pill">
+        <span class="sync-dot offline" id="syncDot"></span>
+        <span id="syncText">En attente…</span>
+        <span class="sync-time" id="syncTime"></span>
+      </span>
+      <button class="btn btn-sm" id="exportBtn">⬇ PNG</button>
+      <button class="btn btn-sm" id="backupBtn">Backup</button>
+      <button class="btn btn-sm" id="importBtn">Import</button>
+      <button class="btn btn-sm btn-danger" id="resetBtn">Reset</button>
+    </div>
   </div>
-  <button class="btn btn-export" id="exportBtn">⬇ Exporter PNG</button>
-</div>
 
-<div class="sync-bar">
-  <div class="sync-indicator">
-    <div class="sync-dot offline" id="syncDot"></div>
-    <span class="sync-text" id="syncText" style="color:var(--text3)">En attente…</span>
-    <span class="sync-time" id="syncTime"></span>
-  </div>
-  <button class="btn-save-fb" id="saveFbBtn" onclick="save()">💾 Sauvegarder</button>
-  <div class="btn-mini-row">
-    <div class="btn-mini" onclick="exportBackup()">📦 Backup</div>
-    <div class="btn-mini" onclick="importBackup()">📥 Import</div>
-    <div class="btn-mini red" onclick="resetData()">🗑 Reset</div>
-  </div>
-</div>
-
-<div class="card" id="card">
-
-  <!-- HEADER -->
-  <div class="card-header">
-    <div class="header-left">
-      <div class="logo-mark">PZ</div>
-      <div class="header-titles">
-        <div class="club-name">PlaZma Esport · RoZter</div>
-        <div class="doc-type">Programme d'entraînement</div>
+  <div class="card" id="capture">
+    <div class="card-head">
+      <div>
+        <div class="eyebrow">PlaZma Esport · Planning</div>
+        <div class="card-title">Programme d'entraînement</div>
       </div>
+      <div class="wk-label" id="weekLabel">—</div>
     </div>
-    <div class="header-right">
-      <div class="week-label-sm">Semaine en cours</div>
-      <div class="week-label-val" id="weekLabel">—</div>
-      <div class="season-tag">Saison 2026</div>
+    <div class="meta-band">
+      <span><span class="dot"></span>League of Legends</span>
+      <span><span class="dot"></span>Émeraude — Diamant</span>
+      <span><span class="dot"></span><span id="sessCount">—</span></span>
     </div>
+    <div class="grid" id="grid"></div>
+    <div class="legend" id="legend"></div>
   </div>
-
-  <!-- META BAND -->
-  <div class="meta-band">
-    <div class="mb-item">
-      <div class="mb-dot"></div>
-      <div class="mb-label">League of Legends</div>
-    </div>
-    <div class="mb-item">
-      <div class="mb-dot"></div>
-      <div class="mb-label">Émeraude — Diamant</div>
-    </div>
-    <div class="mb-item">
-      <div class="mb-dot"></div>
-      <div class="mb-label" id="totalSessionsLabel">—</div>
-    </div>
-  </div>
-
-  <div class="grid" id="grid"></div>
-
-  <div class="legend-bar">
-    <div class="legend-items" id="legend"></div>
-    <div class="footer-brand">plazma-esport.fr · RoZter</div>
-  </div>
-
 </div>
 
 <!-- MODAL -->
@@ -420,299 +97,127 @@ input[type="week"]:focus{border-color:var(--c1)}
   <div class="modal">
     <div class="modal-title" id="modalTitle">Modifier le créneau</div>
     <div class="field"><label>Type de session</label><select id="mType"></select></div>
-    <div class="field"><label>Horaires</label><input type="text" id="mTime" placeholder="ex: 19h00 – 22h00"></div>
-    <div class="field"><label>Note</label><input type="text" id="mNote" placeholder="ex: Scrims vs Team X"></div>
+    <div class="field"><label>Horaires</label><input type="text" id="mTime" placeholder="ex : 19h00 – 22h00"></div>
+    <div class="field"><label>Note</label><input type="text" id="mNote" placeholder="ex : Scrims vs Team X"></div>
     <div class="modal-actions">
-      <button class="btn btn-modal-cancel" id="cancelBtn">Annuler</button>
-      <button class="btn btn-modal-save" id="saveSlotBtn">Sauvegarder</button>
+      <button class="btn btn-ghost" id="cancelBtn">Annuler</button>
+      <button class="btn btn-primary" id="saveSlotBtn">Sauvegarder</button>
     </div>
   </div>
 </div>
 
+<script src="assets/plazma.js"></script>
 <script>
-// ═══════════════════════════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════════════════════════
-const COL    = 'plazma';
-let   DOC_ID = 'schedule';
+PZ.mountNav('schedule', '#nav');
 
 const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
-
 const TYPES = [
-  { id:"scrim",    label:"Scrim",          color:"#3b82f6", bg:"rgba(59,130,246,.08)"  },
-  { id:"soloq",    label:"SoloQ",          color:"#ef4444", bg:"rgba(239,68,68,.08)"   },
-  { id:"repos",    label:"Repos",          color:"#22c55e", bg:"rgba(34,197,94,.08)"   },
-  { id:"match",    label:"Match Offi",     color:"#f97316", bg:"rgba(249,115,22,.08)"  },
-  { id:"coaching", label:"Coaching Indiv", color:"#ec4899", bg:"rgba(236,72,153,.08)"  },
-  { id:"review",   label:"Review VOD",     color:"#a855f7", bg:"rgba(168,85,247,.08)"  },
-  { id:"flexq",    label:"FlexQ",          color:"#f59e0b", bg:"rgba(245,158,11,.08)"  },
-  { id:"atelier",  label:"Atelier",        color:"#2dd4bf", bg:"rgba(45,212,191,.08)"  },
-  { id:"autre",    label:"Autre",          color:"#94a3b8", bg:"rgba(148,163,184,.06)" },
+  { id:"scrim",    label:"Scrim",          color:"#3b82f6" },
+  { id:"soloq",    label:"SoloQ",          color:"#ef4444" },
+  { id:"repos",    label:"Repos",          color:"#22c55e" },
+  { id:"match",    label:"Match Offi",     color:"#f97316" },
+  { id:"coaching", label:"Coaching Indiv", color:"#ec4899" },
+  { id:"review",   label:"Review VOD",     color:"#a855f7" },
+  { id:"flexq",    label:"FlexQ",          color:"#f59e0b" },
+  { id:"atelier",  label:"Atelier",        color:"#2dd4bf" },
+  { id:"autre",    label:"Autre",          color:"#94a3b8" },
 ];
+const getType = id => TYPES.find(t => t.id === id) || TYPES[8];
 
-const DEFAULT_SCHEDULE = {
-  Lundi:    [{ type:"scrim",    time:"19h00 – 22h00", note:"Scrims inter-équipes" }],
-  Mardi:    [{ type:"soloq",   time:"18h00 – 21h00", note:"SoloQ individuel" }],
-  Mercredi: [{ type:"review",  time:"19h00 – 20h30", note:"Review match précédent" },
-             { type:"scrim",   time:"21h00 – 23h00", note:"Scrims" }],
-  Jeudi:    [{ type:"coaching",time:"19h00 – 20h00", note:"Coaching joueur mid" }],
-  Vendredi: [{ type:"scrim",   time:"20h00 – 23h00", note:"Scrims ranked" }],
-  Samedi:   [{ type:"match",   time:"15h00 – 18h00", note:"Match officiel" }],
-  Dimanche: [{ type:"repos",   time:"",              note:"Jour de repos" }],
-};
+let schedule = {};
 
-let schedule = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
-let _unsubscribe = null;
+// ---- Semaine ----
+function getWeekNum(d){ d=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); const day=d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-day); const y1=new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d-y1)/86400000)+1)/7); }
+function currentWeekValue(){ const n=new Date(); return `${n.getFullYear()}-W${String(getWeekNum(n)).padStart(2,'0')}`; }
+function weekLabel(val){ const [yr,wk]=val.split('-W').map(Number); if(!yr||!wk)return val; const base=new Date(yr,0,1+(wk-1)*7); const day=base.getDay(); const mon=new Date(base); mon.setDate(base.getDate()-(day===0?6:day-1)); const sun=new Date(mon); sun.setDate(mon.getDate()+6); const fmt=d=>d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}); return `S${wk} · ${fmt(mon)} – ${fmt(sun)} ${yr}`; }
 
-// ═══════════════════════════════════════════════════════════
-// UTILS SEMAINE
-// ═══════════════════════════════════════════════════════════
-function getWeekNum(d) {
-  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const day = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - day);
-  const y1 = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil((((d - y1) / 86400000) + 1) / 7);
-}
-function currentWeekValue() {
-  const n = new Date();
-  return `${n.getFullYear()}-W${String(getWeekNum(n)).padStart(2,'0')}`;
-}
-function weekLabel(val) {
-  const [yr, wk] = val.split('-W').map(Number);
-  if (!yr || !wk) return val;
-  const base = new Date(yr, 0, 1 + (wk - 1) * 7);
-  const day  = base.getDay();
-  const mon  = new Date(base); mon.setDate(base.getDate() - (day === 0 ? 6 : day - 1));
-  const sun  = new Date(mon);  sun.setDate(mon.getDate() + 6);
-  const fmt  = d => d.toLocaleDateString('fr-FR', { day:'2-digit', month:'short' });
-  return `S${wk} · ${fmt(mon)} – ${fmt(sun)} ${yr}`;
-}
-function getType(id) { return TYPES.find(t => t.id === id) || TYPES[8]; }
-function getDocId()  { return 'schedule-' + (document.getElementById('weekPicker').value || 'default'); }
+const picker = document.getElementById('weekPicker');
+picker.value = currentWeekValue();
+document.getElementById('weekLabel').textContent = weekLabel(picker.value);
 
-// ═══════════════════════════════════════════════════════════
-// RENDER
-// ═══════════════════════════════════════════════════════════
-function renderGrid() {
+// ---- Sync ----
+const sync = PZ.sync({
+  docId: () => 'schedule-' + (picker.value || 'default'),
+  getState: () => ({ schedule }),
+  applyState: s => { schedule = (s && s.schedule) || {}; },
+  onData: renderGrid
+});
+
+// ---- Render ----
+function renderGrid(){
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
-
-  let totalSlots = 0;
+  let total = 0;
   DAYS.forEach(day => {
     const slots = schedule[day] || [];
-    totalSlots += slots.length;
-
+    total += slots.length;
     const col = document.createElement('div');
-    col.className = 'day-col';
-    col.innerHTML = `<div class="day-head"><div class="day-head-dot"></div><div class="day-name">${day}</div></div>`;
-
+    col.className = 'day';
+    col.innerHTML = `<div class="day-name">${day}</div>`;
     slots.forEach((slot, idx) => {
       const t = getType(slot.type);
       const el = document.createElement('div');
       el.className = 'slot';
-      el.style.cssText = `background:${t.bg}; --slot-color:${t.color};`;
-      el.innerHTML = `
-        <button class="slot-del" data-day="${day}" data-idx="${idx}">✕</button>
-        <div class="slot-type" style="background:${t.color}18;color:${t.color}">${t.label}</div>
+      el.style.setProperty('--sc', t.color);
+      el.innerHTML = `<button class="slot-del" data-noexport>✕</button>
+        <span class="slot-type">${t.label}</span>
         ${slot.time ? `<div class="slot-time">⏱ ${slot.time}</div>` : ''}
         <div class="slot-note">${slot.note || ''}</div>`;
-      el.addEventListener('click', e => {
-        if (!e.target.classList.contains('slot-del')) openModal(day, idx);
-      });
+      el.addEventListener('click', e => { if(!e.target.classList.contains('slot-del')) openModal(day, idx); });
+      el.querySelector('.slot-del').addEventListener('click', e => { e.stopPropagation(); schedule[day].splice(idx,1); renderGrid(); sync.save(); });
       col.appendChild(el);
     });
-
     const add = document.createElement('button');
-    add.className = 'add-slot';
-    add.textContent = '+';
-    add.addEventListener('click', () => {
-      schedule[day] = schedule[day] || [];
-      schedule[day].push({ type:'scrim', time:'', note:'' });
-      renderGrid(); save();
-    });
+    add.className = 'add-slot'; add.textContent = '+'; add.setAttribute('data-noexport','');
+    add.addEventListener('click', () => { (schedule[day]=schedule[day]||[]).push({type:'scrim',time:'',note:''}); renderGrid(); sync.save(); });
     col.appendChild(add);
     grid.appendChild(col);
   });
-
-  document.querySelectorAll('.slot-del').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      schedule[btn.dataset.day].splice(parseInt(btn.dataset.idx), 1);
-      renderGrid(); save();
-    });
-  });
-
-  // Update meta band session count
-  const lbl = document.getElementById('totalSessionsLabel');
-  if (lbl) lbl.textContent = `${totalSlots} session${totalSlots > 1 ? 's' : ''} cette semaine`;
-}
-
-function renderLegend() {
+  document.getElementById('sessCount').textContent = `${total} session${total>1?'s':''} cette semaine`;
   document.getElementById('legend').innerHTML = TYPES.map(t =>
-    `<div class="leg-pill" style="background:${t.color}18;color:${t.color}">${t.label}</div>`
-  ).join('');
+    `<span class="leg" style="color:${t.color};background:${t.color}22">${t.label}</span>`).join('');
 }
 
-// ═══════════════════════════════════════════════════════════
-// MODAL
-// ═══════════════════════════════════════════════════════════
+// ---- Modal ----
 let _mDay, _mIdx;
-function openModal(day, idx) {
-  _mDay = day; _mIdx = idx;
+function openModal(day, idx){
+  _mDay=day; _mIdx=idx;
   const s = schedule[day][idx];
   document.getElementById('modalTitle').textContent = `Modifier · ${day}`;
   document.getElementById('mTime').value = s.time || '';
   document.getElementById('mNote').value = s.note || '';
-  document.getElementById('mType').innerHTML = TYPES.map(t =>
-    `<option value="${t.id}" ${t.id === s.type ? 'selected' : ''}>${t.label}</option>`
-  ).join('');
+  document.getElementById('mType').innerHTML = TYPES.map(t => `<option value="${t.id}"${t.id===s.type?' selected':''}>${t.label}</option>`).join('');
   document.getElementById('overlay').classList.add('open');
 }
-document.getElementById('cancelBtn').addEventListener('click', () =>
-  document.getElementById('overlay').classList.remove('open'));
-document.getElementById('overlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('overlay'))
-    document.getElementById('overlay').classList.remove('open');
-});
+const closeModal = () => document.getElementById('overlay').classList.remove('open');
+document.getElementById('cancelBtn').addEventListener('click', closeModal);
+document.getElementById('overlay').addEventListener('click', e => { if(e.target.id==='overlay') closeModal(); });
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
 document.getElementById('saveSlotBtn').addEventListener('click', () => {
-  schedule[_mDay][_mIdx] = {
-    type: document.getElementById('mType').value,
-    time: document.getElementById('mTime').value,
-    note: document.getElementById('mNote').value,
-  };
-  document.getElementById('overlay').classList.remove('open');
-  renderGrid(); save();
-});
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') document.getElementById('overlay').classList.remove('open');
+  schedule[_mDay][_mIdx] = { type:document.getElementById('mType').value, time:document.getElementById('mTime').value, note:document.getElementById('mNote').value };
+  closeModal(); renderGrid(); sync.save();
 });
 
-// ═══════════════════════════════════════════════════════════
-// WEEK NAVIGATION
-// ═══════════════════════════════════════════════════════════
-const picker = document.getElementById('weekPicker');
-
-function shiftWeek(delta) {
-  const val = picker.value || currentWeekValue();
-  const [yr, wk] = val.split('-W').map(Number);
-  const base = new Date(yr, 0, 1 + (wk - 1) * 7);
-  const day  = base.getDay();
-  const mon  = new Date(base); mon.setDate(base.getDate() - (day === 0 ? 6 : day - 1));
-  mon.setDate(mon.getDate() + delta * 7);
-  const newWk = getWeekNum(mon);
-  picker.value = `${mon.getFullYear()}-W${String(newWk).padStart(2,'0')}`;
+// ---- Week navigation ----
+function shiftWeek(delta){
+  const [yr,wk]=(picker.value||currentWeekValue()).split('-W').map(Number);
+  const base=new Date(yr,0,1+(wk-1)*7); const day=base.getDay();
+  const mon=new Date(base); mon.setDate(base.getDate()-(day===0?6:day-1)); mon.setDate(mon.getDate()+delta*7);
+  picker.value = `${mon.getFullYear()}-W${String(getWeekNum(mon)).padStart(2,'0')}`;
   picker.dispatchEvent(new Event('change'));
 }
+document.getElementById('prevWk').addEventListener('click', () => shiftWeek(-1));
+document.getElementById('nextWk').addEventListener('click', () => shiftWeek(1));
+document.getElementById('todayBtn').addEventListener('click', () => { picker.value=currentWeekValue(); picker.dispatchEvent(new Event('change')); });
+picker.addEventListener('change', () => { document.getElementById('weekLabel').textContent = weekLabel(picker.value); schedule={}; renderGrid(); sync.restart(); });
 
-document.getElementById('prevWeekBtn').addEventListener('click', () => shiftWeek(-1));
-document.getElementById('nextWeekBtn').addEventListener('click', () => shiftWeek(1));
-document.getElementById('todayBtn').addEventListener('click', () => {
-  picker.value = currentWeekValue();
-  picker.dispatchEvent(new Event('change'));
-});
+// ---- Toolbar actions ----
+document.getElementById('exportBtn').addEventListener('click', () => PZ.exportPNG(document.getElementById('capture'), 'archi-planning-'+picker.value));
+document.getElementById('backupBtn').addEventListener('click', () => PZ.backup({schedule}, 'archi-planning-'+picker.value));
+document.getElementById('importBtn').addEventListener('click', () => PZ.importFile(d => { schedule=(d&&d.schedule)||{}; renderGrid(); sync.save(); }));
+document.getElementById('resetBtn').addEventListener('click', () => sync.reset('Effacer le planning de cette semaine ?'));
 
-picker.value = currentWeekValue();
-document.getElementById('weekLabel').textContent = weekLabel(picker.value);
-
-picker.addEventListener('change', () => {
-  document.getElementById('weekLabel').textContent = weekLabel(picker.value);
-  schedule = {};
-  renderGrid();
-  startSync();
-});
-
-// ═══════════════════════════════════════════════════════════
-// FIREBASE SYNC
-// ═══════════════════════════════════════════════════════════
-function getState()     { return { schedule }; }
-function applyState(s)  { if (s && s.schedule) schedule = s.schedule; }
-
-function setSyncState(state, text, time = '') {
-  const dot = document.getElementById('syncDot');
-  const txt = document.getElementById('syncText');
-  const tim = document.getElementById('syncTime');
-  if (!dot) return;
-  dot.className = 'sync-dot ' + state;
-  txt.textContent = text;
-  txt.style.color = state === 'connected' ? 'var(--green)' : state === 'syncing' ? 'var(--yellow)' : state === 'error' ? 'var(--red)' : 'var(--text3)';
-  tim.textContent = time;
-}
-function hideLoading() {
-  const ls = document.getElementById('loadingScreen');
-  if (ls) { ls.classList.add('hidden'); setTimeout(() => ls.style.display = 'none', 500); }
-}
-function save() {
-  setSyncState('syncing', 'Sauvegarde…');
-  db.collection(COL).doc(getDocId()).set(getState())
-    .then(() => { setSyncState('connected', 'Synchronisé'); flashSave(true); })
-    .catch(e => { setSyncState('error', 'Erreur Firebase'); flashSave(false); console.error(e); });
-}
-function startSync() {
-  if (_unsubscribe) { _unsubscribe(); _unsubscribe = null; }
-  setSyncState('syncing', 'Connexion…');
-  _unsubscribe = db.collection(COL).doc(getDocId()).onSnapshot(
-    doc => {
-      if (doc.metadata.hasPendingWrites) return;
-      if (doc.exists) {
-        applyState(doc.data()); renderGrid();
-        setSyncState('connected', 'Synchronisé', new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' }));
-      } else {
-        setSyncState('connected', 'Semaine vide', ''); renderGrid();
-      }
-      hideLoading();
-    },
-    err => { console.error(err); setSyncState('error', 'Erreur connexion'); hideLoading(); }
-  );
-}
-function flashSave(ok) {
-  const btn = document.getElementById('saveFbBtn'); if (!btn) return;
-  btn.classList.add('saved'); btn.textContent = ok ? '✓ Sauvegardé' : '⚠ Erreur';
-  if (!ok) btn.style.color = '#ef4444';
-  setTimeout(() => { btn.classList.remove('saved'); btn.textContent = '💾 Sauvegarder'; btn.style.color = ''; }, 1600);
-}
-function exportBackup() {
-  const b = new Blob([JSON.stringify(getState(), null, 2)], { type:'application/json' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(b);
-  a.download = 'plazma-schedule-' + (picker.value || 'backup') + '.json'; a.click();
-}
-function importBackup() {
-  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json';
-  inp.addEventListener('change', async () => {
-    try { applyState(JSON.parse(await inp.files[0].text())); renderGrid(); save(); }
-    catch(e) { alert('Fichier invalide'); }
-  });
-  inp.click();
-}
-function resetData() {
-  if (!confirm('Effacer le planning de cette semaine ?')) return;
-  schedule = {};
-  db.collection(COL).doc(getDocId()).delete()
-    .then(() => { renderGrid(); setSyncState('connected', 'Réinitialisé', ''); });
-}
-
-// Export PNG
-document.getElementById('exportBtn').addEventListener('click', async () => {
-  const btn = document.getElementById('exportBtn');
-  btn.disabled = true; btn.textContent = 'Export…';
-  document.querySelectorAll('.slot-del,.add-slot,.btn,.sync-bar,.hub-link').forEach(el => el.style.visibility = 'hidden');
-  await new Promise(r => setTimeout(r, 80));
-  const canvas = await html2canvas(document.getElementById('card'), { scale:2, backgroundColor:'#04111a', useCORS:true, logging:false });
-  document.querySelectorAll('.slot-del,.add-slot,.btn,.sync-bar,.hub-link').forEach(el => el.style.visibility = '');
-  btn.disabled = false; btn.textContent = '⬇ Exporter PNG';
-  const link = document.createElement('a');
-  link.download = `rozter-${picker.value}.png`; link.href = canvas.toDataURL('image/png'); link.click();
-});
-
-// ═══════════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════════
-renderLegend();
-startSync();
-setTimeout(() => {
-  const ls = document.getElementById('loadingScreen');
-  if (ls && !ls.classList.contains('hidden')) { hideLoading(); setSyncState('error', 'Firebase inaccessible'); renderGrid(); }
-}, 8000);
+renderGrid();
 </script>
 </body>
 </html>

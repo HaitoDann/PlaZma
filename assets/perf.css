@@ -1,0 +1,83 @@
+/* ============================================================
+   ARCHI — Fiches de performance joueur (moteur commun)
+   Complète theme.css. Piloté par assets/perf.js.
+   ============================================================ */
+.perf-content{max-width:960px;margin:0 auto;padding:22px var(--gut) 80px}
+.perf-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-bottom:14px}
+
+/* En-tête joueur */
+.perf-head{
+  display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  padding:22px;border-bottom:1px solid var(--border);
+  border-top:3px solid var(--role,var(--accent));
+}
+.perf-head .doc-type{font-family:var(--font-display);font-size:1.25rem;font-weight:600}
+.perf-player{display:flex;align-items:center;gap:14px}
+.perf-emo{font-size:34px}
+.perf-player-info{text-align:right}
+.perf-pseudo{font-family:var(--font-display);font-size:1.7rem;font-weight:700;color:var(--role,var(--accent));line-height:1.1}
+
+/* Évaluateur */
+.perf-meta{display:flex;align-items:center;gap:12px;padding:14px 22px;border-bottom:1px solid var(--border)}
+.perf-meta label{margin:0;white-space:nowrap}
+.perf-meta input{max-width:320px}
+
+/* Bandeau score */
+.score-band{display:flex;align-items:center;gap:26px;padding:20px 22px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.score-num{font-family:var(--font-display);font-size:3.6rem;font-weight:700;line-height:1;color:var(--role,var(--accent))}
+.score-denom{font-family:var(--font-display);font-size:1.4rem;font-weight:600;color:var(--muted)}
+.score-lbl{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+.score-right{flex:1;min-width:240px}
+.score-qual{font-family:var(--font-display);font-size:1rem;font-weight:600;color:var(--role,var(--accent));margin-bottom:8px}
+.score-track{height:8px;border-radius:5px;background:var(--surface-2);overflow:hidden;margin-bottom:10px}
+.score-fill{height:100%;border-radius:5px;background:var(--role,var(--accent));width:0;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.cat-pills{display:flex;gap:6px;flex-wrap:wrap}
+.cp{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px}
+
+/* Corps */
+.perf-body{padding:22px;display:flex;flex-direction:column;gap:24px}
+.perf-sec-title{font-family:var(--font-display);font-size:14px;font-weight:600;
+  padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.perf-sec-title .d{width:7px;height:7px;border-radius:50%;background:var(--role,var(--accent))}
+
+/* Jauges */
+.cat-block{margin-bottom:16px}
+.cat-label{font-size:12px;font-weight:600;letter-spacing:.04em;color:var(--cc,var(--dim));margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.cat-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.jauge-list{display:flex;flex-direction:column;gap:7px}
+.jr{display:flex;align-items:center;gap:14px;background:var(--surface-2);border:1px solid var(--border);
+  border-left:3px solid var(--jc,var(--border));border-radius:8px;padding:10px 14px}
+.jr-label{font-size:13px;font-weight:600;color:var(--text);min-width:250px;flex-shrink:0;line-height:1.3}
+.jr-label span{display:block;font-size:11px;color:var(--muted);font-weight:400;margin-top:2px}
+.jr-dots{display:flex;gap:4px;flex:1}
+.jd{flex:1;height:14px;border-radius:4px;cursor:pointer;opacity:.14;transition:opacity .1s,transform .1s}
+.jd:hover{opacity:.5;transform:scaleY(1.2)}
+.jd.on{opacity:1}
+.jr-num{font-family:var(--font-mono);font-size:1.15rem;font-weight:700;min-width:24px;text-align:right;color:var(--muted)}
+
+/* Analyse qualitative */
+.obs-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.obs-card{background:var(--surface-2);border:1px solid var(--border);border-left:3px solid var(--oc,var(--border));border-radius:8px;padding:14px}
+.obs-lbl{font-size:12px;font-weight:600;margin-bottom:8px;color:var(--oc,var(--dim))}
+.obs-card textarea{background:transparent;border:none;padding:0;min-height:92px;font-size:13px;color:var(--dim)}
+.obs-card textarea:focus{box-shadow:none}
+
+/* Objectifs */
+.obj-row{display:flex;align-items:center;gap:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;margin-bottom:7px}
+.obj-n{font-family:var(--font-mono);font-size:1.1rem;font-weight:700;color:var(--muted);min-width:26px}
+.obj-row input{background:transparent;border:none;padding:6px 0;border-bottom:1px solid transparent}
+.obj-row input:focus{box-shadow:none;border-bottom-color:var(--role,var(--accent))}
+
+/* Pied / signatures */
+.perf-foot{border-top:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
+.perf-foot .brand{font-size:12px;color:var(--muted);letter-spacing:.04em}
+.sigs{display:flex;gap:26px}
+.sig{display:flex;flex-direction:column;gap:6px;align-items:center}
+.sig-line{width:110px;height:1px;background:var(--border-2)}
+.sig-lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+@media(max-width:760px){
+  .obs-grid{grid-template-columns:1fr}
+  .jr-label{min-width:150px}
+  .perf-player-info{text-align:left}
+}
