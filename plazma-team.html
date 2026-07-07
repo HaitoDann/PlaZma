@@ -97,6 +97,7 @@
 </div>
 
 <script src="assets/plazma.js"></script>
+<script src="assets/champions.js"></script>
 <script>
 PZ.mountNav('team', '#nav');
 
@@ -171,10 +172,13 @@ function render(){
       const el = document.createElement('div');
       el.className = 'pool-row';
       el.innerHTML = `
-        <input value="${esc(row.champ)}" placeholder="Champion" data-f="champ">
+        <button type="button" class="champ-pick" data-champ-btn>${row.champ ? window.Champions.chipHtml(row.champ) : '<span class="muted">+ Champion</span>'}</button>
         <select data-f="tier" class="tier-${row.tier||'A'}">${TIERS.map(t=>`<option${t===(row.tier||'A')?' selected':''}>${t}</option>`).join('')}</select>
         <input value="${esc(row.note)}" placeholder="Note (match-up, condition…)" data-f="note">
         <button class="row-del" title="Supprimer">✕</button>`;
+      el.querySelector('[data-champ-btn]').addEventListener('click', ()=>{
+        window.Champions.open(id=>{ if(id){ row.champ = id; render(); queueSave(); } });
+      });
       el.querySelectorAll('[data-f]').forEach(f=>{
         f.addEventListener('input', ()=>{ row[f.dataset.f] = f.value; if(f.dataset.f==='tier') f.className='tier-'+f.value; queueSave(); });
       });
@@ -198,6 +202,7 @@ document.getElementById('exportBtn').addEventListener('click', ()=>PZ.exportPNG(
 document.getElementById('resetBtn').addEventListener('click', ()=>sync.reset('Réinitialiser l\'identité d\'équipe ?'));
 
 render();
+window.Champions.ready.then(render); // affiche les icônes une fois la liste chargée
 </script>
 </body>
 </html>

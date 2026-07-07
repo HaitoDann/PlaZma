@@ -143,11 +143,11 @@
         <div class="draft-split">
           <div class="draft"><div class="t" style="color:var(--accent)">🏆 Picks prioritaires</div>
             <div class="tags" id="tagsPrio"></div>
-            <div class="add"><input id="inputPrio" placeholder="Ajouter un champion…" onkeydown="if(event.key==='Enter')addTag('Prio')"><button class="btn btn-sm" onclick="addTag('Prio')">+</button></div>
+            <button class="btn btn-sm" onclick="pickChamp('Prio')">+ Champion</button>
           </div>
           <div class="draft"><div class="t" style="color:var(--err)">🚫 Bans habituels</div>
             <div class="tags" id="tagsBans"></div>
-            <div class="add"><input id="inputBans" placeholder="Ajouter un champion…" onkeydown="if(event.key==='Enter')addTag('Bans')"><button class="btn btn-sm" onclick="addTag('Bans')">+</button></div>
+            <button class="btn btn-sm" onclick="pickChamp('Bans')">+ Champion</button>
           </div>
         </div>
       </div>
@@ -206,6 +206,7 @@
 </div>
 
 <script src="assets/plazma.js"></script>
+<script src="assets/champions.js"></script>
 <script>
 'use strict';
 PZ.mountNav('scouting', '#nav');
@@ -266,15 +267,15 @@ function buildCP(){
   });
 }
 
-// ── Tags ──
-function addTag(type){
-  const inp=document.getElementById('input'+type), v=inp.value.trim(); if(!v)return;
-  tagData[type].push(v); renderTags(type); inp.value=''; queueSave();
-}
+// ── Tags champions (sélection par icône) ──
+function pickChamp(type){ window.Champions.open(id=>{ if(id){ tagData[type].push(id); renderTags(type); queueSave(); } }); }
 function removeTag(type,i){ tagData[type].splice(i,1); renderTags(type); queueSave(); }
 function renderTags(type){
   const c=document.getElementById('tags'+type); if(!c)return;
-  c.innerHTML=tagData[type].map((t,i)=>`<span class="tag">${esc(t)}<span class="x" onclick="removeTag('${type}',${i})">✕</span></span>`).join('');
+  c.innerHTML=tagData[type].map((cid,i)=>{
+    const u=window.Champions.iconUrl(cid);
+    return `<span class="champ-chip">${u?`<img src="${u}" alt="">`:''}<span>${esc(window.Champions.nameOf(cid))}</span><span class="x" onclick="removeTag('${type}',${i})">✕</span></span>`;
+  }).join('');
 }
 
 // ── Threat ──
@@ -390,6 +391,7 @@ document.getElementById('footDate').textContent='Mise à jour le '+new Date().to
 
 // Init
 buildPlayers(); buildCP(); applyThreat();
+window.Champions.ready.then(()=>{ renderTags('Prio'); renderTags('Bans'); }); // icônes une fois chargées
 (async()=>{
   if(!db){ PZ.status('error','Firebase indisponible'); PZ.loadingDone(); fullReset(); return; }
   try{ const snap=await db.collection(SCOUT_COL).orderBy('_savedAt','desc').limit(1).get();
