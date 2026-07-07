@@ -6,14 +6,14 @@
 <title>ARCHI — Fiche Coach</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/theme.css">
 <link rel="stylesheet" href="assets/perf.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
-  .coach-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:16px 22px;border-bottom:1px solid var(--border)}
+  .coach-meta{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:16px 22px;border-bottom:1px solid var(--border)}
   .cat-block{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
   .cat-head{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border)}
   .cat-ico{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
@@ -60,7 +60,7 @@
         <div class="doc-type">Head Coach</div>
       </div>
       <div class="perf-player">
-        <div class="perf-emo">♟️</div>
+        <div class="perf-emo" id="coachEmoji">♟️</div>
         <div class="perf-player-info">
           <div class="perf-pseudo" id="coachName" style="color:var(--coach)">Coach</div>
           <span class="role-badge" style="--role:var(--coach)">Head Coach</span>
@@ -69,7 +69,6 @@
     </div>
 
     <div class="coach-meta">
-      <div><label>Nom du coach</label><input id="f_name" type="text" placeholder="Pseudo / Prénom"></div>
       <div><label>Période évaluée</label><input id="f_periode" type="text" placeholder="ex : Avril 2026"></div>
       <div><label>Évaluateur</label><input id="f_eval" type="text" placeholder="Président / Joueur désigné"></div>
     </div>
@@ -225,19 +224,22 @@ function updateScore(){
 
 const val = id => { const e=document.getElementById(id); return e?e.value:''; };
 const set = (id,v) => { const e=document.getElementById(id); if(e) e.value=v||''; };
-const FIELDS = ['f_name','f_periode','f_eval','t_forces','t_weak','t_obs','o1','o2','o3','f_note','f_comment'];
+const FIELDS = ['f_periode','f_eval','t_forces','t_weak','t_obs','o1','o2','o3','f_note','f_comment'];
 function getState(){ const s={jV:{...jV}}; FIELDS.forEach(f=>s[f]=val(f)); return s; }
 function applyState(s){
   if(!s) return;
   FIELDS.forEach(f=>{ if(document.activeElement!==document.getElementById(f)) set(f,s[f]); });
-  document.getElementById('coachName').textContent = s.f_name || 'Coach';
   if(s.jV){ Object.keys(jV).forEach(k=>jV[k]=s.jV[k]||0); CATS.forEach(c=>c.items.forEach(i=>refresh(i.id,c.col))); }
   updateScore();
 }
 
 const sync = PZ.sync({ docId:'coach-evaluation', getState, applyState });
 let timer=null; function queueSave(){ clearTimeout(timer); timer=setTimeout(()=>sync.save(),800); }
-document.getElementById('f_name').addEventListener('input', e => { document.getElementById('coachName').textContent = e.target.value || 'Coach'; });
+// Nom et emoji du coach depuis le roster central (mercato)
+PZ.onRoster((roster, coach) => {
+  document.getElementById('coachName').textContent = coach.name;
+  document.getElementById('coachEmoji').textContent = coach.emoji;
+});
 FIELDS.forEach(f => document.getElementById(f).addEventListener('input', queueSave));
 
 document.getElementById('btnExport').addEventListener('click', () => PZ.exportPNG(document.getElementById('sheet'), 'archi-coach'));

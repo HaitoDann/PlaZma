@@ -51,9 +51,9 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
   --shadow-3: 0 16px 40px rgba(0,0,0,.40);
 
   /* Typo */
-  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-display: 'Space Grotesk', var(--font);
-  --font-mono: 'Space Grotesk', ui-monospace, monospace;
+  --font: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Sora', var(--font);
+  --font-mono: 'Sora', ui-monospace, monospace;
 
   /* Rythme */
   --gut: 20px;

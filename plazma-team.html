@@ -6,7 +6,7 @@
 <title>ARCHI — Équipe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/theme.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -21,24 +21,33 @@
   .style-grid textarea{min-height:112px}
   .style-grid .panel h3{font-size:13px;margin-bottom:10px;color:var(--dim)}
 
-  .pools{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-  .pool{border-top:3px solid var(--role,var(--accent))}
-  .pool-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-  .pool-row{display:grid;grid-template-columns:1fr 96px 1fr 30px;gap:7px;align-items:center;margin-bottom:7px}
-  .pool-row input{padding:8px 10px;font-size:13px}
-  .pool-row select{padding:8px 8px;font-size:12px}
-  .row-del{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;height:34px;cursor:pointer;font-size:13px}
-  .row-del:hover{color:var(--err);border-color:rgba(239,68,68,.4)}
-  .tier-S{color:var(--top)}.tier-A{color:var(--jungle)}.tier-B{color:var(--mid)}.tier-Flex{color:var(--muted)}
-  .add-row{width:100%;margin-top:4px;background:none;border:1px dashed var(--border);color:var(--muted);
-    border-radius:8px;padding:8px;cursor:pointer;font-family:var(--font);font-size:13px}
-  .add-row:hover{border-color:var(--accent);color:var(--accent)}
-
   .redit-grid{display:flex;flex-direction:column;gap:8px}
   .redit-row{display:grid;grid-template-columns:58px 1fr 120px;gap:10px;align-items:center}
   .redit-row input{padding:8px 10px}
   .redit-emoji{text-align:center;font-size:19px}
-  @media(max-width:760px){.style-grid,.pools{grid-template-columns:1fr}.redit-row{grid-template-columns:52px 1fr}.redit-row .role-badge{display:none}}
+
+  /* Tier list drag & drop */
+  .tierlist{display:flex;flex-direction:column;gap:8px}
+  .tl-row{display:flex;align-items:stretch;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+  .tl-label{width:64px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);font-size:1.5rem;font-weight:700;color:#0a0f14;background:var(--tlc,var(--accent))}
+  .tl-zone{flex:1;min-height:66px;display:flex;flex-wrap:wrap;gap:6px;padding:9px;align-content:flex-start}
+  .tl-zone.drop,.tl-pool.drop{background:var(--accent-soft);outline:2px dashed var(--accent);outline-offset:-4px}
+  .tl-tile{position:relative;width:50px;height:50px;border-radius:10px;overflow:hidden;cursor:grab;
+    border:1px solid var(--border-2);background:var(--surface-2);display:flex;align-items:center;justify-content:center}
+  .tl-tile:active{cursor:grabbing}
+  .tl-tile img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+  .tl-tile .lbl{font-size:9px;line-height:1.1;text-align:center;padding:2px;color:var(--dim);pointer-events:none}
+  .tl-tile.dragging{opacity:.35}
+  .tl-x{position:absolute;top:0;right:0;width:17px;height:17px;line-height:15px;text-align:center;font-size:10px;
+    background:rgba(6,10,14,.82);color:#fff;border:none;cursor:pointer;border-radius:0 0 0 7px;opacity:0;transition:opacity .1s}
+  .tl-tile:hover .tl-x{opacity:1}
+  .tl-poolwrap{margin-top:16px}
+  .tl-pool{border:1px dashed var(--border);border-radius:var(--r);padding:9px;min-height:66px;
+    display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
+  .tl-hint{font-size:12px;color:var(--muted);margin:8px 0 12px}
+
+  @media(max-width:760px){.style-grid{grid-template-columns:1fr}.redit-row{grid-template-columns:52px 1fr}.redit-row .role-badge{display:none}}
 </style>
 </head>
 <body>
@@ -69,7 +78,7 @@
     <span style="flex:1;height:1px;background:var(--border)"></span>
   </div>
   <div class="panel" data-noexport style="margin-bottom:26px">
-    <p class="muted" style="font-size:12.5px;margin-bottom:14px">Modifie le nom et l'emoji de chaque joueur — le changement s'applique partout sur le site (accueil, scrim, scouting, satisfaction, dashboard…).</p>
+    <p class="muted" style="font-size:12.5px;margin-bottom:14px">Modifie le nom et l'emoji de chaque joueur — le changement s'applique partout sur le site (accueil, scrim, scouting, satisfaction, dashboard, fiche coach…).</p>
     <div class="redit-grid" id="rosterEditor"></div>
     <div style="display:flex;justify-content:flex-end;margin-top:14px">
       <button class="btn btn-sm btn-primary" id="saveRosterBtn">Enregistrer le roster</button>
@@ -88,34 +97,40 @@
       <textarea data-style="faiblesses" placeholder="Nos axes de progression…"></textarea></div>
   </div>
 
-  <!-- TIER LIST / POOLS -->
-  <div class="sec-head" style="display:flex;align-items:baseline;gap:12px;margin:8px 0 16px">
-    <h2 style="font-family:var(--font-display);font-size:15px">Tier list par rôle</h2>
+  <!-- TIER LIST -->
+  <div class="sec-head" style="display:flex;align-items:baseline;gap:12px;margin:8px 0 10px">
+    <h2 style="font-family:var(--font-display);font-size:15px">Tier list champions</h2>
     <span style="flex:1;height:1px;background:var(--border)"></span>
+    <button class="btn btn-sm btn-primary" id="addChampBtn" data-noexport>+ Ajouter des champions</button>
   </div>
-  <div class="pools" id="pools"></div>
+  <div class="tl-hint" data-noexport>Glisse-dépose les icônes entre les tiers. Survole une icône pour la retirer.</div>
+  <div class="tierlist" id="tierlist"></div>
+
+  <div class="tl-poolwrap">
+    <div class="eyebrow" style="margin-bottom:8px">Banc · non classés</div>
+    <div class="tl-pool" id="tlPool" data-zone="pool"></div>
+  </div>
 </div>
 
 <script src="assets/plazma.js"></script>
 <script src="assets/champions.js"></script>
 <script>
 PZ.mountNav('team', '#nav');
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
 
-// ---- Éditeur de roster (mercato) ----  (esc() est défini plus bas, hoisté)
+// ---- Éditeur de roster (mercato) ----
 PZ.onRoster((roster, coach) => {
   const editing = document.activeElement && document.activeElement.closest('#rosterEditor');
-  if (editing) return; // ne pas écraser pendant la saisie
-  const rows = roster.concat(coach).map(p => `
+  if (editing) return;
+  document.getElementById('rosterEditor').innerHTML = roster.concat(coach).map(p => `
     <div class="redit-row" data-id="${p.id}">
       <input class="redit-emoji" maxlength="6" value="${esc(p.emoji)}" data-f="emoji" aria-label="Emoji ${p.role}">
       <input class="redit-name" value="${esc(p.name)}" data-f="name" aria-label="Nom ${p.role}">
       <span class="role-badge" style="--role:${p.color}">${p.role}</span>
     </div>`).join('');
-  document.getElementById('rosterEditor').innerHTML = rows;
   document.querySelectorAll('#rosterEditor .redit-row').forEach(row => {
-    row.querySelectorAll('input').forEach(inp => {
-      inp.addEventListener('input', () => PZ.setPlayer(row.dataset.id, { [inp.dataset.f]: inp.value }));
-    });
+    row.querySelectorAll('input').forEach(inp =>
+      inp.addEventListener('input', () => PZ.setPlayer(row.dataset.id, { [inp.dataset.f]: inp.value })));
   });
 });
 document.getElementById('saveRosterBtn').addEventListener('click', () => {
@@ -123,86 +138,94 @@ document.getElementById('saveRosterBtn').addEventListener('click', () => {
   PZ.saveRoster().then(() => { btn.textContent = '✓ Enregistré'; setTimeout(() => btn.textContent = 'Enregistrer le roster', 1500); });
 });
 
-
-const ROLES = [
-  { key:'top',     label:'Top',     color:'var(--top)' },
-  { key:'jungle',  label:'Jungle',  color:'var(--jungle)' },
-  { key:'mid',     label:'Mid',     color:'var(--mid)' },
-  { key:'adc',     label:'ADC',     color:'var(--adc)' },
-  { key:'support', label:'Support', color:'var(--support)' },
+// ---- Tier list ----
+const TIER_ROWS = [
+  { key:'S', color:'#ef4444' }, { key:'A', color:'#f97316' }, { key:'B', color:'#eab308' },
+  { key:'C', color:'#22c55e' }, { key:'D', color:'#3b82f6' },
 ];
-const TIERS = ['S','A','B','Flex'];
+const ZONES = TIER_ROWS.map(t => t.key).concat('pool');
+const emptyTiers = () => ({ S:[], A:[], B:[], C:[], D:[], pool:[] });
 
-let state = {
-  style: { identity:'', winconds:'', forces:'', faiblesses:'' },
-  pools: { top:[], jungle:[], mid:[], adc:[], support:[] }
-};
+let state = { style:{ identity:'', winconds:'', forces:'', faiblesses:'' }, tiers: emptyTiers() };
 
 function getState(){ return state; }
 function applyState(d){
   state.style = Object.assign({ identity:'',winconds:'',forces:'',faiblesses:'' }, d.style || {});
-  state.pools = Object.assign({ top:[],jungle:[],mid:[],adc:[],support:[] }, d.pools || {});
+  if (d.tiers) {
+    state.tiers = Object.assign(emptyTiers(), d.tiers);
+  } else if (d.pools) {
+    // Migration depuis l'ancien format (pools par rôle) → banc
+    const t = emptyTiers();
+    Object.values(d.pools).forEach(arr => (arr||[]).forEach(row => { if (row && row.champ) t.pool.push(row.champ); }));
+    state.tiers = t;
+  } else {
+    state.tiers = emptyTiers();
+  }
 }
 
 const sync = PZ.sync({ docId:'team-identity', getState, applyState, onData:render });
-
 let saveTimer = null;
 function queueSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(()=>sync.save(), 500); }
 
-function esc(s){ return (s||'').replace(/"/g,'&quot;'); }
+const allChamps = () => ZONES.reduce((a,z)=>a.concat(state.tiers[z]||[]), []);
 
-function render(){
-  // style textareas (ne pas écraser le champ en cours d'édition)
-  document.querySelectorAll('[data-style]').forEach(t=>{
-    if (document.activeElement !== t) t.value = state.style[t.dataset.style] || '';
-  });
-  // pools
-  const host = document.getElementById('pools');
-  host.innerHTML = '';
-  ROLES.forEach(r=>{
-    const rows = state.pools[r.key] || (state.pools[r.key] = []);
-    const card = document.createElement('div');
-    card.className = 'panel pool';
-    card.style.setProperty('--role', r.color);
-    card.innerHTML = `<div class="pool-head">
-        <span class="role-badge" style="--role:${r.color}">${r.label}</span>
-        <span class="muted" style="font-size:12px">${rows.length} champ${rows.length>1?'s':''}</span>
-      </div>`;
-    rows.forEach((row,i)=>{
-      const el = document.createElement('div');
-      el.className = 'pool-row';
-      el.innerHTML = `
-        <button type="button" class="champ-pick" data-champ-btn>${row.champ ? window.Champions.chipHtml(row.champ) : '<span class="muted">+ Champion</span>'}</button>
-        <select data-f="tier" class="tier-${row.tier||'A'}">${TIERS.map(t=>`<option${t===(row.tier||'A')?' selected':''}>${t}</option>`).join('')}</select>
-        <input value="${esc(row.note)}" placeholder="Note (match-up, condition…)" data-f="note">
-        <button class="row-del" title="Supprimer">✕</button>`;
-      el.querySelector('[data-champ-btn]').addEventListener('click', ()=>{
-        window.Champions.open(id=>{ if(id){ row.champ = id; render(); queueSave(); } });
-      });
-      el.querySelectorAll('[data-f]').forEach(f=>{
-        f.addEventListener('input', ()=>{ row[f.dataset.f] = f.value; if(f.dataset.f==='tier') f.className='tier-'+f.value; queueSave(); });
-      });
-      el.querySelector('.row-del').addEventListener('click', ()=>{ rows.splice(i,1); render(); sync.save(); });
-      card.appendChild(el);
-    });
-    const add = document.createElement('button');
-    add.className = 'add-row'; add.textContent = '+ Ajouter un champion';
-    add.addEventListener('click', ()=>{ rows.push({champ:'',tier:'A',note:''}); render(); });
-    card.appendChild(add);
-    host.appendChild(card);
-  });
+function tileHtml(id, zone){
+  const u = window.Champions.iconUrl(id);
+  return `<div class="tl-tile" draggable="true" data-champ="${esc(id)}" data-from="${zone}" title="${esc(window.Champions.nameOf(id))}">
+    ${u ? `<img src="${u}" alt="">` : `<span class="lbl">${esc(window.Champions.nameOf(id))}</span>`}
+    <button class="tl-x" title="Retirer">✕</button></div>`;
 }
 
-// style textareas -> state
-document.querySelectorAll('[data-style]').forEach(t=>{
-  t.addEventListener('input', ()=>{ state.style[t.dataset.style] = t.value; queueSave(); });
+function renderTiers(){
+  const host = document.getElementById('tierlist');
+  host.innerHTML = TIER_ROWS.map(t =>
+    `<div class="tl-row"><div class="tl-label" style="background:${t.color}">${t.key}</div>
+      <div class="tl-zone" data-zone="${t.key}">${(state.tiers[t.key]||[]).map(id=>tileHtml(id,t.key)).join('')}</div></div>`).join('');
+  document.getElementById('tlPool').innerHTML = (state.tiers.pool||[]).map(id=>tileHtml(id,'pool')).join('');
+  wireDnD();
+}
+
+let dragChamp = null, dragFrom = null;
+function wireDnD(){
+  document.querySelectorAll('.tl-tile').forEach(tile => {
+    tile.addEventListener('dragstart', e => { dragChamp = tile.dataset.champ; dragFrom = tile.dataset.from; tile.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', dragChamp); });
+    tile.addEventListener('dragend', () => { tile.classList.remove('dragging'); document.querySelectorAll('.drop').forEach(z=>z.classList.remove('drop')); });
+    tile.querySelector('.tl-x').addEventListener('click', e => { e.stopPropagation(); removeChamp(tile.dataset.from, tile.dataset.champ); });
+  });
+  document.querySelectorAll('[data-zone]').forEach(zone => {
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drop'); e.dataTransfer.dropEffect = 'move'; });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drop'));
+    zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drop'); moveChamp(dragFrom, zone.dataset.zone, dragChamp); });
+  });
+}
+function moveChamp(from, to, id){
+  if (!id || !from || !to || from === to) { if(from===to){ /* no-op */ } return; }
+  const src = state.tiers[from]; const i = src.indexOf(id); if (i > -1) src.splice(i, 1);
+  if (!state.tiers[to].includes(id)) state.tiers[to].push(id);
+  renderTiers(); queueSave();
+}
+function removeChamp(zone, id){ const a = state.tiers[zone]; const i = a.indexOf(id); if (i > -1) a.splice(i, 1); renderTiers(); queueSave(); }
+
+document.getElementById('addChampBtn').addEventListener('click', () => {
+  window.Champions.open(id => {
+    if (id && !allChamps().includes(id)) { state.tiers.pool.push(id); renderTiers(); queueSave(); }
+  });
 });
 
-document.getElementById('exportBtn').addEventListener('click', ()=>PZ.exportPNG(document.getElementById('capture'),'archi-equipe'));
-document.getElementById('resetBtn').addEventListener('click', ()=>sync.reset('Réinitialiser l\'identité d\'équipe ?'));
+// ---- Render global ----
+function render(){
+  document.querySelectorAll('[data-style]').forEach(t => { if (document.activeElement !== t) t.value = state.style[t.dataset.style] || ''; });
+  renderTiers();
+}
+
+document.querySelectorAll('[data-style]').forEach(t => {
+  t.addEventListener('input', () => { state.style[t.dataset.style] = t.value; queueSave(); });
+});
+document.getElementById('exportBtn').addEventListener('click', () => PZ.exportPNG(document.getElementById('capture'), 'archi-equipe'));
+document.getElementById('resetBtn').addEventListener('click', () => sync.reset('Réinitialiser l\'identité d\'équipe ?'));
 
 render();
-window.Champions.ready.then(render); // affiche les icônes une fois la liste chargée
+window.Champions.ready.then(renderTiers); // icônes une fois la liste chargée
 </script>
 </body>
 </html>
