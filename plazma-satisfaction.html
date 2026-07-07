@@ -136,11 +136,16 @@
 .rp-kpi-val{font-family:var(--font-display);font-size:1.7rem;font-weight:700;color:var(--accent)}
 .rp-kpi-lbl{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:3px}
 .resp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
-.rc-head{padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.rc-head{padding:12px 16px;background:var(--surface-2);display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.resp-card.open .rc-head{border-bottom:1px solid var(--border)}
+.rc-chevron{flex-shrink:0;color:var(--muted);transition:transform .15s;font-size:13px}
+.resp-card.open .rc-chevron{transform:rotate(90deg)}
+.rc-body{display:none}
+.resp-card.open .rc-body{display:flex}
 .rc-pseudo{font-family:var(--font-display);font-size:17px;font-weight:600;flex:1}
 .rc-note{font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--warn)}
 .rc-date{font-size:11px;color:var(--muted)}
-.rc-body{padding:12px 16px;display:flex;flex-direction:column}
+.rc-body{padding:12px 16px;flex-direction:column}
 .rc-row{display:flex;align-items:flex-start;gap:10px;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border)}
 .rc-row:last-child{border-bottom:none}
 .rc-q{color:var(--muted);min-width:210px;flex-shrink:0;line-height:1.4;font-size:12px}
@@ -571,13 +576,14 @@ function rCard(r){
     ['Q14 · Suggestion',esc(r.q14_suggestion||'—')],
     ['Q15 · Rôle Haito',esc(r.q15_haito||'—')],
   ];
-  return `<div class="resp-card">
+  return `<div class="resp-card" onclick="this.classList.toggle('open')">
     <div class="rc-head">
       <div style="font-size:20px">${r.playerEmoji||'🎮'}</div>
       <div class="rc-pseudo" style="color:${rc}">${esc(r.pseudo||'—')}</div>
-      <div class="rc-note">${miniBar(r.q13_note,10,'#f59e0b').replace('10',10)} <span style="font-size:12px;color:var(--text3)">/10</span></div>
+      <div class="rc-note">${r.q13_note||'—'}<span style="font-size:12px;color:var(--muted);font-weight:500">/10</span></div>
       <div class="rc-date">${r.date||'—'}</div>
-      <button class="btn-del-r" onclick="delResp('${r.id}')">🗑 Suppr.</button>
+      <button class="btn-del-r" onclick="event.stopPropagation();delResp('${r.id}')">🗑</button>
+      <span class="rc-chevron">▸</span>
     </div>
     <div class="rc-body">
       ${mainRows.map(([q,a])=>`<div class="rc-row"><div class="rc-q">${q}</div><div class="rc-a">${a}</div></div>`).join('')}
