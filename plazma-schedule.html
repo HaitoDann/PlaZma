@@ -82,11 +82,6 @@
       </div>
       <div class="wk-label" id="weekLabel">—</div>
     </div>
-    <div class="meta-band">
-      <span><span class="dot"></span>League of Legends</span>
-      <span><span class="dot"></span>Émeraude — Diamant</span>
-      <span><span class="dot"></span><span id="sessCount">—</span></span>
-    </div>
     <div class="grid" id="grid"></div>
     <div class="legend" id="legend"></div>
   </div>
@@ -97,7 +92,10 @@
   <div class="modal">
     <div class="modal-title" id="modalTitle">Modifier le créneau</div>
     <div class="field"><label>Type de session</label><select id="mType"></select></div>
-    <div class="field"><label>Horaires</label><input type="text" id="mTime" placeholder="ex : 19h00 – 22h00"></div>
+    <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><label>Début</label><input type="time" id="mStart"></div>
+      <div><label>Fin</label><input type="time" id="mEnd"></div>
+    </div>
     <div class="field"><label>Note</label><input type="text" id="mNote" placeholder="ex : Scrims vs Team X"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" id="cancelBtn">Annuler</button>
@@ -124,6 +122,10 @@ const TYPES = [
 ];
 const getType = id => TYPES.find(t => t.id === id) || TYPES[8];
 
+// Compat : anciens créneaux stockés en `time` texte ; nouveaux en start/end.
+const slotStartKey = s => s.start || s.time || '~';           // vide → trié en dernier
+const slotTimeText = s => s.start ? (s.start + (s.end ? ' – ' + s.end : '')) : (s.time || '');
+
 let schedule = {};
 
 // ---- Semaine ----
@@ -147,21 +149,22 @@ const sync = PZ.sync({
 function renderGrid(){
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
-  let total = 0;
   DAYS.forEach(day => {
     const slots = schedule[day] || [];
-    total += slots.length;
+    // Tri des créneaux par heure de début
+    slots.sort((a,b) => slotStartKey(a).localeCompare(slotStartKey(b)));
     const col = document.createElement('div');
     col.className = 'day';
     col.innerHTML = `<div class="day-name">${day}</div>`;
     slots.forEach((slot, idx) => {
       const t = getType(slot.type);
+      const time = slotTimeText(slot);
       const el = document.createElement('div');
       el.className = 'slot';
       el.style.setProperty('--sc', t.color);
       el.innerHTML = `<button class="slot-del" data-noexport>✕</button>
         <span class="slot-type">${t.label}</span>
-        ${slot.time ? `<div class="slot-time">⏱ ${slot.time}</div>` : ''}
+        ${time ? `<div class="slot-time">⏱ ${time}</div>` : ''}
         <div class="slot-note">${slot.note || ''}</div>`;
       el.addEventListener('click', e => { if(!e.target.classList.contains('slot-del')) openModal(day, idx); });
       el.querySelector('.slot-del').addEventListener('click', e => { e.stopPropagation(); schedule[day].splice(idx,1); renderGrid(); sync.save(); });
@@ -169,11 +172,10 @@ function renderGrid(){
     });
     const add = document.createElement('button');
     add.className = 'add-slot'; add.textContent = '+'; add.setAttribute('data-noexport','');
-    add.addEventListener('click', () => { (schedule[day]=schedule[day]||[]).push({type:'scrim',time:'',note:''}); renderGrid(); sync.save(); });
+    add.addEventListener('click', () => { (schedule[day]=schedule[day]||[]).push({type:'scrim',start:'',end:'',note:''}); renderGrid(); sync.save(); openModal(day, schedule[day].length-1); });
     col.appendChild(add);
     grid.appendChild(col);
   });
-  document.getElementById('sessCount').textContent = `${total} session${total>1?'s':''} cette semaine`;
   document.getElementById('legend').innerHTML = TYPES.map(t =>
     `<span class="leg" style="color:${t.color};background:${t.color}22">${t.label}</span>`).join('');
 }
@@ -183,8 +185,9 @@ let _mDay, _mIdx;
 function openModal(day, idx){
   _mDay=day; _mIdx=idx;
   const s = schedule[day][idx];
-  document.getElementById('modalTitle').textContent = `Modifier · ${day}`;
-  document.getElementById('mTime').value = s.time || '';
+  document.getElementById('modalTitle').textContent = `Créneau · ${day}`;
+  document.getElementById('mStart').value = s.start || '';
+  document.getElementById('mEnd').value = s.end || '';
   document.getElementById('mNote').value = s.note || '';
   document.getElementById('mType').innerHTML = TYPES.map(t => `<option value="${t.id}"${t.id===s.type?' selected':''}>${t.label}</option>`).join('');
   document.getElementById('overlay').classList.add('open');
@@ -194,7 +197,12 @@ document.getElementById('cancelBtn').addEventListener('click', closeModal);
 document.getElementById('overlay').addEventListener('click', e => { if(e.target.id==='overlay') closeModal(); });
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
 document.getElementById('saveSlotBtn').addEventListener('click', () => {
-  schedule[_mDay][_mIdx] = { type:document.getElementById('mType').value, time:document.getElementById('mTime').value, note:document.getElementById('mNote').value };
+  schedule[_mDay][_mIdx] = {
+    type: document.getElementById('mType').value,
+    start: document.getElementById('mStart').value,
+    end: document.getElementById('mEnd').value,
+    note: document.getElementById('mNote').value
+  };
   closeModal(); renderGrid(); sync.save();
 });
 
