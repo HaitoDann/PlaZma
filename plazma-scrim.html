@@ -185,13 +185,7 @@ PZ.mountNav('scrim', '#nav');
 const db = PZ.db;
 const SCRIMS_COL = 'plazma-scrims';
 
-const ROSTER = [
-  {id:'boulou', name:'Boulou', role:'Top', emoji:'👍', color:'var(--top)'},
-  {id:'zugu', name:'Zugu', role:'Jungle', emoji:'🕊️', color:'var(--jungle)'},
-  {id:'lakrael', name:'Lakraël', role:'Mid', emoji:'👀', color:'var(--mid)'},
-  {id:'ke1do', name:'Ke1do', role:'ADC', emoji:'🐯', color:'var(--adc)'},
-  {id:'sayro', name:'Joordy', role:'Support', emoji:'🥀', color:'var(--support)'},
-];
+let ROSTER = PZ.getRoster();   // roster central (mercato)
 const ERR_CATS = ['Positionnement','Objectif manqué','Rotation','Communication','Mécanique','Teamfight','Vision','Autre'];
 
 let errors = {g1:[],g2:[],g3:[],g4:[],g5:[]};
@@ -256,12 +250,22 @@ function renderErrors(){
 function buildPlayers(){
   const grid=document.getElementById('players'); grid.innerHTML='';
   ROSTER.forEach(p=>{
-    const c=document.createElement('div'); c.className='pcard'; c.style.setProperty('--role',p.color);
-    c.innerHTML=`<div class="h"><span>${p.emoji}</span><div><div class="n" style="color:${p.color}">${p.name}</div><div class="r">${p.role}</div></div></div>
+    const c=document.createElement('div'); c.className='pcard'; c.style.setProperty('--role',p.color); c.dataset.id=p.id;
+    c.innerHTML=`<div class="h"><span class="pc-emoji">${p.emoji}</span><div><div class="n pc-name" style="color:${p.color}">${esc(p.name)}</div><div class="r">${p.role}</div></div></div>
       <textarea id="rem_${p.id}" placeholder="Performance, comportement, point à retravailler…"></textarea>`;
     grid.appendChild(c);
   });
 }
+// Met à jour noms/emojis sans détruire les textareas (mercato en direct)
+PZ.onRoster(r => {
+  ROSTER = r;
+  const grid = document.getElementById('players');
+  if (!grid || !grid.children.length) return;
+  r.forEach(p => {
+    const card = grid.querySelector(`.pcard[data-id="${p.id}"]`);
+    if (card){ card.querySelector('.pc-emoji').textContent = p.emoji; card.querySelector('.pc-name').textContent = p.name; }
+  });
+});
 
 // ── State ──
 function getState(){

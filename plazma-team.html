@@ -34,7 +34,11 @@
     border-radius:8px;padding:8px;cursor:pointer;font-family:var(--font);font-size:13px}
   .add-row:hover{border-color:var(--accent);color:var(--accent)}
 
-  @media(max-width:760px){.style-grid,.pools{grid-template-columns:1fr}}
+  .redit-grid{display:flex;flex-direction:column;gap:8px}
+  .redit-row{display:grid;grid-template-columns:58px 1fr 120px;gap:10px;align-items:center}
+  .redit-row input{padding:8px 10px}
+  .redit-emoji{text-align:center;font-size:19px}
+  @media(max-width:760px){.style-grid,.pools{grid-template-columns:1fr}.redit-row{grid-template-columns:52px 1fr}.redit-row .role-badge{display:none}}
 </style>
 </head>
 <body>
@@ -56,6 +60,19 @@
       </span>
       <button class="btn btn-sm" id="exportBtn">⬇ PNG</button>
       <button class="btn btn-sm btn-danger" id="resetBtn">Reset</button>
+    </div>
+  </div>
+
+  <!-- ROSTER / MERCATO -->
+  <div class="sec-head" style="display:flex;align-items:baseline;gap:12px;margin:4px 0 14px">
+    <h2 style="font-family:var(--font-display);font-size:15px">Roster · mercato</h2>
+    <span style="flex:1;height:1px;background:var(--border)"></span>
+  </div>
+  <div class="panel" data-noexport style="margin-bottom:26px">
+    <p class="muted" style="font-size:12.5px;margin-bottom:14px">Modifie le nom et l'emoji de chaque joueur — le changement s'applique partout sur le site (accueil, scrim, scouting, satisfaction, dashboard…).</p>
+    <div class="redit-grid" id="rosterEditor"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:14px">
+      <button class="btn btn-sm btn-primary" id="saveRosterBtn">Enregistrer le roster</button>
     </div>
   </div>
 
@@ -82,6 +99,29 @@
 <script src="assets/plazma.js"></script>
 <script>
 PZ.mountNav('team', '#nav');
+
+// ---- Éditeur de roster (mercato) ----  (esc() est défini plus bas, hoisté)
+PZ.onRoster((roster, coach) => {
+  const editing = document.activeElement && document.activeElement.closest('#rosterEditor');
+  if (editing) return; // ne pas écraser pendant la saisie
+  const rows = roster.concat(coach).map(p => `
+    <div class="redit-row" data-id="${p.id}">
+      <input class="redit-emoji" maxlength="6" value="${esc(p.emoji)}" data-f="emoji" aria-label="Emoji ${p.role}">
+      <input class="redit-name" value="${esc(p.name)}" data-f="name" aria-label="Nom ${p.role}">
+      <span class="role-badge" style="--role:${p.color}">${p.role}</span>
+    </div>`).join('');
+  document.getElementById('rosterEditor').innerHTML = rows;
+  document.querySelectorAll('#rosterEditor .redit-row').forEach(row => {
+    row.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', () => PZ.setPlayer(row.dataset.id, { [inp.dataset.f]: inp.value }));
+    });
+  });
+});
+document.getElementById('saveRosterBtn').addEventListener('click', () => {
+  const btn = document.getElementById('saveRosterBtn');
+  PZ.saveRoster().then(() => { btn.textContent = '✓ Enregistré'; setTimeout(() => btn.textContent = 'Enregistrer le roster', 1500); });
+});
+
 
 const ROLES = [
   { key:'top',     label:'Top',     color:'var(--top)' },

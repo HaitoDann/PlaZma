@@ -433,6 +433,12 @@ function applyState(s){
 }
 const sync = PZ.sync({ docId:'dashboard', getState, applyState, onData:render });
 
+// Nom/emoji depuis le roster central (mercato) ; les rangs restent liés à l'id
+PZ.onRoster(r => {
+  r.forEach(rp => { const p = state.roster.find(x => x.id === rp.id); if (p) { p.name = rp.name; p.emoji = rp.emoji; } });
+  render();
+});
+
 // ── MODALS ──
 function openAddMatch(){
   _editId=null;

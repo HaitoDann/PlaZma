@@ -52,6 +52,52 @@
     console.error('Firebase indisponible :', e);
   }
 
+  // ---- Roster central (mercato : noms/emojis modifiables partout) ----
+  // L'id, le rôle et la couleur restent fixes (code) ; seuls nom et emoji
+  // sont surchargeables via le doc Firestore `roster`.
+  const ROSTER_SLOTS = [
+    { id:'boulou',  roleKey:'top',     role:'Top',     color:'var(--top)',     defaultName:'Boulou',  defaultEmoji:'👍' },
+    { id:'zugu',    roleKey:'jungle',  role:'Jungle',  color:'var(--jungle)',  defaultName:'Zugu',    defaultEmoji:'🕊️' },
+    { id:'lakrael', roleKey:'mid',     role:'Mid',     color:'var(--mid)',     defaultName:'Lakraël', defaultEmoji:'👀' },
+    { id:'ke1do',   roleKey:'adc',     role:'ADC',     color:'var(--adc)',     defaultName:'Ke1do',   defaultEmoji:'🐯' },
+    { id:'sayro',   roleKey:'support', role:'Support', color:'var(--support)', defaultName:'Joordy',  defaultEmoji:'🥀' },
+  ];
+  const COACH_SLOT = { id:'coach', roleKey:'coach', role:'Head Coach', color:'var(--coach)', defaultName:'Coach', defaultEmoji:'♟️' };
+
+  let rosterOverrides = {};            // { id: { name, emoji } }
+  const rosterListeners = [];
+
+  function resolveSlot(slot) {
+    const o = rosterOverrides[slot.id] || {};
+    return {
+      id: slot.id, roleKey: slot.roleKey, role: slot.role, color: slot.color,
+      name: (o.name && o.name.trim()) || slot.defaultName,
+      emoji: (o.emoji && o.emoji.trim()) || slot.defaultEmoji
+    };
+  }
+  const getRoster = () => ROSTER_SLOTS.map(resolveSlot);
+  const getCoach = () => resolveSlot(COACH_SLOT);
+  const player = id => getRoster().concat(getCoach()).find(p => p.id === id) || null;
+
+  function notifyRoster() {
+    const r = getRoster(), c = getCoach();
+    rosterListeners.forEach(cb => { try { cb(r, c); } catch (e) { console.error(e); } });
+  }
+  /** Enregistre un callback (r, coach) appelé maintenant puis à chaque MAJ du roster. */
+  function onRoster(cb) { rosterListeners.push(cb); cb(getRoster(), getCoach()); }
+  function setPlayer(id, patch) { rosterOverrides[id] = Object.assign({}, rosterOverrides[id], patch); }
+  function saveRoster() {
+    if (!db) return Promise.resolve();
+    return db.collection(COLLECTION).doc('roster').set(rosterOverrides);
+  }
+
+  if (db) {
+    db.collection(COLLECTION).doc('roster').onSnapshot(
+      doc => { rosterOverrides = (doc.exists && doc.data()) || {}; notifyRoster(); },
+      e => console.error('roster', e)
+    );
+  }
+
   // ---- Navigation partagée ----
   const NAV = [
     { key: 'home',         href: 'index.html',              label: 'Accueil' },
@@ -193,6 +239,9 @@
   window.PZ = {
     db, COLLECTION, NAV,
     mountNav, sync, status, nowTime, loadingDone,
-    exportPNG, backup, importFile, logout
+    exportPNG, backup, importFile, logout,
+    // Roster central
+    getRoster, getCoach, player, onRoster, setPlayer, saveRoster,
+    ROSTER_SLOTS, COACH_SLOT
   };
 })();

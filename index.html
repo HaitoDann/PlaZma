@@ -117,43 +117,13 @@
   <!-- ROSTER -->
   <section class="sec">
     <div class="sec-head"><h2>Roster</h2><span class="line"></span></div>
-    <div class="roster">
-      <a class="pcard" href="plazma-perf-top.html" style="--role:var(--top)">
-        <div class="pcard-av">👍</div><span class="role-badge" style="--role:var(--top)">Top</span>
-        <div class="pcard-name">Boulou</div><div class="pcard-cta">Voir la fiche →</div>
-      </a>
-      <a class="pcard" href="plazma-perf-jungler.html" style="--role:var(--jungle)">
-        <div class="pcard-av">🕊️</div><span class="role-badge" style="--role:var(--jungle)">Jungle</span>
-        <div class="pcard-name">Zugu</div><div class="pcard-cta">Voir la fiche →</div>
-      </a>
-      <a class="pcard" href="plazma-perf-mid.html" style="--role:var(--mid)">
-        <div class="pcard-av">👀</div><span class="role-badge" style="--role:var(--mid)">Mid</span>
-        <div class="pcard-name">Lakraël</div><div class="pcard-cta">Voir la fiche →</div>
-      </a>
-      <a class="pcard" href="plazma-perf-adc.html" style="--role:var(--adc)">
-        <div class="pcard-av">🐯</div><span class="role-badge" style="--role:var(--adc)">ADC</span>
-        <div class="pcard-name">Ke1do</div><div class="pcard-cta">Voir la fiche →</div>
-      </a>
-      <a class="pcard" href="plazma-perf-supp.html" style="--role:var(--support)">
-        <div class="pcard-av">🥀</div><span class="role-badge" style="--role:var(--support)">Support</span>
-        <div class="pcard-name">Joordy</div><div class="pcard-cta">Voir la fiche →</div>
-      </a>
-    </div>
+    <div class="roster" id="rosterGrid"></div>
   </section>
 
   <!-- STAFF -->
   <section class="sec">
     <div class="sec-head"><h2>Staff</h2><span class="line"></span></div>
-    <div class="staff">
-      <a class="pcard" href="plazma-coach.html" style="--role:var(--coach)">
-        <div class="pcard-av">♟️</div>
-        <div>
-          <span class="role-badge" style="--role:var(--coach)">Head Coach</span>
-          <div class="pcard-name" style="margin-top:6px">Coach</div>
-          <div class="pcard-cta">Voir la fiche →</div>
-        </div>
-      </a>
-    </div>
+    <div class="staff" id="staffGrid"></div>
   </section>
 
   <footer>
@@ -167,5 +137,26 @@
 
 </div>
 <script src="assets/plazma.js"></script>
+<script>
+  const PERF_HREF = { top:'plazma-perf-top.html', jungle:'plazma-perf-jungler.html', mid:'plazma-perf-mid.html', adc:'plazma-perf-adc.html', support:'plazma-perf-supp.html' };
+  PZ.onRoster((roster, coach) => {
+    document.getElementById('rosterGrid').innerHTML = roster.map(p => `
+      <a class="pcard" href="${PERF_HREF[p.roleKey]}" style="--role:${p.color}">
+        <div class="pcard-av">${p.emoji}</div>
+        <span class="role-badge" style="--role:${p.color}">${p.role}</span>
+        <div class="pcard-name">${p.name}</div>
+        <div class="pcard-cta">Voir la fiche →</div>
+      </a>`).join('');
+    document.getElementById('staffGrid').innerHTML = `
+      <a class="pcard" href="plazma-coach.html" style="--role:${coach.color}">
+        <div class="pcard-av">${coach.emoji}</div>
+        <div>
+          <span class="role-badge" style="--role:${coach.color}">${coach.role}</span>
+          <div class="pcard-name" style="margin-top:6px">${coach.name}</div>
+          <div class="pcard-cta">Voir la fiche →</div>
+        </div>
+      </a>`;
+  });
+</script>
 </body>
 </html>

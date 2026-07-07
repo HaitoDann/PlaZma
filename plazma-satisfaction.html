@@ -311,7 +311,10 @@
 <script src="assets/plazma.js" data-public></script>
 <script>
 const db = PZ.db;
-const ROSTER=[{id:'boulou',name:'Boulou',role:'Top',emoji:'👍',color:'#f59e0b'},{id:'zugu',name:'Zugu',role:'Jungle',emoji:'🕊️',color:'#22c55e'},{id:'lakrael',name:'Lakraël',role:'Mid',emoji:'👀',color:'#3b82f6'},{id:'ke1do',name:'Ke1do',role:'ADC',emoji:'🐯',color:'#ef4444'},{id:'sayro',name:'Joordy',role:'Support',emoji:'🥀',color:'#a855f7'}];
+// Roster central (mercato) — nom/emoji dynamiques ; couleur hex par rôle (pour les suffixes alpha)
+const ROLE_HEX={top:'#f59e0b',jungle:'#22c55e',mid:'#3b82f6',adc:'#ef4444',support:'#a855f7',coach:'#22d3ee'};
+const mapRoster=()=>PZ.getRoster().map(p=>({id:p.id,name:p.name,role:p.role,emoji:p.emoji,color:ROLE_HEX[p.roleKey]||'#22d3ee'}));
+let ROSTER=mapRoster();
 const ADMIN_PASS='plazma2026';
 let adminUnlocked=false,selectedPlayer=null;
 
@@ -596,6 +599,8 @@ function initAll(){
 }
 buildPlayerSelector();
 initAll();
+// Mercato : reconstruit le sélecteur si le roster change
+PZ.onRoster(() => { ROSTER = mapRoster(); buildPlayerSelector(); });
 </script>
 </body>
 </html>

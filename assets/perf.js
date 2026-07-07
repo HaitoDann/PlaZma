@@ -18,6 +18,15 @@
 
   const esc = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 
+  // ---- Identité joueur depuis le roster central (mercato) ----
+  const ROLE_TO_KEY = { Top:'top', Jungle:'jungle', Mid:'mid', ADC:'adc', Support:'support' };
+  const rosterKey = ROLE_TO_KEY[P.roleShort] || (P.roleLabel || '').toLowerCase().split(' ')[0];
+  function ident() {
+    const r = PZ.getRoster().find(p => p.roleKey === rosterKey);
+    return { name: (r && r.name) || P.pseudo, emoji: (r && r.emoji) || P.emoji };
+  }
+  const id0 = ident();
+
   // ---- Structure de page ----
   const root = document.getElementById('sheet');
   root.className = 'card';
@@ -29,9 +38,9 @@
         <div class="doc-type">${P.roleLabel}</div>
       </div>
       <div class="perf-player">
-        <div class="perf-emo">${P.emoji}</div>
+        <div class="perf-emo" id="pEmoji">${id0.emoji}</div>
         <div class="perf-player-info">
-          <div class="perf-pseudo" style="color:${P.roleVar}">${esc(P.pseudo)}</div>
+          <div class="perf-pseudo" id="pPseudo" style="color:${P.roleVar}">${esc(id0.name)}</div>
           <span class="role-badge" style="--role:${P.roleVar}">${P.roleShort || P.roleLabel}</span>
         </div>
       </div>
@@ -184,10 +193,18 @@
   document.getElementById('btnBackup').addEventListener('click', () => PZ.backup(getState(), 'archi-' + P.docId));
   document.getElementById('btnImport').addEventListener('click', () => PZ.importFile(d => { applyState(d); sync.save(); }));
   document.getElementById('btnReset').addEventListener('click', () => {
-    if (!confirm('Réinitialiser la fiche de ' + P.pseudo + ' ?')) return;
+    if (!confirm('Réinitialiser la fiche de ' + ident().name + ' ?')) return;
     Object.keys(jV).forEach(k => jV[k] = 0);
     P.cats.forEach(cat => cat.items.forEach(i => refresh(i.id, cat.color)));
     FIELDS.forEach(f => set(f, '')); updateScore(); sync.reset();
+  });
+
+  // Mercato : met à jour nom/emoji en tête si le roster change
+  PZ.onRoster(() => {
+    const i = ident();
+    const e = document.getElementById('pEmoji'), n = document.getElementById('pPseudo');
+    if (e) e.textContent = i.emoji;
+    if (n) n.textContent = i.name;
   });
 
   updateScore();
