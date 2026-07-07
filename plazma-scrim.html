@@ -3,871 +3,392 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RoZter — Compte Rendu Scrim</title>
+<title>ARCHI — Compte rendu scrim</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script>
-firebase.initializeApp({apiKey:"AIzaSyAKwNEbNa6f40oSMwGp6dcDY1ZY6hUN1Ks",authDomain:"plazma-esport.firebaseapp.com",projectId:"plazma-esport",storageBucket:"plazma-esport.firebasestorage.app",messagingSenderId:"534325929279",appId:"1:534325929279:web:b507a46c601fa6625edf8a"});
-const db=firebase.firestore();
-</script>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#020c10;--bg2:#04111a;--surface:#060f18;--surface2:#091420;
-  --border:#0d2030;--border2:#112840;
-  --c1:#06b6d4;--c2:#0891b2;--c3:#22d3ee;--c4:#67e8f9;
-  --green:#22c55e;--red:#ef4444;--orange:#f97316;--cyan:#06b6d4;
-  --yellow:#f59e0b;--blue:#3b82f6;--pink:#ec4899;
-  --text:#e0f7fc;--text2:#4b8ea0;--text3:#1a3d4a;
-  --top:#f97316;--jgl:#22c55e;--mid:#3b82f6;--adc:#ef4444;--sup:#a855f7;
-}
+  .content{max-width:960px;margin:0 auto;padding:22px var(--gut) 80px}
+  .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-bottom:8px}
+  .session-chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);
+    border-radius:999px;padding:5px 12px;font-size:12px;color:var(--dim);margin-bottom:14px}
 
-body{background:var(--bg);font-family:'Exo 2',sans-serif;color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 20px 80px}
+  .scrim-head{border-top:3px solid var(--accent);padding:20px 22px;border-bottom:1px solid var(--border)}
+  .meta{display:grid;grid-template-columns:200px 1fr;gap:14px;padding:16px 22px;border-bottom:1px solid var(--border)}
 
-/* ── LOADING ── */
-.loading-screen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .5s}
-.loading-screen.hidden{opacity:0;pointer-events:none}
-.loading-logo{font-family:'Rajdhani',sans-serif;font-size:52px;font-weight:700;letter-spacing:6px;color:var(--c1);text-shadow:0 0 30px rgba(6,182,212,.6)}
-.loading-bar{width:160px;height:2px;background:rgba(6,182,212,.1);border-radius:2px;overflow:hidden}
-.loading-fill{height:100%;background:var(--c1);animation:lb 1.4s ease infinite}
-@keyframes lb{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
-.loading-text{font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase}
+  .score{display:flex;align-items:center;justify-content:center;gap:26px;padding:20px;border-bottom:1px solid var(--border)}
+  .score-team{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .score-team small{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .score-num{width:90px;text-align:center;font-family:var(--font-display);font-size:3.2rem;font-weight:700;
+    background:transparent;border:none;border-bottom:2px solid var(--border-2);border-radius:0;padding:0}
+  .score-num:focus{box-shadow:none;border-bottom-color:var(--accent)}
+  .score-vs{font-family:var(--font-display);font-size:1.2rem;color:var(--muted);margin-top:22px}
 
-/* ── CHROME ── */
-.hub-link{font-size:9px;color:var(--text3);text-decoration:none;letter-spacing:2px;text-transform:uppercase;transition:color .15s;margin-bottom:12px;display:block}
-.hub-link:hover{color:var(--c1)}
+  .body{padding:22px;display:flex;flex-direction:column;gap:24px}
+  .sec-title{font-family:var(--font-display);font-size:14px;font-weight:600;padding-bottom:10px;
+    border-bottom:1px solid var(--border);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .sec-title .d{width:7px;height:7px;border-radius:50%}
 
-.sync-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:12px}
-.sync-indicator{display:flex;align-items:center;gap:6px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border)}
-.sync-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.sync-dot.connected{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,.5)}
-.sync-dot.syncing{background:var(--yellow);animation:pulse .8s infinite}
-.sync-dot.error{background:var(--red)}
-.sync-dot.offline{background:var(--text3)}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.sync-text{font-size:10px;font-weight:600}
-.sync-time{font-size:9px;color:var(--text3)}
+  .game{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:9px}
+  .game-top{display:flex;align-items:center;gap:14px;padding:10px 14px;border-bottom:1px solid var(--border)}
+  .game-num{font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--muted);min-width:30px}
+  .game-top select{max-width:150px}
+  .errs{padding:12px 14px}
+  .errs-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .errs-head .lbl{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .err-row{display:grid;grid-template-columns:70px 130px 1fr 30px;gap:8px;align-items:center;margin-bottom:6px}
+  .err-row input,.err-row select{padding:7px 9px;font-size:13px}
+  .err-del{background:none;border:1px solid var(--border);border-radius:7px;height:34px;color:var(--muted);cursor:pointer}
+  .err-del:hover{color:var(--err);border-color:rgba(239,68,68,.4)}
+  .no-err{font-size:12px;color:var(--muted);font-style:italic}
 
-.btn-save-fb{background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.22);color:var(--c1);padding:6px 14px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)}
-.btn-save-fb:hover{background:rgba(6,182,212,.18)}
-.btn-save-fb.saved{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:var(--green)}
-.btn-mini-row{display:flex;gap:5px}
-.btn-mini{background:var(--surface2);border:1px solid var(--border);color:var(--text3);padding:5px 10px;font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;font-family:'Exo 2',sans-serif;transition:color .15s}
-.btn-mini:hover{color:var(--text2)}
-.btn-mini.red{color:rgba(239,68,68,.3)}.btn-mini.red:hover{color:var(--red)}
+  .ana-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .ana{background:var(--surface-2);border:1px solid var(--border);border-left:3px solid var(--ac,var(--border));border-radius:8px;padding:14px}
+  .ana .t{font-size:12px;font-weight:600;margin-bottom:8px;color:var(--ac,var(--dim))}
+  .ana textarea{background:transparent;border:none;padding:0;min-height:96px;font-size:13px;color:var(--dim)}
+  .ana textarea:focus{box-shadow:none}
 
-.toolbar{display:flex;gap:8px;margin-bottom:10px;justify-content:center;flex-wrap:wrap}
-.btn{padding:7px 18px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:none;font-family:'Exo 2',sans-serif;transition:all .2s;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)}
-.btn-export{background:var(--c1);color:#000}
-.btn-export:hover{background:var(--c3);transform:translateY(-1px)}
-.btn-export:disabled{opacity:.4;cursor:default;transform:none}
-.btn-new-scrim{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:var(--green);padding:7px 16px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;display:flex;align-items:center;gap:6px;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)}
-.btn-new-scrim:hover{background:rgba(34,197,94,.2)}
-.btn-history{background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.22);color:var(--c1);padding:7px 16px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;display:flex;align-items:center;gap:6px;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)}
-.btn-history:hover{background:rgba(6,182,212,.18)}
+  .players{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+  .pcard{background:var(--surface-2);border:1px solid var(--border);border-top:3px solid var(--role);border-radius:8px;overflow:hidden}
+  .pcard .h{display:flex;align-items:center;gap:7px;padding:9px 11px;border-bottom:1px solid var(--border)}
+  .pcard .h .n{font-family:var(--font-display);font-weight:600;font-size:14px}
+  .pcard .h .r{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .pcard textarea{background:transparent;border:none;border-radius:0;padding:10px 11px;min-height:90px;font-size:12px;color:var(--dim)}
+  .pcard textarea:focus{box-shadow:none}
 
-.session-chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border2);padding:3px 12px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--c1);clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%)}
+  .bilan{display:flex;align-items:center;gap:22px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:18px 22px;flex-wrap:wrap}
+  .bilan-num{display:flex;align-items:baseline;gap:6px}
+  .bilan-num input{width:78px;text-align:center;font-family:var(--font-display);font-size:2.6rem;font-weight:700;color:var(--accent);
+    background:transparent;border:none;border-bottom:2px solid var(--border-2);border-radius:0;padding:0}
+  .bilan-num input:focus{box-shadow:none;border-bottom-color:var(--accent)}
+  .bilan-over{font-family:var(--font-display);font-size:1.3rem;color:var(--muted)}
+  .bilan-right{flex:1;min-width:240px}
 
-/* ── HISTORY DRAWER ── */
-.hist-overlay{position:fixed;inset:0;background:rgba(2,12,16,.7);backdrop-filter:blur(6px);z-index:400;opacity:0;pointer-events:none;transition:opacity .25s}
-.hist-overlay.open{opacity:1;pointer-events:all}
-.hist-drawer{position:fixed;top:0;right:0;bottom:0;width:390px;max-width:95vw;background:var(--bg2);border-left:1px solid var(--border2);z-index:401;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
-.hist-drawer.open{transform:translateX(0)}
-.hd-head{padding:20px 22px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--surface);position:relative}
-.hd-head::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--c1),transparent)}
-.hd-title{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--c1)}
-.hd-close{background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;transition:color .15s;line-height:1}
-.hd-close:hover{color:var(--text)}
-.hd-new{margin:14px 16px 6px;display:flex;flex-direction:column;gap:8px}
-.btn-hd-new{width:100%;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);color:var(--green);padding:11px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)}
-.btn-hd-new:hover{background:rgba(34,197,94,.18)}
-.hd-sep{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text3);padding:4px 6px;font-weight:700}
-.hd-list{flex:1;overflow-y:auto;padding:0 16px 20px;display:flex;flex-direction:column;gap:7px;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
-.hd-empty{text-align:center;padding:40px 20px;color:var(--text3);font-size:12px;line-height:1.6}
+  .foot{border-top:1px solid var(--border);padding:12px 22px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .foot .brand{font-size:12px;color:var(--muted)}
 
-/* Session cards in drawer */
-.sess-card{background:var(--surface);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:all .15s;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%)}
-.sess-card:hover{border-color:var(--border2);transform:translateX(-2px)}
-.sess-card.active{border-color:var(--c1);box-shadow:0 0 0 1px var(--c1)}
-.sess-main{padding:12px 14px;display:flex;align-items:flex-start;gap:10px}
-.sess-date-badge{background:var(--surface2);border:1px solid var(--border2);padding:6px 10px;text-align:center;flex-shrink:0;min-width:44px;clip-path:polygon(0 0,calc(100% - 5px) 0,100% 5px,100% 100%,0 100%)}
-.sdb-day{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;line-height:1;color:var(--text)}
-.sdb-month{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-top:1px}
-.sess-info{flex:1;min-width:0}
-.sess-adv{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
-.sess-meta{font-size:10px;color:var(--text3);margin-top:3px;letter-spacing:.3px}
-.sess-score{display:flex;align-items:center;gap:5px;margin-top:6px}
-.ss-plazma{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--green)}
-.ss-sep{font-family:'Rajdhani',sans-serif;font-size:13px;color:var(--border2);font-weight:700}
-.ss-adv{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--red)}
-.sess-actions{display:flex;border-top:1px solid var(--border)}
-.sess-act-btn{flex:1;background:none;border:none;padding:8px 0;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .15s;color:var(--text3)}
-.sess-act-btn:hover{color:var(--text);background:rgba(255,255,255,.02)}
-.sess-act-btn.open-btn:hover{color:var(--c1)}
-.sess-act-btn.del-btn:hover{color:var(--red)}
-.sess-act-btn+.sess-act-btn{border-left:1px solid var(--border)}
+  /* Drawer historique */
+  .drawer-ov{position:fixed;inset:0;background:rgba(6,10,14,.6);backdrop-filter:blur(4px);z-index:180;opacity:0;pointer-events:none;transition:opacity .2s}
+  .drawer-ov.open{opacity:1;pointer-events:auto}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:94vw;background:var(--surface);border-left:1px solid var(--border-2);
+    z-index:181;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
+  .drawer.open{transform:none}
+  .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)}
+  .drawer-list{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
+  .sess{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:border-color .15s}
+  .sess:hover{border-color:var(--border-2)}
+  .sess.active{border-color:var(--accent)}
+  .sess-main{display:flex;gap:11px;padding:12px 13px}
+  .sess-date{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 10px;text-align:center;min-width:46px}
+  .sess-date .d{font-family:var(--font-display);font-size:1.3rem;font-weight:700;line-height:1}
+  .sess-date .m{font-size:9px;text-transform:uppercase;color:var(--muted)}
+  .sess-adv{font-family:var(--font-display);font-weight:600}
+  .sess-meta{font-size:11px;color:var(--muted);margin-top:2px}
+  .sess-score{margin-top:5px;font-family:var(--font-display);font-weight:700}
+  .sess-score .w{color:var(--ok)}.sess-score .l{color:var(--err)}
+  .sess-actions{display:flex;border-top:1px solid var(--border)}
+  .sess-actions button{flex:1;background:none;border:none;padding:8px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:var(--font)}
+  .sess-actions button+button{border-left:1px solid var(--border)}
+  .sess-actions button:hover{color:var(--text)}
+  .drawer-empty{text-align:center;color:var(--muted);font-size:13px;padding:40px 20px}
 
-/* ── CARD ── */
-.card{width:100%;max-width:980px;background:var(--bg2);border:1px solid rgba(6,182,212,.1);border-radius:12px;overflow:hidden;box-shadow:0 0 0 1px rgba(6,182,212,.04),0 40px 100px rgba(0,0,0,.7)}
-
-/* ── HEADER ── */
-.card-header{position:relative;overflow:hidden;padding:24px 32px 20px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:20px}
-.card-header::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--c1),var(--c3) 40%,transparent 70%)}
-.card-header::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 50% 180% at 0% 50%,rgba(6,182,212,.06),transparent 65%)}
-.header-left{display:flex;align-items:center;gap:14px;position:relative}
-.logo-mark{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--c1);letter-spacing:2px;width:42px;height:42px;background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.22);display:flex;align-items:center;justify-content:center;flex-shrink:0;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
-.header-titles{}
-.club-name{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--text3)}
-.doc-type{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text);line-height:1.1}
-.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;position:relative}
-.season-tag{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(6,182,212,.5);border:1px solid rgba(6,182,212,.15);background:rgba(6,182,212,.05);padding:2px 10px;clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%)}
-
-/* ── META BAR ── */
-.meta-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
-.meta-cell{background:var(--surface);padding:11px 16px}
-.meta-label{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:5px}
-.meta-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-size:13px;font-family:'Exo 2',sans-serif;padding:2px 0;outline:none;transition:border-color .2s}
-.meta-input:focus{border-bottom-color:var(--c1)}
-.meta-input::placeholder{color:var(--text3)}
-.meta-input option{background:var(--surface)}
-
-/* ── SCORE TRACKER ── */
-.score-tracker{background:var(--surface);padding:20px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:0}
-.score-team{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1}
-.score-team-name{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
-.score-num{font-family:'Rajdhani',sans-serif;font-size:76px;font-weight:700;line-height:1;background:transparent;border:none;border-bottom:2px solid var(--border2);outline:none;width:100px;text-align:center;transition:border-color .2s}
-.score-num:focus{border-bottom-color:var(--c1)}
-.score-vs{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--text3);padding:0 28px;margin-top:28px;letter-spacing:4px}
-
-/* ── CARD BODY ── */
-.card-body{padding:22px 32px 28px;display:flex;flex-direction:column;gap:24px}
-
-/* Section titles — diamond dot like player sheets */
-.section-title{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.section-dot{width:5px;height:5px;flex-shrink:0;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%)}
-
-/* ── GAMES ── */
-.games-stack{display:flex;flex-direction:column;gap:8px}
-.game-block{background:var(--surface);border:1px solid var(--border);overflow:hidden;transition:border-color .15s;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)}
-.game-block:hover{border-color:var(--border2)}
-
-.game-header{display:grid;grid-template-columns:44px 120px 80px 110px 1fr;gap:0;align-items:stretch;border-bottom:1px solid var(--border)}
-.gh-cell{padding:10px 14px;display:flex;align-items:center;border-right:1px solid var(--border)}
-.gh-cell:last-child{border-right:none}
-.gh-label{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:4px}
-.game-num{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--border2)}
-
-.result-select{background:transparent;border:none;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:1px;outline:none;cursor:pointer;width:100%;padding:0}
-.result-select option{background:var(--surface);font-family:'Exo 2',sans-serif;font-size:13px}
-
-.game-input{background:transparent;border:none;color:var(--text2);font-size:13px;font-family:'Exo 2',sans-serif;outline:none;width:100%;padding:0}
-.game-input::placeholder{color:var(--text3)}
-.game-input:focus{color:var(--text)}
-
-.kd-wrap{display:flex;align-items:center;gap:6px;flex:1}
-.kd-inp{background:transparent;border:none;font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;outline:none;width:36px;text-align:center;color:var(--text2)}
-.kd-inp:focus{color:var(--text)}
-.kd-sep{font-family:'Rajdhani',sans-serif;font-size:18px;color:var(--border2);font-weight:700}
-
-/* Errors section */
-.game-errors{padding:12px 14px;background:var(--surface2)}
-.errors-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.errors-title{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);font-weight:700;display:flex;align-items:center;gap:6px}
-.btn-add-err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.18);color:var(--red);padding:4px 10px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .15s;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%)}
-.btn-add-err:hover{background:rgba(239,68,68,.18)}
-.errors-list{display:flex;flex-direction:column;gap:5px}
-.error-row{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid rgba(239,68,68,.12);border-left:2px solid rgba(239,68,68,.4);padding:8px 11px;animation:errin .2s ease both;clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,0 100%)}
-@keyframes errin{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
-.err-timer{background:rgba(239,68,68,.08);border:none;color:var(--red);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;padding:4px 8px;outline:none;width:62px;text-align:center;cursor:text}
-.err-timer:focus{outline:1px solid rgba(239,68,68,.3)}
-.err-timer::placeholder{color:rgba(239,68,68,.25);font-size:10px;font-family:'Exo 2',sans-serif;font-weight:400}
-.err-cat{background:transparent;border:none;color:var(--text3);font-size:10px;font-family:'Exo 2',sans-serif;letter-spacing:.3px;outline:none;cursor:pointer;flex-shrink:0;padding:0 4px}
-.err-cat option{background:var(--surface)}
-.err-desc{flex:1;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-size:12px;font-family:'Exo 2',sans-serif;padding:2px 0;outline:none;transition:border-color .15s}
-.err-desc:focus{border-bottom-color:var(--red)}
-.err-desc::placeholder{color:var(--text3)}
-.btn-del-err{background:none;border:none;color:var(--text3);font-size:13px;cursor:pointer;padding:2px 4px;transition:color .15s;flex-shrink:0;line-height:1}
-.btn-del-err:hover{color:var(--red)}
-.no-errors{font-size:11px;color:var(--text3);padding:4px 0;font-style:italic}
-
-/* ── ANALYSE POST-SCRIM ── */
-.analyse-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
-.ana-card{background:var(--surface);border:1px solid var(--border);padding:14px 16px;display:flex;flex-direction:column;gap:8px;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)}
-.ana-title{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:2px}
-.ana-ta{width:100%;background:transparent;border:none;color:var(--text2);font-size:12px;font-family:'Exo 2',sans-serif;line-height:1.7;resize:none;outline:none;min-height:95px}
-.ana-ta::placeholder{color:var(--text3)}
-
-/* ── PLAYER CARDS ── */
-.players-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-.player-card{background:var(--surface);border:1px solid var(--border);overflow:hidden;transition:border-color .15s;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%)}
-.player-card:hover{border-color:var(--border2)}
-.pc-head{padding:9px 12px 7px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px}
-.pc-emoji{font-size:14px}
-.pc-name{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:.5px}
-.pc-role{font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-top:1px}
-.pc-body{padding:10px 12px 12px}
-.pc-ta{width:100%;background:transparent;border:none;color:var(--text2);font-size:11px;font-family:'Exo 2',sans-serif;line-height:1.65;resize:none;outline:none;min-height:88px}
-.pc-ta::placeholder{color:var(--text3)}
-
-/* ── BILAN GLOBAL ── */
-.bilan-block{background:var(--surface);border:1px solid var(--border);padding:20px 24px;display:flex;align-items:center;gap:22px;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px))}
-.bilan-score-wrap{display:flex;align-items:baseline;gap:6px;flex-shrink:0}
-.bilan-input{background:transparent;border:none;border-bottom:2px solid rgba(6,182,212,.25);color:var(--c1);font-family:'Rajdhani',sans-serif;font-size:64px;font-weight:700;line-height:1;width:84px;text-align:center;outline:none;transition:border-color .2s;text-shadow:0 0 20px rgba(6,182,212,.4)}
-.bilan-input:focus{border-bottom-color:var(--c1)}
-.bilan-over{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:600;color:var(--text3)}
-.bilan-right{flex:1;display:flex;flex-direction:column;gap:7px}
-.bilan-label{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--c1)}
-.bilan-comment{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text2);font-size:13px;font-family:'Exo 2',sans-serif;padding:3px 0;outline:none;transition:border-color .2s}
-.bilan-comment:focus{border-bottom-color:var(--c1)}
-.bilan-comment::placeholder{color:var(--text3)}
-
-/* ── FOOTER ── */
-.card-footer{border-top:1px solid var(--border);background:var(--surface);padding:11px 32px;display:flex;align-items:center;justify-content:space-between}
-.footer-brand{font-family:'Rajdhani',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
-.footer-date{font-size:9px;color:var(--text3);letter-spacing:1px}
-
-@media(max-width:900px){.game-header{grid-template-columns:44px 110px 70px 100px 1fr}.analyse-grid{grid-template-columns:1fr 1fr}.players-grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:600px){.card-body{padding:14px 16px}.game-header{grid-template-columns:40px 1fr 1fr 1fr}.players-grid{grid-template-columns:repeat(2,1fr)}.analyse-grid{grid-template-columns:1fr}.bilan-block{flex-direction:column;align-items:flex-start}.card-header{flex-direction:column;align-items:flex-start}}
+  @media(max-width:760px){.meta{grid-template-columns:1fr}.ana-grid{grid-template-columns:1fr}.players{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 
-<div class="loading-screen" id="loadingScreen">
-  <div class="loading-logo">RoZter</div>
-  <div class="loading-bar"><div class="loading-fill"></div></div>
-  <div class="loading-text">Connexion Firebase…</div>
-</div>
+<div class="loader"><div class="loader-mark">ARCHI</div><div class="loader-bar"></div></div>
+<div id="nav"></div>
 
-<a href="index.html" class="hub-link">← Hub RoZter</a>
-
-<div class="sync-bar">
-  <div class="sync-indicator">
-    <div class="sync-dot offline" id="syncDot"></div>
-    <span class="sync-text" id="syncText" style="color:var(--text3)">En attente…</span>
-    <span class="sync-time" id="syncTime"></span>
+<div class="content">
+  <div class="toolbar" data-noexport>
+    <span class="sync-pill"><span class="sync-dot offline" id="syncDot"></span><span id="syncText">En attente…</span><span class="sync-time" id="syncTime"></span></span>
+    <button class="btn btn-sm" onclick="newSession()">＋ Nouveau</button>
+    <button class="btn btn-sm" onclick="openHistory()">Historique <span id="histCount" class="muted"></span></button>
+    <button class="btn btn-sm" id="exportBtn">⬇ PNG</button>
+    <button class="btn btn-sm" onclick="importBackup()">Import</button>
+    <button class="btn btn-sm btn-danger" onclick="resetCurrentSession()">Vider</button>
   </div>
-  <button class="btn-save-fb" id="saveFbBtn" onclick="save()">💾 Sauvegarder</button>
-  <div class="btn-mini-row">
-    <div class="btn-mini" onclick="exportBackup()">📦 Backup</div>
-    <div class="btn-mini" onclick="importBackup()">📥 Import</div>
-    <div class="btn-mini red" onclick="resetCurrentSession()">🗑 Vider</div>
-  </div>
-</div>
+  <div style="text-align:center"><span class="session-chip" id="sessionChip">Chargement…</span></div>
 
-<div class="toolbar">
-  <button class="btn-new-scrim" onclick="newSession()">＋ Nouveau scrim</button>
-  <button class="btn-history" onclick="openHistory()">📋 Historique <span id="histCount" style="opacity:.6"></span></button>
-  <button class="btn btn-export" id="exportBtn">⬇ Exporter PNG</button>
-</div>
+  <div class="card" id="capture">
+    <div class="scrim-head">
+      <div class="eyebrow">PlaZma Esport · Compte rendu</div>
+      <h1 style="font-size:1.5rem" id="advTitle">Scrim</h1>
+    </div>
 
-<div style="margin-bottom:12px;display:flex;justify-content:center">
-  <div class="session-chip" id="sessionChip">⏳ Chargement…</div>
-</div>
+    <div class="meta">
+      <div><label>Date</label><input id="m_date" type="date"></div>
+      <div><label>Équipe adverse</label><input id="m_adv" type="text" placeholder="Nom de l'équipe"></div>
+    </div>
 
-<!-- HISTORY DRAWER -->
-<div class="hist-overlay" id="histOverlay" onclick="closeHistory()"></div>
-<div class="hist-drawer" id="histDrawer">
-  <div class="hd-head">
-    <div class="hd-title">📋 Historique Scrims</div>
-    <button class="hd-close" onclick="closeHistory()">✕</button>
-  </div>
-  <div class="hd-new">
-    <button class="btn-hd-new" onclick="newSession();closeHistory()">＋ Créer un nouveau compte rendu</button>
-    <div class="hd-sep">Sessions sauvegardées</div>
-  </div>
-  <div class="hd-list" id="hdList">
-    <div class="hd-empty">Aucune session sauvegardée.</div>
-  </div>
-</div>
+    <div class="score">
+      <div class="score-team"><small>PlaZma</small><input class="score-num" id="s_plazma" type="text" value="0" maxlength="2" style="color:var(--ok)"></div>
+      <div class="score-vs">VS</div>
+      <div class="score-team"><small id="advLabel">Adversaire</small><input class="score-num" id="s_adv" type="text" value="0" maxlength="2" style="color:var(--err)"></div>
+    </div>
 
-<div class="card" id="card">
-
-  <!-- HEADER -->
-  <div class="card-header">
-    <div class="header-left">
-      <div class="logo-mark">PZ</div>
-      <div class="header-titles">
-        <div class="club-name">PlaZma Esport · RoZter</div>
-        <div class="doc-type">Compte Rendu Scrim</div>
+    <div class="body">
+      <div>
+        <div class="sec-title"><span class="d" style="background:var(--mid)"></span>Games &amp; erreurs</div>
+        <div id="games"></div>
       </div>
-    </div>
-    <div class="header-right">
-      <div class="season-tag">League of Legends · Saison 2026</div>
-    </div>
-  </div>
 
-  <!-- META -->
-  <div class="meta-bar">
-    <div class="meta-cell"><div class="meta-label">Date</div><input class="meta-input" id="m_date" type="date" oninput="debounceSave()"></div>
-    <div class="meta-cell"><div class="meta-label">Équipe adverse</div><input class="meta-input" id="m_adv" type="text" placeholder="Nom de l'équipe" oninput="debounceSave()"></div>
-    <div class="meta-cell"><div class="meta-label">Type de scrim</div>
-      <select class="meta-input" id="m_type" onchange="debounceSave()">
-        <option>Préparation match</option><option>Entraînement standard</option>
-        <option>Test de composition</option><option>Ranked scrim</option>
-      </select>
-    </div>
-    <div class="meta-cell"><div class="meta-label">Responsable CR</div><input class="meta-input" id="m_resp" type="text" placeholder="Coach / Joueur" oninput="debounceSave()"></div>
-  </div>
-
-  <!-- SCORE -->
-  <div class="score-tracker">
-    <div class="score-team">
-      <div class="score-team-name">PlaZma</div>
-      <input class="score-num" id="s_plazma" type="text" value="0" style="color:var(--green)" maxlength="2" oninput="debounceSave()">
-    </div>
-    <div class="score-vs">VS</div>
-    <div class="score-team">
-      <div class="score-team-name" id="advLabel">Adversaire</div>
-      <input class="score-num" id="s_adv" type="text" value="0" style="color:var(--red)" maxlength="2" oninput="debounceSave()">
-    </div>
-  </div>
-
-  <div class="card-body">
-
-    <!-- 1. GAMES -->
-    <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--blue)"></div>Détail des games</div>
-      <div class="games-stack" id="gamesStack"></div>
-    </div>
-
-    <!-- 2. ANALYSE -->
-    <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--orange)"></div>Analyse post-scrim</div>
-      <div class="analyse-grid">
-        <div class="ana-card" style="border-left:2px solid var(--green)">
-          <div class="ana-title" style="color:var(--green)">✦ Ce qui a bien fonctionné</div>
-          <textarea class="ana-ta" id="t_bien" placeholder="Phases de jeu réussies, mécaniques propres, objectifs bien gérés…" oninput="debounceSave()"></textarea>
+      <div>
+        <div class="sec-title"><span class="d" style="background:var(--top)"></span>Analyse post-scrim</div>
+        <div class="ana-grid">
+          <div class="ana" style="--ac:var(--ok)"><div class="t">✦ Ce qui a bien fonctionné</div>
+            <textarea id="t_bien" placeholder="Phases réussies, mécaniques propres, objectifs bien gérés…"></textarea></div>
+          <div class="ana" style="--ac:var(--err)"><div class="t">✦ À corriger &amp; axes de travail</div>
+            <textarea id="t_corriger" placeholder="Patterns d'erreurs, habitudes à casser, thèmes pour la prochaine session…"></textarea></div>
         </div>
-        <div class="ana-card" style="border-left:2px solid var(--red)">
-          <div class="ana-title" style="color:var(--red)">✦ Points à corriger</div>
-          <textarea class="ana-ta" id="t_corriger" placeholder="Patterns d'erreurs récurrents identifiés, habitudes à casser…" oninput="debounceSave()"></textarea>
-        </div>
-        <div class="ana-card" style="border-left:2px solid var(--c1)">
-          <div class="ana-title" style="color:var(--c1)">✦ Axes de travail — prochaine session</div>
-          <textarea class="ana-ta" id="t_axes" placeholder="Exercices, review VOD, thèmes coaching…" oninput="debounceSave()"></textarea>
+      </div>
+
+      <div>
+        <div class="sec-title"><span class="d" style="background:var(--accent)"></span>Remarques individuelles</div>
+        <div class="players" id="players"></div>
+      </div>
+
+      <div>
+        <div class="sec-title"><span class="d" style="background:var(--warn)"></span>Bilan global</div>
+        <div class="bilan">
+          <div class="bilan-num"><input id="f_note" type="text" value="—" maxlength="2"><span class="bilan-over">/ 10</span></div>
+          <div class="bilan-right"><label>Appréciation générale de la session</label>
+            <input id="f_comment" type="text" placeholder="Résumé, niveau global montré, points de satisfaction…"></div>
         </div>
       </div>
     </div>
 
-    <!-- 3. REMARQUES -->
-    <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--c1)"></div>Remarques individuelles</div>
-      <div class="players-grid" id="playersGrid"></div>
+    <div class="foot">
+      <div class="brand">PlaZma Esport · ARCHI · plazma-esport.fr</div>
+      <div class="brand" id="footDate"></div>
     </div>
-
-    <!-- 4. BILAN -->
-    <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--yellow)"></div>Bilan global</div>
-      <div class="bilan-block">
-        <div class="bilan-score-wrap">
-          <input class="bilan-input" id="f_note" type="text" value="—" maxlength="2" oninput="debounceSave()">
-          <div class="bilan-over">/ 10</div>
-        </div>
-        <div class="bilan-right">
-          <div class="bilan-label">Appréciation générale de la session</div>
-          <input class="bilan-comment" id="f_comment" type="text" placeholder="Résumé de la session, niveau global montré, points de satisfaction…" oninput="debounceSave()">
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="card-footer">
-    <div class="footer-brand">PlaZma Esport · RoZter · plazma-esport.fr</div>
-    <div class="footer-date" id="footerDate"></div>
   </div>
 </div>
 
+<!-- Drawer historique -->
+<div class="drawer-ov" id="drawerOv" onclick="closeHistory()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head"><h2 style="font-size:1.1rem">Historique</h2><button class="btn btn-icon btn-ghost" onclick="closeHistory()">✕</button></div>
+  <div style="padding:14px 14px 0"><button class="btn btn-primary" style="width:100%" onclick="newSession();closeHistory()">＋ Nouveau compte rendu</button></div>
+  <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
+</div>
+
+<script src="assets/plazma.js"></script>
 <script>
+'use strict';
+PZ.mountNav('scrim', '#nav');
+const db = PZ.db;
+const SCRIMS_COL = 'plazma-scrims';
 
-const COL='plazma', DOC_ID='scrim';
-
-// ── ROSTER ─────────────────────────────────────────────────────
-const ROSTER=[
-  {id:'boulou',  name:'boulou',  role:'Top',    emoji:'👍', color:'var(--top)'},
-  {id:'zugu',    name:'Zugu',    role:'Jungle', emoji:'🌿', color:'var(--jgl)'},
-  {id:'lakrael', name:'Lakraël', role:'Mid',    emoji:'👀', color:'var(--mid)'},
-  {id:'ke1do',   name:'Ke1do',   role:'ADC',    emoji:'🐯', color:'var(--adc)'},
-  {id:'sayro',   name:'Joordy',   role:'Support',emoji:'🛡️',color:'var(--sup)'},
+const ROSTER = [
+  {id:'boulou', name:'Boulou', role:'Top', emoji:'👍', color:'var(--top)'},
+  {id:'zugu', name:'Zugu', role:'Jungle', emoji:'🕊️', color:'var(--jungle)'},
+  {id:'lakrael', name:'Lakraël', role:'Mid', emoji:'👀', color:'var(--mid)'},
+  {id:'ke1do', name:'Ke1do', role:'ADC', emoji:'🐯', color:'var(--adc)'},
+  {id:'sayro', name:'Joordy', role:'Support', emoji:'🥀', color:'var(--support)'},
 ];
-
-// ── ÉTAT DES ERREURS PAR GAME ───────────────────────────────────
-// errors = { g1: [{id, timer, cat, desc}, …], g2: […], … }
-let errors = {g1:[],g2:[],g3:[],g4:[],g5:[]};
-let _errId = 0;
-function uid(){ return 'e'+(++_errId); }
-
 const ERR_CATS = ['Positionnement','Objectif manqué','Rotation','Communication','Mécanique','Teamfight','Vision','Autre'];
 
-// ── BUILD GAMES STACK ──────────────────────────────────────────
-function buildGamesStack(){
-  const stack = document.getElementById('gamesStack');
-  stack.innerHTML = '';
+let errors = {g1:[],g2:[],g3:[],g4:[],g5:[]};
+let _errId = 0, currentDocId = null, _unsub = null, _saveT = null;
+const uid = () => 'e' + (++_errId);
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const val = id => { const e=document.getElementById(id); return e?e.value:''; };
+const set = (id,v) => { const e=document.getElementById(id); if(e) e.value=v||''; };
+
+// ── Games ──
+function buildGames(){
+  const host = document.getElementById('games'); host.innerHTML='';
   for(let g=1;g<=5;g++){
-    const block = document.createElement('div');
-    block.className = 'game-block';
-    block.id = 'gblock_'+g;
-    block.innerHTML = `
-      <div class="game-header">
-        <!-- Num -->
-        <div class="gh-cell" style="justify-content:center;padding:10px 8px">
-          <span class="game-num">G${g}</span>
-        </div>
-        <!-- Résultat -->
-        <div class="gh-cell" style="flex-direction:column;align-items:flex-start;gap:2px">
-          <span class="gh-label">Résultat</span>
-          <select class="result-select" id="g${g}_result" onchange="styleResult(this);debounceSave()">
-            <option value="">—</option>
-            <option value="V">VICTOIRE</option>
-            <option value="D">DÉFAITE</option>
-          </select>
-        </div>
-        <!-- Durée -->
-        <div class="gh-cell" style="flex-direction:column;align-items:flex-start;gap:2px">
-          <span class="gh-label">Durée</span>
-          <input class="game-input" id="g${g}_dur" type="text" placeholder="28:14" oninput="debounceSave()">
-        </div>
-        <!-- Side -->
-        <div class="gh-cell" style="flex-direction:column;align-items:flex-start;gap:2px">
-          <span class="gh-label">Side</span>
-          <select class="game-input" id="g${g}_side" style="cursor:pointer" onchange="styleSide(this);debounceSave()">
-            <option value="">—</option>
-            <option value="Blue">🔵 Blue Side</option>
-            <option value="Red">🔴 Red Side</option>
-          </select>
-        </div>
-        <!-- K/D -->
-        <div class="gh-cell" style="flex-direction:column;align-items:flex-start;gap:2px">
-          <span class="gh-label">K — D</span>
-          <div class="kd-wrap">
-            <input class="kd-inp" id="g${g}_k" type="text" placeholder="0" style="color:var(--green)" maxlength="3" oninput="debounceSave()">
-            <span class="kd-sep">/</span>
-            <input class="kd-inp" id="g${g}_d" type="text" placeholder="0" style="color:var(--red)" maxlength="3" oninput="debounceSave()">
-          </div>
-        </div>
+    const b = document.createElement('div'); b.className='game';
+    b.innerHTML = `
+      <div class="game-top">
+        <span class="game-num">G${g}</span>
+        <select id="g${g}_result" onchange="styleResult(this);queueSave()">
+          <option value="">Résultat —</option><option value="V">Victoire</option><option value="D">Défaite</option>
+        </select>
       </div>
-      <!-- ERREURS DE CETTE GAME -->
-      <div class="game-errors">
-        <div class="errors-header">
-          <div class="errors-title">
-            <span style="color:var(--red)">⚠</span>
-            Erreurs — Game ${g}
-          </div>
-          <button class="btn-add-err" onclick="addError('g${g}')">+ Ajouter une erreur</button>
-        </div>
-        <div class="errors-list" id="errlist_g${g}">
-          <div class="no-errors" id="errEmpty_g${g}">Aucune erreur enregistrée pour cette game.</div>
-        </div>
+      <div class="errs">
+        <div class="errs-head"><span class="lbl">Erreurs — Game ${g}</span>
+          <button class="btn btn-sm btn-danger" onclick="addError('g${g}')">+ Erreur</button></div>
+        <div id="errlist_g${g}"><div class="no-err" id="errEmpty_g${g}">Aucune erreur.</div></div>
       </div>`;
-    stack.appendChild(block);
+    host.appendChild(b);
   }
 }
+function styleResult(sel){ sel.style.color = sel.value==='V'?'var(--ok)':sel.value==='D'?'var(--err)':'var(--muted)'; }
 
-function styleResult(sel){
-  if(sel.value==='V'){sel.style.color='var(--green)';}
-  else if(sel.value==='D'){sel.style.color='var(--red)';}
-  else{sel.style.color='var(--text3)';}
-}
-function styleSide(sel){
-  sel.style.color = sel.value==='Blue'?'var(--blue)':sel.value==='Red'?'var(--red)':'var(--text3)';
-}
-
-// ── ERREURS ────────────────────────────────────────────────────
-function addError(gameKey, data){
-  const list = document.getElementById('errlist_'+gameKey);
-  const emptyEl = document.getElementById('errEmpty_'+gameKey);
-  if(emptyEl) emptyEl.style.display = 'none';
-
-  const err = data || {id: uid(), timer:'', cat: ERR_CATS[0], desc:''};
-  if(!data) errors[gameKey].push(err);
-
-  const row = document.createElement('div');
-  row.className = 'error-row';
-  row.id = 'errrow_'+err.id;
-  row.innerHTML = `
-    <input class="err-timer" id="errt_${err.id}" type="text" value="${err.timer}" placeholder="00:00" oninput="updateError('${gameKey}','${err.id}','timer',this.value);debounceSave()">
-    <select class="err-cat" id="errc_${err.id}" onchange="updateError('${gameKey}','${err.id}','cat',this.value);debounceSave()">
-      ${ERR_CATS.map(c=>`<option${c===err.cat?' selected':''}>${c}</option>`).join('')}
-    </select>
-    <input class="err-desc" id="errd_${err.id}" type="text" value="${err.desc}" placeholder="Décris l'erreur précisément…" oninput="updateError('${gameKey}','${err.id}','desc',this.value);debounceSave()">
-    <button class="btn-del-err" onclick="removeError('${gameKey}','${err.id}')" title="Supprimer">✕</button>`;
+function addError(gk, data){
+  const list=document.getElementById('errlist_'+gk), empty=document.getElementById('errEmpty_'+gk);
+  if(empty) empty.style.display='none';
+  const err = data || {id:uid(),timer:'',cat:ERR_CATS[0],desc:''};
+  if(!data) errors[gk].push(err);
+  const row=document.createElement('div'); row.className='err-row'; row.id='errrow_'+err.id;
+  row.innerHTML=`
+    <input id="errt_${err.id}" type="text" value="${esc(err.timer)}" placeholder="00:00" oninput="updErr('${gk}','${err.id}','timer',this.value)">
+    <select id="errc_${err.id}" onchange="updErr('${gk}','${err.id}','cat',this.value)">${ERR_CATS.map(c=>`<option${c===err.cat?' selected':''}>${c}</option>`).join('')}</select>
+    <input id="errd_${err.id}" type="text" value="${esc(err.desc)}" placeholder="Décris l'erreur…" oninput="updErr('${gk}','${err.id}','desc',this.value)">
+    <button class="err-del" onclick="removeError('${gk}','${err.id}')">✕</button>`;
   list.appendChild(row);
 }
-
-function updateError(gameKey, errId, field, value){
-  const err = errors[gameKey].find(e=>e.id===errId);
-  if(err) err[field] = value;
+function updErr(gk,id,f,v){ const e=errors[gk].find(x=>x.id===id); if(e){ e[f]=v; queueSave(); } }
+function removeError(gk,id){
+  errors[gk]=errors[gk].filter(e=>e.id!==id);
+  document.getElementById('errrow_'+id)?.remove();
+  const empty=document.getElementById('errEmpty_'+gk); if(empty&&!errors[gk].length) empty.style.display='';
+  queueSave();
 }
-
-function removeError(gameKey, errId){
-  errors[gameKey] = errors[gameKey].filter(e=>e.id!==errId);
-  const row = document.getElementById('errrow_'+errId);
-  if(row) row.remove();
-  const emptyEl = document.getElementById('errEmpty_'+gameKey);
-  if(emptyEl && errors[gameKey].length===0) emptyEl.style.display = '';
-  debounceSave();
-}
-
 function renderErrors(){
-  // Clear all lists then rebuild
-  for(let g=1;g<=5;g++){
-    const gk = 'g'+g;
-    const list = document.getElementById('errlist_'+gk);
-    const emptyEl = document.getElementById('errEmpty_'+gk);
-    // Remove existing rows (keep empty placeholder)
-    Array.from(list.querySelectorAll('.error-row')).forEach(r=>r.remove());
-    if(errors[gk] && errors[gk].length>0){
-      if(emptyEl) emptyEl.style.display='none';
-      errors[gk].forEach(err=>addError(gk, err));
-    } else {
-      if(emptyEl) emptyEl.style.display='';
-    }
+  for(let g=1;g<=5;g++){ const gk='g'+g;
+    document.querySelectorAll('#errlist_'+gk+' .err-row').forEach(r=>r.remove());
+    const empty=document.getElementById('errEmpty_'+gk);
+    if(errors[gk]&&errors[gk].length){ if(empty)empty.style.display='none'; errors[gk].forEach(e=>addError(gk,e)); }
+    else if(empty) empty.style.display='';
   }
 }
 
-// ── BUILD PLAYERS GRID ─────────────────────────────────────────
-function buildPlayersGrid(){
-  const grid = document.getElementById('playersGrid');
+// ── Players ──
+function buildPlayers(){
+  const grid=document.getElementById('players'); grid.innerHTML='';
   ROSTER.forEach(p=>{
-    const card = document.createElement('div');
-    card.className = 'player-card';
-    card.style.borderTop = `2px solid ${p.color}`;
-    card.innerHTML = `
-      <div class="pc-head">
-        <div class="pc-emoji">${p.emoji}</div>
-        <div>
-          <div class="pc-name" style="color:${p.color}">${p.name}</div>
-          <div class="pc-role">${p.role}</div>
-        </div>
-      </div>
-      <div class="pc-body">
-        <textarea class="pc-ta" id="rem_${p.id}" placeholder="Performance, comportement, point précis à retravailler…" oninput="debounceSave()"></textarea>
-      </div>`;
-    grid.appendChild(card);
+    const c=document.createElement('div'); c.className='pcard'; c.style.setProperty('--role',p.color);
+    c.innerHTML=`<div class="h"><span>${p.emoji}</span><div><div class="n" style="color:${p.color}">${p.name}</div><div class="r">${p.role}</div></div></div>
+      <textarea id="rem_${p.id}" placeholder="Performance, comportement, point à retravailler…"></textarea>`;
+    grid.appendChild(c);
   });
 }
 
-// ── GET / APPLY STATE ─────────────────────────────────────────
-function v(id){const e=document.getElementById(id);return e?e.value:'';}
-function sv(id,val){const e=document.getElementById(id);if(e)e.value=val||'';}
-
+// ── State ──
 function getState(){
-  const games={};
-  for(let g=1;g<=5;g++){
-    ['result','dur','side','k','d'].forEach(k=>{ games[`g${g}_${k}`]=v(`g${g}_${k}`); });
-  }
-  const players={};
-  ROSTER.forEach(p=>{ players['rem_'+p.id]=v('rem_'+p.id); });
-  return{
-    m_date:v('m_date'),m_adv:v('m_adv'),m_type:v('m_type'),m_resp:v('m_resp'),
-    s_plazma:v('s_plazma'),s_adv:v('s_adv'),
-    t_bien:v('t_bien'),t_corriger:v('t_corriger'),t_axes:v('t_axes'),
-    f_note:v('f_note'),f_comment:v('f_comment'),
-    errors: JSON.parse(JSON.stringify(errors)),
-    ...games, ...players
-  };
+  const s={ m_date:val('m_date'), m_adv:val('m_adv'), s_plazma:val('s_plazma'), s_adv:val('s_adv'),
+    t_bien:val('t_bien'), t_corriger:val('t_corriger'), f_note:val('f_note'), f_comment:val('f_comment'),
+    errors:JSON.parse(JSON.stringify(errors)) };
+  for(let g=1;g<=5;g++) s[`g${g}_result`]=val(`g${g}_result`);
+  ROSTER.forEach(p=>s['rem_'+p.id]=val('rem_'+p.id));
+  return s;
 }
-
 function applyState(s){
   if(!s) return;
-  // Simple fields
-  ['m_date','m_adv','m_type','m_resp','s_plazma','s_adv',
-   't_bien','t_corriger','t_axes','f_note','f_comment'].forEach(k=>sv(k,s[k]));
-  // Games
-  for(let g=1;g<=5;g++){
-    ['result','dur','side','k','d'].forEach(k=>{sv(`g${g}_${k}`,s[`g${g}_${k}`]);});
-    const sel=document.getElementById(`g${g}_result`); if(sel) styleResult(sel);
-    const ss=document.getElementById(`g${g}_side`); if(ss) styleSide(ss);
-  }
-  // Players
-  ROSTER.forEach(p=>sv('rem_'+p.id, s['rem_'+p.id]));
-  // Adv label
-  const adv=document.getElementById('m_adv');
-  if(adv&&adv.value) document.getElementById('advLabel').textContent=adv.value;
-  // Errors
-  if(s.errors){
-    errors={g1:[],g2:[],g3:[],g4:[],g5:[]};
-    Object.keys(s.errors).forEach(gk=>{
-      if(s.errors[gk]) errors[gk]=[...s.errors[gk]];
-    });
-    renderErrors();
-  }
+  ['m_date','m_adv','s_plazma','s_adv','t_bien','t_corriger','f_note','f_comment'].forEach(k=>set(k,s[k]));
+  for(let g=1;g<=5;g++){ set(`g${g}_result`,s[`g${g}_result`]); const sel=document.getElementById(`g${g}_result`); if(sel)styleResult(sel); }
+  ROSTER.forEach(p=>set('rem_'+p.id,s['rem_'+p.id]));
+  document.getElementById('advLabel').textContent = s.m_adv || 'Adversaire';
+  document.getElementById('advTitle').textContent = s.m_adv ? 'Scrim vs ' + s.m_adv : 'Scrim';
+  errors={g1:[],g2:[],g3:[],g4:[],g5:[]};
+  if(s.errors) Object.keys(s.errors).forEach(gk=>{ if(s.errors[gk]) errors[gk]=[...s.errors[gk]]; });
+  renderErrors();
 }
 
-// ── FIREBASE ──────────────────────────────────────────────────
-const SCRIMS_COL = 'plazma-scrims'; // collection dédiée, un doc = un scrim
-let currentDocId = null;            // ID du scrim actif
-let _unsubscribe = null;            // listener Firestore actif
-let _historyUnsub = null;           // listener liste histoire
-
-// ─── Génère un ID de session unique basé sur timestamp
-function newDocId(){
-  return 'scrim-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6);
+// ── Firestore (multi-doc + historique) ──
+const newDocId = () => 'scrim-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6);
+function updateChip(){
+  const adv=val('m_adv')||'Sans titre', d=val('m_date');
+  const ds=d?new Date(d+'T12:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'Sans date';
+  document.getElementById('sessionChip').textContent='📄 '+adv+' — '+ds;
 }
-
-function setSyncState(state,text,time=''){
-  const dot=document.getElementById('syncDot'),txt=document.getElementById('syncText'),tim=document.getElementById('syncTime');
-  if(!dot)return;
-  dot.className='sync-dot '+state;
-  txt.textContent=text;
-  txt.style.color=state==='connected'?'var(--green)':state==='syncing'?'var(--yellow)':state==='error'?'var(--red)':'var(--text3)';
-  tim.textContent=time;
-}
-function hideLoading(){const ls=document.getElementById('loadingScreen');if(ls){ls.classList.add('hidden');setTimeout(()=>ls.style.display='none',500);}}
-
-function updateSessionChip(){
-  const chip = document.getElementById('sessionChip');
-  if(!chip) return;
-  const adv = document.getElementById('m_adv')?.value || 'Sans titre';
-  const date = document.getElementById('m_date')?.value;
-  const dateStr = date ? new Date(date+'T12:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}) : 'Sans date';
-  chip.textContent = `📄 ${adv} — ${dateStr}`;
-}
-
 function save(){
-  if(!currentDocId) currentDocId = newDocId();
-  setSyncState('syncing','Sauvegarde…');
-  const state = getState();
-  state._savedAt = firebase.firestore.FieldValue.serverTimestamp();
-  db.collection(SCRIMS_COL).doc(currentDocId).set(state)
-    .then(()=>{setSyncState('connected','Synchronisé');flashSave(true);updateSessionChip();})
-    .catch(e=>{setSyncState('error','Erreur Firebase');flashSave(false);console.error(e);});
+  if(!db){ PZ.status('error','Firebase indisponible'); return; }
+  if(!currentDocId) currentDocId=newDocId();
+  PZ.status('syncing','Sauvegarde…');
+  const s=getState(); s._savedAt=firebase.firestore.FieldValue.serverTimestamp();
+  db.collection(SCRIMS_COL).doc(currentDocId).set(s)
+    .then(()=>{ PZ.status('connected','Synchronisé',PZ.nowTime()); updateChip(); })
+    .catch(e=>{ console.error(e); PZ.status('error','Erreur Firebase'); });
 }
-
+function queueSave(){ clearTimeout(_saveT); _saveT=setTimeout(save,900); }
 function startSync(docId){
-  if(_unsubscribe){ _unsubscribe(); _unsubscribe = null; }
-  currentDocId = docId;
-  setSyncState('syncing','Connexion…');
-  _unsubscribe = db.collection(SCRIMS_COL).doc(docId).onSnapshot(doc=>{
-    if(doc.metadata.hasPendingWrites)return;
-    if(doc.exists){
-      applyState(doc.data());
-      updateSessionChip();
-      const now=new Date();
-      setSyncState('connected','Synchronisé',now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));
-    } else {
-      setSyncState('connected','Nouveau scrim','');
-      updateSessionChip();
-    }
-    hideLoading();
-  },err=>{console.error(err);setSyncState('error','Erreur connexion');hideLoading();});
+  if(!db){ PZ.status('error','Firebase indisponible'); PZ.loadingDone(); return; }
+  if(_unsub){ _unsub(); _unsub=null; }
+  currentDocId=docId; PZ.status('syncing','Connexion…');
+  _unsub=db.collection(SCRIMS_COL).doc(docId).onSnapshot(doc=>{
+    if(doc.metadata.hasPendingWrites) return;
+    if(doc.exists){ applyState(doc.data()); PZ.status('connected','Synchronisé',PZ.nowTime()); }
+    else { PZ.status('connected','Nouveau scrim',''); }
+    updateChip(); PZ.loadingDone();
+  }, err=>{ console.error(err); PZ.status('error','Erreur connexion'); PZ.loadingDone(); });
 }
-
-// ─── Créer un nouveau scrim vierge
-function newSession(){
-  if(!confirm('Créer un nouveau scrim vide ? Le scrim actuel reste sauvegardé dans l\'historique.')) return;
-  const docId = newDocId();
-  // Reset form
-  errors={g1:[],g2:[],g3:[],g4:[],g5:[]};
-  buildGamesStack();
-  ['m_date','m_adv','m_type','m_resp','s_plazma','s_adv',
-   't_bien','t_corriger','t_axes','f_note','f_comment'].forEach(k=>{
-    const el=document.getElementById(k);
-    if(el) el.value = k==='s_plazma'||k==='s_adv'?'0': k==='m_type'?el.options[0]?.value||'':'';
-   });
-  for(let g=1;g<=5;g++) ['result','dur','side','k','d'].forEach(k=>{const el=document.getElementById(`g${g}_${k}`);if(el)el.value='';});
-  ROSTER.forEach(p=>{const el=document.getElementById('rem_'+p.id);if(el)el.value='';});
+function blankForm(){
+  errors={g1:[],g2:[],g3:[],g4:[],g5:[]}; renderErrors();
+  ['m_adv','t_bien','t_corriger','f_comment'].forEach(k=>set(k,''));
+  set('s_plazma','0'); set('s_adv','0'); set('f_note','—');
+  for(let g=1;g<=5;g++){ set(`g${g}_result`,''); const s=document.getElementById(`g${g}_result`); if(s)styleResult(s); }
+  ROSTER.forEach(p=>set('rem_'+p.id,''));
+  set('m_date', new Date().toISOString().split('T')[0]);
   document.getElementById('advLabel').textContent='Adversaire';
-  document.getElementById('m_date').value = new Date().toISOString().split('T')[0];
-  startSync(docId);
-  showToast('Nouveau scrim créé ✓');
+  document.getElementById('advTitle').textContent='Scrim';
 }
-
-// ─── Charger une session depuis l'historique
-function loadSession(docId){
-  if(docId === currentDocId){ closeHistory(); return; }
-  errors={g1:[],g2:[],g3:[],g4:[],g5:[]};
-  buildGamesStack();
-  startSync(docId);
-  closeHistory();
-  showToast('Scrim chargé ✓');
+function newSession(){
+  if(!confirm('Créer un nouveau scrim vide ? Le scrim actuel reste dans l\'historique.')) return;
+  blankForm(); startSync(newDocId());
 }
-
-// ─── Supprimer une session
-async function deleteSession(docId, e){
+function loadSession(id){ if(id===currentDocId){ closeHistory(); return; } startSync(id); closeHistory(); }
+async function deleteSession(id,e){
   e.stopPropagation();
   if(!confirm('Supprimer définitivement ce compte rendu ?')) return;
-  await db.collection(SCRIMS_COL).doc(docId).delete();
-  if(docId === currentDocId) newSession();
-  showToast('Scrim supprimé');
-}
-
-function resetCurrentSession(){
-  if(!confirm('Vider le scrim actuel (repart de zéro, sans supprimer les autres) ?')) return;
-  errors={g1:[],g2:[],g3:[],g4:[],g5:[]};
-  buildGamesStack();
-  ['m_date','m_adv','m_type','m_resp','s_plazma','s_adv',
-   't_bien','t_corriger','t_axes','f_note','f_comment'].forEach(k=>{
-    const el=document.getElementById(k);
-    if(el) el.value = k==='s_plazma'||k==='s_adv'?'0':'';
-   });
-  for(let g=1;g<=5;g++) ['result','dur','side','k','d'].forEach(k=>{const el=document.getElementById(`g${g}_${k}`);if(el)el.value='';});
-  ROSTER.forEach(p=>{const el=document.getElementById('rem_'+p.id);if(el)el.value='';});
-  document.getElementById('advLabel').textContent='Adversaire';
-  document.getElementById('m_date').value = new Date().toISOString().split('T')[0];
-  save();
-}
-
-// ─── HISTORIQUE DRAWER ────────────────────────────────────────
-function openHistory(){
-  document.getElementById('histOverlay').classList.add('open');
-  document.getElementById('histDrawer').classList.add('open');
+  await db.collection(SCRIMS_COL).doc(id).delete();
+  if(id===currentDocId){ blankForm(); startSync(newDocId()); }
   loadHistoryList();
 }
-function closeHistory(){
-  document.getElementById('histOverlay').classList.remove('open');
-  document.getElementById('histDrawer').classList.remove('open');
+function resetCurrentSession(){
+  if(!confirm('Vider le scrim actuel (sans supprimer les autres) ?')) return;
+  blankForm(); save();
 }
 
+// ── Drawer ──
+function openHistory(){ document.getElementById('drawerOv').classList.add('open'); document.getElementById('drawer').classList.add('open'); loadHistoryList(); }
+function closeHistory(){ document.getElementById('drawerOv').classList.remove('open'); document.getElementById('drawer').classList.remove('open'); }
 async function loadHistoryList(){
-  const list = document.getElementById('hdList');
-  list.innerHTML = '<div class="hd-empty">Chargement…</div>';
-  try {
-    const snap = await db.collection(SCRIMS_COL).orderBy('_savedAt','desc').get();
-    const docs = [];
-    snap.forEach(d => docs.push({id:d.id,...d.data()}));
-    renderHistoryList(docs);
-    document.getElementById('histCount').textContent = docs.length ? `(${docs.length})` : '';
-  } catch {
-    // Fallback sans orderBy si index absent
-    const snap = await db.collection(SCRIMS_COL).get();
-    const docs = [];
-    snap.forEach(d => docs.push({id:d.id,...d.data()}));
-    docs.sort((a,b)=>{
-      const ta = a._savedAt?.toMillis?.() || 0;
-      const tb = b._savedAt?.toMillis?.() || 0;
-      return tb - ta;
-    });
-    renderHistoryList(docs);
-    document.getElementById('histCount').textContent = docs.length ? `(${docs.length})` : '';
-  }
-}
-
-function renderHistoryList(docs){
-  const list = document.getElementById('hdList');
-  if(docs.length === 0){
-    list.innerHTML = '<div class="hd-empty">Aucun scrim sauvegardé.<br>Crée ton premier compte rendu !</div>';
-    return;
-  }
-  list.innerHTML = '';
-  docs.forEach(doc => {
-    const isActive = doc.id === currentDocId;
-    const date = doc.m_date ? new Date(doc.m_date+'T12:00') : null;
-    const day = date ? date.toLocaleDateString('fr-FR',{day:'2-digit'}) : '??';
-    const month = date ? date.toLocaleDateString('fr-FR',{month:'short'}) : '???';
-    const year = date ? date.getFullYear() : '';
-    const adv = doc.m_adv || 'Sans adversaire';
-    const type = doc.m_type || '';
-    const sp = doc.s_plazma || '0';
-    const sa = doc.s_adv || '0';
-
-    // Compte les games jouées
-    let gamesPlayed = 0;
-    let wins = 0;
-    for(let g=1;g<=5;g++){
-      if(doc[`g${g}_result`]){ gamesPlayed++; if(doc[`g${g}_result`]==='V') wins++; }
-    }
-    const gameStr = gamesPlayed ? `${gamesPlayed} game${gamesPlayed>1?'s':''} · ${wins}V${gamesPlayed-wins}D` : 'Aucune game';
-
-    const card = document.createElement('div');
-    card.className = 'sess-card' + (isActive?' active':'');
-    card.innerHTML = `
-      <div class="sess-main">
-        <div class="sess-date-badge">
-          <div class="sdb-day">${day}</div>
-          <div class="sdb-month">${month}</div>
-        </div>
-        <div class="sess-info">
-          <div class="sess-adv">${esc(adv)}</div>
-          <div class="sess-meta">${year ? year+' · ' : ''}${esc(type)} · ${gameStr}</div>
-          <div class="sess-score">
-            <span class="ss-plazma">${sp}</span>
-            <span class="ss-sep">–</span>
-            <span class="ss-adv">${sa}</span>
-            ${isActive ? '<span style="margin-left:6px;font-size:9px;font-weight:700;letter-spacing:1px;color:var(--v5);text-transform:uppercase">En cours</span>' : ''}
-          </div>
-        </div>
-      </div>
-      <div class="sess-actions">
-        <button class="sess-act-btn open-btn" onclick="loadSession('${doc.id}')">
-          ${isActive ? '✎ Modifier' : '📂 Ouvrir'}
-        </button>
-        <button class="sess-act-btn del-btn" onclick="deleteSession('${doc.id}',event)">🗑 Supprimer</button>
-      </div>`;
-    list.appendChild(card);
+  const list=document.getElementById('drawerList'); list.innerHTML='<div class="drawer-empty">Chargement…</div>';
+  if(!db){ list.innerHTML='<div class="drawer-empty">Firebase indisponible.</div>'; return; }
+  let docs=[];
+  try{ const snap=await db.collection(SCRIMS_COL).orderBy('_savedAt','desc').get(); snap.forEach(d=>docs.push({id:d.id,...d.data()})); }
+  catch{ const snap=await db.collection(SCRIMS_COL).get(); snap.forEach(d=>docs.push({id:d.id,...d.data()})); docs.sort((a,b)=>(b._savedAt?.toMillis?.()||0)-(a._savedAt?.toMillis?.()||0)); }
+  document.getElementById('histCount').textContent = docs.length?'('+docs.length+')':'';
+  if(!docs.length){ list.innerHTML='<div class="drawer-empty">Aucun scrim sauvegardé.</div>'; return; }
+  list.innerHTML='';
+  docs.forEach(doc=>{
+    const active=doc.id===currentDocId;
+    const date=doc.m_date?new Date(doc.m_date+'T12:00'):null;
+    const day=date?date.toLocaleDateString('fr-FR',{day:'2-digit'}):'--';
+    const month=date?date.toLocaleDateString('fr-FR',{month:'short'}):'---';
+    let played=0,wins=0; for(let g=1;g<=5;g++){ if(doc[`g${g}_result`]){ played++; if(doc[`g${g}_result`]==='V')wins++; } }
+    const gs=played?`${wins}V ${played-wins}D`:'—';
+    const c=document.createElement('div'); c.className='sess'+(active?' active':'');
+    c.innerHTML=`<div class="sess-main">
+        <div class="sess-date"><div class="d">${day}</div><div class="m">${month}</div></div>
+        <div style="flex:1;min-width:0">
+          <div class="sess-adv">${esc(doc.m_adv||'Sans adversaire')}</div>
+          <div class="sess-meta">${played?played+' game'+(played>1?'s':''):'Aucune game'}${active?' · en cours':''}</div>
+          <div class="sess-score"><span class="w">${esc(doc.s_plazma||'0')}</span> – <span class="l">${esc(doc.s_adv||'0')}</span> <span class="muted" style="font-size:12px">${gs}</span></div>
+        </div></div>
+      <div class="sess-actions"><button onclick="loadSession('${doc.id}')">${active?'Modifier':'Ouvrir'}</button>
+        <button onclick="deleteSession('${doc.id}',event)">Supprimer</button></div>`;
+    list.appendChild(c);
   });
 }
 
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-function flashSave(ok){
-  const btn=document.getElementById('saveFbBtn');if(!btn)return;
-  btn.classList.add('saved');btn.textContent=ok?'✓ Sauvegardé':'⚠ Erreur';if(!ok)btn.style.color='#ef4444';
-  setTimeout(()=>{btn.classList.remove('saved');btn.textContent='💾 Sauvegarder';btn.style.color='';},1600);
-}
-let _st=null;
-function debounceSave(){clearTimeout(_st);_st=setTimeout(save,900);}
-
-function showToast(msg){
-  let t=document.getElementById('_toast');
-  if(!t){t=document.createElement('div');t.id='_toast';t.style.cssText='position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 18px;font-size:11px;font-weight:600;color:var(--text);z-index:600;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap';document.body.appendChild(t);}
-  t.textContent=msg;t.style.opacity='1';
-  clearTimeout(t._tid);t._tid=setTimeout(()=>{t.style.opacity='0';},2400);
-}
-
-function exportBackup(){
-  const b=new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(b);
-  a.download='plazma-scrim-backup-'+new Date().toISOString().split('T')[0]+'.json';a.click();
-}
-function importBackup(){
-  const input=document.createElement('input');input.type='file';input.accept='.json';
-  input.addEventListener('change',async()=>{try{applyState(JSON.parse(await input.files[0].text()));save();}catch(e){alert('Fichier invalide');}});
-  input.click();
-}
-
-// ── ADV LABEL SYNC ─────────────────────────────────────────────
-document.addEventListener('input',e=>{
-  if(e.target.id==='m_adv') document.getElementById('advLabel').textContent=e.target.value||'Adversaire';
+// ── Divers ──
+document.getElementById('capture').addEventListener('input', e=>{
+  if(e.target.id==='m_adv'){ document.getElementById('advLabel').textContent=e.target.value||'Adversaire'; document.getElementById('advTitle').textContent=e.target.value?'Scrim vs '+e.target.value:'Scrim'; }
+  queueSave();
 });
+function importBackup(){ PZ.importFile(d=>{ applyState(d); save(); }); }
+document.getElementById('exportBtn').addEventListener('click',()=>PZ.exportPNG(document.getElementById('capture'),'archi-scrim'));
+document.getElementById('footDate').textContent='Mise à jour le '+new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
 
-// ── EXPORT PNG ─────────────────────────────────────────────────
-document.getElementById('exportBtn').addEventListener('click',async()=>{
-  const btn=document.getElementById('exportBtn');
-  btn.disabled=true;btn.textContent='Export…';
-  document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(b=>b.style.visibility='hidden');
-  await new Promise(r=>setTimeout(r,80));
-  const canvas=await html2canvas(document.getElementById('card'),{scale:2,backgroundColor:'#04111a',useCORS:true,logging:false});
-  document.querySelectorAll('.btn,.sync-bar,.hub-link').forEach(b=>b.style.visibility='');
-  btn.disabled=false;btn.textContent='⬇ Exporter PNG';
-  const link=document.createElement('a');link.download='plazma-scrim.png';link.href=canvas.toDataURL('image/png');link.click();
-});
-
-// ── INIT ───────────────────────────────────────────────────────
-document.getElementById('footerDate').textContent='Mise à jour le '+new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
-buildGamesStack();
-buildPlayersGrid();
-
-// Charge la dernière session ou en crée une nouvelle
-(async () => {
-  try {
-    const snap = await db.collection(SCRIMS_COL).orderBy('_savedAt','desc').limit(1).get();
-    if(!snap.empty){
-      const last = snap.docs[0];
-      startSync(last.id);
-    } else {
-      startSync(newDocId());
-    }
-  } catch {
-    // Si pas d'index, on crée simplement un nouveau
-    startSync(newDocId());
-  }
+// Init
+buildGames(); buildPlayers();
+(async()=>{
+  if(!db){ PZ.status('error','Firebase indisponible'); PZ.loadingDone(); blankForm(); return; }
+  try{ const snap=await db.collection(SCRIMS_COL).orderBy('_savedAt','desc').limit(1).get();
+    startSync(snap.empty?newDocId():snap.docs[0].id); }
+  catch{ startSync(newDocId()); }
 })();
-
-setTimeout(()=>{const ls=document.getElementById('loadingScreen');if(ls&&!ls.classList.contains('hidden')){hideLoading();setSyncState('error','Firebase inaccessible');}},8000);
-
 </script>
 </body>
 </html>

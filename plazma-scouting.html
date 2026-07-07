@@ -3,842 +3,400 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RoZter — Scouting Adverse</title>
+<title>ARCHI — Scouting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script>
-firebase.initializeApp({apiKey:"AIzaSyAKwNEbNa6f40oSMwGp6dcDY1ZY6hUN1Ks",authDomain:"plazma-esport.firebaseapp.com",projectId:"plazma-esport",storageBucket:"plazma-esport.firebasestorage.app",messagingSenderId:"534325929279",appId:"1:534325929279:web:b507a46c601fa6625edf8a"});
-const db=firebase.firestore();
-</script>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  /* Fonds RoZter */
-  --bg:#020c10;--bg2:#04111a;--surface:#060f18;--surface2:#091420;
-  --border:#0d2030;--border2:#112840;
-  /* Cyan accent — remplace le violet */
-  --c1:#06b6d4;--c2:#0891b2;--c3:#22d3ee;--c4:#67e8f9;
-  /* Alias violet→cyan pour le JS qui utilise --v3/v4/v5 */
-  --v3:#22d3ee;--v4:#67e8f9;--v5:#a5f3fc;
-  /* Couleurs fonctionnelles */
-  --green:#22c55e;--red:#ef4444;--orange:#f97316;--cyan:#06b6d4;
-  --yellow:#f59e0b;--blue:#3b82f6;--pink:#ec4899;
-  /* Texte */
-  --tx:#e0f7fc;--tx2:#4b8ea0;--tx3:#1a3d4a;
-}
+  .content{max-width:1000px;margin:0 auto;padding:22px var(--gut) 80px}
+  .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-bottom:8px}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-size:12px;color:var(--dim);margin-bottom:14px}
 
-body{background:var(--bg);font-family:'Exo 2',sans-serif;color:var(--tx);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 20px 80px}
+  .scout-head{border-top:3px solid var(--accent);padding:20px 22px;border-bottom:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .threat-badges{display:flex;gap:6px}
+  .tb{padding:5px 13px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;cursor:pointer;border:1px solid;transition:opacity .15s}
+  .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:16px 22px;border-bottom:1px solid var(--border)}
 
-/* ── LOADING ── */
-.loading-screen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .5s}
-.loading-screen.hidden{opacity:0;pointer-events:none}
-.loading-logo{font-family:'Rajdhani',sans-serif;font-size:52px;font-weight:700;letter-spacing:6px;color:var(--c1);text-shadow:0 0 30px rgba(6,182,212,.55)}
-.loading-bar{width:160px;height:2px;background:rgba(6,182,212,.1);border-radius:2px;overflow:hidden}
-.loading-fill{height:100%;background:var(--c1);animation:loadbar 1.4s ease infinite}
-@keyframes loadbar{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
-.loading-text{font-size:9px;color:var(--tx3);letter-spacing:2px;text-transform:uppercase}
+  .body{padding:22px;display:flex;flex-direction:column;gap:24px}
+  .sec-title{font-family:var(--font-display);font-size:14px;font-weight:600;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .sec-title .d{width:7px;height:7px;border-radius:50%}
 
-/* ── CHROME ── */
-.hub-link{display:inline-flex;align-items:center;gap:6px;font-size:9px;color:var(--tx3);text-decoration:none;letter-spacing:2px;text-transform:uppercase;transition:color .15s;margin-bottom:12px}
-.hub-link:hover{color:var(--c1)}
+  .players{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  .pcard{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .pcard .h{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;border-bottom:1px solid var(--border)}
+  .role-badge{--role:var(--rc)}
+  .danger{display:flex;gap:3px}
+  .ddot{width:10px;height:10px;border-radius:2px;cursor:pointer;opacity:.16;transition:opacity .12s,transform .1s}
+  .ddot.on{opacity:1}.ddot:hover{opacity:.6;transform:scale(1.15)}
+  .pcard .b{padding:10px 11px;display:flex;flex-direction:column;gap:8px}
+  .pf label{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+  .pf input{padding:6px 0;background:transparent;border:none;border-bottom:1px solid var(--border);border-radius:0;font-size:12px}
+  .pf input:focus{box-shadow:none;border-bottom-color:var(--accent)}
 
-.sync-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:12px}
-.sync-indicator{display:flex;align-items:center;gap:6px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border)}
-.sync-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.sync-dot.connected{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,.5)}
-.sync-dot.syncing{background:var(--yellow);animation:pulse .8s infinite}
-.sync-dot.error{background:var(--red)}
-.sync-dot.offline{background:var(--tx3)}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.sync-text{font-size:10px;font-weight:600}
-.sync-time{font-size:9px;color:var(--tx3)}
+  .draft-split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .draft{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+  .draft .t{font-size:12px;font-weight:600;margin-bottom:10px}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;min-height:26px}
+  .tag{display:inline-flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--dim)}
+  .tag .x{cursor:pointer;color:var(--muted)}.tag .x:hover{color:var(--err)}
+  .add{display:flex;gap:6px}
+  .add input{flex:1}
 
-.btn-save-fb{background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.22);color:var(--c1);padding:6px 14px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)}
-.btn-save-fb:hover{background:rgba(6,182,212,.18)}
-.btn-save-fb.saved{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:var(--green)}
-.btn-mini-row{display:flex;gap:5px}
-.btn-mini{background:var(--surface2);border:1px solid var(--border);color:var(--tx3);padding:5px 10px;font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;font-family:'Exo 2',sans-serif;transition:color .15s}
-.btn-mini:hover{color:var(--tx2)}
-.btn-mini.red{color:rgba(239,68,68,.3)}.btn-mini.red:hover{color:var(--red)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .analc{background:var(--surface-2);border:1px solid var(--border);border-left:3px solid var(--ac);border-radius:8px;padding:14px}
+  .analc .t{font-size:12px;font-weight:600;color:var(--ac);margin-bottom:8px}
+  .analc textarea{background:transparent;border:none;padding:0;min-height:80px;font-size:13px;color:var(--dim)}
+  .analc textarea:focus{box-shadow:none}
 
-.toolbar{display:flex;gap:8px;margin-bottom:10px;justify-content:center;flex-wrap:wrap}
-.btn{padding:7px 18px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:none;font-family:'Exo 2',sans-serif;transition:all .2s;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)}
-.btn-export{background:var(--c1);color:#000}
-.btn-export:hover{background:var(--c3);transform:translateY(-1px)}
-.btn-export:disabled{opacity:.4;cursor:default;transform:none}
+  .cp-table{width:100%;border-collapse:collapse}
+  .cp-table th{text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:9px 12px;border-bottom:1px solid var(--border)}
+  .cp-table td{border-bottom:1px solid var(--border);padding:0}
+  .cp-table tr:last-child td{border-bottom:none}
+  .cp-table td input{border:none;border-radius:0;background:transparent;padding:11px 12px;font-size:13px}
+  .cp-table td input:focus{box-shadow:none;background:var(--surface-2)}
+  .cp-role{padding:11px 12px}
 
-.btn-new-sheet{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:var(--green);padding:7px 16px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)}
-.btn-new-sheet:hover{background:rgba(34,197,94,.2)}
+  .concl{display:flex;align-items:center;gap:22px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:18px 22px;flex-wrap:wrap}
+  .concl-num{display:flex;align-items:baseline;gap:6px}
+  .concl-num input{width:86px;text-align:center;font-family:var(--font-display);font-size:2.6rem;font-weight:700;color:var(--accent);background:transparent;border:none;border-bottom:2px solid var(--border-2);border-radius:0;padding:0}
+  .concl-num input:focus{box-shadow:none;border-bottom-color:var(--accent)}
+  .concl-pct{font-family:var(--font-display);font-size:1.4rem;color:var(--muted)}
+  .concl-right{flex:1;min-width:240px}
 
-.btn-hist{background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.22);color:var(--c1);padding:7px 16px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)}
-.btn-hist:hover{background:rgba(6,182,212,.18)}
-.btn-hist.active{background:rgba(6,182,212,.2);border-color:rgba(6,182,212,.45)}
+  .foot{border-top:1px solid var(--border);padding:12px 22px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .foot .brand{font-size:12px;color:var(--muted)}
 
-.sheet-chip{display:flex;justify-content:center;margin-bottom:10px}
-.chip-inner{display:inline-flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border2);padding:3px 12px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--c1);clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%)}
+  .drawer-ov{position:fixed;inset:0;background:rgba(6,10,14,.6);backdrop-filter:blur(4px);z-index:180;opacity:0;pointer-events:none;transition:opacity .2s}
+  .drawer-ov.open{opacity:1;pointer-events:auto}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:390px;max-width:94vw;background:var(--surface);border-left:1px solid var(--border-2);z-index:181;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
+  .drawer.open{transform:none}
+  .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)}
+  .drawer-list{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
+  .sc{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:border-color .15s}
+  .sc:hover{border-color:var(--border-2)}.sc.active{border-color:var(--accent)}
+  .sc-main{display:flex;gap:11px;padding:12px 13px;align-items:flex-start}
+  .sc-threat{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:5px}
+  .sc-team{font-family:var(--font-display);font-weight:600}
+  .sc-meta{font-size:11px;color:var(--muted);margin-top:2px}
+  .sc-score{margin-left:auto;font-family:var(--font-display);font-size:1.3rem;font-weight:700}
+  .sc-actions{display:flex;border-top:1px solid var(--border)}
+  .sc-actions button{flex:1;background:none;border:none;padding:8px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:var(--font)}
+  .sc-actions button+button{border-left:1px solid var(--border)}
+  .sc-actions button:hover{color:var(--text)}
+  .drawer-empty{text-align:center;color:var(--muted);font-size:13px;padding:40px 20px}
 
-/* ── CARD ── */
-.card{width:100%;max-width:1000px;background:var(--bg2);border:1px solid rgba(6,182,212,.1);border-radius:12px;overflow:hidden;box-shadow:0 0 0 1px rgba(6,182,212,.04),0 40px 100px rgba(0,0,0,.7)}
-
-/* ── HEADER ── */
-.card-header{position:relative;overflow:hidden;padding:24px 32px 20px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:20px}
-.card-header::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--c1),var(--c3) 40%,transparent 70%)}
-.card-header::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 50% 180% at 0% 50%,rgba(6,182,212,.06),transparent 65%)}
-.logo-row{display:flex;align-items:center;gap:14px;position:relative}
-.logo-badge{width:42px;height:42px;background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.22);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--c1);letter-spacing:2px;flex-shrink:0;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
-.club-name{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--tx3)}
-.doc-type{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--tx);line-height:1.1}
-.threat-badge{padding:4px 12px;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border:1px solid;cursor:pointer;transition:all .2s;clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%)}
-
-/* ── META BAR ── */
-.meta-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
-.meta-cell{background:var(--surface);padding:11px 14px}
-.meta-label{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:var(--tx3);margin-bottom:5px}
-.meta-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--tx);font-size:12px;font-family:'Exo 2',sans-serif;padding:2px 0;outline:none;transition:border-color .2s}
-.meta-input:focus{border-bottom-color:var(--c1)}
-.meta-input::placeholder{color:var(--tx3)}
-.meta-input option{background:var(--surface)}
-
-/* ── BODY ── */
-.card-body{padding:22px 32px 28px;display:flex;flex-direction:column;gap:22px}
-.section-title{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.section-dot{width:5px;height:5px;flex-shrink:0;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%)}
-
-/* ═══ PLAYER CARDS ═══ */
-.player-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-.player-card{background:var(--surface);border:1px solid var(--border);overflow:hidden;transition:border-color .15s;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%)}
-.player-card:hover{border-color:var(--border2)}
-.pc-header{padding:9px 12px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.pc-role{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:2px 8px;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%)}
-/* Danger dots → losanges */
-.pc-danger{display:flex;gap:4px;align-items:center}
-.pc-dot{width:10px;height:10px;cursor:pointer;opacity:.15;transition:all .15s;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%)}
-.pc-dot.on{opacity:1}
-.pc-dot:hover{opacity:.65;transform:scale(1.2)}
-.pc-body{padding:9px 12px;display:flex;flex-direction:column;gap:7px}
-.pc-field{display:flex;flex-direction:column;gap:2px}
-.pc-lbl{font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);font-weight:700}
-.pc-inp{background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--tx);font-size:11px;font-family:'Exo 2',sans-serif;padding:2px 0;outline:none;width:100%;transition:border-color .15s}
-.pc-inp:focus{border-bottom-color:var(--c1)}
-.pc-inp::placeholder{color:var(--tx3)}
-/* Pills */
-.pc-pills{display:flex;gap:3px;flex-wrap:wrap}
-.pc-pill{font-size:7.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 6px;border:1px solid var(--border2);cursor:pointer;transition:all .12s;color:var(--tx3);background:var(--surface2);user-select:none;clip-path:polygon(3px 0%,100% 0%,calc(100% - 3px) 100%,0% 100%)}
-.pc-pill:hover{color:var(--tx2)}
-.pc-pill.on-blue{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.35);color:var(--blue)}
-.pc-pill.on-red{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);color:var(--red)}
-.pc-pill.on-both{background:rgba(6,182,212,.12);border-color:rgba(6,182,212,.35);color:var(--c1)}
-.pc-pill.on-tilt{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--red)}
-.pc-pill.on-calm{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:var(--green)}
-.pc-pill.on-neutral{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:var(--yellow)}
-
-/* ── DRAFT ── */
-.draft-split{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.draft-block{background:var(--surface);border:1px solid var(--border);padding:13px 14px;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%)}
-.draft-block-title{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:9px}
-.champ-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;min-height:26px}
-.champ-tag{background:var(--surface2);border:1px solid var(--border2);padding:3px 8px;font-size:11px;color:var(--tx2);display:flex;align-items:center;gap:4px;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%)}
-.champ-tag .del{color:var(--tx3);font-size:10px;cursor:pointer;transition:color .12s}
-.champ-tag .del:hover{color:var(--red)}
-.add-champ{display:flex;gap:5px;align-items:center}
-.add-champ-input{flex:1;background:var(--surface2);border:1px solid var(--border2);color:var(--tx);font-size:11px;font-family:'Exo 2',sans-serif;padding:5px 8px;outline:none;transition:border-color .2s}
-.add-champ-input:focus{border-color:var(--c1)}
-.add-champ-input::placeholder{color:var(--tx3)}
-.add-champ-btn{background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.2);color:var(--c1);padding:5px 12px;cursor:pointer;font-size:14px;font-weight:700;transition:background .15s;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%)}
-.add-champ-btn:hover{background:rgba(6,182,212,.25)}
-
-/* ── SWOT ── */
-.swot-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.swot-card{background:var(--surface);border:1px solid var(--border);padding:13px 15px;border-left:2px solid;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)}
-.swot-title{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:9px}
-.fiche-textarea{width:100%;background:transparent;border:none;color:var(--tx2);font-size:12px;font-family:'Exo 2',sans-serif;line-height:1.7;resize:none;outline:none;min-height:78px}
-.fiche-textarea::placeholder{color:var(--tx3)}
-
-/* ── PLAN ── */
-.plan-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
-.plan-card{background:var(--surface);border:1px solid var(--border);padding:13px 14px;border-left:2px solid;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%)}
-.plan-title{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:9px}
-
-/* ── CONTRE-PICKS TABLE ── */
-.cp-table{width:100%;border-collapse:separate;border-spacing:0}
-.cp-table thead tr{background:var(--surface2)}
-.cp-table th{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:var(--tx3);padding:9px 12px;text-align:left;font-weight:700;border-bottom:1px solid var(--border)}
-.cp-table td{border-bottom:1px solid var(--border)}
-.cp-table tbody tr:last-child td{border-bottom:none}
-.cp-table tbody tr:hover{background:rgba(6,182,212,.015)}
-.td-input{width:100%;background:transparent;border:none;color:var(--tx2);font-size:12px;font-family:'Exo 2',sans-serif;padding:9px 12px;outline:none}
-.td-input:focus{color:var(--tx)}
-.td-input::placeholder{color:var(--tx3)}
-.role-badge{display:inline-block;padding:2px 8px;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%)}
-
-/* ── JAUGE ── */
-.threat-section{display:flex;align-items:center;gap:18px;background:var(--surface);border:1px solid var(--border);padding:18px 20px;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)}
-.threat-label{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--tx2);min-width:110px}
-.threat-gauge{flex:1;display:flex;gap:5px}
-.gauge-step{flex:1;height:18px;cursor:pointer;transition:all .15s;opacity:.15;border:1px solid transparent;clip-path:polygon(2px 0%,100% 0%,calc(100% - 2px) 100%,0% 100%)}
-.gauge-step.active{opacity:1}
-.threat-text{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;min-width:100px;text-align:right}
-
-/* ── CONCLUSION ── */
-.note-globale{background:var(--surface);border:1px solid var(--border);padding:20px 24px;display:flex;align-items:center;gap:22px;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px))}
-.note-val{font-family:'Rajdhani',sans-serif;font-size:60px;font-weight:700;color:var(--c1);line-height:1;background:transparent;border:none;border-bottom:2px solid rgba(6,182,212,.25);outline:none;width:84px;text-align:center;text-shadow:0 0 20px rgba(6,182,212,.35)}
-.note-val:focus{border-bottom-color:var(--c1)}
-.note-sep{font-family:'Rajdhani',sans-serif;font-size:30px;color:var(--tx3);font-weight:600}
-.note-right{flex:1}
-.note-label-big{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--c1);margin-bottom:7px}
-.note-comment{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--tx2);font-size:13px;font-family:'Exo 2',sans-serif;padding:3px 0;outline:none;transition:border-color .2s}
-.note-comment:focus{border-bottom-color:var(--c1)}
-.note-comment::placeholder{color:var(--tx3)}
-
-/* ── FOOTER ── */
-.card-footer{border-top:1px solid var(--border);background:var(--surface);padding:11px 32px;display:flex;align-items:center;justify-content:space-between}
-.footer-brand{font-family:'Rajdhani',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--tx3)}
-
-/* ═══ HISTORY DRAWER ═══ */
-.hist-overlay{position:fixed;inset:0;background:rgba(2,12,16,.7);backdrop-filter:blur(6px);z-index:400;opacity:0;pointer-events:none;transition:opacity .25s}
-.hist-overlay.open{opacity:1;pointer-events:all}
-.hist-drawer{position:fixed;top:0;right:0;bottom:0;width:400px;max-width:95vw;background:var(--bg2);border-left:1px solid var(--border2);z-index:401;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
-.hist-drawer.open{transform:translateX(0)}
-.hd-head{padding:20px 22px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--surface);position:relative}
-.hd-head::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--c1),transparent)}
-.hd-title{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--c1)}
-.hd-close{background:none;border:none;color:var(--tx3);font-size:20px;cursor:pointer;transition:color .15s;line-height:1}
-.hd-close:hover{color:var(--tx)}
-.hd-actions{margin:14px 16px 8px;display:flex;flex-direction:column;gap:8px}
-.btn-hd-new{width:100%;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);color:var(--green);padding:11px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)}
-.btn-hd-new:hover{background:rgba(34,197,94,.18)}
-.hd-sep{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--tx3);padding:4px 6px;font-weight:700}
-.hd-list{flex:1;overflow-y:auto;padding:0 16px 20px;display:flex;flex-direction:column;gap:7px;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
-.hd-empty{text-align:center;padding:40px 20px;color:var(--tx3);font-size:12px;line-height:1.6}
-
-/* Session cards in drawer */
-.scard{background:var(--surface);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:all .15s;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%)}
-.scard:hover{border-color:var(--border2);transform:translateX(-2px)}
-.scard.active{border-color:var(--c1);box-shadow:0 0 0 1px var(--c1)}
-.scard-body{padding:12px 14px;display:flex;align-items:flex-start;gap:10px}
-.scard-threat{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
-.scard-info{flex:1;min-width:0}
-.scard-team{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.scard-meta{font-size:9px;color:var(--tx3);margin-top:3px}
-.scard-badges{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
-.scard-badge{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;clip-path:polygon(3px 0%,100% 0%,calc(100% - 3px) 100%,0% 100%)}
-.scard-score{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;flex-shrink:0}
-.scard-actions{display:flex;border-top:1px solid var(--border)}
-.scard-act{flex:1;background:none;border:none;padding:8px 0;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .15s;color:var(--tx3)}
-.scard-act:hover{color:var(--tx);background:rgba(255,255,255,.02)}
-.scard-act.open:hover{color:var(--c1)}
-.scard-act.del:hover{color:var(--red)}
-.scard-act+.scard-act{border-left:1px solid var(--border)}
-
-.toast-notif{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border2);padding:10px 18px;font-size:11px;font-weight:600;color:var(--tx);z-index:600;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)}
-.toast-notif.show{opacity:1}
-
-@media(max-width:900px){.player-cards{grid-template-columns:repeat(3,1fr)}.plan-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:600px){.player-cards{grid-template-columns:1fr 1fr}.meta-bar{grid-template-columns:1fr 1fr}.swot-grid,.draft-split{grid-template-columns:1fr}.plan-grid{grid-template-columns:1fr}}
+  @media(max-width:900px){.players{grid-template-columns:repeat(3,1fr)}.grid3{grid-template-columns:1fr}}
+  @media(max-width:600px){.players{grid-template-columns:repeat(2,1fr)}.meta{grid-template-columns:1fr}.draft-split,.grid2{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<div class="loading-screen" id="loadingScreen">
-  <div class="loading-logo">RoZter</div>
-  <div class="loading-bar"><div class="loading-fill"></div></div>
-  <div class="loading-text">Connexion Firebase…</div>
-</div>
+<div class="loader"><div class="loader-mark">ARCHI</div><div class="loader-bar"></div></div>
+<div id="nav"></div>
 
-<a href="index.html" class="hub-link">← Hub RoZter</a>
-
-<div class="sync-bar">
-  <div class="sync-indicator">
-    <div class="sync-dot offline" id="syncDot"></div>
-    <span class="sync-text" id="syncText" style="color:var(--tx3)">En attente…</span>
-    <span class="sync-time" id="syncTime"></span>
+<div class="content">
+  <div class="toolbar" data-noexport>
+    <span class="sync-pill"><span class="sync-dot offline" id="syncDot"></span><span id="syncText">En attente…</span><span class="sync-time" id="syncTime"></span></span>
+    <button class="btn btn-sm" onclick="newSheet()">＋ Nouvelle</button>
+    <button class="btn btn-sm" onclick="openDrawer()">Fiches <span id="sheetCount" class="muted"></span></button>
+    <button class="btn btn-sm" id="exportBtn">⬇ PNG</button>
+    <button class="btn btn-sm" onclick="importBackup()">Import</button>
+    <button class="btn btn-sm btn-danger" onclick="resetCurrentSheet()">Vider</button>
   </div>
-  <button class="btn-save-fb" id="saveFbBtn" onclick="save()">💾 Sauvegarder</button>
-  <div class="btn-mini-row">
-    <div class="btn-mini" onclick="exportBackup()">📦 Backup</div>
-    <div class="btn-mini" onclick="importBackup()">📥 Import</div>
-    <div class="btn-mini red" onclick="resetCurrentSheet()">🗑 Vider</div>
-  </div>
-</div>
+  <div style="text-align:center"><span class="chip" id="sheetChip">Chargement…</span></div>
 
-<div class="toolbar">
-  <button class="btn-new-sheet" onclick="newSheet()">＋ Nouvelle équipe</button>
-  <button class="btn-hist" id="histBtn" onclick="openDrawer()">📋 Toutes les fiches <span id="sheetCount" style="opacity:.6"></span></button>
-  <button class="btn btn-export" id="exportBtn">⬇ Exporter PNG</button>
-</div>
-
-<div class="sheet-chip"><div class="chip-inner" id="sheetChip">⏳ Chargement…</div></div>
-
-<!-- HISTORY DRAWER -->
-<div class="hist-overlay" id="histOverlay" onclick="closeDrawer()"></div>
-<div class="hist-drawer" id="histDrawer">
-  <div class="hd-head">
-    <div class="hd-title">📋 Fiches scouting</div>
-    <button class="hd-close" onclick="closeDrawer()">✕</button>
-  </div>
-  <div class="hd-actions">
-    <button class="btn-hd-new" onclick="newSheet();closeDrawer()">＋ Créer une nouvelle fiche</button>
-    <div class="hd-sep">Équipes analysées</div>
-  </div>
-  <div class="hd-list" id="hdList"><div class="hd-empty">Chargement…</div></div>
-</div>
-<div class="toast-notif" id="toastNotif"></div>
-
-<!-- CARD -->
-<div class="card" id="card">
-  <div class="card-header">
-    <div>
-      <div class="logo-row">
-        <div class="logo-badge">PZ</div>
-        <div>
-          <div class="club-name">PlaZma Esport · RoZter</div>
-          <div class="doc-type">Scouting Adverse</div>
-        </div>
+  <div class="card" id="capture">
+    <div class="scout-head">
+      <div>
+        <div class="eyebrow">PlaZma Esport · Scouting adverse</div>
+        <h1 style="font-size:1.5rem" id="teamTitle">Fiche adverse</h1>
       </div>
-    </div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--tx3)">Niveau de menace</div>
-      <div style="display:flex;gap:6px">
-        <div class="threat-badge" id="tb_low"  style="color:var(--green);border-color:rgba(34,197,94,.3)"  onclick="setThreat('low')">Faible</div>
-        <div class="threat-badge" id="tb_med"  style="color:var(--yellow);border-color:rgba(245,158,11,.3)" onclick="setThreat('med')">Moyen</div>
-        <div class="threat-badge" id="tb_high" style="color:var(--red);border-color:rgba(239,68,68,.3)"   onclick="setThreat('high')">Elevé</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- META -->
-  <div class="meta-bar">
-    <div class="meta-cell"><div class="meta-label">Équipe adverse</div><input class="meta-input" id="m_team"    type="text" placeholder="Nom de l'équipe" oninput="debounceSave()"></div>
-    <div class="meta-cell"><div class="meta-label">Coach / Manager</div><input class="meta-input" id="m_coach"   type="text" placeholder="Nom" oninput="debounceSave()"></div>
-    <div class="meta-cell"><div class="meta-label">Rang estimé</div><input class="meta-input"  id="m_rank"    type="text" placeholder="ex: Platine ~ Émeraude" oninput="debounceSave()"></div>
-    <div class="meta-cell"><div class="meta-label">Prochain tournoi</div><input class="meta-input" id="m_tournoi" type="text" placeholder="ex: Nexus Tour Phase 1" oninput="debounceSave()"></div>
-    <div class="meta-cell"><div class="meta-label">Analyste</div><input class="meta-input"         id="m_analyst" type="text" placeholder="Qui rédige" oninput="debounceSave()"></div>
-  </div>
-
-  <div class="card-body">
-
-    <!-- 1. ROSTER EN CARTES -->
-    <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--blue)"></div>Roster adverse</div>
-      <div class="player-cards" id="playerCards"></div>
-    </div>
-
-    <!-- 2. TENDANCES DRAFT -->
-    <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--c1)"></div>Tendances de draft</div>
-      <div class="draft-split">
-        <div class="draft-block">
-          <div class="draft-block-title" style="color:var(--c1)">🏆 Picks prioritaires (souvent joués)</div>
-          <div class="champ-tags" id="tagsPrio"></div>
-          <div class="add-champ"><input class="add-champ-input" id="inputPrio" placeholder="Ajouter un champion…" onkeydown="if(event.key==='Enter')addTag('Prio')"><button class="add-champ-btn" onclick="addTag('Prio')">+</button></div>
-        </div>
-        <div class="draft-block">
-          <div class="draft-block-title" style="color:var(--red)">🚫 Bans habituels (à anticiper)</div>
-          <div class="champ-tags" id="tagsBans"></div>
-          <div class="add-champ"><input class="add-champ-input" id="inputBans" placeholder="Ajouter un champion…" onkeydown="if(event.key==='Enter')addTag('Bans')"><button class="add-champ-btn" onclick="addTag('Bans')">+</button></div>
-        </div>
-        <div class="draft-block">
-          <div class="draft-block-title" style="color:var(--yellow)">⚠️ Faiblesse vs certains types</div>
-          <div class="champ-tags" id="tagsWeak"></div>
-          <div class="add-champ"><input class="add-champ-input" id="inputWeak" placeholder="Ex: split-push, poke comp…" onkeydown="if(event.key==='Enter')addTag('Weak')"><button class="add-champ-btn" onclick="addTag('Weak')">+</button></div>
-        </div>
-        <div class="draft-block">
-          <div class="draft-block-title" style="color:var(--green)">✅ Nos counter-picks recommandés</div>
-          <div class="champ-tags" id="tagsCp"></div>
-          <div class="add-champ"><input class="add-champ-input" id="inputCp" placeholder="Champion fort contre eux…" onkeydown="if(event.key==='Enter')addTag('Cp')"><button class="add-champ-btn" onclick="addTag('Cp')">+</button></div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:6px;text-align:right">Niveau de menace</div>
+        <div class="threat-badges">
+          <span class="tb" id="tb_low" style="color:var(--ok);border-color:rgba(34,197,94,.4)" onclick="setThreat('low')">Faible</span>
+          <span class="tb" id="tb_med" style="color:var(--warn);border-color:rgba(245,158,11,.4)" onclick="setThreat('med')">Moyen</span>
+          <span class="tb" id="tb_high" style="color:var(--err);border-color:rgba(239,68,68,.4)" onclick="setThreat('high')">Élevé</span>
         </div>
       </div>
     </div>
 
-    <!-- 3. FORCES / FAIBLESSES -->
-    <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--yellow)"></div>Analyse Forces / Faiblesses</div>
-      <div class="swot-grid">
-        <div class="swot-card" style="border-color:var(--green)"><div class="swot-title" style="color:var(--green)">❆ Leurs forces</div><textarea class="fiche-textarea" id="sw_forces" placeholder="Points forts identifiés (teamfight, early game…)" oninput="debounceSave()"></textarea></div>
-        <div class="swot-card" style="border-color:var(--red)"><div class="swot-title" style="color:var(--red)">❆ Leurs faiblesses</div><textarea class="fiche-textarea" id="sw_weak" placeholder="Vulnérabilités exploitables (poke, split…)" oninput="debounceSave()"></textarea></div>
-        <div class="swot-card" style="border-color:var(--c1)"><div class="swot-title" style="color:var(--c1)">❆ Stratégie typique</div><textarea class="fiche-textarea" id="sw_strat" placeholder="Style de jeu habituel, win condition préférée…" oninput="debounceSave()"></textarea></div>
-        <div class="swot-card" style="border-color:var(--cyan)"><div class="swot-title" style="color:var(--cyan)">❆ Comment les contrer</div><textarea class="fiche-textarea" id="sw_counter" placeholder="Notre approche optimale face à eux…" oninput="debounceSave()"></textarea></div>
+    <div class="meta">
+      <div><label>Équipe adverse</label><input id="m_team" type="text" placeholder="Nom de l'équipe"></div>
+      <div><label>Rang estimé</label><input id="m_rank" type="text" placeholder="ex : Platine ~ Émeraude"></div>
+      <div><label>Prochain tournoi / échéance</label><input id="m_tournoi" type="text" placeholder="ex : Nexus Tour Phase 1"></div>
+    </div>
+
+    <div class="body">
+      <div>
+        <div class="sec-title"><span class="d" style="background:var(--mid)"></span>Roster adverse</div>
+        <div class="players" id="players"></div>
       </div>
-    </div>
 
-    <!-- 4. PLAN D'APPROCHE -->
-    <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--orange)"></div>Plan d’approche par phase</div>
-      <div class="plan-grid">
-        <div class="plan-card" style="border-left:2px solid var(--green)"><div class="plan-title" style="color:var(--green)">🌅 Early Game (0–15 min)</div><textarea class="fiche-textarea" id="pl_early" placeholder="Priorités de laning, jungle path, 2v2…" style="min-height:80px" oninput="debounceSave()"></textarea></div>
-        <div class="plan-card" style="border-left:2px solid var(--yellow)"><div class="plan-title" style="color:var(--yellow)">👍 Mid Game / Teamfight</div><textarea class="fiche-textarea" id="pl_mid" placeholder="Contrôle des objectifs, rotations…" style="min-height:80px" oninput="debounceSave()"></textarea></div>
-        <div class="plan-card" style="border-left:2px solid var(--c1)"><div class="plan-title" style="color:var(--c1)">🏆 Win Condition</div><textarea class="fiche-textarea" id="pl_win" placeholder="Comment on gagne cette partie…" style="min-height:80px" oninput="debounceSave()"></textarea></div>
+      <div>
+        <div class="sec-title"><span class="d" style="background:var(--accent)"></span>Tendances de draft</div>
+        <div class="draft-split">
+          <div class="draft"><div class="t" style="color:var(--accent)">🏆 Picks prioritaires</div>
+            <div class="tags" id="tagsPrio"></div>
+            <div class="add"><input id="inputPrio" placeholder="Ajouter un champion…" onkeydown="if(event.key==='Enter')addTag('Prio')"><button class="btn btn-sm" onclick="addTag('Prio')">+</button></div>
+          </div>
+          <div class="draft"><div class="t" style="color:var(--err)">🚫 Bans habituels</div>
+            <div class="tags" id="tagsBans"></div>
+            <div class="add"><input id="inputBans" placeholder="Ajouter un champion…" onkeydown="if(event.key==='Enter')addTag('Bans')"><button class="btn btn-sm" onclick="addTag('Bans')">+</button></div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <!-- 5. CONTRE-PICKS TABLE -->
-    <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--pink)"></div>Tableau de contre-picks par rôle</div>
-      <table class="cp-table">
-        <thead><tr><th style="width:90px">Rôle</th><th>Leur pick habituel</th><th>Notre contre-pick</th><th>Raison / Avantage</th></tr></thead>
-        <tbody id="cpBody"></tbody>
-      </table>
-    </div>
-
-    <!-- 6. JAUGE MENACE -->
-    <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--red)"></div>Jauge de menace globale</div>
-      <div class="threat-section">
-        <div class="threat-label">Niveau de menace</div>
-        <div class="threat-gauge" id="threatGauge"></div>
-        <div class="threat-text" id="threatText" style="color:var(--tx3)">—</div>
+      <div>
+        <div class="sec-title"><span class="d" style="background:var(--warn)"></span>Forces / Faiblesses</div>
+        <div class="grid2">
+          <div class="analc" style="--ac:var(--ok)"><div class="t">Leurs forces</div><textarea id="sw_forces" placeholder="Teamfight, early game, discipline…"></textarea></div>
+          <div class="analc" style="--ac:var(--err)"><div class="t">Leurs faiblesses</div><textarea id="sw_weak" placeholder="Vulnérabilités exploitables…"></textarea></div>
+          <div class="analc" style="--ac:var(--accent)"><div class="t">Stratégie typique</div><textarea id="sw_strat" placeholder="Style de jeu, win condition préférée…"></textarea></div>
+          <div class="analc" style="--ac:var(--jungle)"><div class="t">Comment les contrer</div><textarea id="sw_counter" placeholder="Notre approche optimale…"></textarea></div>
+        </div>
       </div>
-    </div>
 
-    <!-- 7. CONCLUSION -->
-    <div>
-      <div class="section-title"><div class="section-dot" style="background:var(--c1)"></div>Conclusion &amp; probabilité de victoire estimée</div>
-      <div class="note-globale">
-        <input class="note-val" id="f_note" type="text" value="—" maxlength="3" oninput="debounceSave()">
-        <div class="note-sep">%</div>
-        <div class="note-right">
-          <div class="note-label-big">Estimation de victoire</div>
-          <input class="note-comment" id="f_comment" type="text" placeholder="Résumé de l’analyse, niveau perçu, confiance…" oninput="debounceSave()">
+      <div>
+        <div class="sec-title"><span class="d" style="background:var(--top)"></span>Plan d'approche par phase</div>
+        <div class="grid3">
+          <div class="analc" style="--ac:var(--ok)"><div class="t">🌅 Early (0–15 min)</div><textarea id="pl_early" placeholder="Laning, jungle path, 2v2…"></textarea></div>
+          <div class="analc" style="--ac:var(--warn)"><div class="t">⚔️ Mid / Teamfight</div><textarea id="pl_mid" placeholder="Objectifs, rotations…"></textarea></div>
+          <div class="analc" style="--ac:var(--accent)"><div class="t">🏆 Win condition</div><textarea id="pl_win" placeholder="Comment on gagne…"></textarea></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sec-title"><span class="d" style="background:var(--support)"></span>Contre-picks par rôle</div>
+        <div class="panel" style="padding:0">
+          <table class="cp-table">
+            <thead><tr><th style="width:90px">Rôle</th><th>Leur pick habituel</th><th>Notre contre-pick</th><th>Raison / avantage</th></tr></thead>
+            <tbody id="cpBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <div class="sec-title"><span class="d" style="background:var(--accent)"></span>Conclusion — probabilité de victoire</div>
+        <div class="concl">
+          <div class="concl-num"><input id="f_note" type="text" value="—" maxlength="3"><span class="concl-pct">%</span></div>
+          <div class="concl-right"><label>Estimation de victoire</label>
+            <input id="f_comment" type="text" placeholder="Résumé de l'analyse, niveau perçu, confiance…"></div>
         </div>
       </div>
     </div>
 
-  </div>
-
-  <div class="card-footer">
-    <div class="footer-brand">PlaZma Esport · RoZter · plazma-esport.fr</div>
-    <div style="font-size:10px;color:var(--tx3);letter-spacing:1px" id="footerDate"></div>
+    <div class="foot">
+      <div class="brand">PlaZma Esport · ARCHI · plazma-esport.fr</div>
+      <div class="brand" id="footDate"></div>
+    </div>
   </div>
 </div>
 
+<div class="drawer-ov" id="drawerOv" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head"><h2 style="font-size:1.1rem">Fiches scouting</h2><button class="btn btn-icon btn-ghost" onclick="closeDrawer()">✕</button></div>
+  <div style="padding:14px 14px 0"><button class="btn btn-primary" style="width:100%" onclick="newSheet();closeDrawer()">＋ Nouvelle fiche</button></div>
+  <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
+</div>
+
+<script src="assets/plazma.js"></script>
 <script>
 'use strict';
+PZ.mountNav('scouting', '#nav');
+const db = PZ.db;
 const SCOUT_COL = 'plazma-scouting';
-let currentDocId = null;
-let _unsub = null;
 
 const ROLES = [
-  {role:'Top',     color:'#f97316'},
-  {role:'Jungle',  color:'#22c55e'},
-  {role:'Mid',     color:'#3b82f6'},
-  {role:'ADC',     color:'#ef4444'},
-  {role:'Support', color:'#a855f7'},
+  {role:'Top', color:'var(--top)'}, {role:'Jungle', color:'var(--jungle)'}, {role:'Mid', color:'var(--mid)'},
+  {role:'ADC', color:'var(--adc)'}, {role:'Support', color:'var(--support)'},
 ];
+const DANGER_COLORS = ['#22c55e','#22c55e','#84cc16','#eab308','#f97316','#f97316','#ef4444'];
+const THREAT = { low:{c:'var(--ok)',l:'Faible'}, med:{c:'var(--warn)',l:'Moyen'}, high:{c:'var(--err)',l:'Élevé'} };
 
-// ── PER-PLAYER STATE ──────────────────────────────────────────
-// dangerState: 0-7, sideState: ''|'blue'|'red'|'both', tempState: ''|'tilt'|'calm'|'neutral'
 const dangerState = [0,0,0,0,0];
-const sideState   = ['','','','',''];
-const tempState   = ['','','','',''];
+const tagData = { Prio:[], Bans:[] };
+let threatLevel = '', currentDocId = null, _unsub = null, _saveT = null;
 
-// ── TAG STATE ─────────────────────────────────────────────────
-const tagData = {Prio:[],Bans:[],Weak:[],Cp:[]};
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const val = id => { const e=document.getElementById(id); return e?e.value:''; };
+const set = (id,v) => { const e=document.getElementById(id); if(e) e.value=v||''; };
+function queueSave(){ clearTimeout(_saveT); _saveT=setTimeout(save,1000); }
 
-// ── GAUGE + THREAT ─────────────────────────────────────────────
-let gaugeVal   = 0;
-let threatLevel = '';
-
-// ── BUILD PLAYER CARDS ────────────────────────────────────────
-const DANGER_COLORS = ['#22c55e','#22c55e','#84cc16','#eab308','#f97316','#f97316','#ef4444','#ef4444'];
-
-function buildPlayerCards() {
-  const grid = document.getElementById('playerCards');
-  grid.innerHTML = '';
-  ROLES.forEach((r, i) => {
-    const card = document.createElement('div');
-    card.className = 'player-card';
-    card.innerHTML = `
-      <div class="pc-header">
-        <span class="pc-role" style="background:${r.color}22;color:${r.color}">${r.role}</span>
-        <div class="pc-danger" id="danger${i}"></div>
-      </div>
-      <div class="pc-body">
-        <div class="pc-field">
-          <div class="pc-lbl">Pseudo</div>
-          <input class="pc-inp" id="ro${i}_pseudo" placeholder="Pseudo…" oninput="debounceSave()">
-        </div>
-        <div class="pc-field">
-          <div class="pc-lbl">Champion pool</div>
-          <input class="pc-inp" id="ro${i}_pool" placeholder="Champ1, Champ2…" oninput="debounceSave()">
-        </div>
-        <div class="pc-field">
-          <div class="pc-lbl">Rang / WR</div>
-          <input class="pc-inp" id="ro${i}_rank" placeholder="Gold IV · 55%" oninput="debounceSave()">
-        </div>
-        <div class="pc-field">
-          <div class="pc-lbl">Side favori</div>
-          <div class="pc-pills">
-            <div class="pc-pill" id="side${i}_blue" onclick="setSide(${i},'blue')">Blue</div>
-            <div class="pc-pill" id="side${i}_red"  onclick="setSide(${i},'red')">Red</div>
-            <div class="pc-pill" id="side${i}_both" onclick="setSide(${i},'both')">Les deux</div>
-          </div>
-        </div>
-        <div class="pc-field">
-          <div class="pc-lbl">Tempérament</div>
-          <div class="pc-pills">
-            <div class="pc-pill" id="temp${i}_tilt"    onclick="setTemp(${i},'tilt')">Tiltable</div>
-            <div class="pc-pill" id="temp${i}_calm"    onclick="setTemp(${i},'calm')">Calme</div>
-            <div class="pc-pill" id="temp${i}_neutral" onclick="setTemp(${i},'neutral')">Neutre</div>
-          </div>
-        </div>
-        <div class="pc-field">
-          <div class="pc-lbl">Commentaire</div>
-          <input class="pc-inp" id="ro${i}_comm" placeholder="Note rapide…" oninput="debounceSave()">
-        </div>
+// ── Player cards ──
+function buildPlayers(){
+  const grid=document.getElementById('players'); grid.innerHTML='';
+  ROLES.forEach((r,i)=>{
+    const c=document.createElement('div'); c.className='pcard';
+    c.innerHTML=`<div class="h"><span class="role-badge" style="--role:${r.color}">${r.role}</span><div class="danger" id="danger${i}"></div></div>
+      <div class="b">
+        <div class="pf"><label>Pseudo</label><input id="ro${i}_pseudo" placeholder="Pseudo…"></div>
+        <div class="pf"><label>Champion pool</label><input id="ro${i}_pool" placeholder="Champ1, Champ2…"></div>
+        <div class="pf"><label>Rang / WR</label><input id="ro${i}_rank" placeholder="Émeraude · 55%"></div>
+        <div class="pf"><label>Commentaire</label><input id="ro${i}_comm" placeholder="Note rapide…"></div>
       </div>`;
-    grid.appendChild(card);
-    buildDangerDots(i);
-    applySideUI(i);
-    applyTempUI(i);
+    grid.appendChild(c); buildDanger(i);
   });
 }
-
-function buildDangerDots(idx) {
-  const bar = document.getElementById('danger' + idx);
-  bar.innerHTML = '';
-  for (let d = 1; d <= 7; d++) {
-    const dot = document.createElement('div');
-    dot.className = 'pc-dot' + (d <= dangerState[idx] ? ' on' : '');
-    dot.style.background = DANGER_COLORS[d-1];
-    dot.dataset.v = d;
-    dot.addEventListener('click', () => { dangerState[idx] = dangerState[idx] === d ? 0 : d; buildDangerDots(idx); debounceSave(); });
+function buildDanger(i){
+  const bar=document.getElementById('danger'+i); bar.innerHTML='';
+  for(let d=1;d<=7;d++){
+    const dot=document.createElement('div');
+    dot.className='ddot'+(d<=dangerState[i]?' on':''); dot.style.background=DANGER_COLORS[d-1];
+    dot.title='Niveau de danger '+d; dot.addEventListener('click',()=>{ dangerState[i]=dangerState[i]===d?0:d; buildDanger(i); queueSave(); });
     bar.appendChild(dot);
   }
 }
 
-function setSide(idx, val) {
-  sideState[idx] = sideState[idx] === val ? '' : val;
-  applySideUI(idx);
-  debounceSave();
-}
-function applySideUI(idx) {
-  ['blue','red','both'].forEach(v => {
-    const el = document.getElementById('side' + idx + '_' + v);
-    if (!el) return;
-    el.className = 'pc-pill' + (sideState[idx] === v ? ' on-' + v : '');
+// ── CP table ──
+function buildCP(){
+  const tb=document.getElementById('cpBody'); tb.innerHTML='';
+  ROLES.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><div class="cp-role"><span class="role-badge" style="--role:${r.color}">${r.role}</span></div></td>
+      <td><input id="cp${i}_their" placeholder="Leur champion…"></td>
+      <td><input id="cp${i}_our" placeholder="Notre contre-pick…"></td>
+      <td><input id="cp${i}_why" placeholder="Avantage…"></td>`;
+    tb.appendChild(tr);
   });
 }
 
-function setTemp(idx, val) {
-  tempState[idx] = tempState[idx] === val ? '' : val;
-  applyTempUI(idx);
-  debounceSave();
+// ── Tags ──
+function addTag(type){
+  const inp=document.getElementById('input'+type), v=inp.value.trim(); if(!v)return;
+  tagData[type].push(v); renderTags(type); inp.value=''; queueSave();
 }
-function applyTempUI(idx) {
-  ['tilt','calm','neutral'].forEach(v => {
-    const el = document.getElementById('temp' + idx + '_' + v);
-    if (!el) return;
-    el.className = 'pc-pill' + (tempState[idx] === v ? ' on-' + v : '');
+function removeTag(type,i){ tagData[type].splice(i,1); renderTags(type); queueSave(); }
+function renderTags(type){
+  const c=document.getElementById('tags'+type); if(!c)return;
+  c.innerHTML=tagData[type].map((t,i)=>`<span class="tag">${esc(t)}<span class="x" onclick="removeTag('${type}',${i})">✕</span></span>`).join('');
+}
+
+// ── Threat ──
+function setThreat(l){ threatLevel = threatLevel===l?'':l; applyThreat(); queueSave(); }
+function applyThreat(){
+  ['low','med','high'].forEach(l=>{ const b=document.getElementById('tb_'+l);
+    if(b){ b.style.opacity = (!threatLevel||threatLevel===l)?'1':'.4'; b.style.fontWeight = threatLevel===l?'800':'700'; } });
+}
+
+// ── State ──
+function getState(){
+  const s={ m_team:val('m_team'), m_rank:val('m_rank'), m_tournoi:val('m_tournoi'),
+    sw_forces:val('sw_forces'), sw_weak:val('sw_weak'), sw_strat:val('sw_strat'), sw_counter:val('sw_counter'),
+    pl_early:val('pl_early'), pl_mid:val('pl_mid'), pl_win:val('pl_win'),
+    f_note:val('f_note'), f_comment:val('f_comment'),
+    tagData:{...tagData}, threatLevel };
+  ROLES.forEach((_,i)=>{ ['pseudo','pool','rank','comm'].forEach(k=>s[`ro${i}_${k}`]=val(`ro${i}_${k}`)); s[`danger${i}`]=dangerState[i];
+    ['their','our','why'].forEach(k=>s[`cp${i}_${k}`]=val(`cp${i}_${k}`)); });
+  return s;
+}
+function applyState(s){
+  if(!s)return;
+  ['m_team','m_rank','m_tournoi','sw_forces','sw_weak','sw_strat','sw_counter','pl_early','pl_mid','pl_win','f_note','f_comment'].forEach(k=>set(k,s[k]));
+  ROLES.forEach((_,i)=>{
+    ['pseudo','pool','rank','comm'].forEach(k=>set(`ro${i}_${k}`,s[`ro${i}_${k}`]));
+    if(s[`danger${i}`]!=null){ dangerState[i]=s[`danger${i}`]; buildDanger(i); }
+    ['their','our','why'].forEach(k=>set(`cp${i}_${k}`,s[`cp${i}_${k}`]));
   });
+  tagData.Prio = (s.tagData&&s.tagData.Prio)||[]; tagData.Bans = (s.tagData&&s.tagData.Bans)||[];
+  renderTags('Prio'); renderTags('Bans');
+  threatLevel = s.threatLevel||''; applyThreat();
+  document.getElementById('teamTitle').textContent = s.m_team ? 'Scouting · ' + s.m_team : 'Fiche adverse';
 }
 
-// ── BUILD CP TABLE ─────────────────────────────────────────────
-function buildCPTable() {
-  const tbody = document.getElementById('cpBody');
-  tbody.innerHTML = '';
-  ROLES.forEach((r, i) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><div style="padding:9px 12px"><span class="role-badge" style="background:${r.color}22;color:${r.color}">${r.role}</span></div></td>
-      <td><input class="td-input" id="cp${i}_their" placeholder="Leur champion habituel…" oninput="debounceSave()"></td>
-      <td><input class="td-input" id="cp${i}_our"   placeholder="Notre pick recommandé…" oninput="debounceSave()"></td>
-      <td><input class="td-input" id="cp${i}_why"   placeholder="Avantage en lane, teamfight…" oninput="debounceSave()"></td>`;
-    tbody.appendChild(tr);
-  });
+// ── Firestore (multi-doc) ──
+const newDocId = () => 'scout-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6);
+function updateChip(){
+  const team=val('m_team')||'Sans nom', t=val('m_tournoi');
+  document.getElementById('sheetChip').textContent='📄 '+team+(t?' — '+t:'');
 }
+function save(){
+  if(!db){ PZ.status('error','Firebase indisponible'); return; }
+  if(!currentDocId) currentDocId=newDocId();
+  PZ.status('syncing','Sauvegarde…');
+  const s=getState(); s._savedAt=firebase.firestore.FieldValue.serverTimestamp();
+  db.collection(SCOUT_COL).doc(currentDocId).set(s)
+    .then(()=>{ PZ.status('connected','Synchronisé',PZ.nowTime()); updateChip(); })
+    .catch(e=>{ console.error(e); PZ.status('error','Erreur Firebase'); });
+}
+function startSync(docId){
+  if(!db){ PZ.status('error','Firebase indisponible'); PZ.loadingDone(); return; }
+  if(_unsub){ _unsub(); _unsub=null; }
+  currentDocId=docId; PZ.status('syncing','Connexion…');
+  _unsub=db.collection(SCOUT_COL).doc(docId).onSnapshot(doc=>{
+    if(doc.metadata.hasPendingWrites) return;
+    if(doc.exists){ applyState(doc.data()); PZ.status('connected','Synchronisé',PZ.nowTime()); }
+    else PZ.status('connected','Nouvelle fiche','');
+    updateChip(); PZ.loadingDone();
+  }, err=>{ console.error(err); PZ.status('error','Erreur connexion'); PZ.loadingDone(); });
+}
+function fullReset(){
+  ['m_team','m_rank','m_tournoi','sw_forces','sw_weak','sw_strat','sw_counter','pl_early','pl_mid','pl_win','f_comment'].forEach(id=>set(id,''));
+  set('f_note','—');
+  ROLES.forEach((_,i)=>{ ['pseudo','pool','rank','comm'].forEach(k=>set(`ro${i}_${k}`,'')); dangerState[i]=0; buildDanger(i);
+    ['their','our','why'].forEach(k=>set(`cp${i}_${k}`,'')); });
+  tagData.Prio=[]; tagData.Bans=[]; renderTags('Prio'); renderTags('Bans');
+  threatLevel=''; applyThreat();
+  document.getElementById('teamTitle').textContent='Fiche adverse';
+}
+function newSheet(){ if(!confirm('Créer une nouvelle fiche ? L\'actuelle reste sauvegardée.'))return; fullReset(); startSync(newDocId()); }
+function loadSheet(id){ if(id===currentDocId){ closeDrawer(); return; } fullReset(); startSync(id); closeDrawer(); }
+async function deleteSheet(id,e){ e.stopPropagation(); if(!confirm('Supprimer définitivement cette fiche ?'))return;
+  await db.collection(SCOUT_COL).doc(id).delete(); if(id===currentDocId){ fullReset(); startSync(newDocId()); } loadDrawer(); }
+function resetCurrentSheet(){ if(!confirm('Vider la fiche actuelle ?'))return; fullReset(); save(); }
 
-// ── GAUGE ──────────────────────────────────────────────────────
-const GAUGE_COLORS = ['#22c55e','#22c55e','#22c55e','#84cc16','#eab308','#f97316','#f97316','#ef4444','#ef4444','#ef4444'];
-const GAUGE_LABELS = {0:'—',1:'Très faible',2:'Faible',3:'Modéré',4:'Moyen',5:'Moyen+',6:'Préoccupant',7:'Dangereux',8:'Très dangereux',9:'Critique',10:'Critique'};
-
-function buildGauge() {
-  const g = document.getElementById('threatGauge'); g.innerHTML = '';
-  for (let i = 1; i <= 10; i++) {
-    const s = document.createElement('div');
-    s.className = 'gauge-step';
-    s.style.background = GAUGE_COLORS[i-1];
-    s.style.borderColor = GAUGE_COLORS[i-1];
-    s.dataset.v = i;
-    s.addEventListener('click', () => { gaugeVal = gaugeVal === i ? 0 : i; applyGaugeUI(); debounceSave(); });
-    g.appendChild(s);
-  }
-  applyGaugeUI();
-}
-function applyGaugeUI() {
-  document.querySelectorAll('.gauge-step').forEach(s => s.classList.toggle('active', parseInt(s.dataset.v) <= gaugeVal));
-  const tt = document.getElementById('threatText');
-  tt.textContent = gaugeVal > 0 ? gaugeVal + '/10 — ' + GAUGE_LABELS[gaugeVal] : '—';
-  tt.style.color = gaugeVal > 0 ? GAUGE_COLORS[gaugeVal-1] : 'var(--tx3)';
-}
-
-// ── THREAT BADGES ──────────────────────────────────────────────
-function setThreat(level) {
-  threatLevel = threatLevel === level ? '' : level;
-  applyThreatUI();
-  debounceSave();
-}
-function applyThreatUI() {
-  ['low','med','high'].forEach(l => {
-    const b = document.getElementById('tb_' + l);
-    if (b) { b.style.opacity = threatLevel === l || !threatLevel ? '1' : '.35'; b.style.fontWeight = threatLevel === l ? '800' : '600'; }
-  });
-}
-
-// ── TAGS ───────────────────────────────────────────────────────
-function addTag(type) {
-  const input = document.getElementById('input' + type);
-  const val = input.value.trim(); if (!val) return;
-  tagData[type].push(val); renderTags(type); input.value = ''; debounceSave();
-}
-function removeTag(type, i) { tagData[type].splice(i, 1); renderTags(type); debounceSave(); }
-function renderTags(type) {
-  const c = document.getElementById('tags' + type); if (!c) return;
-  c.innerHTML = tagData[type].map((t, i) =>
-    `<div class="champ-tag">${esc(t)}<span class="del" onclick="removeTag('${type}',${i})"> ✕</span></div>`
-  ).join('');
-}
-
-// ── GET / APPLY STATE ──────────────────────────────────────────
-function v(id)          { const e = document.getElementById(id); return e ? e.value : ''; }
-function sv(id, val)    { const e = document.getElementById(id); if (e) e.value = val || ''; }
-
-function getState() {
-  const roster = {};
-  ROLES.forEach((_, i) => {
-    ['pseudo','pool','rank','comm'].forEach(k => { roster[`ro${i}_${k}`] = v(`ro${i}_${k}`); });
-    roster[`danger${i}`] = dangerState[i];
-    roster[`side${i}`]   = sideState[i];
-    roster[`temp${i}`]   = tempState[i];
-  });
-  const cp = {};
-  ROLES.forEach((_, i) => ['their','our','why'].forEach(k => { cp[`cp${i}_${k}`] = v(`cp${i}_${k}`); }));
-  return {
-    m_team:v('m_team'), m_coach:v('m_coach'), m_rank:v('m_rank'), m_tournoi:v('m_tournoi'), m_analyst:v('m_analyst'),
-    sw_forces:v('sw_forces'), sw_weak:v('sw_weak'), sw_strat:v('sw_strat'), sw_counter:v('sw_counter'),
-    pl_early:v('pl_early'), pl_mid:v('pl_mid'), pl_win:v('pl_win'),
-    f_note:v('f_note'), f_comment:v('f_comment'),
-    tagData:{...tagData}, gaugeVal, threatLevel,
-    ...roster, ...cp
-  };
-}
-
-function applyState(s) {
-  if (!s) return;
-  ['m_team','m_coach','m_rank','m_tournoi','m_analyst',
-   'sw_forces','sw_weak','sw_strat','sw_counter',
-   'pl_early','pl_mid','pl_win','f_note','f_comment'].forEach(k => sv(k, s[k]));
-  ROLES.forEach((_, i) => {
-    ['pseudo','pool','rank','comm'].forEach(k => sv(`ro${i}_${k}`, s[`ro${i}_${k}`]));
-    if (s[`danger${i}`] != null) { dangerState[i] = s[`danger${i}`]; buildDangerDots(i); }
-    if (s[`side${i}`]   != null) { sideState[i]   = s[`side${i}`];   applySideUI(i); }
-    if (s[`temp${i}`]   != null) { tempState[i]   = s[`temp${i}`];   applyTempUI(i); }
-  });
-  ROLES.forEach((_, i) => ['their','our','why'].forEach(k => sv(`cp${i}_${k}`, s[`cp${i}_${k}`])));
-  if (s.tagData) { Object.assign(tagData, s.tagData); ['Prio','Bans','Weak','Cp'].forEach(renderTags); }
-  if (s.gaugeVal  != null) { gaugeVal   = s.gaugeVal;   applyGaugeUI(); }
-  if (s.threatLevel != null) { threatLevel = s.threatLevel; applyThreatUI(); }
-}
-
-// ── FIREBASE MULTI-FICHES ──────────────────────────────────────
-function newDocId() { return 'scout-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6); }
-
-function setSyncState(state, text, time) {
-  const dot = document.getElementById('syncDot'), txt = document.getElementById('syncText'), tim = document.getElementById('syncTime');
-  if (!dot) return;
-  dot.className = 'sync-dot ' + ({connected:'connected',syncing:'syncing',error:'error'}[state] || 'offline');
-  txt.textContent = text;
-  txt.style.color = state==='connected'?'var(--green)':state==='syncing'?'var(--yellow)':state==='error'?'var(--red)':'var(--tx3)';
-  if (tim) tim.textContent = time || '';
-}
-function hideLoading() { const ls = document.getElementById('loadingScreen'); if (ls) { ls.classList.add('hidden'); setTimeout(() => ls.style.display='none', 500); } }
-
-function updateChip() {
-  const chip = document.getElementById('sheetChip'); if (!chip) return;
-  const team = document.getElementById('m_team')?.value || 'Sans nom';
-  const tournoi = document.getElementById('m_tournoi')?.value;
-  chip.textContent = '📄 ' + team + (tournoi ? ' — ' + tournoi : '');
-}
-
-function save() {
-  if (!currentDocId) currentDocId = newDocId();
-  setSyncState('syncing', 'Sauvegarde…');
-  const state = getState();
-  state._savedAt = firebase.firestore.FieldValue.serverTimestamp();
-  db.collection(SCOUT_COL).doc(currentDocId).set(state)
-    .then(() => { setSyncState('connected', 'Synchronisé'); flashSave(true); updateChip(); })
-    .catch(e => { setSyncState('error', 'Erreur Firebase'); flashSave(false); console.error(e); });
-}
-
-function startSync(docId) {
-  if (_unsub) { _unsub(); _unsub = null; }
-  currentDocId = docId;
-  setSyncState('syncing', 'Connexion…');
-  _unsub = db.collection(SCOUT_COL).doc(docId).onSnapshot(doc => {
-    if (doc.metadata.hasPendingWrites) return;
-    if (doc.exists) {
-      applyState(doc.data());
-      updateChip();
-      setSyncState('connected', 'Synchronisé', new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));
-    } else {
-      setSyncState('connected', 'Prêt', '');
-      updateChip();
-    }
-    hideLoading();
-  }, err => { console.error(err); setSyncState('error', 'Erreur connexion'); hideLoading(); });
-}
-
-function fullReset() {
-  ['m_team','m_coach','m_rank','m_tournoi','m_analyst',
-   'sw_forces','sw_weak','sw_strat','sw_counter','pl_early','pl_mid','pl_win','f_comment'].forEach(id => sv(id, ''));
-  sv('f_note', '—');
-  ROLES.forEach((_, i) => {
-    ['pseudo','pool','rank','comm'].forEach(k => sv(`ro${i}_${k}`, ''));
-    dangerState[i] = 0; buildDangerDots(i);
-    sideState[i]   = ''; applySideUI(i);
-    tempState[i]   = ''; applyTempUI(i);
-    ['their','our','why'].forEach(k => sv(`cp${i}_${k}`, ''));
-  });
-  Object.keys(tagData).forEach(k => { tagData[k] = []; renderTags(k); });
-  gaugeVal = 0; applyGaugeUI();
-  threatLevel = ''; applyThreatUI();
-}
-
-function newSheet() {
-  if (!confirm('Créer une nouvelle fiche ? La fiche actuelle reste sauvegardée.')) return;
-  fullReset(); startSync(newDocId()); showToast('Nouvelle fiche créée ✓');
-}
-function loadSheet(docId) {
-  if (docId === currentDocId) { closeDrawer(); return; }
-  fullReset(); startSync(docId); closeDrawer(); showToast('Fiche chargée ✓');
-}
-async function deleteSheet(docId, e) {
-  e.stopPropagation();
-  if (!confirm('Supprimer définitivement cette fiche ?')) return;
-  await db.collection(SCOUT_COL).doc(docId).delete();
-  if (docId === currentDocId) newSheet();
-  loadDrawer(); showToast('Fiche supprimée');
-}
-function resetCurrentSheet() {
-  if (!confirm('Vider la fiche actuelle ?')) return;
-  fullReset(); save();
-}
-
-// ── DRAWER ─────────────────────────────────────────────────────
-function openDrawer() {
-  document.getElementById('histOverlay').classList.add('open');
-  document.getElementById('histDrawer').classList.add('open');
-  document.getElementById('histBtn').classList.add('active');
-  loadDrawer();
-}
-function closeDrawer() {
-  document.getElementById('histOverlay').classList.remove('open');
-  document.getElementById('histDrawer').classList.remove('open');
-  document.getElementById('histBtn').classList.remove('active');
-}
-async function loadDrawer() {
-  const list = document.getElementById('hdList');
-  list.innerHTML = '<div class="hd-empty">Chargement…</div>';
-  let docs = [];
-  try {
-    const snap = await db.collection(SCOUT_COL).orderBy('_savedAt','desc').get();
-    snap.forEach(d => docs.push({id:d.id,...d.data()}));
-  } catch {
-    const snap = await db.collection(SCOUT_COL).get();
-    snap.forEach(d => docs.push({id:d.id,...d.data()}));
-    docs.sort((a,b) => (b._savedAt?.toMillis?.() || 0) - (a._savedAt?.toMillis?.() || 0));
-  }
-  const cnt = document.getElementById('sheetCount');
-  if (cnt) cnt.textContent = docs.length ? `(${docs.length})` : '';
-  if (!docs.length) { list.innerHTML = '<div class="hd-empty">Aucune fiche sauvegardée.<br>Crée ta première équipe !</div>'; return; }
-  list.innerHTML = '';
-  const TC = {low:'var(--green)', med:'var(--yellow)', high:'var(--red)'};
-  const TL = {low:'Faible', med:'Moyen', high:'Élevé'};
-  docs.forEach(doc => {
-    const isActive = doc.id === currentDocId;
-    const team = doc.m_team || 'Sans nom';
-    const tournoi = doc.m_tournoi || '';
-    const threat = doc.threatLevel || '';
-    const score = doc.f_note || '—';
-    const gaugeN = doc.gaugeVal || 0;
-    const date = doc._savedAt?.toDate?.()?.toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}) || '';
-    const gc = gaugeN > 0 ? GAUGE_COLORS[gaugeN-1] : 'var(--tx3)';
-    const card = document.createElement('div'); card.className = 'scard' + (isActive?' active':'');
-    card.innerHTML = `
-      <div class="scard-body">
-        <div class="scard-threat" style="background:${threat?TC[threat]:'var(--tx3)'}"></div>
-        <div class="scard-info">
-          <div class="scard-team">${esc(team)}</div>
-          <div class="scard-meta">${date}${tournoi?' · '+esc(tournoi):''}</div>
-          <div class="scard-badges">
-            ${threat?`<span class="scard-badge" style="background:${TC[threat]}18;color:${TC[threat]}">${TL[threat]}</span>`:''}
-            ${gaugeN>0?`<span class="scard-badge" style="background:${gc}18;color:${gc}">Menace ${gaugeN}/10</span>`:''}
-            ${isActive?'<span class="scard-badge" style="background:rgba(139,92,246,.15);color:var(--v5)">En cours</span>':''}
-          </div>
-        </div>
-        <div class="scard-score" style="color:${gc}">${esc(score)}<span style="font-size:12px;color:var(--tx3);font-weight:400">%</span></div>
+// ── Drawer ──
+function openDrawer(){ document.getElementById('drawerOv').classList.add('open'); document.getElementById('drawer').classList.add('open'); loadDrawer(); }
+function closeDrawer(){ document.getElementById('drawerOv').classList.remove('open'); document.getElementById('drawer').classList.remove('open'); }
+async function loadDrawer(){
+  const list=document.getElementById('drawerList'); list.innerHTML='<div class="drawer-empty">Chargement…</div>';
+  if(!db){ list.innerHTML='<div class="drawer-empty">Firebase indisponible.</div>'; return; }
+  let docs=[];
+  try{ const snap=await db.collection(SCOUT_COL).orderBy('_savedAt','desc').get(); snap.forEach(d=>docs.push({id:d.id,...d.data()})); }
+  catch{ const snap=await db.collection(SCOUT_COL).get(); snap.forEach(d=>docs.push({id:d.id,...d.data()})); docs.sort((a,b)=>(b._savedAt?.toMillis?.()||0)-(a._savedAt?.toMillis?.()||0)); }
+  document.getElementById('sheetCount').textContent = docs.length?'('+docs.length+')':'';
+  if(!docs.length){ list.innerHTML='<div class="drawer-empty">Aucune fiche sauvegardée.</div>'; return; }
+  list.innerHTML='';
+  docs.forEach(doc=>{
+    const active=doc.id===currentDocId;
+    const th=doc.threatLevel?THREAT[doc.threatLevel]:null;
+    const date=doc._savedAt?.toDate?.()?.toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})||'';
+    const c=document.createElement('div'); c.className='sc'+(active?' active':'');
+    c.innerHTML=`<div class="sc-main">
+        <div class="sc-threat" style="background:${th?th.c:'var(--muted)'}"></div>
+        <div style="min-width:0"><div class="sc-team">${esc(doc.m_team||'Sans nom')}</div>
+          <div class="sc-meta">${date}${doc.m_tournoi?' · '+esc(doc.m_tournoi):''}${th?' · '+th.l:''}${active?' · en cours':''}</div></div>
+        <div class="sc-score" style="color:${th?th.c:'var(--accent)'}">${esc(doc.f_note||'—')}<span class="muted" style="font-size:13px">%</span></div>
       </div>
-      <div class="scard-actions">
-        <button class="scard-act open" onclick="loadSheet('${doc.id}')">${isActive?'✎ Modifier':'📂 Ouvrir'}</button>
-        <button class="scard-act del"  onclick="deleteSheet('${doc.id}',event)">🗑 Supprimer</button>
-      </div>`;
-    list.appendChild(card);
+      <div class="sc-actions"><button onclick="loadSheet('${doc.id}')">${active?'Modifier':'Ouvrir'}</button>
+        <button onclick="deleteSheet('${doc.id}',event)">Supprimer</button></div>`;
+    list.appendChild(c);
   });
 }
 
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function flashSave(ok) {
-  const btn = document.getElementById('saveFbBtn'); if (!btn) return;
-  btn.classList.add('saved'); btn.textContent = ok ? '✓ Sauvegardé' : '⚠ Erreur'; if (!ok) btn.style.color='#ef4444';
-  setTimeout(() => { btn.classList.remove('saved'); btn.textContent = '💾 Sauvegarder'; btn.style.color=''; }, 1600);
-}
-let _st = null;
-function debounceSave() { clearTimeout(_st); _st = setTimeout(save, 1000); }
-function showToast(msg) { const t = document.getElementById('toastNotif'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2600); }
-
-function exportBackup() {
-  const b = new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(b);
-  const team = document.getElementById('m_team')?.value?.replace(/\s+/g,'_') || 'scouting';
-  a.download = 'plazma-scout-' + team + '-' + new Date().toISOString().split('T')[0] + '.json'; a.click();
-}
-function importBackup() {
-  const input = document.createElement('input'); input.type='file'; input.accept='.json';
-  input.addEventListener('change', async () => { try { applyState(JSON.parse(await input.files[0].text())); save(); } catch(e) { alert('Fichier invalide'); } });
-  input.click();
-}
-
-// Export PNG
-document.getElementById('exportBtn').addEventListener('click', async () => {
-  const btn = document.getElementById('exportBtn');
-  btn.disabled=true; btn.textContent='Export…';
-  document.querySelectorAll('.btn,.btn-new-sheet,.btn-hist,.btn-save-fb,.btn-mini-row,.sync-bar,.hub-link,.sheet-chip').forEach(b=>b.style.visibility='hidden');
-  await new Promise(r=>setTimeout(r,80));
-  const canvas = await html2canvas(document.getElementById('card'),{scale:2,backgroundColor:'#04111a',useCORS:true,logging:false});
-  document.querySelectorAll('.btn,.btn-new-sheet,.btn-hist,.btn-save-fb,.btn-mini-row,.sync-bar,.hub-link,.sheet-chip').forEach(b=>b.style.visibility='');
-  btn.disabled=false; btn.textContent='⬇ Exporter PNG';
-  const link=document.createElement('a'); link.download='plazma-scouting.png'; link.href=canvas.toDataURL('image/png'); link.click();
+// ── Divers ──
+document.getElementById('capture').addEventListener('input', e=>{
+  if(e.target.id==='m_team') document.getElementById('teamTitle').textContent = e.target.value?'Scouting · '+e.target.value:'Fiche adverse';
+  queueSave();
 });
+function importBackup(){ PZ.importFile(d=>{ applyState(d); save(); }); }
+document.getElementById('exportBtn').addEventListener('click',()=>PZ.exportPNG(document.getElementById('capture'),'archi-scouting'));
+document.getElementById('footDate').textContent='Mise à jour le '+new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
 
-// INIT
-document.getElementById('footerDate').textContent = 'Fiche créée le ' + new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
-buildPlayerCards();
-buildCPTable();
-buildGauge();
-applyThreatUI();
-
-(async () => {
-  try {
-    const snap = await db.collection(SCOUT_COL).orderBy('_savedAt','desc').limit(1).get();
-    startSync(!snap.empty ? snap.docs[0].id : newDocId());
-    const all = await db.collection(SCOUT_COL).get();
-    const cnt = document.getElementById('sheetCount');
-    if (cnt) cnt.textContent = all.size ? `(${all.size})` : '';
-  } catch { startSync(newDocId()); }
+// Init
+buildPlayers(); buildCP(); applyThreat();
+(async()=>{
+  if(!db){ PZ.status('error','Firebase indisponible'); PZ.loadingDone(); fullReset(); return; }
+  try{ const snap=await db.collection(SCOUT_COL).orderBy('_savedAt','desc').limit(1).get();
+    startSync(snap.empty?newDocId():snap.docs[0].id);
+    const all=await db.collection(SCOUT_COL).get(); document.getElementById('sheetCount').textContent=all.size?'('+all.size+')':''; }
+  catch{ startSync(newDocId()); }
 })();
-
-setTimeout(() => { const ls=document.getElementById('loadingScreen'); if(ls&&!ls.classList.contains('hidden')){hideLoading();setSyncState('error','Firebase inaccessible');} }, 8000);
 </script>
 </body>
 </html>
