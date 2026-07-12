@@ -38,6 +38,30 @@
   .addbtn{display:inline-flex;align-items:center;gap:5px;background:var(--surface-2);border:1px dashed var(--border-2);
     border-radius:999px;padding:5px 11px;color:var(--muted);cursor:pointer;font-family:var(--font);font-size:12px}
   .addbtn:hover{border-color:var(--accent);color:var(--accent)}
+  /* Icône seule (pool / draft) */
+  .champ-ico{position:relative;width:38px;height:38px;border-radius:9px;overflow:visible;border:1px solid var(--border-2);
+    background:var(--surface);display:flex;align-items:center;justify-content:center}
+  .champ-ico img{width:100%;height:100%;border-radius:9px;object-fit:cover}
+  .champ-ico .ph{font-size:8px;line-height:1.05;text-align:center;color:var(--muted);padding:2px}
+  .champ-ico .x{position:absolute;top:-6px;right:-6px;width:16px;height:16px;border-radius:50%;background:var(--elevated);
+    border:1px solid var(--border-2);color:var(--muted);font-size:9px;line-height:14px;text-align:center;cursor:pointer;display:none}
+  .champ-ico:hover .x{display:block}
+  .champ-ico .x:hover{color:var(--err)}
+  .addico{width:38px;height:38px;border-radius:9px;border:1px dashed var(--border-2);background:none;color:var(--muted);cursor:pointer;font-size:18px}
+  .addico:hover{border-color:var(--accent);color:var(--accent)}
+  /* Choix de style (side, snowball…) */
+  .stylegroup{display:grid;grid-template-columns:120px 1fr;gap:8px;align-items:center;margin-bottom:7px}
+  .stylegroup .gl{font-size:11px;color:var(--muted)}
+  .spills{display:flex;gap:5px;flex-wrap:wrap}
+  .spill{font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;user-select:none}
+  .spill.on{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent)}
+  /* Match-ups counter-pick */
+  .mu{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;margin-bottom:8px}
+  .mu-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .mu-arrow{color:var(--muted);font-size:16px}
+  .mu-ours{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .mu-del{margin-left:auto;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;padding:4px 8px;font-size:12px}
+  .mu-del:hover{color:var(--err);border-color:rgba(239,68,68,.4)}
 
   /* Roster adverse */
   .players{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -192,6 +216,7 @@
 
     <!-- TAB ROSTER -->
     <div class="tabpanel active" data-panel="roster">
+      <div data-noexport style="margin-bottom:14px"><button class="btn btn-sm" id="multiOpgg">🔗 Ouvrir les 5 sur OP.GG (multi)</button></div>
       <div class="players" id="players"></div>
     </div>
 
@@ -215,8 +240,8 @@
       </div>
       <div class="block">
         <div class="sub"><span class="d" style="background:var(--jungle)"></span>Nos contre-picks par rôle</div>
-        <table class="cp-table"><thead><tr><th style="width:84px">Rôle</th><th>Leur pick</th><th>Notre réponse</th><th>Raison / avantage</th></tr></thead>
-          <tbody id="cpBody"></tbody></table>
+        <p class="muted" style="font-size:12px;margin:-6px 0 12px">Choisis leur champion, puis liste nos réponses possibles. Ex : <em>Garen → Kennen · Vayne · Mordekaiser</em>.</p>
+        <div id="counters"></div>
       </div>
     </div>
 
@@ -264,11 +289,17 @@ const ROLES = [
   {key:'mid', label:'Mid', color:'var(--mid)'}, {key:'adc', label:'ADC', color:'var(--adc)'},
   {key:'support', label:'Support', color:'var(--support)'},
 ];
-const STYLE_TAGS = ['Agressif','Passif','Roamer','Carry','Utilité','Farm-focus','Playmaker','Tiltable'];
+const STYLE_GROUPS = [
+  { key:'side',     label:'Side préf.', opts:[['blue','Bleu'],['red','Red'],['both','Les 2']] },
+  { key:'snowball', label:'Snowball',   opts:[['yes','Snowball'],['no','Stable']] },
+  { key:'strength', label:'Side force', opts:[['strong','Strong side'],['weak','Weak side']] },
+  { key:'tilt',     label:'Mental',     opts:[['tiltable','Tiltable'],['stable','Solide']] },
+];
 const THREAT = { low:{c:'var(--ok)',l:'Faible'}, med:{c:'var(--warn)',l:'Moyen'}, high:{c:'var(--err)',l:'Élevé'} };
 
-function emptyRoster(){ return ROLES.map(()=>({pseudo:'',opgg:'',pool:[],threat:0,tags:[],note:''})); }
-function emptyDraft(){ return { prio:{top:[],jungle:[],mid:[],adc:[],support:[]}, bans:[], flex:[], banTargets:[], counters:ROLES.map(()=>({their:'',our:'',why:''})) }; }
+function emptyStyle(){ return { side:'', snowball:'', strength:'', tilt:'' }; }
+function emptyRoster(){ return ROLES.map(()=>({pseudo:'',opgg:'',pool:[],threat:0,style:emptyStyle(),note:''})); }
+function emptyDraft(){ return { prio:{top:[],jungle:[],mid:[],adc:[],support:[]}, bans:[], flex:[], banTargets:[], counters:{top:[],jungle:[],mid:[],adc:[],support:[]} }; }
 function emptyScenario(){ return { id:'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), name:'Scénario', blueTeam:'PlaZma', redTeam:'', blueBans:['','','','',''], redBans:['','','','',''], bluePicks:['','','','',''], redPicks:['','','','',''] }; }
 
 let state = { m_team:'', m_rank:'', m_tournoi:'', threatLevel:'', f_note:'—', f_comment:'',
@@ -284,20 +315,20 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
   document.querySelector('.tabpanel[data-panel="'+t.dataset.tab+'"]').classList.add('active');
 }));
 
-// ═══ Puces champion réutilisables ═══
-function chipsHtml(ids){
+// ═══ Icônes champion réutilisables (sans nom, pour gagner de la place) ═══
+function iconsHtml(ids){
   return ids.map((id,i)=>{
     const u=Champ().iconUrl(id);
-    return `<span class="champ-chip" data-i="${i}">${u?`<img src="${u}" alt="">`:''}<span>${esc(Champ().nameOf(id))}</span><span class="x">✕</span></span>`;
+    return `<span class="champ-ico" data-i="${i}" title="${esc(Champ().nameOf(id))}">${u?`<img src="${u}" alt="">`:`<span class="ph">${esc(Champ().nameOf(id))}</span>`}<span class="x">✕</span></span>`;
   }).join('');
 }
-function wireChips(container, arr){
-  container.querySelectorAll('.champ-chip .x').forEach(x=>x.addEventListener('click', e=>{
-    e.stopPropagation(); arr.splice(+x.parentElement.dataset.i,1); renderAll(); queueSave();
-  }));
-}
-function addChampTo(arr, excludeArr){
-  Champ().open(id=>{ if(id && !arr.includes(id)){ arr.push(id); renderAll(); queueSave(); } }, { exclude: excludeArr||[] });
+// Remplit un conteneur avec les icônes + un bouton "+" ; gère ajout/suppression.
+function fillIcons(container, arr){
+  container.innerHTML = iconsHtml(arr) + `<button class="addico" title="Ajouter un champion">+</button>`;
+  container.querySelectorAll('.champ-ico .x').forEach(x=>x.addEventListener('click', e=>{ e.stopPropagation(); arr.splice(+x.parentElement.dataset.i,1); renderAll(); queueSave(); }));
+  container.querySelector('.addico').addEventListener('click',()=>{
+    Champ().open(id=>{ if(id && !arr.includes(id)){ arr.push(id); renderAll(); queueSave(); } }, { exclude: arr });
+  });
 }
 function slotHtml(id, cls){
   const u=id?Champ().iconUrl(id):'';
@@ -305,76 +336,88 @@ function slotHtml(id, cls){
 }
 
 // ═══ Roster adverse ═══
+function multiOpggUrl(){
+  const ids=state.roster.map(p=>(p.opgg||'').trim()).filter(Boolean);
+  if(!ids.length) return '';
+  return 'https://www.op.gg/multisearch/euw?summoners='+encodeURIComponent(ids.join(','));
+}
 function renderRoster(){
+  // bouton multi OP.GG
+  const mo=document.getElementById('multiOpgg');
+  if(mo){ const url=multiOpggUrl(); mo.classList.toggle('btn-ghost',!url); mo.dataset.url=url; }
   const host=document.getElementById('players'); host.innerHTML='';
   ROLES.forEach((r,i)=>{
-    const p=state.roster[i];
+    const p=state.roster[i]; if(!p.style) p.style=emptyStyle();
     const card=document.createElement('div'); card.className='pcard'; card.style.setProperty('--rc',r.color);
     card.innerHTML=`
       <div class="h"><span class="role-badge">${r.label}</span>
         <input placeholder="Pseudo" value="${esc(p.pseudo)}" data-f="pseudo" style="flex:1">
         <a class="btn btn-sm ${p.opgg?'':'btn-ghost'}" ${p.opgg?`href="https://www.op.gg/summoners/euw/${encodeURIComponent(p.opgg)}" target="_blank" rel="noopener"`:'onclick="return false"'} title="OP.GG">OP.GG</a>
       </div>
-      <div class="pf"><label>Identifiant OP.GG (PseudoTag-EUW)</label><input placeholder="ex : Faker-KR1" value="${esc(p.opgg)}" data-f="opgg"></div>
+      <div class="pf"><label>Identifiant OP.GG (Pseudo#TAG)</label><input placeholder="ex : Faker#KR1" value="${esc(p.opgg)}" data-f="opgg"></div>
       <div class="pf"><label>Champion pool</label><div class="chips" data-pool></div></div>
       <div class="pf"><label>Menace</label><div class="threat-dots" data-threat></div></div>
-      <div class="pf"><label>Style de jeu</label><div class="styletags" data-tags></div></div>
+      <div class="pf"><label>Style de jeu</label><div data-style></div></div>
       <div class="pf"><label>Note</label><input placeholder="Tendances, faiblesses, à exploiter…" value="${esc(p.note)}" data-f="note"></div>`;
-    // inputs
     card.querySelectorAll('[data-f]').forEach(inp=>inp.addEventListener('input',()=>{ p[inp.dataset.f]=inp.value; if(inp.dataset.f==='opgg'||inp.dataset.f==='pseudo') renderRoster(); queueSave(); }));
-    // pool
-    const pool=card.querySelector('[data-pool]');
-    pool.innerHTML=chipsHtml(p.pool)+`<span class="addbtn">+ Champion</span>`;
-    wireChips(pool,p.pool);
-    pool.querySelector('.addbtn').addEventListener('click',()=>addChampTo(p.pool,p.pool));
-    // threat dots
+    // pool (icônes seules)
+    fillIcons(card.querySelector('[data-pool]'), p.pool);
+    // menace
     const td=card.querySelector('[data-threat]');
     td.innerHTML=Array.from({length:5},(_,d)=>`<div class="tdot ${d<p.threat?'on':''}" style="--td:${r.color}"></div>`).join('');
-    td.querySelectorAll('.tdot').forEach((dot,d)=>dot.addEventListener('click',()=>{ p.threat = p.threat===d+1?d: d+1; renderRoster(); queueSave(); }));
-    // style tags
-    const tg=card.querySelector('[data-tags]');
-    tg.innerHTML=STYLE_TAGS.map(t=>`<span class="stag ${p.tags.includes(t)?'on':''}">${t}</span>`).join('');
-    tg.querySelectorAll('.stag').forEach((s,idx)=>s.addEventListener('click',()=>{ const t=STYLE_TAGS[idx]; const j=p.tags.indexOf(t); if(j>-1)p.tags.splice(j,1); else p.tags.push(t); renderRoster(); queueSave(); }));
+    td.querySelectorAll('.tdot').forEach((dot,d)=>dot.addEventListener('click',()=>{ p.threat = p.threat===d+1?d:d+1; renderRoster(); queueSave(); }));
+    // style de jeu (4 choix)
+    const st=card.querySelector('[data-style]');
+    st.innerHTML=STYLE_GROUPS.map(g=>`<div class="stylegroup"><span class="gl">${g.label}</span><div class="spills" data-g="${g.key}">${
+      g.opts.map(([v,l])=>`<span class="spill ${p.style[g.key]===v?'on':''}" data-v="${v}">${l}</span>`).join('')}</div></div>`).join('');
+    st.querySelectorAll('.spills').forEach(sp=>{ const key=sp.dataset.g;
+      sp.querySelectorAll('.spill').forEach(pill=>pill.addEventListener('click',()=>{ p.style[key]= p.style[key]===pill.dataset.v?'':pill.dataset.v; renderRoster(); queueSave(); }));
+    });
     host.appendChild(card);
   });
 }
 
 // ═══ Draft board (tendances) ═══
 function renderDraft(){
-  // prio par rôle
+  // leurs picks prioritaires par rôle (icônes)
   const prio=document.getElementById('draftPrio'); prio.innerHTML='';
   ROLES.forEach(r=>{
     const row=document.createElement('div'); row.className='role-row';
     row.innerHTML=`<span class="role-badge" style="--role:${r.color}">${r.label}</span><div class="chips"></div>`;
-    const chips=row.querySelector('.chips');
-    chips.innerHTML=chipsHtml(state.draft.prio[r.key])+`<span class="addbtn">+ Champion</span>`;
-    wireChips(chips,state.draft.prio[r.key]);
-    chips.querySelector('.addbtn').addEventListener('click',()=>addChampTo(state.draft.prio[r.key],state.draft.prio[r.key]));
+    fillIcons(row.querySelector('.chips'), state.draft.prio[r.key]);
     prio.appendChild(row);
   });
-  // simple chip zones
+  // zones simples (icônes)
   [['draftBans','bans'],['draftFlex','flex'],['draftBanTargets','banTargets']].forEach(([elId,key])=>{
-    const el=document.getElementById(elId);
-    el.innerHTML=chipsHtml(state.draft[key])+`<span class="addbtn">+ Champion</span>`;
-    wireChips(el,state.draft[key]);
-    el.querySelector('.addbtn').addEventListener('click',()=>addChampTo(state.draft[key],state.draft[key]));
+    fillIcons(document.getElementById(elId), state.draft[key]);
   });
-  // counters table
-  const tb=document.getElementById('cpBody'); tb.innerHTML='';
-  ROLES.forEach((r,i)=>{
-    const c=state.draft.counters[i];
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td><span class="role-badge" style="--role:${r.color}">${r.label}</span></td>
-      <td data-slot="their"></td><td data-slot="our"></td>
-      <td><input placeholder="Avantage en lane, teamfight…" value="${esc(c.why)}" data-why></td>`;
-    ['their','our'].forEach(field=>{
-      const cell=tr.querySelector(`[data-slot="${field}"]`);
-      cell.innerHTML=slotHtml(c[field]);
-      const slot=cell.querySelector('.cslot');
-      slot.addEventListener('click',e=>{ if(e.target.classList.contains('clr')){ c[field]=''; renderDraft(); queueSave(); return; } Champ().open(id=>{ if(id){ c[field]=id; renderDraft(); queueSave(); } }); });
+  // counter-picks : match-ups (leur champion → nos réponses)
+  const cont=document.getElementById('counters'); cont.innerHTML='';
+  ROLES.forEach(r=>{
+    const list = state.draft.counters[r.key] || (state.draft.counters[r.key]=[]);
+    const block=document.createElement('div'); block.style.marginBottom='16px';
+    block.innerHTML=`<div style="margin-bottom:8px"><span class="role-badge" style="--role:${r.color}">${r.label}</span></div>
+      <div data-mulist></div>
+      <button class="addbtn" data-addmu>+ Ajouter un match-up</button>`;
+    const muList=block.querySelector('[data-mulist]');
+    list.forEach((mu,mi)=>{
+      const row=document.createElement('div'); row.className='mu';
+      const u=mu.opp?Champ().iconUrl(mu.opp):'';
+      row.innerHTML=`<div class="mu-row">
+          <span class="champ-ico oppslot" title="${esc(Champ().nameOf(mu.opp))}" style="cursor:pointer">${u?`<img src="${u}" alt="">`:`<span class="ph">${mu.opp?esc(Champ().nameOf(mu.opp)):'Leur champ'}</span>`}</span>
+          <span class="mu-arrow">→</span>
+          <div class="mu-ours"></div>
+          <button class="mu-del" title="Retirer ce match-up">✕</button>
+        </div>`;
+      // opp : clic pour choisir
+      row.querySelector('.oppslot').addEventListener('click',()=>Champ().open(id=>{ if(id){ mu.opp=id; renderDraft(); queueSave(); } }));
+      // nos réponses (icônes + ajout)
+      fillIcons(row.querySelector('.mu-ours'), mu.ours);
+      row.querySelector('.mu-del').addEventListener('click',()=>{ list.splice(mi,1); renderDraft(); queueSave(); });
+      muList.appendChild(row);
     });
-    tr.querySelector('[data-why]').addEventListener('input',e=>{ c.why=e.target.value; queueSave(); });
-    tb.appendChild(tr);
+    block.querySelector('[data-addmu]').addEventListener('click',()=>{ list.push({opp:'',ours:[]}); renderDraft(); queueSave(); });
+    cont.appendChild(block);
   });
 }
 
@@ -468,13 +511,18 @@ function applyState(d){
   state.threatLevel=d.threatLevel||''; state.f_note=d.f_note||'—'; state.f_comment=d.f_comment||'';
   // roster
   state.roster=emptyRoster();
-  if(Array.isArray(d.roster)) d.roster.forEach((p,i)=>{ if(state.roster[i]) state.roster[i]=Object.assign(state.roster[i],{pseudo:p.pseudo||'',opgg:p.opgg||'',pool:p.pool||[],threat:p.threat||0,tags:p.tags||[],note:p.note||''}); });
+  if(Array.isArray(d.roster)) d.roster.forEach((p,i)=>{ if(state.roster[i]) state.roster[i]=Object.assign(state.roster[i],{pseudo:p.pseudo||'',opgg:p.opgg||'',pool:p.pool||[],threat:p.threat||0,style:Object.assign(emptyStyle(),p.style||{}),note:p.note||''}); });
   else { // migration ancien format (ro{i}_*, danger{i})
     ROLES.forEach((r,i)=>{ const o=state.roster[i]; o.pseudo=d['ro'+i+'_pseudo']||''; o.note=[d['ro'+i+'_pool'],d['ro'+i+'_rank'],d['ro'+i+'_comm']].filter(Boolean).join(' · '); o.threat=Math.min(5,Math.round((d['danger'+i]||0)*5/7)); });
   }
   // draft
   state.draft=emptyDraft();
-  if(d.draft){ state.draft.prio=Object.assign(state.draft.prio,d.draft.prio||{}); state.draft.bans=d.draft.bans||[]; state.draft.flex=d.draft.flex||[]; state.draft.banTargets=d.draft.banTargets||[]; if(Array.isArray(d.draft.counters)) d.draft.counters.forEach((c,i)=>{ if(state.draft.counters[i]) state.draft.counters[i]=Object.assign(state.draft.counters[i],c); }); }
+  if(d.draft){
+    state.draft.prio=Object.assign(state.draft.prio,d.draft.prio||{}); state.draft.bans=d.draft.bans||[]; state.draft.flex=d.draft.flex||[]; state.draft.banTargets=d.draft.banTargets||[];
+    const dc=d.draft.counters;
+    if(dc && !Array.isArray(dc)) ROLES.forEach(r=>{ state.draft.counters[r.key]=Array.isArray(dc[r.key])?dc[r.key]:[]; });         // nouveau format
+    else if(Array.isArray(dc)) dc.forEach((c,i)=>{ if(ROLES[i]&&c&&c.their) state.draft.counters[ROLES[i].key].push({opp:c.their,ours:c.our?[c.our]:[]}); }); // ancien format → match-up
+  }
   else if(d.tagData){ state.draft.flex=d.tagData.Prio||[]; state.draft.bans=d.tagData.Bans||[]; } // ancien format
   // scénarios
   state.scenarios = (Array.isArray(d.scenarios)&&d.scenarios.length) ? d.scenarios.map(s=>Object.assign(emptyScenario(),s)) : [emptyScenario()];
@@ -542,6 +590,7 @@ async function loadDrawer(){
 document.querySelectorAll('#m_team,#m_rank,#m_tournoi,#f_note,#f_comment').forEach(inp=>inp.addEventListener('input',()=>{
   readInputs(); if(inp.id==='m_team') document.getElementById('teamTitle').textContent = inp.value?'Scouting · '+inp.value:'Fiche adverse'; queueSave();
 }));
+document.getElementById('multiOpgg').addEventListener('click',()=>{ const url=multiOpggUrl(); if(url) window.open(url,'_blank','noopener'); else alert('Renseigne au moins un identifiant OP.GG (Pseudo#TAG).'); });
 document.getElementById('exportBtn').addEventListener('click',()=>PZ.exportPNG(document.getElementById('capture'),'archi-scouting'));
 document.getElementById('footDate').textContent='Mise à jour le '+new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
 
