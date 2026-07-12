@@ -12,72 +12,120 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
-  .content{max-width:1000px;margin:0 auto;padding:22px var(--gut) 80px}
+  .content{max-width:1080px;margin:0 auto;padding:22px var(--gut) 80px}
   .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-bottom:8px}
   .chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-size:12px;color:var(--dim);margin-bottom:14px}
 
   .scout-head{border-top:3px solid var(--accent);padding:20px 22px;border-bottom:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
   .threat-badges{display:flex;gap:6px}
   .tb{padding:5px 13px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;cursor:pointer;border:1px solid;transition:opacity .15s}
-  .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:16px 22px;border-bottom:1px solid var(--border)}
+  .meta{display:grid;grid-template-columns:2fr 1fr 1.4fr;gap:14px;padding:16px 22px;border-bottom:1px solid var(--border)}
 
-  .body{padding:22px;display:flex;flex-direction:column;gap:24px}
-  .sec-title{font-family:var(--font-display);font-size:14px;font-weight:600;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:14px;display:flex;align-items:center;gap:8px}
-  .sec-title .d{width:7px;height:7px;border-radius:50%}
+  /* Onglets */
+  .tabs{display:flex;gap:6px;padding:14px 22px 0;flex-wrap:wrap}
+  .tab{padding:9px 16px;border-radius:9px 9px 0 0;cursor:pointer;font-family:var(--font);font-size:13.5px;font-weight:600;
+    color:var(--muted);background:transparent;border:1px solid transparent;border-bottom:none}
+  .tab:hover{color:var(--text)}
+  .tab.active{color:var(--text);background:var(--surface-2);border-color:var(--border)}
+  .tabpanel{display:none;padding:20px 22px}
+  .tabpanel.active{display:block}
+  .sub{font-family:var(--font-display);font-size:13.5px;font-weight:600;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+  .sub .d{width:7px;height:7px;border-radius:50%}
+  .block{margin-bottom:26px}
 
-  .players{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-  .pcard{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
-  .pcard .h{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;border-bottom:1px solid var(--border)}
-  .role-badge{--role:var(--rc)}
-  .danger{display:flex;gap:3px}
-  .ddot{width:10px;height:10px;border-radius:2px;cursor:pointer;opacity:.16;transition:opacity .12s,transform .1s}
-  .ddot.on{opacity:1}.ddot:hover{opacity:.6;transform:scale(1.15)}
-  .pcard .b{padding:10px 11px;display:flex;flex-direction:column;gap:8px}
-  .pf label{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
-  .pf input{padding:6px 0;background:transparent;border:none;border-bottom:1px solid var(--border);border-radius:0;font-size:12px}
-  .pf input:focus{box-shadow:none;border-bottom-color:var(--accent)}
+  /* Puces champion + zones */
+  .chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .addbtn{display:inline-flex;align-items:center;gap:5px;background:var(--surface-2);border:1px dashed var(--border-2);
+    border-radius:999px;padding:5px 11px;color:var(--muted);cursor:pointer;font-family:var(--font);font-size:12px}
+  .addbtn:hover{border-color:var(--accent);color:var(--accent)}
 
-  .draft-split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .draft{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:14px}
-  .draft .t{font-size:12px;font-weight:600;margin-bottom:10px}
-  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;min-height:26px}
-  .tag{display:inline-flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--dim)}
-  .tag .x{cursor:pointer;color:var(--muted)}.tag .x:hover{color:var(--err)}
-  .add{display:flex;gap:6px}
-  .add input{flex:1}
+  /* Roster adverse */
+  .players{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .pcard{background:var(--surface-2);border:1px solid var(--border);border-top:3px solid var(--rc);border-radius:var(--r);padding:14px}
+  .pcard .h{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .pcard .h .role-badge{--role:var(--rc)}
+  .pcard input{padding:7px 10px;font-size:13px}
+  .pf{margin-bottom:10px}
+  .pf label{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+  .threat-dots{display:flex;gap:4px}
+  .tdot{width:20px;height:12px;border-radius:3px;background:var(--border-2);cursor:pointer;transition:background .1s}
+  .tdot.on{background:var(--td,var(--warn))}
+  .styletags{display:flex;flex-wrap:wrap;gap:5px}
+  .stag{font-size:11px;font-weight:600;padding:4px 9px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;user-select:none}
+  .stag.on{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent)}
 
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-  .analc{background:var(--surface-2);border:1px solid var(--border);border-left:3px solid var(--ac);border-radius:8px;padding:14px}
-  .analc .t{font-size:12px;font-weight:600;color:var(--ac);margin-bottom:8px}
-  .analc textarea{background:transparent;border:none;padding:0;min-height:80px;font-size:13px;color:var(--dim)}
-  .analc textarea:focus{box-shadow:none}
-
+  /* Draft board (tendances) */
+  .role-row{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+  .role-row:last-child{border-bottom:none}
   .cp-table{width:100%;border-collapse:collapse}
-  .cp-table th{text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:9px 12px;border-bottom:1px solid var(--border)}
-  .cp-table td{border-bottom:1px solid var(--border);padding:0}
+  .cp-table th{text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border)}
+  .cp-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
   .cp-table tr:last-child td{border-bottom:none}
-  .cp-table td input{border:none;border-radius:0;background:transparent;padding:11px 12px;font-size:13px}
-  .cp-table td input:focus{box-shadow:none;background:var(--surface-2)}
-  .cp-role{padding:11px 12px}
+  .cp-table td input{border:none;background:transparent;padding:8px 0}
+  .cp-table td input:focus{box-shadow:none}
 
-  .concl{display:flex;align-items:center;gap:22px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:18px 22px;flex-wrap:wrap}
+  /* Slot champion (draft / contre-pick) */
+  .cslot{position:relative;display:flex;align-items:center;gap:7px;min-width:120px;min-height:44px;padding:5px 8px;cursor:pointer;
+    background:var(--surface);border:1px solid var(--border-2);border-radius:9px;color:var(--dim);font-size:12.5px}
+  .cslot:hover{border-color:var(--accent)}
+  .cslot img{width:30px;height:30px;border-radius:7px;object-fit:cover;flex-shrink:0}
+  .cslot .ph{color:var(--muted)}
+  .cslot .clr{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--elevated);
+    border:1px solid var(--border-2);color:var(--muted);font-size:10px;line-height:16px;text-align:center;display:none}
+  .cslot.filled .clr{display:block}
+  .cslot .clr:hover{color:var(--err)}
+
+  /* Simulateur de scénarios */
+  .scn-tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .scn-tab{padding:7px 12px;border-radius:999px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);
+    background:var(--surface-2);border:1px solid var(--border)}
+  .scn-tab.active{color:var(--text);border-color:var(--accent-line);background:var(--accent-soft)}
+  .draftboard{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+  .db-teams{display:grid;grid-template-columns:1fr 60px 1fr;gap:10px;padding:14px;align-items:center;border-bottom:1px solid var(--border)}
+  .db-team-blue input{border-left:3px solid #3b82f6}
+  .db-team-red input{border-left:3px solid #ef4444;text-align:right}
+  .db-vs{text-align:center;font-family:var(--font-display);font-weight:700;color:var(--muted)}
+  .db-bans{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;padding:14px;border-bottom:1px solid var(--border);align-items:center}
+  .db-bans-side{display:flex;gap:6px;flex-wrap:wrap}
+  .db-bans-side.red{justify-content:flex-end}
+  .db-bans-lbl{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center}
+  .ban-slot{width:40px;height:40px;border-radius:8px;border:1px solid var(--border-2);background:var(--surface);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;position:relative;overflow:visible;color:var(--muted);font-size:16px}
+  .ban-slot img{width:100%;height:100%;border-radius:8px;object-fit:cover;filter:grayscale(.4)}
+  .ban-slot::after{content:'';position:absolute;inset:0;border-radius:8px;box-shadow:inset 0 0 0 2px rgba(239,68,68,.35)}
+  .ban-slot .clr{position:absolute;top:-6px;right:-6px;width:16px;height:16px;border-radius:50%;background:var(--elevated);border:1px solid var(--border-2);color:var(--muted);font-size:9px;line-height:14px;text-align:center;display:none}
+  .ban-slot.filled .clr{display:block}
+  .db-picks{padding:6px 14px 14px}
+  .db-pickrow{display:grid;grid-template-columns:1fr 84px 1fr;gap:10px;align-items:center;padding:6px 0}
+  .db-role{text-align:center}
+  .pick-slot{display:flex;align-items:center;gap:8px;min-height:48px;padding:5px 9px;border-radius:9px;cursor:pointer;
+    background:var(--surface);border:1px solid var(--border-2);position:relative}
+  .pick-slot.blue{border-left:3px solid #3b82f6}
+  .pick-slot.red{border-left:3px solid #ef4444;flex-direction:row-reverse;text-align:right}
+  .pick-slot:hover{border-color:var(--accent)}
+  .pick-slot img{width:34px;height:34px;border-radius:8px;object-fit:cover;flex-shrink:0}
+  .pick-slot .nm{flex:1;font-size:13px;color:var(--dim)}
+  .pick-slot .ph{color:var(--muted);font-size:12.5px}
+  .pick-slot .clr{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--elevated);border:1px solid var(--border-2);color:var(--muted);font-size:10px;line-height:16px;text-align:center;display:none}
+  .pick-slot.filled .clr{display:block}
+
+  .concl{display:flex;align-items:center;gap:22px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:18px 22px;flex-wrap:wrap;margin:0 22px 22px}
   .concl-num{display:flex;align-items:baseline;gap:6px}
   .concl-num input{width:86px;text-align:center;font-family:var(--font-display);font-size:2.6rem;font-weight:700;color:var(--accent);background:transparent;border:none;border-bottom:2px solid var(--border-2);border-radius:0;padding:0}
   .concl-num input:focus{box-shadow:none;border-bottom-color:var(--accent)}
   .concl-pct{font-family:var(--font-display);font-size:1.4rem;color:var(--muted)}
   .concl-right{flex:1;min-width:240px}
-
   .foot{border-top:1px solid var(--border);padding:12px 22px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
   .foot .brand{font-size:12px;color:var(--muted)}
 
+  /* Drawer historique */
   .drawer-ov{position:fixed;inset:0;background:rgba(6,10,14,.6);backdrop-filter:blur(4px);z-index:180;opacity:0;pointer-events:none;transition:opacity .2s}
   .drawer-ov.open{opacity:1;pointer-events:auto}
   .drawer{position:fixed;top:0;right:0;bottom:0;width:390px;max-width:94vw;background:var(--surface);border-left:1px solid var(--border-2);z-index:181;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
   .drawer.open{transform:none}
   .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)}
   .drawer-list{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
-  .sc{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:border-color .15s}
+  .sc{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer}
   .sc:hover{border-color:var(--border-2)}.sc.active{border-color:var(--accent)}
   .sc-main{display:flex;gap:11px;padding:12px 13px;align-items:flex-start}
   .sc-threat{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:5px}
@@ -90,8 +138,13 @@
   .sc-actions button:hover{color:var(--text)}
   .drawer-empty{text-align:center;color:var(--muted);font-size:13px;padding:40px 20px}
 
-  @media(max-width:900px){.players{grid-template-columns:repeat(3,1fr)}.grid3{grid-template-columns:1fr}}
-  @media(max-width:600px){.players{grid-template-columns:repeat(2,1fr)}.meta{grid-template-columns:1fr}.draft-split,.grid2{grid-template-columns:1fr}}
+  @media(max-width:820px){
+    .players{grid-template-columns:1fr}.meta{grid-template-columns:1fr}
+    .db-teams,.db-bans,.db-pickrow{grid-template-columns:1fr}
+    .db-bans-side.red,.pick-slot.red{justify-content:flex-start}
+    .pick-slot.red{flex-direction:row}
+    .db-role{text-align:left}
+  }
 </style>
 </head>
 <body>
@@ -105,7 +158,6 @@
     <button class="btn btn-sm" onclick="newSheet()">＋ Nouvelle</button>
     <button class="btn btn-sm" onclick="openDrawer()">Fiches <span id="sheetCount" class="muted"></span></button>
     <button class="btn btn-sm" id="exportBtn">⬇ PNG</button>
-    <button class="btn btn-sm" onclick="importBackup()">Import</button>
     <button class="btn btn-sm btn-danger" onclick="resetCurrentSheet()">Vider</button>
   </div>
   <div style="text-align:center"><span class="chip" id="sheetChip">Chargement…</span></div>
@@ -128,67 +180,57 @@
 
     <div class="meta">
       <div><label>Équipe adverse</label><input id="m_team" type="text" placeholder="Nom de l'équipe"></div>
-      <div><label>Rang estimé</label><input id="m_rank" type="text" placeholder="ex : Platine ~ Émeraude"></div>
-      <div><label>Prochain tournoi / échéance</label><input id="m_tournoi" type="text" placeholder="ex : Nexus Tour Phase 1"></div>
+      <div><label>Rang estimé</label><input id="m_rank" type="text" placeholder="ex : Émeraude"></div>
+      <div><label>Prochain match / échéance</label><input id="m_tournoi" type="text" placeholder="ex : Nexus Tour · 12 avril"></div>
     </div>
 
-    <div class="body">
-      <div>
-        <div class="sec-title"><span class="d" style="background:var(--mid)"></span>Roster adverse</div>
-        <div class="players" id="players"></div>
-      </div>
+    <div class="tabs" data-noexport>
+      <div class="tab active" data-tab="roster">Roster adverse</div>
+      <div class="tab" data-tab="draft">Draft board</div>
+      <div class="tab" data-tab="scenarios">Scénarios de draft</div>
+    </div>
 
-      <div>
-        <div class="sec-title"><span class="d" style="background:var(--accent)"></span>Tendances de draft</div>
-        <div class="draft-split">
-          <div class="draft"><div class="t" style="color:var(--accent)">🏆 Picks prioritaires</div>
-            <div class="tags" id="tagsPrio"></div>
-            <button class="btn btn-sm" onclick="pickChamp('Prio')">+ Champion</button>
-          </div>
-          <div class="draft"><div class="t" style="color:var(--err)">🚫 Bans habituels</div>
-            <div class="tags" id="tagsBans"></div>
-            <button class="btn btn-sm" onclick="pickChamp('Bans')">+ Champion</button>
-          </div>
-        </div>
-      </div>
+    <!-- TAB ROSTER -->
+    <div class="tabpanel active" data-panel="roster">
+      <div class="players" id="players"></div>
+    </div>
 
-      <div>
-        <div class="sec-title"><span class="d" style="background:var(--warn)"></span>Forces / Faiblesses</div>
-        <div class="grid2">
-          <div class="analc" style="--ac:var(--ok)"><div class="t">Leurs forces</div><textarea id="sw_forces" placeholder="Teamfight, early game, discipline…"></textarea></div>
-          <div class="analc" style="--ac:var(--err)"><div class="t">Leurs faiblesses</div><textarea id="sw_weak" placeholder="Vulnérabilités exploitables…"></textarea></div>
-          <div class="analc" style="--ac:var(--accent)"><div class="t">Stratégie typique</div><textarea id="sw_strat" placeholder="Style de jeu, win condition préférée…"></textarea></div>
-          <div class="analc" style="--ac:var(--jungle)"><div class="t">Comment les contrer</div><textarea id="sw_counter" placeholder="Notre approche optimale…"></textarea></div>
-        </div>
+    <!-- TAB DRAFT BOARD -->
+    <div class="tabpanel" data-panel="draft">
+      <div class="block">
+        <div class="sub"><span class="d" style="background:var(--accent)"></span>Leurs picks prioritaires par rôle</div>
+        <div id="draftPrio"></div>
       </div>
+      <div class="block">
+        <div class="sub"><span class="d" style="background:var(--err)"></span>Leurs bans récurrents</div>
+        <div class="chips" id="draftBans"></div>
+      </div>
+      <div class="block">
+        <div class="sub"><span class="d" style="background:var(--support)"></span>Flex picks (plusieurs rôles)</div>
+        <div class="chips" id="draftFlex"></div>
+      </div>
+      <div class="block">
+        <div class="sub"><span class="d" style="background:var(--warn)"></span>Nos cibles de ban (à retirer contre eux)</div>
+        <div class="chips" id="draftBanTargets"></div>
+      </div>
+      <div class="block">
+        <div class="sub"><span class="d" style="background:var(--jungle)"></span>Nos contre-picks par rôle</div>
+        <table class="cp-table"><thead><tr><th style="width:84px">Rôle</th><th>Leur pick</th><th>Notre réponse</th><th>Raison / avantage</th></tr></thead>
+          <tbody id="cpBody"></tbody></table>
+      </div>
+    </div>
 
-      <div>
-        <div class="sec-title"><span class="d" style="background:var(--top)"></span>Plan d'approche par phase</div>
-        <div class="grid3">
-          <div class="analc" style="--ac:var(--ok)"><div class="t">🌅 Early (0–15 min)</div><textarea id="pl_early" placeholder="Laning, jungle path, 2v2…"></textarea></div>
-          <div class="analc" style="--ac:var(--warn)"><div class="t">⚔️ Mid / Teamfight</div><textarea id="pl_mid" placeholder="Objectifs, rotations…"></textarea></div>
-          <div class="analc" style="--ac:var(--accent)"><div class="t">🏆 Win condition</div><textarea id="pl_win" placeholder="Comment on gagne…"></textarea></div>
-        </div>
-      </div>
+    <!-- TAB SCENARIOS -->
+    <div class="tabpanel" data-panel="scenarios">
+      <div class="scn-tabs" id="scnTabs" data-noexport></div>
+      <div class="draftboard" id="draftBoard"></div>
+      <div class="tl-hint" style="font-size:12px;color:var(--muted);margin-top:10px" data-noexport>Enchaîne des scénarios (« + Nouveau » ou « Dupliquer ») pour préparer plusieurs drafts et ne pas te faire surprendre. Un champion déjà pris/banni est grisé.</div>
+    </div>
 
-      <div>
-        <div class="sec-title"><span class="d" style="background:var(--support)"></span>Contre-picks par rôle</div>
-        <div class="panel" style="padding:0">
-          <table class="cp-table">
-            <thead><tr><th style="width:90px">Rôle</th><th>Leur pick habituel</th><th>Notre contre-pick</th><th>Raison / avantage</th></tr></thead>
-            <tbody id="cpBody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div>
-        <div class="sec-title"><span class="d" style="background:var(--accent)"></span>Conclusion — probabilité de victoire</div>
-        <div class="concl">
-          <div class="concl-num"><input id="f_note" type="text" value="—" maxlength="3"><span class="concl-pct">%</span></div>
-          <div class="concl-right"><label>Estimation de victoire</label>
-            <input id="f_comment" type="text" placeholder="Résumé de l'analyse, niveau perçu, confiance…"></div>
-        </div>
-      </div>
+    <div class="concl">
+      <div class="concl-num"><input id="f_note" type="text" value="—" maxlength="3"><span class="concl-pct">%</span></div>
+      <div class="concl-right"><label>Probabilité de victoire estimée · synthèse</label>
+        <input id="f_comment" type="text" placeholder="Résumé de l'analyse, niveau perçu, confiance…"></div>
     </div>
 
     <div class="foot">
@@ -212,115 +254,241 @@
 PZ.mountNav('scouting', '#nav');
 const db = PZ.db;
 const SCOUT_COL = 'plazma-scouting';
-
-const ROLES = [
-  {role:'Top', color:'var(--top)'}, {role:'Jungle', color:'var(--jungle)'}, {role:'Mid', color:'var(--mid)'},
-  {role:'ADC', color:'var(--adc)'}, {role:'Support', color:'var(--support)'},
-];
-const DANGER_COLORS = ['#22c55e','#22c55e','#84cc16','#eab308','#f97316','#f97316','#ef4444'];
-const THREAT = { low:{c:'var(--ok)',l:'Faible'}, med:{c:'var(--warn)',l:'Moyen'}, high:{c:'var(--err)',l:'Élevé'} };
-
-const dangerState = [0,0,0,0,0];
-const tagData = { Prio:[], Bans:[] };
-let threatLevel = '', currentDocId = null, _unsub = null, _saveT = null;
-
 const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const val = id => { const e=document.getElementById(id); return e?e.value:''; };
 const set = (id,v) => { const e=document.getElementById(id); if(e) e.value=v||''; };
-function queueSave(){ clearTimeout(_saveT); _saveT=setTimeout(save,1000); }
+const Champ = () => window.Champions;
 
-// ── Player cards ──
-function buildPlayers(){
-  const grid=document.getElementById('players'); grid.innerHTML='';
+const ROLES = [
+  {key:'top', label:'Top', color:'var(--top)'}, {key:'jungle', label:'Jungle', color:'var(--jungle)'},
+  {key:'mid', label:'Mid', color:'var(--mid)'}, {key:'adc', label:'ADC', color:'var(--adc)'},
+  {key:'support', label:'Support', color:'var(--support)'},
+];
+const STYLE_TAGS = ['Agressif','Passif','Roamer','Carry','Utilité','Farm-focus','Playmaker','Tiltable'];
+const THREAT = { low:{c:'var(--ok)',l:'Faible'}, med:{c:'var(--warn)',l:'Moyen'}, high:{c:'var(--err)',l:'Élevé'} };
+
+function emptyRoster(){ return ROLES.map(()=>({pseudo:'',opgg:'',pool:[],threat:0,tags:[],note:''})); }
+function emptyDraft(){ return { prio:{top:[],jungle:[],mid:[],adc:[],support:[]}, bans:[], flex:[], banTargets:[], counters:ROLES.map(()=>({their:'',our:'',why:''})) }; }
+function emptyScenario(){ return { id:'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), name:'Scénario', blueTeam:'PlaZma', redTeam:'', blueBans:['','','','',''], redBans:['','','','',''], bluePicks:['','','','',''], redPicks:['','','','',''] }; }
+
+let state = { m_team:'', m_rank:'', m_tournoi:'', threatLevel:'', f_note:'—', f_comment:'',
+  roster: emptyRoster(), draft: emptyDraft(), scenarios: [emptyScenario()] };
+let currentScn = 0, currentDocId = null, _unsub = null, _saveT = null;
+function queueSave(){ clearTimeout(_saveT); _saveT=setTimeout(save,900); }
+
+// ═══ Onglets ═══
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tabpanel').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  document.querySelector('.tabpanel[data-panel="'+t.dataset.tab+'"]').classList.add('active');
+}));
+
+// ═══ Puces champion réutilisables ═══
+function chipsHtml(ids){
+  return ids.map((id,i)=>{
+    const u=Champ().iconUrl(id);
+    return `<span class="champ-chip" data-i="${i}">${u?`<img src="${u}" alt="">`:''}<span>${esc(Champ().nameOf(id))}</span><span class="x">✕</span></span>`;
+  }).join('');
+}
+function wireChips(container, arr){
+  container.querySelectorAll('.champ-chip .x').forEach(x=>x.addEventListener('click', e=>{
+    e.stopPropagation(); arr.splice(+x.parentElement.dataset.i,1); renderAll(); queueSave();
+  }));
+}
+function addChampTo(arr, excludeArr){
+  Champ().open(id=>{ if(id && !arr.includes(id)){ arr.push(id); renderAll(); queueSave(); } }, { exclude: excludeArr||[] });
+}
+function slotHtml(id, cls){
+  const u=id?Champ().iconUrl(id):'';
+  return `<div class="cslot ${id?'filled':''} ${cls||''}">${u?`<img src="${u}" alt="">`:''}<span class="${id?'':'ph'}">${id?esc(Champ().nameOf(id)):'+ Champion'}</span><span class="clr">✕</span></div>`;
+}
+
+// ═══ Roster adverse ═══
+function renderRoster(){
+  const host=document.getElementById('players'); host.innerHTML='';
   ROLES.forEach((r,i)=>{
-    const c=document.createElement('div'); c.className='pcard';
-    c.innerHTML=`<div class="h"><span class="role-badge" style="--role:${r.color}">${r.role}</span><div class="danger" id="danger${i}"></div></div>
-      <div class="b">
-        <div class="pf"><label>Pseudo</label><input id="ro${i}_pseudo" placeholder="Pseudo…"></div>
-        <div class="pf"><label>Champion pool</label><input id="ro${i}_pool" placeholder="Champ1, Champ2…"></div>
-        <div class="pf"><label>Rang / WR</label><input id="ro${i}_rank" placeholder="Émeraude · 55%"></div>
-        <div class="pf"><label>Commentaire</label><input id="ro${i}_comm" placeholder="Note rapide…"></div>
-      </div>`;
-    grid.appendChild(c); buildDanger(i);
+    const p=state.roster[i];
+    const card=document.createElement('div'); card.className='pcard'; card.style.setProperty('--rc',r.color);
+    card.innerHTML=`
+      <div class="h"><span class="role-badge">${r.label}</span>
+        <input placeholder="Pseudo" value="${esc(p.pseudo)}" data-f="pseudo" style="flex:1">
+        <a class="btn btn-sm ${p.opgg?'':'btn-ghost'}" ${p.opgg?`href="https://www.op.gg/summoners/euw/${encodeURIComponent(p.opgg)}" target="_blank" rel="noopener"`:'onclick="return false"'} title="OP.GG">OP.GG</a>
+      </div>
+      <div class="pf"><label>Identifiant OP.GG (PseudoTag-EUW)</label><input placeholder="ex : Faker-KR1" value="${esc(p.opgg)}" data-f="opgg"></div>
+      <div class="pf"><label>Champion pool</label><div class="chips" data-pool></div></div>
+      <div class="pf"><label>Menace</label><div class="threat-dots" data-threat></div></div>
+      <div class="pf"><label>Style de jeu</label><div class="styletags" data-tags></div></div>
+      <div class="pf"><label>Note</label><input placeholder="Tendances, faiblesses, à exploiter…" value="${esc(p.note)}" data-f="note"></div>`;
+    // inputs
+    card.querySelectorAll('[data-f]').forEach(inp=>inp.addEventListener('input',()=>{ p[inp.dataset.f]=inp.value; if(inp.dataset.f==='opgg'||inp.dataset.f==='pseudo') renderRoster(); queueSave(); }));
+    // pool
+    const pool=card.querySelector('[data-pool]');
+    pool.innerHTML=chipsHtml(p.pool)+`<span class="addbtn">+ Champion</span>`;
+    wireChips(pool,p.pool);
+    pool.querySelector('.addbtn').addEventListener('click',()=>addChampTo(p.pool,p.pool));
+    // threat dots
+    const td=card.querySelector('[data-threat]');
+    td.innerHTML=Array.from({length:5},(_,d)=>`<div class="tdot ${d<p.threat?'on':''}" style="--td:${r.color}"></div>`).join('');
+    td.querySelectorAll('.tdot').forEach((dot,d)=>dot.addEventListener('click',()=>{ p.threat = p.threat===d+1?d: d+1; renderRoster(); queueSave(); }));
+    // style tags
+    const tg=card.querySelector('[data-tags]');
+    tg.innerHTML=STYLE_TAGS.map(t=>`<span class="stag ${p.tags.includes(t)?'on':''}">${t}</span>`).join('');
+    tg.querySelectorAll('.stag').forEach((s,idx)=>s.addEventListener('click',()=>{ const t=STYLE_TAGS[idx]; const j=p.tags.indexOf(t); if(j>-1)p.tags.splice(j,1); else p.tags.push(t); renderRoster(); queueSave(); }));
+    host.appendChild(card);
   });
 }
-function buildDanger(i){
-  const bar=document.getElementById('danger'+i); bar.innerHTML='';
-  for(let d=1;d<=7;d++){
-    const dot=document.createElement('div');
-    dot.className='ddot'+(d<=dangerState[i]?' on':''); dot.style.background=DANGER_COLORS[d-1];
-    dot.title='Niveau de danger '+d; dot.addEventListener('click',()=>{ dangerState[i]=dangerState[i]===d?0:d; buildDanger(i); queueSave(); });
-    bar.appendChild(dot);
-  }
-}
 
-// ── CP table ──
-function buildCP(){
+// ═══ Draft board (tendances) ═══
+function renderDraft(){
+  // prio par rôle
+  const prio=document.getElementById('draftPrio'); prio.innerHTML='';
+  ROLES.forEach(r=>{
+    const row=document.createElement('div'); row.className='role-row';
+    row.innerHTML=`<span class="role-badge" style="--role:${r.color}">${r.label}</span><div class="chips"></div>`;
+    const chips=row.querySelector('.chips');
+    chips.innerHTML=chipsHtml(state.draft.prio[r.key])+`<span class="addbtn">+ Champion</span>`;
+    wireChips(chips,state.draft.prio[r.key]);
+    chips.querySelector('.addbtn').addEventListener('click',()=>addChampTo(state.draft.prio[r.key],state.draft.prio[r.key]));
+    prio.appendChild(row);
+  });
+  // simple chip zones
+  [['draftBans','bans'],['draftFlex','flex'],['draftBanTargets','banTargets']].forEach(([elId,key])=>{
+    const el=document.getElementById(elId);
+    el.innerHTML=chipsHtml(state.draft[key])+`<span class="addbtn">+ Champion</span>`;
+    wireChips(el,state.draft[key]);
+    el.querySelector('.addbtn').addEventListener('click',()=>addChampTo(state.draft[key],state.draft[key]));
+  });
+  // counters table
   const tb=document.getElementById('cpBody'); tb.innerHTML='';
   ROLES.forEach((r,i)=>{
+    const c=state.draft.counters[i];
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td><div class="cp-role"><span class="role-badge" style="--role:${r.color}">${r.role}</span></div></td>
-      <td><input id="cp${i}_their" placeholder="Leur champion…"></td>
-      <td><input id="cp${i}_our" placeholder="Notre contre-pick…"></td>
-      <td><input id="cp${i}_why" placeholder="Avantage…"></td>`;
+    tr.innerHTML=`<td><span class="role-badge" style="--role:${r.color}">${r.label}</span></td>
+      <td data-slot="their"></td><td data-slot="our"></td>
+      <td><input placeholder="Avantage en lane, teamfight…" value="${esc(c.why)}" data-why></td>`;
+    ['their','our'].forEach(field=>{
+      const cell=tr.querySelector(`[data-slot="${field}"]`);
+      cell.innerHTML=slotHtml(c[field]);
+      const slot=cell.querySelector('.cslot');
+      slot.addEventListener('click',e=>{ if(e.target.classList.contains('clr')){ c[field]=''; renderDraft(); queueSave(); return; } Champ().open(id=>{ if(id){ c[field]=id; renderDraft(); queueSave(); } }); });
+    });
+    tr.querySelector('[data-why]').addEventListener('input',e=>{ c.why=e.target.value; queueSave(); });
     tb.appendChild(tr);
   });
 }
 
-// ── Tags champions (sélection par icône) ──
-function pickChamp(type){ window.Champions.open(id=>{ if(id){ tagData[type].push(id); renderTags(type); queueSave(); } }); }
-function removeTag(type,i){ tagData[type].splice(i,1); renderTags(type); queueSave(); }
-function renderTags(type){
-  const c=document.getElementById('tags'+type); if(!c)return;
-  c.innerHTML=tagData[type].map((cid,i)=>{
-    const u=window.Champions.iconUrl(cid);
-    return `<span class="champ-chip">${u?`<img src="${u}" alt="">`:''}<span>${esc(window.Champions.nameOf(cid))}</span><span class="x" onclick="removeTag('${type}',${i})">✕</span></span>`;
-  }).join('');
+// ═══ Simulateur de scénarios ═══
+function scnUsed(scn, exceptRef){
+  const all=[...scn.blueBans,...scn.redBans,...scn.bluePicks,...scn.redPicks].filter(Boolean);
+  return all;
 }
+function renderScenarios(){
+  if(!state.scenarios.length) state.scenarios=[emptyScenario()];
+  if(currentScn>=state.scenarios.length) currentScn=0;
+  // tabs
+  const tabs=document.getElementById('scnTabs');
+  tabs.innerHTML=state.scenarios.map((s,i)=>`<span class="scn-tab ${i===currentScn?'active':''}" data-i="${i}">${esc(s.name||'Scénario '+(i+1))}</span>`).join('')
+    +`<button class="btn btn-sm" id="scnNew">＋ Nouveau</button><button class="btn btn-sm" id="scnDup">Dupliquer</button><button class="btn btn-sm btn-danger" id="scnDel">Supprimer</button>`;
+  tabs.querySelectorAll('.scn-tab').forEach(t=>t.addEventListener('click',()=>{ currentScn=+t.dataset.i; renderScenarios(); }));
+  document.getElementById('scnNew').addEventListener('click',()=>{ state.scenarios.push(emptyScenario()); currentScn=state.scenarios.length-1; renderScenarios(); queueSave(); });
+  document.getElementById('scnDup').addEventListener('click',()=>{ const c=JSON.parse(JSON.stringify(state.scenarios[currentScn])); c.id=emptyScenario().id; c.name=(c.name||'Scénario')+' (copie)'; state.scenarios.push(c); currentScn=state.scenarios.length-1; renderScenarios(); queueSave(); });
+  document.getElementById('scnDel').addEventListener('click',()=>{ if(!confirm('Supprimer ce scénario ?'))return; state.scenarios.splice(currentScn,1); currentScn=Math.max(0,currentScn-1); renderScenarios(); queueSave(); });
 
-// ── Threat ──
-function setThreat(l){ threatLevel = threatLevel===l?'':l; applyThreat(); queueSave(); }
-function applyThreat(){
-  ['low','med','high'].forEach(l=>{ const b=document.getElementById('tb_'+l);
-    if(b){ b.style.opacity = (!threatLevel||threatLevel===l)?'1':'.4'; b.style.fontWeight = threatLevel===l?'800':'700'; } });
-}
-
-// ── State ──
-function getState(){
-  const s={ m_team:val('m_team'), m_rank:val('m_rank'), m_tournoi:val('m_tournoi'),
-    sw_forces:val('sw_forces'), sw_weak:val('sw_weak'), sw_strat:val('sw_strat'), sw_counter:val('sw_counter'),
-    pl_early:val('pl_early'), pl_mid:val('pl_mid'), pl_win:val('pl_win'),
-    f_note:val('f_note'), f_comment:val('f_comment'),
-    tagData:{...tagData}, threatLevel };
-  ROLES.forEach((_,i)=>{ ['pseudo','pool','rank','comm'].forEach(k=>s[`ro${i}_${k}`]=val(`ro${i}_${k}`)); s[`danger${i}`]=dangerState[i];
-    ['their','our','why'].forEach(k=>s[`cp${i}_${k}`]=val(`cp${i}_${k}`)); });
-  return s;
-}
-function applyState(s){
-  if(!s)return;
-  ['m_team','m_rank','m_tournoi','sw_forces','sw_weak','sw_strat','sw_counter','pl_early','pl_mid','pl_win','f_note','f_comment'].forEach(k=>set(k,s[k]));
-  ROLES.forEach((_,i)=>{
-    ['pseudo','pool','rank','comm'].forEach(k=>set(`ro${i}_${k}`,s[`ro${i}_${k}`]));
-    if(s[`danger${i}`]!=null){ dangerState[i]=s[`danger${i}`]; buildDanger(i); }
-    ['their','our','why'].forEach(k=>set(`cp${i}_${k}`,s[`cp${i}_${k}`]));
+  const scn=state.scenarios[currentScn];
+  const board=document.getElementById('draftBoard');
+  board.innerHTML=`
+    <div style="padding:12px 14px;border-bottom:1px solid var(--border)">
+      <input value="${esc(scn.name)}" placeholder="Nom du scénario (ex : s'ils first Ksante)" data-scnname style="font-weight:600">
+    </div>
+    <div class="db-teams">
+      <div class="db-team-blue"><input value="${esc(scn.blueTeam)}" placeholder="Équipe bleue" data-team="blueTeam"></div>
+      <div class="db-vs">VS</div>
+      <div class="db-team-red"><input value="${esc(scn.redTeam)}" placeholder="Équipe rouge" data-team="redTeam"></div>
+    </div>
+    <div class="db-bans">
+      <div class="db-bans-side blue" data-bans="blueBans"></div>
+      <div class="db-bans-lbl">Bans</div>
+      <div class="db-bans-side red" data-bans="redBans"></div>
+    </div>
+    <div class="db-picks" id="dbPicks"></div>`;
+  board.querySelector('[data-scnname]').addEventListener('input',e=>{ scn.name=e.target.value; renderScnTabsName(); queueSave(); });
+  board.querySelectorAll('[data-team]').forEach(inp=>inp.addEventListener('input',()=>{ scn[inp.dataset.team]=inp.value; queueSave(); }));
+  // bans
+  ['blueBans','redBans'].forEach(side=>{
+    const wrap=board.querySelector(`[data-bans="${side}"]`);
+    wrap.innerHTML=scn[side].map((id,i)=>{
+      const u=id?Champ().iconUrl(id):'';
+      return `<div class="ban-slot ${id?'filled':''}" data-i="${i}" title="${id?esc(Champ().nameOf(id)):'Ban'}">${u?`<img src="${u}" alt="">`:'🚫'}<span class="clr">✕</span></div>`;
+    }).join('');
+    wrap.querySelectorAll('.ban-slot').forEach(sl=>sl.addEventListener('click',e=>{
+      const i=+sl.dataset.i;
+      if(e.target.classList.contains('clr')){ scn[side][i]=''; renderScenarios(); queueSave(); return; }
+      Champ().open(id=>{ if(id){ scn[side][i]=id; renderScenarios(); queueSave(); } }, { exclude: scnUsed(scn) });
+    }));
   });
-  tagData.Prio = (s.tagData&&s.tagData.Prio)||[]; tagData.Bans = (s.tagData&&s.tagData.Bans)||[];
-  renderTags('Prio'); renderTags('Bans');
-  threatLevel = s.threatLevel||''; applyThreat();
-  document.getElementById('teamTitle').textContent = s.m_team ? 'Scouting · ' + s.m_team : 'Fiche adverse';
+  // picks par rôle
+  const picks=document.getElementById('dbPicks');
+  picks.innerHTML=ROLES.map((r,i)=>`
+    <div class="db-pickrow">
+      <div class="pick-slot blue ${scn.bluePicks[i]?'filled':''}" data-side="bluePicks" data-i="${i}">${pickInner(scn.bluePicks[i])}</div>
+      <div class="db-role"><span class="role-badge" style="--role:${r.color}">${r.label}</span></div>
+      <div class="pick-slot red ${scn.redPicks[i]?'filled':''}" data-side="redPicks" data-i="${i}">${pickInner(scn.redPicks[i])}</div>
+    </div>`).join('');
+  picks.querySelectorAll('.pick-slot').forEach(sl=>sl.addEventListener('click',e=>{
+    const side=sl.dataset.side, i=+sl.dataset.i;
+    if(e.target.classList.contains('clr')){ scn[side][i]=''; renderScenarios(); queueSave(); return; }
+    Champ().open(id=>{ if(id){ scn[side][i]=id; renderScenarios(); queueSave(); } }, { exclude: scnUsed(scn) });
+  }));
+}
+function pickInner(id){
+  const u=id?Champ().iconUrl(id):'';
+  return `${u?`<img src="${u}" alt="">`:''}<span class="${id?'nm':'ph'}">${id?esc(Champ().nameOf(id)):'+ Pick'}</span><span class="clr">✕</span>`;
+}
+function renderScnTabsName(){ // maj léger des noms d'onglets sans tout reconstruire
+  document.querySelectorAll('#scnTabs .scn-tab').forEach((t,i)=>{ if(state.scenarios[i]) t.textContent=state.scenarios[i].name||('Scénario '+(i+1)); });
 }
 
-// ── Firestore (multi-doc) ──
-const newDocId = () => 'scout-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6);
-function updateChip(){
-  const team=val('m_team')||'Sans nom', t=val('m_tournoi');
-  document.getElementById('sheetChip').textContent='📄 '+team+(t?' — '+t:'');
+// ═══ Menace + rendu global ═══
+function setThreat(l){ state.threatLevel = state.threatLevel===l?'':l; applyThreat(); queueSave(); }
+function applyThreat(){ ['low','med','high'].forEach(l=>{ const b=document.getElementById('tb_'+l); if(b){ b.style.opacity=(!state.threatLevel||state.threatLevel===l)?'1':'.4'; b.style.fontWeight=state.threatLevel===l?'800':'700'; } }); }
+
+function renderAll(){
+  set('m_team',state.m_team); set('m_rank',state.m_rank); set('m_tournoi',state.m_tournoi);
+  set('f_note',state.f_note); set('f_comment',state.f_comment);
+  document.getElementById('teamTitle').textContent = state.m_team ? 'Scouting · '+state.m_team : 'Fiche adverse';
+  applyThreat(); renderRoster(); renderDraft(); renderScenarios();
 }
+
+// ═══ État / Firestore (multi-fiches) ═══
+function getState(){ return state; }
+function applyState(d){
+  if(!d) return;
+  state.m_team=d.m_team||''; state.m_rank=d.m_rank||''; state.m_tournoi=d.m_tournoi||'';
+  state.threatLevel=d.threatLevel||''; state.f_note=d.f_note||'—'; state.f_comment=d.f_comment||'';
+  // roster
+  state.roster=emptyRoster();
+  if(Array.isArray(d.roster)) d.roster.forEach((p,i)=>{ if(state.roster[i]) state.roster[i]=Object.assign(state.roster[i],{pseudo:p.pseudo||'',opgg:p.opgg||'',pool:p.pool||[],threat:p.threat||0,tags:p.tags||[],note:p.note||''}); });
+  else { // migration ancien format (ro{i}_*, danger{i})
+    ROLES.forEach((r,i)=>{ const o=state.roster[i]; o.pseudo=d['ro'+i+'_pseudo']||''; o.note=[d['ro'+i+'_pool'],d['ro'+i+'_rank'],d['ro'+i+'_comm']].filter(Boolean).join(' · '); o.threat=Math.min(5,Math.round((d['danger'+i]||0)*5/7)); });
+  }
+  // draft
+  state.draft=emptyDraft();
+  if(d.draft){ state.draft.prio=Object.assign(state.draft.prio,d.draft.prio||{}); state.draft.bans=d.draft.bans||[]; state.draft.flex=d.draft.flex||[]; state.draft.banTargets=d.draft.banTargets||[]; if(Array.isArray(d.draft.counters)) d.draft.counters.forEach((c,i)=>{ if(state.draft.counters[i]) state.draft.counters[i]=Object.assign(state.draft.counters[i],c); }); }
+  else if(d.tagData){ state.draft.flex=d.tagData.Prio||[]; state.draft.bans=d.tagData.Bans||[]; } // ancien format
+  // scénarios
+  state.scenarios = (Array.isArray(d.scenarios)&&d.scenarios.length) ? d.scenarios.map(s=>Object.assign(emptyScenario(),s)) : [emptyScenario()];
+  currentScn=0;
+}
+
+const newDocId = () => 'scout-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);
+function readInputs(){ state.m_team=val('m_team'); state.m_rank=val('m_rank'); state.m_tournoi=val('m_tournoi'); state.f_note=val('f_note'); state.f_comment=val('f_comment'); }
+function updateChip(){ const t=state.m_team||'Sans nom'; document.getElementById('sheetChip').textContent='📄 '+t+(state.m_tournoi?' — '+state.m_tournoi:''); }
 function save(){
   if(!db){ PZ.status('error','Firebase indisponible'); return; }
   if(!currentDocId) currentDocId=newDocId();
-  PZ.status('syncing','Sauvegarde…');
-  const s=getState(); s._savedAt=firebase.firestore.FieldValue.serverTimestamp();
+  readInputs(); PZ.status('syncing','Sauvegarde…');
+  const s=JSON.parse(JSON.stringify(state)); s._savedAt=firebase.firestore.FieldValue.serverTimestamp();
   db.collection(SCOUT_COL).doc(currentDocId).set(s)
     .then(()=>{ PZ.status('connected','Synchronisé',PZ.nowTime()); updateChip(); })
     .catch(e=>{ console.error(e); PZ.status('error','Erreur Firebase'); });
@@ -331,27 +499,17 @@ function startSync(docId){
   currentDocId=docId; PZ.status('syncing','Connexion…');
   _unsub=db.collection(SCOUT_COL).doc(docId).onSnapshot(doc=>{
     if(doc.metadata.hasPendingWrites) return;
-    if(doc.exists){ applyState(doc.data()); PZ.status('connected','Synchronisé',PZ.nowTime()); }
-    else PZ.status('connected','Nouvelle fiche','');
-    updateChip(); PZ.loadingDone();
+    if(doc.exists){ applyState(doc.data()); PZ.status('connected','Synchronisé',PZ.nowTime()); } else PZ.status('connected','Nouvelle fiche','');
+    renderAll(); updateChip(); PZ.loadingDone();
   }, err=>{ console.error(err); PZ.status('error','Erreur connexion'); PZ.loadingDone(); });
 }
-function fullReset(){
-  ['m_team','m_rank','m_tournoi','sw_forces','sw_weak','sw_strat','sw_counter','pl_early','pl_mid','pl_win','f_comment'].forEach(id=>set(id,''));
-  set('f_note','—');
-  ROLES.forEach((_,i)=>{ ['pseudo','pool','rank','comm'].forEach(k=>set(`ro${i}_${k}`,'')); dangerState[i]=0; buildDanger(i);
-    ['their','our','why'].forEach(k=>set(`cp${i}_${k}`,'')); });
-  tagData.Prio=[]; tagData.Bans=[]; renderTags('Prio'); renderTags('Bans');
-  threatLevel=''; applyThreat();
-  document.getElementById('teamTitle').textContent='Fiche adverse';
-}
+function fullReset(){ state={ m_team:'',m_rank:'',m_tournoi:'',threatLevel:'',f_note:'—',f_comment:'',roster:emptyRoster(),draft:emptyDraft(),scenarios:[emptyScenario()] }; currentScn=0; renderAll(); }
 function newSheet(){ if(!confirm('Créer une nouvelle fiche ? L\'actuelle reste sauvegardée.'))return; fullReset(); startSync(newDocId()); }
-function loadSheet(id){ if(id===currentDocId){ closeDrawer(); return; } fullReset(); startSync(id); closeDrawer(); }
-async function deleteSheet(id,e){ e.stopPropagation(); if(!confirm('Supprimer définitivement cette fiche ?'))return;
-  await db.collection(SCOUT_COL).doc(id).delete(); if(id===currentDocId){ fullReset(); startSync(newDocId()); } loadDrawer(); }
+function loadSheet(id){ if(id===currentDocId){ closeDrawer(); return; } startSync(id); closeDrawer(); }
+async function deleteSheet(id,e){ e.stopPropagation(); if(!confirm('Supprimer définitivement cette fiche ?'))return; await db.collection(SCOUT_COL).doc(id).delete(); if(id===currentDocId){ fullReset(); startSync(newDocId()); } loadDrawer(); }
 function resetCurrentSheet(){ if(!confirm('Vider la fiche actuelle ?'))return; fullReset(); save(); }
 
-// ── Drawer ──
+// Drawer
 function openDrawer(){ document.getElementById('drawerOv').classList.add('open'); document.getElementById('drawer').classList.add('open'); loadDrawer(); }
 function closeDrawer(){ document.getElementById('drawerOv').classList.remove('open'); document.getElementById('drawer').classList.remove('open'); }
 async function loadDrawer(){
@@ -360,18 +518,18 @@ async function loadDrawer(){
   let docs=[];
   try{ const snap=await db.collection(SCOUT_COL).orderBy('_savedAt','desc').get(); snap.forEach(d=>docs.push({id:d.id,...d.data()})); }
   catch{ const snap=await db.collection(SCOUT_COL).get(); snap.forEach(d=>docs.push({id:d.id,...d.data()})); docs.sort((a,b)=>(b._savedAt?.toMillis?.()||0)-(a._savedAt?.toMillis?.()||0)); }
-  document.getElementById('sheetCount').textContent = docs.length?'('+docs.length+')':'';
+  document.getElementById('sheetCount').textContent=docs.length?'('+docs.length+')':'';
   if(!docs.length){ list.innerHTML='<div class="drawer-empty">Aucune fiche sauvegardée.</div>'; return; }
   list.innerHTML='';
   docs.forEach(doc=>{
-    const active=doc.id===currentDocId;
-    const th=doc.threatLevel?THREAT[doc.threatLevel]:null;
+    const active=doc.id===currentDocId; const th=doc.threatLevel?THREAT[doc.threatLevel]:null;
     const date=doc._savedAt?.toDate?.()?.toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})||'';
+    const nScn=(doc.scenarios||[]).length;
     const c=document.createElement('div'); c.className='sc'+(active?' active':'');
     c.innerHTML=`<div class="sc-main">
         <div class="sc-threat" style="background:${th?th.c:'var(--muted)'}"></div>
         <div style="min-width:0"><div class="sc-team">${esc(doc.m_team||'Sans nom')}</div>
-          <div class="sc-meta">${date}${doc.m_tournoi?' · '+esc(doc.m_tournoi):''}${th?' · '+th.l:''}${active?' · en cours':''}</div></div>
+          <div class="sc-meta">${date}${doc.m_tournoi?' · '+esc(doc.m_tournoi):''}${nScn?' · '+nScn+' scénario'+(nScn>1?'s':''):''}${active?' · en cours':''}</div></div>
         <div class="sc-score" style="color:${th?th.c:'var(--accent)'}">${esc(doc.f_note||'—')}<span class="muted" style="font-size:13px">%</span></div>
       </div>
       <div class="sc-actions"><button onclick="loadSheet('${doc.id}')">${active?'Modifier':'Ouvrir'}</button>
@@ -380,20 +538,18 @@ async function loadDrawer(){
   });
 }
 
-// ── Divers ──
-document.getElementById('capture').addEventListener('input', e=>{
-  if(e.target.id==='m_team') document.getElementById('teamTitle').textContent = e.target.value?'Scouting · '+e.target.value:'Fiche adverse';
-  queueSave();
-});
-function importBackup(){ PZ.importFile(d=>{ applyState(d); save(); }); }
+// Divers
+document.querySelectorAll('#m_team,#m_rank,#m_tournoi,#f_note,#f_comment').forEach(inp=>inp.addEventListener('input',()=>{
+  readInputs(); if(inp.id==='m_team') document.getElementById('teamTitle').textContent = inp.value?'Scouting · '+inp.value:'Fiche adverse'; queueSave();
+}));
 document.getElementById('exportBtn').addEventListener('click',()=>PZ.exportPNG(document.getElementById('capture'),'archi-scouting'));
 document.getElementById('footDate').textContent='Mise à jour le '+new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
 
 // Init
-buildPlayers(); buildCP(); applyThreat();
-window.Champions.ready.then(()=>{ renderTags('Prio'); renderTags('Bans'); }); // icônes une fois chargées
+renderAll();
+window.Champions.ready.then(renderAll); // icônes une fois la liste chargée
 (async()=>{
-  if(!db){ PZ.status('error','Firebase indisponible'); PZ.loadingDone(); fullReset(); return; }
+  if(!db){ PZ.status('error','Firebase indisponible'); PZ.loadingDone(); return; }
   try{ const snap=await db.collection(SCOUT_COL).orderBy('_savedAt','desc').limit(1).get();
     startSync(snap.empty?newDocId():snap.docs[0].id);
     const all=await db.collection(SCOUT_COL).get(); document.getElementById('sheetCount').textContent=all.size?'('+all.size+')':''; }

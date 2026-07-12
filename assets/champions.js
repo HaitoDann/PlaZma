@@ -52,7 +52,7 @@
   }
 
   // ---- Modale de sélection ----
-  let overlay, grid, search, cb = null;
+  let overlay, grid, search, cb = null, excludeSet = new Set();
   function ensureModal() {
     if (overlay) return;
     overlay = document.createElement('div');
@@ -93,13 +93,17 @@
       grid.innerHTML = `<div class="champ-empty">Liste des champions indisponible (hors-ligne).<br>Tape un nom puis Entrée pour l'ajouter en texte.</div>`;
       return;
     }
-    grid.innerHTML = items.map(c =>
-      `<button type="button" class="champ-tile" data-id="${c.id}">
+    grid.innerHTML = items.map(c => {
+      const used = excludeSet.has(c.id);
+      return `<button type="button" class="champ-tile${used?' used':''}" data-id="${c.id}"${used?' disabled':''}>
         <img src="${iconUrl(c.id)}" alt="" loading="lazy"><span>${c.name}</span>
-      </button>`).join('');
-    grid.querySelectorAll('.champ-tile').forEach(t => t.addEventListener('click', () => pick(t.dataset.id)));
+      </button>`;
+    }).join('');
+    grid.querySelectorAll('.champ-tile:not(.used)').forEach(t => t.addEventListener('click', () => pick(t.dataset.id)));
   }
-  function open(callback) {
+  function open(callback, opts) {
+    opts = opts || {};
+    excludeSet = new Set(opts.exclude || []);
     ensureModal(); cb = callback; search.value = ''; renderGrid('');
     overlay.classList.add('open'); setTimeout(() => search.focus(), 30);
   }
