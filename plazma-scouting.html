@@ -341,10 +341,9 @@ function multiOpggUrl(){
   if(!ids.length) return '';
   return 'https://www.op.gg/multisearch/euw?summoners='+encodeURIComponent(ids.join(','));
 }
+function updateMultiOpgg(){ const mo=document.getElementById('multiOpgg'); if(mo){ const url=multiOpggUrl(); mo.classList.toggle('btn-ghost',!url); mo.dataset.url=url; } }
 function renderRoster(){
-  // bouton multi OP.GG
-  const mo=document.getElementById('multiOpgg');
-  if(mo){ const url=multiOpggUrl(); mo.classList.toggle('btn-ghost',!url); mo.dataset.url=url; }
+  updateMultiOpgg();
   const host=document.getElementById('players'); host.innerHTML='';
   ROLES.forEach((r,i)=>{
     const p=state.roster[i]; if(!p.style) p.style=emptyStyle();
@@ -359,7 +358,15 @@ function renderRoster(){
       <div class="pf"><label>Menace</label><div class="threat-dots" data-threat></div></div>
       <div class="pf"><label>Style de jeu</label><div data-style></div></div>
       <div class="pf"><label>Note</label><input placeholder="Tendances, faiblesses, à exploiter…" value="${esc(p.note)}" data-f="note"></div>`;
-    card.querySelectorAll('[data-f]').forEach(inp=>inp.addEventListener('input',()=>{ p[inp.dataset.f]=inp.value; if(inp.dataset.f==='opgg'||inp.dataset.f==='pseudo') renderRoster(); queueSave(); }));
+    card.querySelectorAll('[data-f]').forEach(inp=>inp.addEventListener('input',()=>{
+      p[inp.dataset.f]=inp.value;
+      if(inp.dataset.f==='opgg'){ // mise à jour SUR PLACE (pas de reconstruction → on garde le focus)
+        const a=card.querySelector('.h a.btn'); const url=p.opgg?`https://www.op.gg/summoners/euw/${encodeURIComponent(p.opgg)}`:'';
+        if(a){ if(url){ a.href=url; a.target='_blank'; a.rel='noopener'; a.onclick=null; a.classList.remove('btn-ghost'); } else { a.removeAttribute('href'); a.classList.add('btn-ghost'); a.onclick=()=>false; } }
+        updateMultiOpgg();
+      }
+      queueSave();
+    }));
     // pool (icônes seules)
     fillIcons(card.querySelector('[data-pool]'), p.pool);
     // menace
@@ -532,11 +539,16 @@ function applyState(d){
 const newDocId = () => 'scout-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);
 function readInputs(){ state.m_team=val('m_team'); state.m_rank=val('m_rank'); state.m_tournoi=val('m_tournoi'); state.f_note=val('f_note'); state.f_comment=val('f_comment'); }
 function updateChip(){ const t=state.m_team||'Sans nom'; document.getElementById('sheetChip').textContent='📄 '+t+(state.m_tournoi?' — '+state.m_tournoi:''); }
+// Signature des données (sans _savedAt) pour distinguer un vrai changement distant de nos propres échos.
+function sig(o){ const c=JSON.parse(JSON.stringify(o||{})); delete c._savedAt; return JSON.stringify(c); }
+let lastSavedSig=null, suppressUntil=0;
 function save(){
   if(!db){ PZ.status('error','Firebase indisponible'); return; }
   if(!currentDocId) currentDocId=newDocId();
   readInputs(); PZ.status('syncing','Sauvegarde…');
-  const s=JSON.parse(JSON.stringify(state)); s._savedAt=firebase.firestore.FieldValue.serverTimestamp();
+  const s=JSON.parse(JSON.stringify(state));
+  lastSavedSig=sig(s); suppressUntil=Date.now()+2000;   // on ignorera l'écho de cette écriture
+  s._savedAt=firebase.firestore.FieldValue.serverTimestamp();
   db.collection(SCOUT_COL).doc(currentDocId).set(s)
     .then(()=>{ PZ.status('connected','Synchronisé',PZ.nowTime()); updateChip(); })
     .catch(e=>{ console.error(e); PZ.status('error','Erreur Firebase'); });
@@ -544,11 +556,17 @@ function save(){
 function startSync(docId){
   if(!db){ PZ.status('error','Firebase indisponible'); PZ.loadingDone(); return; }
   if(_unsub){ _unsub(); _unsub=null; }
-  currentDocId=docId; PZ.status('syncing','Connexion…');
+  currentDocId=docId; PZ.status('syncing','Connexion…'); lastSavedSig=null; suppressUntil=0;
   _unsub=db.collection(SCOUT_COL).doc(docId).onSnapshot(doc=>{
-    if(doc.metadata.hasPendingWrites) return;
-    if(doc.exists){ applyState(doc.data()); PZ.status('connected','Synchronisé',PZ.nowTime()); } else PZ.status('connected','Nouvelle fiche','');
-    renderAll(); updateChip(); PZ.loadingDone();
+    if(doc.metadata.hasPendingWrites) return;   // écriture optimiste locale
+    if(!doc.exists){ PZ.status('connected','Nouvelle fiche',''); PZ.loadingDone(); return; }
+    readInputs();
+    const incoming=sig(doc.data());
+    // On NE reconstruit que sur un vrai changement distant :
+    const isEcho = incoming===lastSavedSig || Date.now()<suppressUntil; // notre propre sauvegarde
+    if(incoming===sig(state) || isEcho){ PZ.status('connected','Synchronisé',PZ.nowTime()); PZ.loadingDone(); return; }
+    applyState(doc.data()); renderAll(); updateChip();
+    PZ.status('connected','Synchronisé',PZ.nowTime()); PZ.loadingDone();
   }, err=>{ console.error(err); PZ.status('error','Erreur connexion'); PZ.loadingDone(); });
 }
 function fullReset(){ state={ m_team:'',m_rank:'',m_tournoi:'',threatLevel:'',f_note:'—',f_comment:'',roster:emptyRoster(),draft:emptyDraft(),scenarios:[emptyScenario()] }; currentScn=0; renderAll(); }
