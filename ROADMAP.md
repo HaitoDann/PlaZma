@@ -6,16 +6,20 @@ Document de suivi des améliorations et idées à venir.
 
 ---
 
-## 🔴 Priorité 1 — Sécurité des données
-Le mot de passe (`plazma2026`) ne protège que l'affichage, pas les données.
-La clé API Firebase est publique : si les règles Firestore sont ouvertes,
-toute la base est lisible/modifiable par n'importe qui.
+## 🔴 Priorité 1 — Sécurité des données ✅ (implémentée)
+Remplacement du mot de passe unique (`plazma2026`) par de vrais comptes.
 
-- [ ] Mettre en place une **authentification Firebase** (email/mot de passe staff).
-- [ ] Écrire des **règles de sécurité Firestore** : lecture/écriture réservées
-      aux comptes staff connectés.
-- [ ] Exception : autoriser uniquement la **création** publique sur
-      `plazma-satisfaction` (questionnaire joueur public).
+- [x] **Authentification Firebase** (e-mail/mot de passe) — `login.html`.
+- [x] **Comptes, rôles et accès par compartiment** — page `plazma-admin.html`
+      (créer un compte, choisir les modules accessibles, admin/membre, désactiver).
+- [x] **Règles de sécurité Firestore** (`firestore.rules`) : lecture/écriture
+      réservées aux comptes ayant l'accès au module.
+- [x] Exception : **création** publique conservée sur `plazma-satisfaction`
+      (questionnaire joueur), lecture des réponses réservée au staff.
+- [ ] **À faire côté Firebase (console)** : activer Auth e-mail, déployer les
+      règles, créer le 1er admin — voir [`SECURITE.md`](SECURITE.md).
+- [ ] Suppression complète d'un compte de connexion (Auth) : nécessite la console
+      ou un petit backend (Admin SDK). Le retrait d'accès est déjà géré côté app.
 
 ## 🟢 Priorité 2 — Gros gains fonctionnels
 - [ ] **Intégration Discord (webhook)** : bouton « Publier sur Discord » sur le

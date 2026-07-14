@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/theme.css">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
   .content{max-width:1180px;margin:0 auto;padding:22px var(--gut) 80px;display:flex;flex-direction:column;gap:22px}
@@ -226,7 +227,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="assets/plazma.js"></script>
+<script src="assets/plazma.js" data-section="dashboard"></script>
 <script>
 'use strict';
 PZ.mountNav('dashboard', '#nav');

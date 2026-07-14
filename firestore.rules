@@ -1,0 +1,81 @@
+rules_version = '2';
+
+// ============================================================
+//  ARCHI — Règles de sécurité Firestore (PlaZma Esport)
+//  Ce fichier est la SEULE protection réelle des données.
+//  À déployer dans la console Firebase (Firestore → Règles) ou via la CLI.
+//
+//  Modèle : chaque utilisateur a un document users/{uid} :
+//    { name, email, role: 'admin'|'staff', disabled: false,
+//      sections: { planning, scrim, scouting, team, dashboard,
+//                  coach, satisfaction, perf } }  // booléens
+//  - role 'admin' : accès total + gestion des comptes.
+//  - sinon : accès limité aux compartiments cochés dans `sections`.
+// ============================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function profile()  { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function hasProfile() {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    function active()   { return hasProfile() && profile().disabled != true; }
+    function isAdmin()  { return active() && profile().role == 'admin'; }
+    // Accès à un compartiment : admin, ou section cochée.
+    function can(section) {
+      return active() && (profile().role == 'admin' || profile().sections[section] == true);
+    }
+
+    // ---- Comptes utilisateurs ----
+    match /users/{uid} {
+      // On peut lire son propre profil ; un admin lit tout le monde.
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      // Seuls les admins créent / modifient / suppriment des comptes.
+      allow write: if isAdmin();
+    }
+
+    // ---- Collection principale (plazma) : accès par document ----
+    match /plazma/{docId} {
+      // Le roster (noms/emojis) est lisible publiquement : le questionnaire
+      // de satisfaction, public, en a besoin. Rien de sensible ici.
+      allow read: if docId == 'roster'
+        || (signedIn() && (
+              (docId == 'team-identity'    && can('team'))
+           || (docId == 'dashboard'        && can('dashboard'))
+           || (docId == 'coach-evaluation' && can('coach'))
+           || (docId.matches('schedule-.*') && can('planning'))
+           || (docId.matches('perf-.*')     && can('perf'))
+        ));
+      allow write: if signedIn() && (
+              (docId == 'roster'           && can('team'))
+           || (docId == 'team-identity'    && can('team'))
+           || (docId == 'dashboard'        && can('dashboard'))
+           || (docId == 'coach-evaluation' && can('coach'))
+           || (docId.matches('schedule-.*') && can('planning'))
+           || (docId.matches('perf-.*')     && can('perf'))
+      );
+    }
+
+    // ---- Scrim ----
+    match /plazma-scrims/{id} {
+      allow read, write: if can('scrim');
+    }
+
+    // ---- Scouting ----
+    match /plazma-scouting/{id} {
+      allow read, write: if can('scouting');
+    }
+
+    // ---- Satisfaction ----
+    // Le questionnaire est PUBLIC (les joueurs le remplissent sans compte) :
+    // création autorisée à tous. Lecture / suppression réservées au staff.
+    match /plazma-satisfaction/{id} {
+      allow create: if true;
+      allow read, delete: if can('satisfaction');
+      allow update: if false;
+    }
+
+    // Tout le reste est refusé par défaut.
+  }
+}

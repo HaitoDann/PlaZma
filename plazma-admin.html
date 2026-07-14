@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARCHI — Comptes & accès</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css">
+<style>
+  .wrap{max-width:1100px;margin:0 auto;padding:26px var(--gut) 60px}
+  .pagehead{margin:8px 0 22px}
+  .pagehead h1{font-size:1.8rem;font-family:var(--font-display)}
+  .pagehead p{color:var(--muted);font-size:13.5px;margin-top:4px}
+  .cols{display:grid;grid-template-columns:1fr;gap:18px}
+  @media(min-width:900px){.cols{grid-template-columns:360px 1fr}}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:12px;color:var(--dim);font-weight:600;margin-bottom:5px}
+  .field input,.field select{width:100%}
+  .secgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+  .secchk{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text);
+    padding:7px 9px;border-radius:8px;background:var(--surface-2);cursor:pointer;user-select:none}
+  .secchk input{width:auto;margin:0}
+  .secchk.dim{opacity:.5;pointer-events:none}
+  .presets{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 2px}
+  .presets button{font-size:11.5px;padding:4px 9px;border-radius:20px;border:1px solid var(--line);
+    background:var(--surface-2);color:var(--dim);cursor:pointer}
+  .presets button:hover{color:var(--text);border-color:var(--accent)}
+  .ulist{display:flex;flex-direction:column;gap:10px}
+  .urow{border:1px solid var(--line);border-radius:12px;padding:13px 15px;background:var(--card)}
+  .urow.dis{opacity:.55}
+  .urow-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .uname{font-weight:700;font-size:14.5px}
+  .uemail{font-size:12px;color:var(--muted)}
+  .badge{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+    padding:3px 8px;border-radius:20px}
+  .badge.admin{background:var(--accent-soft);color:var(--accent)}
+  .badge.staff{background:var(--surface-2);color:var(--dim)}
+  .badge.off{background:rgba(220,80,80,.16);color:#f38b8b}
+  .usecs{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+  .pill{font-size:11px;padding:3px 9px;border-radius:20px;background:var(--surface-2);color:var(--dim)}
+  .pill.on{background:var(--accent-soft);color:var(--accent)}
+  .urow-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+  .spacer{flex:1}
+  .empty{color:var(--muted);font-size:13px;text-align:center;padding:30px}
+  .note{font-size:12px;color:var(--muted);line-height:1.5;margin-top:10px;
+    background:var(--surface-2);border-radius:9px;padding:10px 12px}
+  .cred{font-family:var(--font-mono,monospace);background:var(--surface-2);border-radius:8px;
+    padding:8px 10px;font-size:12.5px;margin-top:8px;word-break:break-all}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:1000;
+    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 18px;
+    font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;transition:opacity .2s,transform .2s}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="pagehead">
+    <h1>Comptes &amp; accès</h1>
+    <p>Crée les comptes du staff et choisis, pour chacun, les modules d'ARCHI accessibles.</p>
+  </div>
+
+  <div class="cols">
+    <!-- Création -->
+    <div class="card" style="padding:18px 18px 20px">
+      <h3 style="font-family:var(--font-display);margin-bottom:12px">Nouveau compte</h3>
+      <div class="field"><label>Nom affiché</label><input id="n_name" placeholder="ex : Coach Martin"></div>
+      <div class="field"><label>Adresse e-mail</label><input id="n_email" type="email" placeholder="prenom@plazma.gg" autocomplete="off"></div>
+      <div class="field"><label>Mot de passe provisoire</label>
+        <input id="n_pw" placeholder="min. 6 caractères">
+      </div>
+      <div class="field"><label>Rôle</label>
+        <select id="n_role">
+          <option value="staff">Membre (accès selon les modules cochés)</option>
+          <option value="admin">Administrateur (accès total + gestion des comptes)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Modules accessibles</label>
+        <div class="presets" id="n_presets"></div>
+        <div class="secgrid" id="n_sections"></div>
+      </div>
+      <button class="btn btn-primary" id="createBtn" style="width:100%;margin-top:8px" onclick="createUser()">Créer le compte</button>
+      <div id="createOut"></div>
+      <div class="note">Le mot de passe provisoire est à transmettre à la personne : elle pourra le changer via « Mot de passe oublié » sur l'écran de connexion.</div>
+    </div>
+
+    <!-- Liste -->
+    <div>
+      <div class="ulist" id="ulist"><div class="empty">Chargement…</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="assets/plazma.js"></script>
+<script>
+const SECTIONS = [
+  ['planning','Planning'], ['scrim','Scrim (CR)'], ['scouting','Scouting'],
+  ['team','Équipe'], ['dashboard','Dashboard'], ['coach','Coach'],
+  ['satisfaction','Satisfaction'], ['perf','Fiches perf']
+];
+const PRESETS = {
+  'Staff complet': ['planning','scrim','scouting','team','dashboard','coach','satisfaction','perf'],
+  'Analyste':      ['scouting','scrim','dashboard','team'],
+  'Coach':         ['planning','scrim','scouting','team','dashboard','coach','satisfaction'],
+  'Joueur':        ['planning','team','perf'],
+  'Aucun':         []
+};
+const $ = id => document.getElementById(id);
+let db, meUid;
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2600); }
+
+// Grille de cases à cocher pour la création
+function buildSectionGrid(){
+  $('n_sections').innerHTML = SECTIONS.map(([k,l])=>
+    `<label class="secchk"><input type="checkbox" data-sec="${k}"> ${l}</label>`).join('');
+  $('n_presets').innerHTML = Object.keys(PRESETS).map(name=>
+    `<button type="button" onclick="applyPreset('${name}')">${name}</button>`).join('');
+  const role = $('n_role');
+  role.addEventListener('change', ()=> {
+    const admin = role.value==='admin';
+    $('n_sections').classList.toggle('dim', admin);
+  });
+}
+function applyPreset(name){
+  const set = new Set(PRESETS[name]||[]);
+  document.querySelectorAll('#n_sections input[data-sec]').forEach(c=> c.checked = set.has(c.dataset.sec));
+}
+function readSections(scope){
+  const out={};
+  document.querySelectorAll(scope+' input[data-sec]').forEach(c=> out[c.dataset.sec]=c.checked);
+  return out;
+}
+
+async function createUser(){
+  const name=$('n_name').value.trim(), email=$('n_email').value.trim(), pw=$('n_pw').value;
+  const role=$('n_role').value;
+  $('createOut').innerHTML='';
+  if(!name||!email){ toast('Nom et e-mail requis.'); return; }
+  if(pw.length<6){ toast('Mot de passe : 6 caractères minimum.'); return; }
+  const btn=$('createBtn'); btn.disabled=true; btn.textContent='Création…';
+  try{
+    // App secondaire : crée le compte SANS déconnecter l'admin courant.
+    const sec = firebase.apps.find(a=>a.name==='secondary') || firebase.initializeApp(PZ.FIREBASE_CONFIG,'secondary');
+    const cred = await sec.auth().createUserWithEmailAndPassword(email, pw);
+    const uid = cred.user.uid;
+    await sec.auth().signOut();
+    const sections = role==='admin' ? allSections(true) : readSections('#n_sections');
+    await db.collection('users').doc(uid).set({
+      name, email, role, disabled:false, sections,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    $('createOut').innerHTML = `<div class="cred">✅ Compte créé.<br>E-mail : ${esc(email)}<br>Mot de passe provisoire : ${esc(pw)}</div>`;
+    $('n_name').value=''; $('n_email').value=''; $('n_pw').value='';
+    applyPreset('Aucun');
+    toast('Compte créé.');
+    loadUsers();
+  }catch(e){
+    console.error(e);
+    const map={'auth/email-already-in-use':'Un compte existe déjà pour cet e-mail.','auth/invalid-email':'E-mail invalide.','auth/weak-password':'Mot de passe trop faible.'};
+    toast(map[e.code]||('Erreur : '+(e.message||e.code)));
+  }finally{ btn.disabled=false; btn.textContent='Créer le compte'; }
+}
+function allSections(v){ const o={}; SECTIONS.forEach(([k])=>o[k]=!!v); return o; }
+
+async function loadUsers(){
+  const host=$('ulist');
+  try{
+    const snap=await db.collection('users').orderBy('name').get();
+    const rows=[]; snap.forEach(d=>rows.push({uid:d.id,...d.data()}));
+    if(!rows.length){ host.innerHTML='<div class="empty">Aucun compte pour le moment.</div>'; return; }
+    host.innerHTML = rows.map(renderUser).join('');
+  }catch(e){
+    // orderBy peut échouer si des docs n'ont pas de champ name
+    try{
+      const snap=await db.collection('users').get();
+      const rows=[]; snap.forEach(d=>rows.push({uid:d.id,...d.data()}));
+      host.innerHTML = rows.length ? rows.map(renderUser).join('') : '<div class="empty">Aucun compte.</div>';
+    }catch(e2){ console.error(e2); host.innerHTML='<div class="empty">Lecture impossible (vérifie les règles Firestore).</div>'; }
+  }
+}
+
+function renderUser(u){
+  const isMe = u.uid===meUid;
+  const admin = u.role==='admin';
+  const secs = SECTIONS.map(([k,l])=>`<span class="pill${(admin||u.sections&&u.sections[k])?' on':''}">${l}</span>`).join('');
+  const roleBadge = admin?'<span class="badge admin">Admin</span>':'<span class="badge staff">Membre</span>';
+  const offBadge = u.disabled?'<span class="badge off">Désactivé</span>':'';
+  return `<div class="urow${u.disabled?' dis':''}" data-uid="${u.uid}">
+    <div class="urow-top">
+      <span class="uname">${esc(u.name||'—')}</span> ${roleBadge} ${offBadge}
+      ${isMe?'<span class="badge staff">toi</span>':''}
+      <span class="spacer"></span>
+      <span class="uemail">${esc(u.email||'')}</span>
+    </div>
+    <div class="usecs">${admin?'<span class="pill on">Accès total</span>':secs}</div>
+    <div class="urow-actions">
+      ${admin?'':`<button class="btn btn-sm" onclick="editAccess('${u.uid}')">Modifier les accès</button>`}
+      <button class="btn btn-sm btn-ghost" onclick="toggleRole('${u.uid}','${admin?'staff':'admin'}')">${admin?'Retirer admin':'Passer admin'}</button>
+      <button class="btn btn-sm btn-ghost" onclick="sendReset('${esc(u.email)}')">Réinit. mot de passe</button>
+      ${isMe?'':`<button class="btn btn-sm btn-ghost" onclick="toggleDisabled('${u.uid}',${u.disabled?'false':'true'})">${u.disabled?'Réactiver':'Désactiver'}</button>`}
+      ${isMe?'':`<button class="btn btn-sm btn-ghost" style="color:var(--err)" onclick="removeUser('${u.uid}','${esc(u.name||u.email)}')">Retirer l'accès</button>`}
+    </div>
+    <div class="editbox" id="edit_${u.uid}"></div>
+  </div>`;
+}
+
+function editAccess(uid){
+  const box=$('edit_'+uid);
+  if(box.dataset.open==='1'){ box.innerHTML=''; box.dataset.open='0'; return; }
+  db.collection('users').doc(uid).get().then(d=>{
+    const u=d.data()||{}; const s=u.sections||{};
+    box.dataset.open='1';
+    box.innerHTML = `<div style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
+      <div class="presets">${Object.keys(PRESETS).map(n=>`<button type="button" onclick="editPreset('${uid}','${n}')">${n}</button>`).join('')}</div>
+      <div class="secgrid" id="secs_${uid}">${SECTIONS.map(([k,l])=>`<label class="secchk"><input type="checkbox" data-sec="${k}" ${s[k]?'checked':''}> ${l}</label>`).join('')}</div>
+      <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="saveAccess('${uid}')">Enregistrer</button>
+    </div>`;
+  });
+}
+function editPreset(uid,name){
+  const set=new Set(PRESETS[name]||[]);
+  document.querySelectorAll('#secs_'+uid+' input[data-sec]').forEach(c=>c.checked=set.has(c.dataset.sec));
+}
+async function saveAccess(uid){
+  const sections=readSections('#secs_'+uid);
+  try{ await db.collection('users').doc(uid).update({sections}); toast('Accès mis à jour.'); loadUsers(); }
+  catch(e){ console.error(e); toast('Erreur : '+(e.message||e.code)); }
+}
+async function toggleRole(uid,role){
+  if(role==='admin' && !confirm('Donner un accès administrateur complet (y compris la gestion des comptes) ?')) return;
+  try{ await db.collection('users').doc(uid).update({role}); toast('Rôle mis à jour.'); loadUsers(); }
+  catch(e){ console.error(e); toast('Erreur : '+(e.message||e.code)); }
+}
+async function toggleDisabled(uid,val){
+  try{ await db.collection('users').doc(uid).update({disabled:val}); toast(val?'Compte désactivé.':'Compte réactivé.'); loadUsers(); }
+  catch(e){ console.error(e); toast('Erreur : '+(e.message||e.code)); }
+}
+async function removeUser(uid,label){
+  if(!confirm('Retirer l\'accès de « '+label+' » à ARCHI ?\n\nLe compte de connexion existe encore côté Firebase (à supprimer dans la console si besoin), mais il n\'aura plus aucun accès.')) return;
+  try{ await db.collection('users').doc(uid).delete(); toast('Accès retiré.'); loadUsers(); }
+  catch(e){ console.error(e); toast('Erreur : '+(e.message||e.code)); }
+}
+function sendReset(email){
+  if(!email){ toast('Pas d\'e-mail.'); return; }
+  PZ.auth.instance.sendPasswordResetEmail(email)
+    .then(()=>toast('E-mail de réinitialisation envoyé.'))
+    .catch(e=>toast('Erreur : '+(e.message||e.code)));
+}
+
+// Init : attend la résolution de l'accès (plazma.js bloque déjà les non-admins).
+PZ.mountNav('admin');
+PZ.auth.ready.then(res=>{
+  if(!res.user || !PZ.auth.isAdmin()) return; // l'overlay d'accès s'affiche déjà
+  db = PZ.db; meUid = res.user.uid;
+  buildSectionGrid();
+  loadUsers();
+});
+</script>
+</body>
+</html>

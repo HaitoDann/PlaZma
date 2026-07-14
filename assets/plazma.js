@@ -28,28 +28,105 @@
 
   const script = document.currentScript;
   const isPublic = script && script.hasAttribute('data-public');
-
-  // ---- Garde d'accès (cohérente sur toutes les pages) ----
-  // Rappel : protection réelle = règles de sécurité Firestore.
-  // Ce garde n'est qu'un filtre d'affichage côté staff.
+  // Compartiment requis pour afficher la page (ex: data-section="scouting").
+  const pageSection = script ? script.getAttribute('data-section') : null;
   const page = location.pathname.split('/').pop() || 'index.html';
-  if (!isPublic && page !== 'login.html') {
-    if (sessionStorage.getItem('pz_auth') !== '1') {
-      location.replace('login.html');
-      return;
-    }
-  }
+  const NEEDS_AUTH = !isPublic && page !== 'login.html';
 
-  // ---- Init Firebase (si le SDK est complètement chargé) ----
+  // ---- Init Firebase (app + Firestore + Auth) ----
   // Robuste à un chargement partiel du SDK : PZ doit toujours être défini.
-  let db = null;
+  let db = null, auth = null;
   try {
-    if (window.firebase && typeof firebase.initializeApp === 'function' && typeof firebase.firestore === 'function') {
+    if (window.firebase && typeof firebase.initializeApp === 'function') {
       if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-      db = firebase.firestore();
+      if (typeof firebase.firestore === 'function') db = firebase.firestore();
+      if (typeof firebase.auth === 'function') auth = firebase.auth();
     }
   } catch (e) {
     console.error('Firebase indisponible :', e);
+  }
+
+  // ============ Authentification & contrôle d'accès ============
+  // La protection RÉELLE vient des règles de sécurité Firestore (firestore.rules).
+  // Ce module gère la connexion, le profil de l'utilisateur et l'affichage
+  // (redirection login, masquage des modules non autorisés).
+  const SECTION_KEYS = ['planning', 'scrim', 'scouting', 'team', 'dashboard', 'coach', 'satisfaction', 'perf'];
+  let authUser = null;   // { uid, email }
+  let profile = null;    // { name, role, sections:{}, disabled }
+  let authResolved = false;
+  const authListeners = [];
+  let _resolveReady;
+  const authReadyPromise = new Promise(r => (_resolveReady = r));
+
+  const isAdmin = () => !!profile && profile.role === 'admin' && !profile.disabled;
+  function can(section) {
+    if (!profile || profile.disabled) return false;
+    if (profile.role === 'admin') return true;
+    return !!(profile.sections && profile.sections[section] === true);
+  }
+  function onAuth(cb) { authListeners.push(cb); if (authResolved) { try { cb(authUser, profile); } catch (e) { console.error(e); } } }
+  function notifyAuth() { authListeners.forEach(cb => { try { cb(authUser, profile); } catch (e) { console.error(e); } }); }
+
+  // ---- Overlay plein écran : évite tout flash de contenu protégé ----
+  let gateEl = null;
+  function gate(html) {
+    if (!gateEl) {
+      gateEl = document.createElement('div');
+      gateEl.id = 'pz-authgate';
+      gateEl.setAttribute('style',
+        'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;' +
+        'background:var(--bg,#0d0f14);color:var(--text,#e7e9ee);padding:24px;text-align:center;' +
+        "font-family:var(--font,system-ui),sans-serif");
+      (document.body || document.documentElement).appendChild(gateEl);
+    }
+    gateEl.innerHTML = html || '';
+    gateEl.style.display = 'flex';
+  }
+  function ungate() { if (gateEl) gateEl.style.display = 'none'; }
+  const spinnerHtml =
+    '<div><div style="width:34px;height:34px;border:3px solid rgba(128,128,128,.25);border-top-color:var(--accent,#6ea8fe);border-radius:50%;margin:0 auto 14px;animation:pzspin .8s linear infinite"></div>' +
+    '<div style="font-size:13px;color:var(--muted,#8b90a0)">Vérification de l\'accès…</div></div>' +
+    '<style>@keyframes pzspin{to{transform:rotate(360deg)}}</style>';
+  function deniedHtml(msg) {
+    return '<div style="max-width:420px"><div style="font-size:40px;margin-bottom:10px">🔒</div>' +
+      '<h2 style="font-family:var(--font-display,inherit);margin:0 0 8px">Accès restreint</h2>' +
+      '<p style="color:var(--muted,#8b90a0);font-size:14px;line-height:1.5;margin:0 0 20px">' + msg + '</p>' +
+      '<div style="display:flex;gap:10px;justify-content:center">' +
+      '<a href="index.html" style="padding:9px 16px;border-radius:9px;background:var(--card,#171a22);color:var(--text,#e7e9ee);text-decoration:none;font-size:13px;font-weight:600">Accueil</a>' +
+      '<button onclick="PZ.logout()" style="padding:9px 16px;border-radius:9px;background:var(--accent,#6ea8fe);color:#06101f;border:0;font-size:13px;font-weight:700;cursor:pointer">Se déconnecter</button>' +
+      '</div></div>';
+  }
+
+  function handleAccess() {
+    if (!NEEDS_AUTH) { refreshNav(); return; }
+    if (!authUser) { location.replace('login.html'); return; }
+    if (!profile || profile.disabled) {
+      gate(deniedHtml("Ton compte n'a pas encore d'accès à ARCHI (ou il a été désactivé). Contacte un administrateur."));
+      return;
+    }
+    if (page === 'plazma-admin.html' && !isAdmin()) { gate(deniedHtml('Cet espace est réservé aux administrateurs.')); return; }
+    if (pageSection && !can(pageSection)) { gate(deniedHtml("Tu n'as pas accès à ce module. Demande l'accès à un administrateur.")); return; }
+    ungate();
+    refreshNav();
+  }
+
+  function startAuth() {
+    if (!auth) {
+      authResolved = true; _resolveReady({ user: null, profile: null });
+      if (NEEDS_AUTH) location.replace('login.html');
+      return;
+    }
+    if (NEEDS_AUTH) gate(spinnerHtml);
+    auth.onAuthStateChanged(async user => {
+      authUser = user ? { uid: user.uid, email: user.email } : null;
+      if (user && db) {
+        try { const s = await db.collection('users').doc(user.uid).get(); profile = s.exists ? s.data() : null; }
+        catch (e) { console.error('Chargement du profil impossible', e); profile = null; }
+      } else profile = null;
+      authResolved = true; _resolveReady({ user: authUser, profile });
+      handleAccess();
+      notifyAuth();
+    });
   }
 
   // ---- Roster central (mercato : noms/emojis modifiables partout) ----
@@ -101,20 +178,31 @@
   // ---- Navigation partagée ----
   const NAV = [
     { key: 'home',         href: 'index.html',              label: 'Accueil' },
-    { key: 'schedule',     href: 'plazma-schedule.html',    label: 'Planning' },
-    { key: 'scrim',        href: 'plazma-scrim.html',       label: 'Scrim' },
-    { key: 'scouting',     href: 'plazma-scouting.html',    label: 'Scouting' },
-    { key: 'team',         href: 'plazma-team.html',        label: 'Équipe' },
-    { key: 'dashboard',    href: 'plazma-dashboard.html',   label: 'Dashboard' },
-    { key: 'coach',        href: 'plazma-coach.html',       label: 'Coach' },
-    { key: 'satisfaction', href: 'plazma-satisfaction.html',label: 'Satisfaction' }
+    { key: 'schedule',     href: 'plazma-schedule.html',    label: 'Planning',     section: 'planning' },
+    { key: 'scrim',        href: 'plazma-scrim.html',       label: 'Scrim',        section: 'scrim' },
+    { key: 'scouting',     href: 'plazma-scouting.html',    label: 'Scouting',     section: 'scouting' },
+    { key: 'team',         href: 'plazma-team.html',        label: 'Équipe',       section: 'team' },
+    { key: 'dashboard',    href: 'plazma-dashboard.html',   label: 'Dashboard',    section: 'dashboard' },
+    { key: 'coach',        href: 'plazma-coach.html',       label: 'Coach',        section: 'coach' },
+    { key: 'satisfaction', href: 'plazma-satisfaction.html',label: 'Satisfaction', section: 'satisfaction' }
   ];
 
-  /** Injecte la barre de navigation dans un conteneur (ou en tête de <body>). */
+  let _navActive = null, _navMount;
+  /** Injecte la barre de navigation (filtrée selon les accès de l'utilisateur). */
   function mountNav(activeKey, mountSel) {
-    const links = NAV.map(n =>
-      `<a href="${n.href}"${n.key === activeKey ? ' class="active"' : ''}>${n.label}</a>`
-    ).join('');
+    _navActive = activeKey; _navMount = mountSel; renderNav();
+  }
+  /** Re-rend la nav quand le profil d'accès change (appelé après résolution auth). */
+  function refreshNav() { if (_navActive !== null || _navMount !== undefined) renderNav(); }
+  function renderNav() {
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    let links = NAV.filter(n => !n.section || can(n.section))
+      .map(n => `<a href="${n.href}"${n.key === _navActive ? ' class="active"' : ''}>${n.label}</a>`).join('');
+    if (isAdmin()) links += `<a href="plazma-admin.html"${_navActive === 'admin' ? ' class="active"' : ''}>Comptes</a>`;
+    const who = profile
+      ? `<div class="pz-nav-right"><span class="pz-nav-user" title="${esc((authUser && authUser.email) || '')}">${esc(profile.name || (authUser && authUser.email) || '')}</span>` +
+        `<button class="pz-logout" type="button" onclick="PZ.logout()" title="Se déconnecter">⏻</button></div>`
+      : '';
     const html =
       `<div class="pz-topbar"><div class="pz-topbar-inner">
         <a class="pz-brand" href="index.html">
@@ -122,9 +210,12 @@
           <span><span class="pz-brand-name">ARCHI</span></span>
         </a>
         <nav class="pz-nav">${links}</nav>
+        ${who}
       </div></div>`;
-    const host = mountSel ? document.querySelector(mountSel) : null;
-    if (host) host.innerHTML = html;
+    const host = _navMount ? document.querySelector(_navMount) : null;
+    if (host) { host.innerHTML = html; return; }
+    const existing = document.querySelector('.pz-topbar');
+    if (existing) existing.outerHTML = html;
     else document.body.insertAdjacentHTML('afterbegin', html);
   }
 
@@ -233,15 +324,30 @@
     inp.click();
   }
 
-  function logout() { sessionStorage.removeItem('pz_auth'); location.replace('login.html'); }
+  function logout() {
+    if (auth) auth.signOut().finally(() => location.replace('login.html'));
+    else location.replace('login.html');
+  }
 
   // ---- API publique ----
   window.PZ = {
-    db, COLLECTION, NAV,
+    db, COLLECTION, NAV, FIREBASE_CONFIG,
     mountNav, sync, status, nowTime, loadingDone,
     exportPNG, backup, importFile, logout,
     // Roster central
     getRoster, getCoach, player, onRoster, setPlayer, saveRoster,
-    ROSTER_SLOTS, COACH_SLOT
+    ROSTER_SLOTS, COACH_SLOT,
+    // Authentification & accès
+    auth: {
+      get user() { return authUser; },
+      get profile() { return profile; },
+      can, isAdmin, onAuth, SECTION_KEYS,
+      ready: authReadyPromise,
+      instance: auth,
+      config: FIREBASE_CONFIG
+    }
   };
+
+  // Démarre la vérification d'accès (affiche l'overlay avant tout contenu).
+  startAuth();
 })();

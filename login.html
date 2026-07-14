@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ARCHI — Accès</title>
+<title>ARCHI — Connexion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -12,53 +12,93 @@
   body{display:flex;align-items:center;justify-content:center;padding:20px}
   .login{width:380px;max-width:100%}
   .login-brand{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:26px}
-  
-  /* Logo sans cadre */
-  .login-mark{
-    width:72px;height:72px;display:flex;align-items:center;justify-content:center;
-  }
-  .login-mark img{
-    width:100%;height:100%;object-fit:contain;
-  }
-
+  .login-mark{width:72px;height:72px;display:flex;align-items:center;justify-content:center}
+  .login-mark img{width:100%;height:100%;object-fit:contain}
   .login h1{font-size:2rem;letter-spacing:.05em}
   .login-sub{font-size:12px;color:var(--muted);letter-spacing:.02em}
-  .err{min-height:18px;text-align:center;font-size:12.5px;color:var(--err);margin-top:12px;opacity:0;transition:opacity .2s}
+  .login label{display:block;margin:14px 0 6px;font-size:12.5px;color:var(--dim);font-weight:600}
+  .login input{width:100%}
+  .err{min-height:18px;text-align:center;font-size:12.5px;color:var(--err);margin-top:14px;opacity:0;transition:opacity .2s}
   .err.show{opacity:1}
-  .login .btn{width:100%;margin-top:18px}
+  .msg{min-height:18px;text-align:center;font-size:12.5px;color:var(--ok,#4ade80);margin-top:8px;opacity:0;transition:opacity .2s}
+  .msg.show{opacity:1}
+  .login .btn{width:100%;margin-top:20px}
+  .forgot{display:block;text-align:center;margin-top:14px;font-size:12px;color:var(--muted);background:none;border:0;cursor:pointer;width:100%}
+  .forgot:hover{color:var(--accent)}
 </style>
 </head>
 <body>
 <div class="login">
   <div class="card" style="padding:34px 30px">
     <div class="login-brand">
-      <div class="login-mark">
-        <img src="assets/logo-plazma.png" alt="Logo ARCHI">
-      </div>
+      <div class="login-mark"><img src="assets/logo-plazma.png" alt="Logo ARCHI"></div>
       <h1>ARCHI</h1>
-      <div class="login-sub">Accès staff · PlaZma Esport</div>
+      <div class="login-sub">Espace staff · PlaZma Esport</div>
     </div>
+    <label for="email">Adresse e-mail</label>
+    <input type="email" id="email" placeholder="prenom@plazma.gg" autocomplete="username" autofocus>
     <label for="pw">Mot de passe</label>
-    <input type="password" id="pw" placeholder="Entrez le mot de passe" autofocus
+    <input type="password" id="pw" placeholder="••••••••" autocomplete="current-password"
       onkeydown="if(event.key==='Enter')login()">
-    <div class="err" id="err">Mot de passe incorrect</div>
-    <button class="btn btn-primary" onclick="login()">Entrer</button>
+    <div class="err" id="err"></div>
+    <div class="msg" id="msg"></div>
+    <button class="btn btn-primary" id="btn" onclick="login()">Se connecter</button>
+    <button class="forgot" type="button" onclick="resetPw()">Mot de passe oublié ?</button>
   </div>
 </div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script>
-const PASSWORD = 'plazma2026';
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyAKwNEbNa6f40oSMwGp6dcDY1ZY6hUN1Ks',
+  authDomain: 'plazma-esport.firebaseapp.com',
+  projectId: 'plazma-esport',
+  storageBucket: 'plazma-esport.firebasestorage.app',
+  messagingSenderId: '534325929279',
+  appId: '1:534325929279:web:b507a46c601fa6625edf8a'
+};
+if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+const auth = firebase.auth();
+
+const $ = id => document.getElementById(id);
+function showErr(t){ const e=$('err'); e.textContent=t; e.classList.add('show'); $('msg').classList.remove('show'); }
+function showMsg(t){ const m=$('msg'); m.textContent=t; m.classList.add('show'); $('err').classList.remove('show'); }
+function clearMsg(){ $('err').classList.remove('show'); $('msg').classList.remove('show'); }
+
+const FR_ERR = {
+  'auth/invalid-email': 'Adresse e-mail invalide.',
+  'auth/user-disabled': 'Ce compte a été désactivé.',
+  'auth/user-not-found': 'Aucun compte pour cette adresse.',
+  'auth/wrong-password': 'Mot de passe incorrect.',
+  'auth/invalid-credential': 'E-mail ou mot de passe incorrect.',
+  'auth/too-many-requests': 'Trop de tentatives. Réessaie dans un instant.',
+  'auth/network-request-failed': 'Problème de connexion réseau.'
+};
+const frError = e => FR_ERR[e && e.code] || (e && e.message) || 'Erreur de connexion.';
+
+// Déjà connecté → on entre directement.
+let redirecting = false;
+auth.onAuthStateChanged(u => { if (u && !redirecting) { redirecting = true; location.replace('index.html'); } });
+
 function login(){
-  const inp = document.getElementById('pw');
-  if (inp.value === PASSWORD){
-    sessionStorage.setItem('pz_auth','1');
-    location.href = 'index.html';
-  } else {
-    const err = document.getElementById('err');
-    err.classList.add('show'); inp.value=''; inp.focus();
-    setTimeout(()=>err.classList.remove('show'),2500);
-  }
+  clearMsg();
+  const email = $('email').value.trim();
+  const pw = $('pw').value;
+  if (!email || !pw){ showErr('Renseigne ton e-mail et ton mot de passe.'); return; }
+  const btn = $('btn'); btn.disabled = true; btn.textContent = 'Connexion…';
+  auth.signInWithEmailAndPassword(email, pw)
+    .then(() => { redirecting = true; location.replace('index.html'); })
+    .catch(e => { showErr(frError(e)); btn.disabled = false; btn.textContent = 'Se connecter'; $('pw').value=''; $('pw').focus(); });
 }
-if (sessionStorage.getItem('pz_auth')==='1') location.href='index.html';
+function resetPw(){
+  clearMsg();
+  const email = $('email').value.trim();
+  if (!email){ showErr('Entre d\'abord ton adresse e-mail, puis clique à nouveau.'); $('email').focus(); return; }
+  auth.sendPasswordResetEmail(email)
+    .then(() => showMsg('E-mail de réinitialisation envoyé (vérifie tes spams).'))
+    .catch(e => showErr(frError(e)));
+}
 </script>
 </body>
 </html>

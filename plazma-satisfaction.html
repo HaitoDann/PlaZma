@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/theme.css">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
 /* Alias des anciennes variables → tokens ARCHI (les styles inline restent valides) */
@@ -320,8 +321,7 @@ const db = PZ.db;
 const ROLE_HEX={top:'#f59e0b',jungle:'#22c55e',mid:'#3b82f6',adc:'#ef4444',support:'#a855f7',coach:'#22d3ee'};
 const mapRoster=()=>PZ.getRoster().map(p=>({id:p.id,name:p.name,role:p.role,emoji:p.emoji,color:ROLE_HEX[p.roleKey]||'#22d3ee'}));
 let ROSTER=mapRoster();
-const ADMIN_PASS='plazma2026';
-let adminUnlocked=false,selectedPlayer=null;
+let selectedPlayer=null;
 
 // ─── État des réponses
 let ans={q1:'',q2:'',q3:'',q4:0,q5:0,q6:0,q7:0,q8:'',q9:new Set(),q10:'',q11:'',q12:new Set(),q13:0,q14:'',q15:''};
@@ -524,7 +524,17 @@ function resetForm(){
 // ADMIN PANEL
 // ═══════════════════════════════════════════
 let responses=[],rpFilter='all';
-function toggleAdmin(){if(!adminUnlocked){const pass=prompt('Mot de passe staff :');if(pass!==ADMIN_PASS){if(pass!==null)showToast('Mot de passe incorrect');return;}adminUnlocked=true;document.getElementById('adminBtn').classList.add('active');}loadAdmin();}
+async function toggleAdmin(){
+  // Accès réservé au staff disposant du compartiment « satisfaction ».
+  if(window.PZ&&PZ.auth&&PZ.auth.ready){await PZ.auth.ready;}
+  if(!(window.PZ&&PZ.auth&&PZ.auth.can('satisfaction'))){
+    if(PZ&&PZ.auth&&PZ.auth.user){showToast("Ton compte n'a pas accès aux résultats staff.");}
+    else{location.href='login.html';}
+    return;
+  }
+  document.getElementById('adminBtn').classList.add('active');
+  loadAdmin();
+}
 function closeAdmin(){document.getElementById('resultsPanel').classList.remove('open');}
 async function loadAdmin(){
   document.getElementById('resultsPanel').classList.add('open');
