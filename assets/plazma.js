@@ -26,6 +26,12 @@
   // Collection Firestore principale
   const COLLECTION = 'plazma';
 
+  // Domaine interne pour l'auth par nom d'utilisateur (style GLPI).
+  // On se connecte avec un pseudo ; en interne Firebase reçoit
+  // "<pseudo>@archi.local" (aucun e-mail réel n'est utilisé).
+  // ⚠️ Doit rester identique dans login.html et plazma-admin.html.
+  const USER_DOMAIN = 'archi.local';
+
   const script = document.currentScript;
   const isPublic = script && script.hasAttribute('data-public');
   // Compartiment requis pour afficher la page (ex: data-section="scouting").
@@ -200,7 +206,7 @@
       .map(n => `<a href="${n.href}"${n.key === _navActive ? ' class="active"' : ''}>${n.label}</a>`).join('');
     if (isAdmin()) links += `<a href="plazma-admin.html"${_navActive === 'admin' ? ' class="active"' : ''}>Comptes</a>`;
     const who = profile
-      ? `<div class="pz-nav-right"><span class="pz-nav-user" title="${esc((authUser && authUser.email) || '')}">${esc(profile.name || (authUser && authUser.email) || '')}</span>` +
+      ? `<div class="pz-nav-right"><button class="pz-nav-user" type="button" onclick="PZ.changePassword()" title="Changer mon mot de passe">${esc(profile.name || profile.username || '')}</button>` +
         `<button class="pz-logout" type="button" onclick="PZ.logout()" title="Se déconnecter">⏻</button></div>`
       : '';
     const html =
@@ -329,11 +335,59 @@
     else location.replace('login.html');
   }
 
+  // ---- Changement de mot de passe (self-service, comme GLPI) ----
+  function changePassword() {
+    if (!auth || !auth.currentUser) { location.replace('login.html'); return; }
+    const ov = document.createElement('div');
+    ov.setAttribute('style', 'position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);padding:20px;font-family:var(--font,system-ui),sans-serif');
+    const ipt = 'width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--line,#2a2f3a);background:var(--surface-2,#12151d);color:var(--text,#e7e9ee);font-size:14px;box-sizing:border-box';
+    ov.innerHTML =
+      '<div style="background:var(--card,#171a22);color:var(--text,#e7e9ee);border:1px solid var(--line,#2a2f3a);border-radius:14px;padding:22px;width:340px;max-width:100%">' +
+      '<h3 style="font-family:var(--font-display,inherit);margin:0 0 14px;font-size:17px">Changer mon mot de passe</h3>' +
+      '<label style="display:block;font-size:12px;color:var(--dim,#9aa0ad);margin:0 0 5px">Mot de passe actuel</label>' +
+      '<input id="pz_cp_cur" type="password" autocomplete="current-password" style="' + ipt + ';margin-bottom:12px">' +
+      '<label style="display:block;font-size:12px;color:var(--dim,#9aa0ad);margin:0 0 5px">Nouveau mot de passe (min. 6)</label>' +
+      '<input id="pz_cp_new" type="password" autocomplete="new-password" style="' + ipt + '">' +
+      '<div id="pz_cp_msg" style="font-size:12px;min-height:16px;margin-top:9px;color:var(--err,#f38b8b)"></div>' +
+      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">' +
+      '<button id="pz_cp_cancel" type="button" style="padding:8px 14px;border-radius:9px;border:1px solid var(--line,#2a2f3a);background:transparent;color:var(--dim,#9aa0ad);font-size:13px;cursor:pointer">Annuler</button>' +
+      '<button id="pz_cp_ok" type="button" style="padding:8px 14px;border-radius:9px;border:0;background:var(--accent,#6ea8fe);color:#06101f;font-weight:700;font-size:13px;cursor:pointer">Enregistrer</button>' +
+      '</div></div>';
+    document.body.appendChild(ov);
+    const close = () => ov.remove();
+    const msg = t => { const m = ov.querySelector('#pz_cp_msg'); if (m) m.textContent = t; };
+    ov.addEventListener('click', e => { if (e.target === ov) close(); });
+    ov.querySelector('#pz_cp_cancel').addEventListener('click', close);
+    ov.querySelector('#pz_cp_ok').addEventListener('click', async () => {
+      const cur = ov.querySelector('#pz_cp_cur').value;
+      const nw = ov.querySelector('#pz_cp_new').value;
+      if (!cur || !nw) { msg('Remplis les deux champs.'); return; }
+      if (nw.length < 6) { msg('Le nouveau mot de passe doit faire 6 caractères min.'); return; }
+      const btn = ov.querySelector('#pz_cp_ok'); btn.disabled = true; btn.textContent = '…';
+      try {
+        const u = auth.currentUser;
+        const cred = firebase.auth.EmailAuthProvider.credential(u.email, cur);
+        await u.reauthenticateWithCredential(cred);
+        await u.updatePassword(nw);
+        msg('');
+        ov.querySelector('div').innerHTML = '<div style="text-align:center;padding:6px 0"><div style="font-size:34px;margin-bottom:8px">✅</div><div style="margin-bottom:16px">Mot de passe mis à jour.</div><button type="button" id="pz_cp_done" style="padding:8px 16px;border-radius:9px;border:0;background:var(--accent,#6ea8fe);color:#06101f;font-weight:700;cursor:pointer">Fermer</button></div>';
+        ov.querySelector('#pz_cp_done').addEventListener('click', close);
+      } catch (e) {
+        console.error(e);
+        const map = { 'auth/wrong-password': 'Mot de passe actuel incorrect.', 'auth/invalid-credential': 'Mot de passe actuel incorrect.', 'auth/weak-password': 'Nouveau mot de passe trop faible.', 'auth/too-many-requests': 'Trop de tentatives, réessaie plus tard.' };
+        msg(map[e.code] || ('Erreur : ' + (e.message || e.code)));
+        btn.disabled = false; btn.textContent = 'Enregistrer';
+      }
+    });
+    setTimeout(() => { const f = ov.querySelector('#pz_cp_cur'); if (f) f.focus(); }, 30);
+  }
+
   // ---- API publique ----
   window.PZ = {
     db, COLLECTION, NAV, FIREBASE_CONFIG,
     mountNav, sync, status, nowTime, loadingDone,
-    exportPNG, backup, importFile, logout,
+    exportPNG, backup, importFile, logout, changePassword,
+    USER_DOMAIN,
     // Roster central
     getRoster, getCoach, player, onRoster, setPlayer, saveRoster,
     ROSTER_SLOTS, COACH_SLOT,

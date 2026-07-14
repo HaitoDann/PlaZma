@@ -66,7 +66,10 @@
     <div class="card" style="padding:18px 18px 20px">
       <h3 style="font-family:var(--font-display);margin-bottom:12px">Nouveau compte</h3>
       <div class="field"><label>Nom affiché</label><input id="n_name" placeholder="ex : Coach Martin"></div>
-      <div class="field"><label>Adresse e-mail</label><input id="n_email" type="email" placeholder="prenom@plazma.gg" autocomplete="off"></div>
+      <div class="field"><label>Nom d'utilisateur (pour se connecter)</label>
+        <input id="n_user" placeholder="ex : coach" autocomplete="off" autocapitalize="none" spellcheck="false">
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Lettres, chiffres, . _ - (sans espace ni accent).</div>
+      </div>
       <div class="field"><label>Mot de passe provisoire</label>
         <input id="n_pw" placeholder="min. 6 caractères">
       </div>
@@ -83,11 +86,12 @@
       </div>
       <button class="btn btn-primary" id="createBtn" style="width:100%;margin-top:8px" onclick="createUser()">Créer le compte</button>
       <div id="createOut"></div>
-      <div class="note">Le mot de passe provisoire est à transmettre à la personne : elle pourra le changer via « Mot de passe oublié » sur l'écran de connexion.</div>
+      <div class="note">Transmets le <b>nom d'utilisateur</b> et le <b>mot de passe provisoire</b> à la personne. Une fois connectée, elle peut changer son mot de passe elle-même (clic sur son nom en haut à droite).</div>
     </div>
 
     <!-- Liste -->
     <div>
+      <div class="note" style="margin:0 0 12px">Chaque membre change son propre mot de passe une fois connecté (clic sur son nom, en haut à droite). Pour un membre qui a oublié le sien et ne peut plus se connecter, voir <b>SECURITE.md</b> (suppression puis recréation du compte).</div>
       <div class="ulist" id="ulist"><div class="empty">Chargement…</div></div>
     </div>
   </div>
@@ -140,32 +144,35 @@ function readSections(scope){
   return out;
 }
 
+const USER_DOMAIN = PZ.USER_DOMAIN || 'archi.local';
+const normUser = u => u.trim().toLowerCase().replace(/[^a-z0-9._-]/g,'');
+
 async function createUser(){
-  const name=$('n_name').value.trim(), email=$('n_email').value.trim(), pw=$('n_pw').value;
+  const name=$('n_name').value.trim(), username=normUser($('n_user').value), pw=$('n_pw').value;
   const role=$('n_role').value;
   $('createOut').innerHTML='';
-  if(!name||!email){ toast('Nom et e-mail requis.'); return; }
+  if(!name||!username){ toast("Nom et nom d'utilisateur requis."); return; }
   if(pw.length<6){ toast('Mot de passe : 6 caractères minimum.'); return; }
   const btn=$('createBtn'); btn.disabled=true; btn.textContent='Création…';
   try{
     // App secondaire : crée le compte SANS déconnecter l'admin courant.
     const sec = firebase.apps.find(a=>a.name==='secondary') || firebase.initializeApp(PZ.FIREBASE_CONFIG,'secondary');
-    const cred = await sec.auth().createUserWithEmailAndPassword(email, pw);
+    const cred = await sec.auth().createUserWithEmailAndPassword(username+'@'+USER_DOMAIN, pw);
     const uid = cred.user.uid;
     await sec.auth().signOut();
     const sections = role==='admin' ? allSections(true) : readSections('#n_sections');
     await db.collection('users').doc(uid).set({
-      name, email, role, disabled:false, sections,
+      name, username, role, disabled:false, sections,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    $('createOut').innerHTML = `<div class="cred">✅ Compte créé.<br>E-mail : ${esc(email)}<br>Mot de passe provisoire : ${esc(pw)}</div>`;
-    $('n_name').value=''; $('n_email').value=''; $('n_pw').value='';
+    $('createOut').innerHTML = `<div class="cred">✅ Compte créé.<br>Nom d'utilisateur : ${esc(username)}<br>Mot de passe provisoire : ${esc(pw)}</div>`;
+    $('n_name').value=''; $('n_user').value=''; $('n_pw').value='';
     applyPreset('Aucun');
     toast('Compte créé.');
     loadUsers();
   }catch(e){
     console.error(e);
-    const map={'auth/email-already-in-use':'Un compte existe déjà pour cet e-mail.','auth/invalid-email':'E-mail invalide.','auth/weak-password':'Mot de passe trop faible.'};
+    const map={'auth/email-already-in-use':'Ce nom d\'utilisateur est déjà pris.','auth/invalid-email':'Nom d\'utilisateur invalide.','auth/weak-password':'Mot de passe trop faible.'};
     toast(map[e.code]||('Erreur : '+(e.message||e.code)));
   }finally{ btn.disabled=false; btn.textContent='Créer le compte'; }
 }
@@ -199,13 +206,12 @@ function renderUser(u){
       <span class="uname">${esc(u.name||'—')}</span> ${roleBadge} ${offBadge}
       ${isMe?'<span class="badge staff">toi</span>':''}
       <span class="spacer"></span>
-      <span class="uemail">${esc(u.email||'')}</span>
+      <span class="uemail">@${esc(u.username||u.email||'')}</span>
     </div>
     <div class="usecs">${admin?'<span class="pill on">Accès total</span>':secs}</div>
     <div class="urow-actions">
       ${admin?'':`<button class="btn btn-sm" onclick="editAccess('${u.uid}')">Modifier les accès</button>`}
       <button class="btn btn-sm btn-ghost" onclick="toggleRole('${u.uid}','${admin?'staff':'admin'}')">${admin?'Retirer admin':'Passer admin'}</button>
-      <button class="btn btn-sm btn-ghost" onclick="sendReset('${esc(u.email)}')">Réinit. mot de passe</button>
       ${isMe?'':`<button class="btn btn-sm btn-ghost" onclick="toggleDisabled('${u.uid}',${u.disabled?'false':'true'})">${u.disabled?'Réactiver':'Désactiver'}</button>`}
       ${isMe?'':`<button class="btn btn-sm btn-ghost" style="color:var(--err)" onclick="removeUser('${u.uid}','${esc(u.name||u.email)}')">Retirer l'accès</button>`}
     </div>
@@ -249,13 +255,6 @@ async function removeUser(uid,label){
   try{ await db.collection('users').doc(uid).delete(); toast('Accès retiré.'); loadUsers(); }
   catch(e){ console.error(e); toast('Erreur : '+(e.message||e.code)); }
 }
-function sendReset(email){
-  if(!email){ toast('Pas d\'e-mail.'); return; }
-  PZ.auth.instance.sendPasswordResetEmail(email)
-    .then(()=>toast('E-mail de réinitialisation envoyé.'))
-    .catch(e=>toast('Erreur : '+(e.message||e.code)));
-}
-
 // Init : attend la résolution de l'accès (plazma.js bloque déjà les non-admins).
 PZ.mountNav('admin');
 PZ.auth.ready.then(res=>{

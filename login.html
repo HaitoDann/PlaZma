@@ -35,15 +35,15 @@
       <h1>ARCHI</h1>
       <div class="login-sub">Espace staff · PlaZma Esport</div>
     </div>
-    <label for="email">Adresse e-mail</label>
-    <input type="email" id="email" placeholder="prenom@plazma.gg" autocomplete="username" autofocus>
+    <label for="user">Nom d'utilisateur</label>
+    <input type="text" id="user" placeholder="ton pseudo" autocomplete="username" autocapitalize="none" spellcheck="false" autofocus>
     <label for="pw">Mot de passe</label>
     <input type="password" id="pw" placeholder="••••••••" autocomplete="current-password"
       onkeydown="if(event.key==='Enter')login()">
     <div class="err" id="err"></div>
     <div class="msg" id="msg"></div>
     <button class="btn btn-primary" id="btn" onclick="login()">Se connecter</button>
-    <button class="forgot" type="button" onclick="resetPw()">Mot de passe oublié ?</button>
+    <div class="forgot" style="cursor:default">Mot de passe oublié ? Contacte un administrateur.</div>
   </div>
 </div>
 
@@ -58,20 +58,24 @@ const FIREBASE_CONFIG = {
   messagingSenderId: '534325929279',
   appId: '1:534325929279:web:b507a46c601fa6625edf8a'
 };
+// Domaine interne : le pseudo devient "<pseudo>@archi.local" pour Firebase.
+// ⚠️ Doit rester identique à USER_DOMAIN dans plazma.js et plazma-admin.html.
+const USER_DOMAIN = 'archi.local';
+const normUser = u => u.trim().toLowerCase().replace(/[^a-z0-9._-]/g, '');
+const toEmail = u => normUser(u) + '@' + USER_DOMAIN;
+
 if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
 const auth = firebase.auth();
 
 const $ = id => document.getElementById(id);
 function showErr(t){ const e=$('err'); e.textContent=t; e.classList.add('show'); $('msg').classList.remove('show'); }
-function showMsg(t){ const m=$('msg'); m.textContent=t; m.classList.add('show'); $('err').classList.remove('show'); }
 function clearMsg(){ $('err').classList.remove('show'); $('msg').classList.remove('show'); }
 
 const FR_ERR = {
-  'auth/invalid-email': 'Adresse e-mail invalide.',
   'auth/user-disabled': 'Ce compte a été désactivé.',
-  'auth/user-not-found': 'Aucun compte pour cette adresse.',
-  'auth/wrong-password': 'Mot de passe incorrect.',
-  'auth/invalid-credential': 'E-mail ou mot de passe incorrect.',
+  'auth/user-not-found': 'Aucun compte pour ce nom d\'utilisateur.',
+  'auth/wrong-password': 'Nom d\'utilisateur ou mot de passe incorrect.',
+  'auth/invalid-credential': 'Nom d\'utilisateur ou mot de passe incorrect.',
   'auth/too-many-requests': 'Trop de tentatives. Réessaie dans un instant.',
   'auth/network-request-failed': 'Problème de connexion réseau.'
 };
@@ -83,21 +87,13 @@ auth.onAuthStateChanged(u => { if (u && !redirecting) { redirecting = true; loca
 
 function login(){
   clearMsg();
-  const email = $('email').value.trim();
+  const user = $('user').value;
   const pw = $('pw').value;
-  if (!email || !pw){ showErr('Renseigne ton e-mail et ton mot de passe.'); return; }
+  if (!normUser(user) || !pw){ showErr('Renseigne ton nom d\'utilisateur et ton mot de passe.'); return; }
   const btn = $('btn'); btn.disabled = true; btn.textContent = 'Connexion…';
-  auth.signInWithEmailAndPassword(email, pw)
+  auth.signInWithEmailAndPassword(toEmail(user), pw)
     .then(() => { redirecting = true; location.replace('index.html'); })
     .catch(e => { showErr(frError(e)); btn.disabled = false; btn.textContent = 'Se connecter'; $('pw').value=''; $('pw').focus(); });
-}
-function resetPw(){
-  clearMsg();
-  const email = $('email').value.trim();
-  if (!email){ showErr('Entre d\'abord ton adresse e-mail, puis clique à nouveau.'); $('email').focus(); return; }
-  auth.sendPasswordResetEmail(email)
-    .then(() => showMsg('E-mail de réinitialisation envoyé (vérifie tes spams).'))
-    .catch(e => showErr(frError(e)));
 }
 </script>
 </body>

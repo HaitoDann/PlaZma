@@ -5,8 +5,10 @@ rules_version = '2';
 //  Ce fichier est la SEULE protection réelle des données.
 //  À déployer dans la console Firebase (Firestore → Règles) ou via la CLI.
 //
+//  Auth : connexion par NOM D'UTILISATEUR (style GLPI). En interne, le pseudo
+//  devient "<pseudo>@archi.local" côté Firebase Auth (aucun e-mail réel).
 //  Modèle : chaque utilisateur a un document users/{uid} :
-//    { name, email, role: 'admin'|'staff', disabled: false,
+//    { name, username, role: 'admin'|'staff', disabled: false,
 //      sections: { planning, scrim, scouting, team, dashboard,
 //                  coach, satisfaction, perf } }  // booléens
 //  - role 'admin' : accès total + gestion des comptes.
