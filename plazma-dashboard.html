@@ -12,19 +12,41 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
-  .content{max-width:1180px;margin:0 auto;padding:22px var(--gut) 80px;display:flex;flex-direction:column;gap:22px}
+  .content{max-width:1180px;margin:0 auto;padding:22px var(--gut) 80px;display:flex;flex-direction:column;gap:20px}
   .dash-top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
   .dash-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
   .kpi{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px}
-  .kpi::before{content:'';position:absolute;left:0;top:0;right:0;height:3px;background:var(--kc,var(--accent));opacity:.8}
+  .kpi::before{content:'';position:absolute;left:0;top:0;right:0;height:3px;background:var(--kc,var(--accent));opacity:.85}
   .kpi-lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
   .kpi-val{font-family:var(--font-display);font-size:2.3rem;font-weight:700;line-height:1;letter-spacing:-.02em}
   .kpi-sub{font-size:12px;color:var(--muted);margin-top:7px}
   .kpi-sub b{color:var(--dim)}
   .up{color:var(--ok)}.dn{color:var(--err)}.neu{color:var(--muted)}
 
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+  .panel-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .panel-h .card-title{font-size:1rem}
+  .plink{font-size:12px;font-weight:600;color:var(--accent);cursor:pointer}
+  .plink:hover{text-decoration:underline}
+
+  /* Cette semaine */
+  .wk-chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .wk-total{font-size:13px;color:var(--dim);margin-right:6px}
+  .wk-total b{color:var(--text);font-weight:700}
+  .wk-chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:20px;color:var(--wc);background:color-mix(in srgb,var(--wc) 14%,transparent)}
+  .wk-next{margin-top:13px;padding-top:12px;border-top:1px solid var(--border);font-size:13px;color:var(--dim)}
+  .wk-next b{color:var(--text)}
+  .wk-next .none{color:var(--muted)}
+
+  /* Prochain adversaire */
+  .opp-name{font-family:var(--font-display);font-size:1.5rem;font-weight:700;letter-spacing:-.01em}
+  .opp-meta{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:8px;font-size:12.5px;color:var(--muted)}
+  .opp-meta b{color:var(--dim);font-weight:600}
+  .threat{display:inline-block;padding:3px 11px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.03em;margin-top:12px}
+
+  /* Roster SoloQ */
   .roster{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
   .pcard{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
   .pc-strip{height:3px}
@@ -42,31 +64,23 @@
     background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:8px;padding:7px;cursor:pointer}
   .btn-opgg.off{color:var(--muted);background:transparent;border-color:var(--border)}
 
-  .split{display:grid;grid-template-columns:340px 1fr;gap:14px;align-items:start}
-  .elo-num{font-family:var(--font-display);font-size:3.4rem;font-weight:700;line-height:1;letter-spacing:-.03em}
-  .elo-tier{display:inline-block;padding:3px 12px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.04em;margin-top:6px}
-  .elo-stats{display:flex;gap:20px;margin:16px 0}
-  .es-val{font-family:var(--font-display);font-size:1.4rem;font-weight:700}
-  .es-lbl{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-  .chart{background:var(--surface-2);border-radius:8px;padding:8px;height:88px}
-  .chart svg{width:100%;height:100%;display:block}
-  .wl-dots{display:flex;gap:4px;flex-wrap:wrap;margin-top:10px}
-  .wl-dot{width:12px;height:12px;border-radius:3px}
-
-  .mfilters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-  .mfbtn{background:var(--surface-2);border:1px solid var(--border);color:var(--muted);padding:5px 11px;border-radius:7px;
-    font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)}
-  .mfbtn.active{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent)}
+  /* Résultats */
+  .forme{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .forme-lbl{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+  .wl-dot{width:16px;height:16px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff}
   .mtable{width:100%;border-collapse:collapse;font-size:13px}
   .mtable th{text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border)}
-  .mtable td{padding:10px;border-bottom:1px solid var(--border)}
+  .mtable td{padding:9px 10px;border-bottom:1px solid var(--border)}
   .mtable tr[data-row]{cursor:pointer}
   .mtable tr[data-row]:hover td{background:var(--surface-2)}
   .mres{font-weight:700;font-size:12px}
   .mres.W{color:var(--ok)}.mres.L{color:var(--err)}.mres.D{color:var(--muted)}
-  .mtype{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);color:var(--dim)}
-  .empty{padding:28px;text-align:center;color:var(--muted);font-size:13px}
+  .mtype{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);color:var(--dim)}
+  .mtype.offi{color:var(--support);border-color:var(--support);background:color-mix(in srgb,var(--support) 12%,transparent)}
+  .empty{padding:24px;text-align:center;color:var(--muted);font-size:13px}
+  .empty a{color:var(--accent);cursor:pointer}
 
+  /* Objectifs */
   .objs{display:flex;flex-direction:column;gap:9px}
   .obj{position:relative;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;cursor:pointer}
   .obj::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px;background:var(--oc,var(--accent))}
@@ -89,7 +103,7 @@
     border-radius:9px;padding:10px 16px;font-size:13px;font-weight:500;z-index:500;opacity:0;transition:opacity .3s;pointer-events:none}
   .toast.show{opacity:1}
 
-  @media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.roster{grid-template-columns:repeat(3,1fr)}.split,.settings-grid{grid-template-columns:1fr}}
+  @media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.roster{grid-template-columns:repeat(3,1fr)}.grid2,.settings-grid{grid-template-columns:1fr}}
   @media(max-width:520px){.roster{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -106,41 +120,58 @@
     </div>
     <div class="dash-actions">
       <span class="sync-pill"><span class="sync-dot offline" id="syncDot"></span><span id="syncText">En attente…</span><span class="sync-time" id="syncTime"></span></span>
+      <button class="btn btn-sm" id="btnRefresh" title="Recharger les données agrégées">↻ Actualiser</button>
       <button class="btn btn-sm" id="btnBackup">Backup</button>
       <button class="btn btn-sm" id="btnImport">Import</button>
       <button class="btn btn-sm btn-danger" id="btnReset">Reset</button>
-      <button class="btn btn-sm btn-primary" onclick="openAddMatch()">＋ Match</button>
+      <button class="btn btn-sm btn-primary" onclick="openAddOffi()">＋ Officiel</button>
     </div>
   </div>
 
   <div class="kpis" id="kpis"></div>
 
+  <!-- CETTE SEMAINE (agrégé du Planning) -->
   <div class="panel">
-    <div class="card-head" style="padding:0 0 14px;border-color:var(--border)">
-      <div class="card-title" style="font-size:1rem">Roster — Rangs SoloQ EUW</div>
-      <button class="btn btn-sm" onclick="saveRoster()">Enregistrer les rangs</button>
+    <div class="panel-h">
+      <div class="card-title">Cette semaine</div>
+      <span class="plink" onclick="location.href='plazma-schedule.html'">Planning →</span>
+    </div>
+    <div id="weekBox"></div>
+  </div>
+
+  <div class="grid2">
+    <!-- RÉSULTATS (scrims lus des CR + officiels) -->
+    <div class="panel">
+      <div class="panel-h">
+        <div class="card-title">Résultats récents</div>
+        <span class="plink" onclick="location.href='plazma-scrim.html'">CR de scrim →</span>
+      </div>
+      <div id="resultsBox"></div>
+    </div>
+
+    <!-- PROCHAIN ADVERSAIRE (agrégé du Scouting) -->
+    <div class="panel">
+      <div class="panel-h">
+        <div class="card-title">Prochain adversaire</div>
+        <span class="plink" onclick="location.href='plazma-scouting.html'">Scouting →</span>
+      </div>
+      <div id="oppBox"></div>
+    </div>
+  </div>
+
+  <!-- ROSTER SOLOQ -->
+  <div class="panel">
+    <div class="panel-h">
+      <div class="card-title">Roster — Rangs SoloQ EUW</div>
+      <button class="btn btn-sm" onclick="saveRanks()">Enregistrer les rangs</button>
     </div>
     <div class="roster" id="roster"></div>
   </div>
 
-  <div class="split">
-    <div class="panel">
-      <div class="card-title" style="font-size:1rem;margin-bottom:12px">ELO Équipe</div>
-      <div id="eloBox"></div>
-    </div>
-    <div class="panel">
-      <div class="card-head" style="padding:0 0 12px;border-color:var(--border)">
-        <div class="card-title" style="font-size:1rem">Historique des matchs</div>
-        <button class="btn btn-sm" onclick="openAddMatch()">＋ Ajouter</button>
-      </div>
-      <div class="mfilters" id="mfilters"></div>
-      <div id="matchList"></div>
-    </div>
-  </div>
-
+  <!-- OBJECTIFS -->
   <div class="panel">
-    <div class="card-head" style="padding:0 0 14px;border-color:var(--border)">
-      <div class="card-title" style="font-size:1rem">Objectifs de la saison</div>
+    <div class="panel-h">
+      <div class="card-title">Objectifs de la saison</div>
       <button class="btn btn-sm" onclick="openAddObj()">＋ Ajouter</button>
     </div>
     <div class="objs" id="objList"></div>
@@ -150,14 +181,6 @@
     <summary style="cursor:pointer;font-family:var(--font-display);font-weight:600">Paramètres</summary>
     <div class="settings-grid" style="margin-top:14px">
       <div>
-        <div class="eyebrow" style="margin-bottom:10px">Configuration ELO</div>
-        <div class="field-row">
-          <div class="field"><label>ELO de départ</label><input type="number" id="p_baseElo" placeholder="1200"></div>
-          <div class="field"><label>Facteur K</label><input type="number" id="p_kFactor" placeholder="32"></div>
-        </div>
-        <div class="field"><label>ELO adversaire par défaut</label><input type="number" id="p_defaultOppElo" placeholder="1200"></div>
-      </div>
-      <div>
         <div class="eyebrow" style="margin-bottom:10px">Prochain événement</div>
         <div class="field"><label>Nom</label><input type="text" id="p_nextEvent" placeholder="ex : Nexus Tour Phase 1"></div>
         <div class="field-row">
@@ -165,8 +188,8 @@
           <div class="field"><label>Objectif</label><input type="text" id="p_goal" placeholder="ex : Top 4"></div>
         </div>
       </div>
-      <div style="grid-column:span 2">
-        <div class="eyebrow" style="margin-bottom:8px">Identifiants op.gg (format PseudoTag-EUW)</div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:10px">Identifiants op.gg (format PseudoTag-EUW)</div>
         <div id="rosterConfig"></div>
       </div>
     </div>
@@ -174,30 +197,21 @@
   </details>
 </div>
 
-<!-- MODAL MATCH -->
+<!-- MODAL MATCH OFFICIEL -->
 <div class="overlay" id="ovMatch">
   <div class="modal">
-    <div class="modal-title" id="mTitle">Ajouter un match</div>
+    <div class="modal-title" id="mTitle">Ajouter un match officiel</div>
     <div class="field-row">
       <div class="field"><label>Adversaire *</label><input type="text" id="mOpp" placeholder="Nom de l'équipe"></div>
-      <div class="field"><label>Type</label><select id="mType"><option>Scrim</option><option>Officiel</option><option>Amical</option></select></div>
+      <div class="field"><label>Date</label><input type="date" id="mDate"></div>
     </div>
     <div class="field-row">
       <div class="field"><label>Résultat</label><select id="mRes"><option value="W">✅ Victoire</option><option value="L">❌ Défaite</option><option value="D">〰 Nul</option></select></div>
       <div class="field"><label>Score (ex : 2-1)</label><input type="text" id="mScore" placeholder="—"></div>
     </div>
-    <div class="field-row">
-      <div class="field"><label>Date</label><input type="date" id="mDate"></div>
-      <div class="field"><label>Patch</label><input type="text" id="mPatch" placeholder="25.06"></div>
-    </div>
-    <div class="field-row">
-      <div class="field"><label>Durée (min)</label><input type="number" id="mDur" placeholder="30"></div>
-      <div class="field"><label>ELO adversaire</label><input type="number" id="mOppElo" placeholder="1200"></div>
-    </div>
-    <div class="field"><label>Note</label><textarea id="mNote" rows="2" placeholder="Résumé, points forts/faibles…"></textarea></div>
-    <div class="badge" id="eloPrev" style="width:100%;justify-content:flex-start">Sélectionne un résultat pour voir la variation d'ELO</div>
+    <div class="field"><label>Note</label><textarea id="mNote" rows="2" placeholder="Compétition, faits marquants…"></textarea></div>
     <div class="modal-actions">
-      <button class="btn btn-danger" id="mDel" style="display:none;flex:0" onclick="deleteMatch()">Supprimer</button>
+      <button class="btn btn-danger" id="mDel" style="display:none;flex:0" onclick="deleteOffi()">Supprimer</button>
       <button class="btn btn-ghost" onclick="closeModals()">Annuler</button>
       <button class="btn btn-primary" id="mConf">Ajouter</button>
     </div>
@@ -231,17 +245,24 @@
 <script>
 'use strict';
 PZ.mountNav('dashboard', '#nav');
-let _editId = null, matchFilter = 'all';
+let _editId = null;
 
+// Tiers SoloQ (roster)
 const TIER = {
   IRON:{fr:'FER',color:'#9ca3af'}, BRONZE:{fr:'BRONZE',color:'#b45309'}, SILVER:{fr:'ARGENT',color:'#94a3b8'},
   GOLD:{fr:'OR',color:'#f59e0b'}, PLATINUM:{fr:'PLATINE',color:'#06b6d4'}, EMERALD:{fr:'ÉMERAUDE',color:'#22c55e'},
   DIAMOND:{fr:'DIAMANT',color:'#3b82f6'}, MASTER:{fr:'MASTER',color:'#a855f7'}, GRANDMASTER:{fr:'GRAND MAÎTRE',color:'#ef4444'},
   CHALLENGER:{fr:'CHALLENGER',color:'#f59e0b'}, UNRANKED:{fr:'NON CLASSÉ',color:'#64748b'},
 };
+// Types de session (Planning) — pour les puces « Cette semaine »
+const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+const PTYPES = {
+  scrim:{l:'Scrim',c:'#3b82f6'}, soloq:{l:'SoloQ',c:'#ef4444'}, repos:{l:'Repos',c:'#22c55e'},
+  match:{l:'Match Offi',c:'#f97316'}, coaching:{l:'Coaching',c:'#ec4899'}, review:{l:'Review VOD',c:'#a855f7'},
+  flexq:{l:'FlexQ',c:'#f59e0b'}, atelier:{l:'Atelier',c:'#2dd4bf'}, autre:{l:'Autre',c:'#94a3b8'},
+};
 
 let state = {
-  teamElo:1200, baseElo:1200, kFactor:32, defaultOppElo:1200,
   nextEvent:'', nextEventDate:'', goal:'',
   roster:[
     {id:'boulou', name:'Boulou', role:'Top', emoji:'👍', color:'#f59e0b', opgg:'', tier:'UNRANKED', rank:'', lp:0, wr:null},
@@ -250,72 +271,128 @@ let state = {
     {id:'ke1do', name:'Ke1do', role:'ADC', emoji:'🐯', color:'#ef4444', opgg:'', tier:'UNRANKED', rank:'', lp:0, wr:null},
     {id:'sayro', name:'Joordy', role:'Support', emoji:'🥀', color:'#a855f7', opgg:'', tier:'UNRANKED', rank:'', lp:0, wr:null},
   ],
-  matches:[], objectives:[], eloHistory:[1200],
+  objectives:[], officials:[],
 };
+// Données agrégées (lues ailleurs, non stockées ici)
+let agg = { scrims:null, scrimsDenied:false, scoutLatest:null, scoutDenied:false, week:null, weekDenied:false, loaded:false };
 
-// ── ELO ──
-function calcEloChange(te,oe,res,K){ const ea=1/(1+Math.pow(10,(oe-te)/400)); return Math.round(K*((res==='W'?1:res==='D'?.5:0)-ea)); }
-function recomputeElo(){
-  let elo=state.baseElo; const hist=[elo];
-  [...state.matches].sort((a,b)=>a.date>b.date?1:-1).forEach(m=>{ elo=Math.max(0,elo+calcEloChange(elo,m.oppElo??state.defaultOppElo,m.result,state.kFactor)); hist.push(elo); });
-  state.teamElo=elo; state.eloHistory=hist;
-}
-function getEloTier(e){
-  if(e>=2600)return{tier:'CHALLENGER',label:'Challenger'}; if(e>=2400)return{tier:'GRANDMASTER',label:'Grand Maître'};
-  if(e>=2200)return{tier:'MASTER',label:'Master'}; if(e>=2000)return{tier:'DIAMOND',label:'Diamant'};
-  if(e>=1800)return{tier:'EMERALD',label:'Émeraude'}; if(e>=1600)return{tier:'PLATINUM',label:'Platine'};
-  if(e>=1400)return{tier:'GOLD',label:'Or'}; if(e>=1200)return{tier:'SILVER',label:'Argent'};
-  if(e>=1000)return{tier:'BRONZE',label:'Bronze'}; return{tier:'IRON',label:'Fer'};
-}
-function drawChart(hist){
-  if(hist.length<2)return '<div class="empty" style="padding:22px 0">Ajoutez des matchs pour voir la courbe</div>';
-  const W=420,H=78,mn=Math.min(...hist)-30,mx=Math.max(...hist)+30;
-  const px=hist.map((v,i)=>[(i/(hist.length-1))*W,H-((v-mn)/(mx-mn||1))*H]);
-  const last=hist[hist.length-1],prev=hist[hist.length-2];
-  const lc=last>=prev?'#22c55e':'#ef4444', ps=px.map(p=>p.join(',')).join(' ');
-  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-    <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${lc}" stop-opacity=".22"/><stop offset="100%" stop-color="${lc}" stop-opacity="0"/></linearGradient></defs>
-    <polygon points="${px[0][0]},${H} ${ps} ${px[px.length-1][0]},${H}" fill="url(#cg)"/>
-    <polyline points="${ps}" fill="none" stroke="${lc}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="${px[px.length-1][0]}" cy="${px[px.length-1][1]}" r="4" fill="${lc}"/></svg>`;
-}
+// ── Helpers date / semaine ──
+const _now = () => new Date();
+function getWeekNum(d){ d=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); const day=d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-day); const y1=new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d-y1)/86400000)+1)/7); }
+function currentWeekValue(){ const n=new Date(); return `${n.getFullYear()}-W${String(getWeekNum(n)).padStart(2,'0')}`; }
+function mondayOfCurrentWeek(){ const n=new Date(); const day=n.getDay(); const mon=new Date(n); mon.setDate(n.getDate()-(day===0?6:day-1)); mon.setHours(0,0,0,0); return mon; }
+const parseHM = t => (/^\d{1,2}:\d{2}$/.test(t||'') ? (+t.split(':')[0])*60 + (+t.split(':')[1]) : null);
+function slotDurMin(s){ const a=parseHM(s.start), b=parseHM(s.end); if(a==null||b==null) return null; let d=b-a; if(d<0) d+=1440; return d; }
+function fmtDur(min){ if(!min||min<=0) return ''; const h=Math.floor(min/60), m=min%60; return h ? (m?`${h}h${String(m).padStart(2,'0')}`:`${h}h`) : `${m}min`; }
+
+// ── Résultats (scrims des CR + officiels) ──
+function scrimResult(s){ const a=+(s.s_plazma), b=+(s.s_adv); if(!isFinite(a)||!isFinite(b)||(a+b)===0) return null; return a>b?'W':a<b?'L':'D'; }
+function scrimRows(){ return (agg.scrims||[]).map(s=>({date:s.m_date||'', opp:s.m_adv||'—', score:(s.s_plazma||'0')+'–'+(s.s_adv||'0'), result:scrimResult(s), type:'Scrim'})).filter(r=>r.result); }
+function offiRows(){ return (state.officials||[]).map(o=>({id:o.id, date:o.date||'', opp:o.opp||'—', score:o.score||'—', result:o.result, type:'Officiel'})); }
+function allRows(){ return [...scrimRows(), ...offiRows()].sort((a,b)=>(a.date>b.date?-1:a.date<b.date?1:0)); }
+function record(rows){ const w=rows.filter(r=>r.result==='W').length, l=rows.filter(r=>r.result==='L').length, d=rows.filter(r=>r.result==='D').length; const t=w+l; return {w,l,d,total:t,wr:t?Math.round(w/t*100):null}; }
+function streak(rows){ let n=0,ty=''; for(const r of rows){ if(!ty){ty=r.result;n=1;} else if(r.result===ty) n++; else break; } return {n,ty}; }
 
 // ── RENDER ──
-function render(){ recomputeElo(); renderKPIs(); renderRoster(); renderElo(); renderMatches(); renderObjectives(); renderSettingsForm(); }
+function render(){ renderKPIs(); renderWeek(); renderResults(); renderOpp(); renderRoster(); renderObjectives(); renderSettingsForm(); }
 
 function renderKPIs(){
-  const wins=state.matches.filter(m=>m.result==='W').length, losses=state.matches.filter(m=>m.result==='L').length;
-  const total=wins+losses, wr=total>0?Math.round(wins/total*100):null;
-  const t=getEloTier(state.teamElo), tc=TIER[t.tier];
-  let streak=0,sType='';
-  [...state.matches].sort((a,b)=>b.date>a.date?1:-1).forEach(m=>{ if(!sType){sType=m.result;streak=1;}else if(m.result===sType)streak++; });
-  const sTxt=streak===0?'—':(streak+(sType==='W'?'V':sType==='L'?'D':'N'));
-  const sCls=sType==='W'?'up':sType==='L'?'dn':'neu';
-  const now=new Date();
+  const sc=record(scrimRows()), off=record(offiRows());
+  const st=streak(allRows());
+  const sTxt = st.n===0?'—':(st.n+(st.ty==='W'?'V':st.ty==='L'?'D':'N'));
+  const sCls = st.ty==='W'?'up':st.ty==='L'?'dn':'neu';
   const evtName=state.nextEvent||'Non configuré';
   const evtDate=state.nextEventDate?new Date(state.nextEventDate+'T12:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}):'';
-  const daysLeft=state.nextEventDate?Math.ceil((new Date(state.nextEventDate+'T12:00')-now)/86400000):null;
+  const daysLeft=state.nextEventDate?Math.ceil((new Date(state.nextEventDate+'T12:00')-_now())/86400000):null;
+  const scWrTxt = agg.scrimsDenied?'—':(sc.wr!==null?sc.wr+'%':'—');
+  const scColor = sc.wr===null?'var(--text)':sc.wr>=50?'var(--ok)':'var(--err)';
   document.getElementById('kpis').innerHTML=`
-    <div class="kpi" style="--kc:${wr!==null&&wr>=50?'var(--ok)':'var(--err)'}">
-      <div class="kpi-lbl">Win Rate global</div>
-      <div class="kpi-val" style="color:${wr!==null&&wr>=50?'var(--ok)':wr!==null?'var(--err)':'var(--text)'}">${wr!==null?wr+'%':'—'}</div>
-      <div class="kpi-sub"><b>${wins}V</b> — <b>${losses}D</b> · ${total} match${total>1?'s':''}</div>
-    </div>
-    <div class="kpi" style="--kc:${tc.color}">
-      <div class="kpi-lbl">ELO Équipe</div>
-      <div class="kpi-val" style="color:${tc.color}">${state.teamElo}</div>
-      <div class="kpi-sub"><b style="color:${tc.color}">${t.label}</b></div>
-    </div>
-    <div class="kpi" style="--kc:var(--warn)">
-      <div class="kpi-lbl">Série en cours</div>
-      <div class="kpi-val ${sCls}">${sTxt}</div>
-      <div class="kpi-sub">Forme récente</div>
+    <div class="kpi" style="--kc:${sc.wr!==null&&sc.wr>=50?'var(--ok)':'var(--err)'}">
+      <div class="kpi-lbl">Winrate scrims</div>
+      <div class="kpi-val" style="color:${scColor}">${scWrTxt}</div>
+      <div class="kpi-sub">${agg.scrimsDenied?'Accès scrims requis':`<b>${sc.w}V</b> — <b>${sc.l}D</b> · ${sc.total} scrim${sc.total>1?'s':''}`}</div>
     </div>
     <div class="kpi" style="--kc:var(--support)">
+      <div class="kpi-lbl">Bilan officiel</div>
+      <div class="kpi-val">${off.total?`${off.w}–${off.l}`:'—'}</div>
+      <div class="kpi-sub">${off.total?`${off.wr}% WR · ${off.total} match${off.total>1?'s':''}`:'Aucun match officiel'}</div>
+    </div>
+    <div class="kpi" style="--kc:var(--warn)">
+      <div class="kpi-lbl">Forme récente</div>
+      <div class="kpi-val ${sCls}">${sTxt}</div>
+      <div class="kpi-sub">Série en cours</div>
+    </div>
+    <div class="kpi" style="--kc:var(--accent)">
       <div class="kpi-lbl">Prochain événement</div>
-      <div class="kpi-val" style="font-size:${evtName.length>12?'1.1rem':'1.5rem'};color:var(--support)">${esc(evtName)}</div>
+      <div class="kpi-val" style="font-size:${evtName.length>12?'1.1rem':'1.5rem'}">${esc(evtName)}</div>
       <div class="kpi-sub">${evtDate?`📅 ${evtDate}${daysLeft!==null?' · <b>J-'+daysLeft+'</b>':''}`:'Configurer dans Paramètres'}</div>
     </div>`;
+}
+
+function renderWeek(){
+  const el=document.getElementById('weekBox');
+  if(agg.weekDenied){ el.innerHTML='<div class="empty">Accès Planning requis pour ce module.</div>'; return; }
+  if(agg.week===null){ el.innerHTML='<div class="empty">Chargement…</div>'; return; }
+  const wk=agg.week;
+  let sessions=0, totalMin=0; const per={};
+  DAYS.forEach(d=>(wk[d]||[]).forEach(s=>{ sessions++; const m=slotDurMin(s)||0; totalMin+=m; const k=s.type||'autre'; per[k]=per[k]||{n:0,min:0}; per[k].n++; per[k].min+=m; }));
+  if(!sessions){ el.innerHTML='<div class="empty">Aucune session planifiée cette semaine. <a onclick="location.href=\'plazma-schedule.html\'">Ouvrir le Planning →</a></div>'; return; }
+  let html=`<div class="wk-chips"><span class="wk-total"><b>${sessions}</b> session${sessions>1?'s':''}${totalMin?` · <b>${fmtDur(totalMin)}</b>`:''}</span>`;
+  html+=Object.keys(PTYPES).filter(k=>per[k]).map(k=>{ const p=per[k],t=PTYPES[k]; return `<span class="wk-chip" style="--wc:${t.c}"><span>${p.n}</span> ${t.l}${p.min?` · ${fmtDur(p.min)}`:''}</span>`; }).join('');
+  html+=`</div>`;
+  // Prochaine session
+  const nx=nextSession(wk);
+  html+=`<div class="wk-next">${nx?`Prochaine session : <b>${nx.day} ${nx.slot.start||''}</b> · ${(PTYPES[nx.slot.type]||PTYPES.autre).l}${nx.slot.note?` — ${esc(nx.slot.note)}`:''}`:'<span class="none">Plus de session à venir cette semaine.</span>'}</div>`;
+  el.innerHTML=html;
+}
+function nextSession(wk){
+  const mon=mondayOfCurrentWeek(), now=_now(); let best=null;
+  DAYS.forEach((day,di)=>(wk[day]||[]).forEach(s=>{
+    const hm=parseHM(s.start); if(hm==null) return;
+    const dt=new Date(mon); dt.setDate(mon.getDate()+di); dt.setHours(Math.floor(hm/60), hm%60, 0, 0);
+    if(dt>=now && (!best||dt<best.dt)) best={dt,day,slot:s};
+  }));
+  return best;
+}
+
+function renderResults(){
+  const el=document.getElementById('resultsBox');
+  if(agg.scrimsDenied && !state.officials.length){ el.innerHTML='<div class="empty">Accès aux CR de scrim requis pour le bilan.</div>'; return; }
+  const rows=allRows();
+  if(!rows.length){ el.innerHTML=`<div class="empty">Aucun résultat. Les scrims arrivent des <a onclick="location.href='plazma-scrim.html'">CR de scrim</a>, les officiels via « ＋ Officiel ».</div>`; return; }
+  const recent=rows.slice(0,10);
+  const forme=rows.slice(0,8);
+  let html=`<div class="forme"><span class="forme-lbl">Forme</span>${forme.slice().reverse().map(r=>`<span class="wl-dot" title="${esc(r.opp)} (${r.type})" style="background:${r.result==='W'?'var(--ok)':r.result==='L'?'var(--err)':'var(--muted)'}">${r.result==='W'?'V':r.result==='L'?'D':'N'}</span>`).join('')}</div>`;
+  html+=`<table class="mtable"><thead><tr><th>Date</th><th>Adversaire</th><th>Type</th><th>Score</th><th>Rés.</th></tr></thead><tbody>${
+    recent.map(r=>{
+      const clickable=r.type==='Officiel';
+      return `<tr ${clickable?`data-row onclick="openEditOffi('${r.id}')"`:''}>
+        <td style="color:var(--muted)">${r.date?new Date(r.date+'T12:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}):'—'}</td>
+        <td style="font-weight:600">${esc(r.opp)}</td>
+        <td><span class="mtype${r.type==='Officiel'?' offi':''}">${r.type}</span></td>
+        <td style="color:var(--dim)">${esc(r.score)}</td>
+        <td><span class="mres ${r.result}">${r.result==='W'?'V':r.result==='L'?'D':'N'}</span></td>
+      </tr>`;
+    }).join('')}</tbody></table>`;
+  el.innerHTML=html;
+}
+
+function renderOpp(){
+  const el=document.getElementById('oppBox');
+  if(agg.scoutDenied){ el.innerHTML='<div class="empty">Accès Scouting requis pour ce module.</div>'; return; }
+  if(agg.scoutLatest===null){ el.innerHTML='<div class="empty">Chargement…</div>'; return; }
+  const s=agg.scoutLatest;
+  if(!s || !(s.m_team||'').trim()){ el.innerHTML=`<div class="empty">Aucune fiche de scouting. <a onclick="location.href='plazma-scouting.html'">Créer une fiche →</a></div>`; return; }
+  const TH={low:{l:'Menace faible',c:'var(--ok)'}, med:{l:'Menace moyenne',c:'var(--warn)'}, high:{l:'Menace élevée',c:'var(--err)'}};
+  const th=TH[s.threatLevel];
+  el.innerHTML=`
+    <div class="opp-name">${esc(s.m_team)}</div>
+    <div class="opp-meta">
+      ${s.m_rank?`<span><b>Rang :</b> ${esc(s.m_rank)}</span>`:''}
+      ${s.m_tournoi?`<span><b>Échéance :</b> ${esc(s.m_tournoi)}</span>`:''}
+    </div>
+    ${th?`<div class="threat" style="color:${th.c};background:color-mix(in srgb,${th.c} 15%,transparent)">${th.l}</div>`:''}
+    <div style="margin-top:14px"><span class="plink" onclick="location.href='plazma-scouting.html'">Ouvrir la fiche complète →</span></div>`;
 }
 
 function renderRoster(){
@@ -327,7 +404,7 @@ function renderRoster(){
     const card=document.createElement('div'); card.className='pcard';
     card.innerHTML=`
       <div class="pc-strip" style="background:${p.color}"></div>
-      <div class="pc-head"><div class="pc-emo">${p.emoji}</div><div><div class="pc-name">${p.name}</div><div class="pc-role" style="color:${p.color}">${p.role}</div></div></div>
+      <div class="pc-head"><div class="pc-emo">${p.emoji}</div><div><div class="pc-name">${esc(p.name)}</div><div class="pc-role" style="color:${p.color}">${p.role}</div></div></div>
       <div class="pc-body">
         <div><div class="pc-lbl">Rang SoloQ</div>
           <select onchange="setRF('${p.id}','tier',this.value)">${Object.entries(TIER).map(([k,v])=>`<option value="${k}"${p.tier===k?' selected':''}>${v.fr}</option>`).join('')}</select></div>
@@ -347,50 +424,7 @@ function renderRoster(){
   });
 }
 function setRF(id,f,v){ const p=state.roster.find(x=>x.id===id); if(p)p[f]=v; }
-function saveRoster(){ render(); sync.save(); showToast('Rangs enregistrés ✓'); }
-
-function renderElo(){
-  const t=getEloTier(state.teamElo),tc=TIER[t.tier];
-  const wins=state.matches.filter(m=>m.result==='W').length, losses=state.matches.filter(m=>m.result==='L').length;
-  const wr=wins+losses>0?Math.round(wins/(wins+losses)*100):0;
-  const lastD=state.eloHistory.length>=2?state.eloHistory.at(-1)-state.eloHistory.at(-2):null;
-  const last10=[...state.matches].sort((a,b)=>b.date>a.date?1:-1).slice(0,10).reverse();
-  document.getElementById('eloBox').innerHTML=`
-    <div class="elo-num" style="color:${tc.color}">${state.teamElo}</div>
-    <div class="elo-tier" style="color:${tc.color};background:${tc.color}22">${t.label}</div>
-    <div class="elo-stats">
-      <div><div class="es-val" style="color:var(--ok)">${wins}</div><div class="es-lbl">Victoires</div></div>
-      <div><div class="es-val" style="color:var(--err)">${losses}</div><div class="es-lbl">Défaites</div></div>
-      <div><div class="es-val">${wr}%</div><div class="es-lbl">Win Rate</div></div>
-      <div><div class="es-val" style="color:${lastD==null?'var(--muted)':lastD>=0?'var(--ok)':'var(--err)'}">${lastD==null?'—':(lastD>=0?'+':'')+lastD}</div><div class="es-lbl">Dernier</div></div>
-    </div>
-    <div class="eyebrow" style="margin-bottom:6px">Courbe ELO · ${state.eloHistory.length-1} matchs</div>
-    <div class="chart">${drawChart(state.eloHistory)}</div>
-    ${last10.length?`<div class="wl-dots">${last10.map(m=>`<div class="wl-dot" title="${esc(m.opp)}" style="background:${m.result==='W'?'var(--ok)':m.result==='L'?'var(--err)':'var(--muted)'}"></div>`).join('')}</div>`:''}`;
-}
-
-function renderMatches(){
-  const types=['all',...new Set(state.matches.map(m=>m.type))];
-  const counts={}; state.matches.forEach(m=>counts[m.type]=(counts[m.type]||0)+1);
-  document.getElementById('mfilters').innerHTML=types.map(t=>`<button class="mfbtn${matchFilter===t?' active':''}" onclick="setFilter('${t}')">${t==='all'?`Tous (${state.matches.length})`:t+` (${counts[t]||0})`}</button>`).join('');
-  const filtered=matchFilter==='all'?state.matches:state.matches.filter(m=>m.type===matchFilter);
-  const sorted=[...filtered].sort((a,b)=>b.date>a.date?1:-1);
-  const list=document.getElementById('matchList');
-  if(!sorted.length){ list.innerHTML='<div class="empty">Aucun match. Clique sur ＋ Ajouter.</div>'; return; }
-  list.innerHTML=`<table class="mtable"><thead><tr><th>Date</th><th>Adversaire</th><th>Résultat</th><th>Type</th><th>Score</th><th>ΔElo</th></tr></thead><tbody>${
-    sorted.map(m=>{
-      const d=calcEloChange(state.teamElo,m.oppElo??state.defaultOppElo,m.result,state.kFactor);
-      const ds=m.result==='W'?`+${Math.abs(d)}`:m.result==='L'?`-${Math.abs(d)}`:'±0';
-      return `<tr data-row onclick="openEditMatch('${m.id}')">
-        <td style="color:var(--muted)">${m.date?new Date(m.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}):'—'}</td>
-        <td style="font-weight:600">${esc(m.opp)}</td>
-        <td><span class="mres ${m.result}">${m.result==='W'?'VICTOIRE':m.result==='L'?'DÉFAITE':'NUL'}</span></td>
-        <td><span class="mtype">${m.type}</span></td>
-        <td style="color:var(--dim)">${m.score||'—'}</td>
-        <td class="mono ${m.result==='W'?'up':m.result==='L'?'dn':'neu'}">${ds}</td>
-      </tr>`;
-    }).join('')}</tbody></table>`;
-}
+function saveRanks(){ render(); sync.save(); showToast('Rangs enregistrés ✓'); }
 
 function renderObjectives(){
   const list=document.getElementById('objList');
@@ -412,24 +446,20 @@ function renderObjectives(){
 }
 
 function renderSettingsForm(){
-  document.getElementById('p_baseElo').value=state.baseElo;
-  document.getElementById('p_kFactor').value=state.kFactor;
-  document.getElementById('p_defaultOppElo').value=state.defaultOppElo;
   document.getElementById('p_nextEvent').value=state.nextEvent||'';
   document.getElementById('p_nextEventDate').value=state.nextEventDate||'';
   document.getElementById('p_goal').value=state.goal||'';
   document.getElementById('rosterConfig').innerHTML=state.roster.map(p=>`
-    <div class="rcr"><div>${p.emoji}</div><div style="font-size:12px;color:var(--dim)">${p.name} <span style="color:${p.color};font-size:10px">${p.role}</span></div>
-    <input id="opgg_${p.id}" value="${p.opgg||''}" placeholder="PseudoTag-EUW"></div>`).join('');
+    <div class="rcr"><div>${p.emoji}</div><div style="font-size:12px;color:var(--dim)">${esc(p.name)} <span style="color:${p.color};font-size:10px">${p.role}</span></div>
+    <input id="opgg_${p.id}" value="${esc(p.opgg||'')}" placeholder="PseudoTag-EUW"></div>`).join('');
 }
 
-// ── SYNC ──
-function getState(){ return {teamElo:state.teamElo,baseElo:state.baseElo,kFactor:state.kFactor,defaultOppElo:state.defaultOppElo,
-  nextEvent:state.nextEvent,nextEventDate:state.nextEventDate,goal:state.goal,roster:state.roster,matches:state.matches,objectives:state.objectives,eloHistory:state.eloHistory}; }
+// ── SYNC (doc dashboard) ──
+function getState(){ return {nextEvent:state.nextEvent,nextEventDate:state.nextEventDate,goal:state.goal,roster:state.roster,objectives:state.objectives,officials:state.officials}; }
 function applyState(s){
   if(!s)return;
-  Object.assign(state,{teamElo:s.teamElo??1200,baseElo:s.baseElo??1200,kFactor:s.kFactor??32,defaultOppElo:s.defaultOppElo??1200,
-    nextEvent:s.nextEvent||'',nextEventDate:s.nextEventDate||'',goal:s.goal||'',matches:s.matches??[],objectives:s.objectives??[],eloHistory:s.eloHistory??[s.baseElo??1200]});
+  Object.assign(state,{nextEvent:s.nextEvent||'',nextEventDate:s.nextEventDate||'',goal:s.goal||'',
+    objectives:s.objectives??[], officials:s.officials??[]});
   if(s.roster?.length){ s.roster.forEach((sr,i)=>{ if(state.roster[i])Object.assign(state.roster[i],{opgg:sr.opgg||'',tier:sr.tier||'UNRANKED',rank:sr.rank||'',lp:sr.lp||0,wr:sr.wr??null}); }); }
 }
 const sync = PZ.sync({ docId:'dashboard', getState, applyState, onData:render });
@@ -440,49 +470,67 @@ PZ.onRoster(r => {
   render();
 });
 
-// ── MODALS ──
-function openAddMatch(){
+// ── Agrégation (Scrim CR · Scouting · Planning) ──
+async function loadAggregates(){
+  const db=PZ.db; if(!db){ agg.loaded=true; return; }
+  const can = s => !(PZ.auth && PZ.auth.can) || PZ.auth.can(s);
+  // Scrims (CR)
+  if(can('scrim')){
+    try{
+      let snap;
+      try{ snap=await db.collection('plazma-scrims').orderBy('_savedAt','desc').limit(100).get(); }
+      catch(e){ snap=await db.collection('plazma-scrims').get(); }
+      const arr=[]; snap.forEach(d=>arr.push({id:d.id,...d.data()})); agg.scrims=arr;
+    }catch(e){ console.error('scrims',e); agg.scrims=[]; }
+  } else { agg.scrimsDenied=true; agg.scrims=[]; }
+  // Scouting (dernière fiche)
+  if(can('scouting')){
+    try{
+      let snap;
+      try{ snap=await db.collection('plazma-scouting').orderBy('_savedAt','desc').limit(1).get(); }
+      catch(e){ snap=await db.collection('plazma-scouting').get(); }
+      let best=null; snap.forEach(d=>{ const x={id:d.id,...d.data()}; const t=x._savedAt&&x._savedAt.toMillis?x._savedAt.toMillis():0; if(!best||t>best._t) best=Object.assign(x,{_t:t}); });
+      agg.scoutLatest=best||false;   // false = chargé mais vide
+    }catch(e){ console.error('scouting',e); agg.scoutLatest=false; }
+  } else { agg.scoutDenied=true; agg.scoutLatest=false; }
+  // Planning (semaine courante)
+  if(can('planning')){
+    try{ const d=await db.collection(PZ.COLLECTION).doc('schedule-'+currentWeekValue()).get(); agg.week=(d.exists&&d.data().schedule)||{}; }
+    catch(e){ console.error('planning',e); agg.week={}; }
+  } else { agg.weekDenied=true; agg.week={}; }
+  agg.loaded=true; render();
+}
+
+// ── MODAL OFFICIEL ──
+function openAddOffi(){
   _editId=null;
-  ['mOpp','mScore','mPatch','mNote'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('mType').value='Scrim'; document.getElementById('mRes').value='W';
+  ['mOpp','mScore','mNote'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('mRes').value='W';
   document.getElementById('mDate').value=new Date().toISOString().split('T')[0];
-  document.getElementById('mDur').value=''; document.getElementById('mOppElo').value=state.defaultOppElo;
-  document.getElementById('mTitle').textContent='Ajouter un match';
+  document.getElementById('mTitle').textContent='Ajouter un match officiel';
   document.getElementById('mDel').style.display='none'; document.getElementById('mConf').textContent='Ajouter';
-  updateEloPrev(); document.getElementById('ovMatch').classList.add('open');
+  document.getElementById('ovMatch').classList.add('open');
   setTimeout(()=>document.getElementById('mOpp').focus(),50);
 }
-function openEditMatch(id){
-  const m=state.matches.find(x=>x.id===id); if(!m)return; _editId=id;
-  document.getElementById('mTitle').textContent='Modifier le match';
-  document.getElementById('mOpp').value=m.opp; document.getElementById('mType').value=m.type;
-  document.getElementById('mRes').value=m.result; document.getElementById('mScore').value=m.score||'';
-  document.getElementById('mDate').value=m.date||''; document.getElementById('mPatch').value=m.patch||'';
-  document.getElementById('mDur').value=m.duration||''; document.getElementById('mOppElo').value=m.oppElo??state.defaultOppElo;
+function openEditOffi(id){
+  const m=state.officials.find(x=>x.id===id); if(!m)return; _editId=id;
+  document.getElementById('mTitle').textContent='Modifier le match officiel';
+  document.getElementById('mOpp').value=m.opp||''; document.getElementById('mRes').value=m.result||'W';
+  document.getElementById('mScore').value=m.score||''; document.getElementById('mDate').value=m.date||'';
   document.getElementById('mNote').value=m.note||'';
   document.getElementById('mDel').style.display='inline-flex'; document.getElementById('mConf').textContent='Enregistrer';
-  updateEloPrev(); document.getElementById('ovMatch').classList.add('open');
+  document.getElementById('ovMatch').classList.add('open');
 }
-function updateEloPrev(){
-  const res=document.getElementById('mRes').value;
-  const oe=parseInt(document.getElementById('mOppElo').value)||state.defaultOppElo;
-  const d=calcEloChange(state.teamElo,oe,res,state.kFactor);
-  const col=d>0?'var(--ok)':d<0?'var(--err)':'var(--muted)';
-  document.getElementById('eloPrev').innerHTML=`ELO ${state.teamElo} → <strong style="color:${col}">${state.teamElo+d}</strong> (${d>0?'+':''}${d})`;
-}
-document.getElementById('mRes').addEventListener('change',updateEloPrev);
-document.getElementById('mOppElo').addEventListener('input',updateEloPrev);
 document.getElementById('mConf').addEventListener('click',()=>{
   const opp=document.getElementById('mOpp').value.trim(); if(!opp){showToast("L'adversaire est requis");return;}
-  const data={opp,type:document.getElementById('mType').value,result:document.getElementById('mRes').value,
-    score:document.getElementById('mScore').value.trim(),date:document.getElementById('mDate').value,
-    patch:document.getElementById('mPatch').value.trim(),duration:parseInt(document.getElementById('mDur').value)||null,
-    oppElo:parseInt(document.getElementById('mOppElo').value)||state.defaultOppElo,note:document.getElementById('mNote').value.trim()};
-  if(_editId)Object.assign(state.matches.find(m=>m.id===_editId),data); else state.matches.push({id:uid(),...data});
+  const data={opp,result:document.getElementById('mRes').value,score:document.getElementById('mScore').value.trim(),
+    date:document.getElementById('mDate').value,note:document.getElementById('mNote').value.trim()};
+  if(_editId)Object.assign(state.officials.find(m=>m.id===_editId),data); else state.officials.push({id:uid(),...data});
   closeModals(); render(); sync.save();
 });
-function deleteMatch(){ if(!confirm('Supprimer ce match ?'))return; state.matches=state.matches.filter(m=>m.id!==_editId); closeModals(); render(); sync.save(); }
+function deleteOffi(){ if(!confirm('Supprimer ce match officiel ?'))return; state.officials=state.officials.filter(m=>m.id!==_editId); closeModals(); render(); sync.save(); }
 
+// ── MODAL OBJECTIF ──
 function openAddObj(){
   _editId=null;
   document.getElementById('oTitle').textContent='Ajouter un objectif';
@@ -509,39 +557,36 @@ document.getElementById('oConf').addEventListener('click',()=>{
 function deleteObj(){ if(!confirm('Supprimer cet objectif ?'))return; state.objectives=state.objectives.filter(o=>o.id!==_editId); closeModals(); render(); sync.save(); }
 
 function saveSettings(){
-  state.baseElo=parseInt(document.getElementById('p_baseElo').value)||1200;
-  state.kFactor=parseInt(document.getElementById('p_kFactor').value)||32;
-  state.defaultOppElo=parseInt(document.getElementById('p_defaultOppElo').value)||1200;
   state.nextEvent=document.getElementById('p_nextEvent').value.trim();
   state.nextEventDate=document.getElementById('p_nextEventDate').value;
   state.goal=document.getElementById('p_goal').value.trim();
-  state.roster.forEach(p=>{ p.opgg=document.getElementById('opgg_'+p.id)?.value.trim()||''; });
+  state.roster.forEach(p=>{ const e=document.getElementById('opgg_'+p.id); p.opgg=e?e.value.trim():''; });
   render(); sync.save(); showToast('Paramètres enregistrés ✓');
 }
 
 // ── Toolbar ──
+document.getElementById('btnRefresh').addEventListener('click',()=>{ agg={scrims:null,scrimsDenied:false,scoutLatest:null,scoutDenied:false,week:null,weekDenied:false,loaded:false}; render(); loadAggregates(); showToast('Données actualisées'); });
 document.getElementById('btnBackup').addEventListener('click',()=>PZ.backup(getState(),'archi-dashboard'));
 document.getElementById('btnImport').addEventListener('click',()=>PZ.importFile(d=>{applyState(d);render();sync.save();showToast('Backup importé ✓');}));
 document.getElementById('btnReset').addEventListener('click',()=>{
-  if(!confirm('Réinitialiser le dashboard ?'))return;
-  state.matches=[]; state.objectives=[]; state.eloHistory=[state.baseElo];
+  if(!confirm('Réinitialiser les données du dashboard (officiels, objectifs, rangs) ?'))return;
+  state.officials=[]; state.objectives=[];
   state.roster.forEach(p=>Object.assign(p,{tier:'UNRANKED',rank:'',lp:0,wr:null}));
   render(); sync.save(); showToast('Réinitialisé');
 });
 
 // ── Utils ──
 let _uidC=0; function uid(){ return Date.now().toString(36)+(++_uidC).toString(36); }
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function closeModals(){ document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('open')); }
-function setFilter(f){ matchFilter=f; renderMatches(); }
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2400); }
 document.querySelectorAll('.overlay').forEach(ov=>ov.addEventListener('click',e=>{ if(e.target===ov)closeModals(); }));
 document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeModals(); });
 
-const _now=new Date();
-function gwn(d){ const dt=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); const day=dt.getUTCDay()||7; dt.setUTCDate(dt.getUTCDate()+4-day); const y1=new Date(Date.UTC(dt.getUTCFullYear(),0,1)); return Math.ceil((((dt-y1)/86400000)+1)/7); }
-document.getElementById('dateSub').textContent='Semaine '+gwn(_now)+' · '+_now.toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+const _d=new Date();
+document.getElementById('dateSub').textContent='Semaine '+getWeekNum(_d)+' · '+_d.toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
 render();
+if(PZ.auth && PZ.auth.ready) PZ.auth.ready.then(loadAggregates); else loadAggregates();
 </script>
 </body>
 </html>
