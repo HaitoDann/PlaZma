@@ -191,7 +191,19 @@ const ERR_CATS = ['Positionnement','Objectif manqué','Rotation','Communication'
 
 let errors = {g1:[],g2:[],g3:[],g4:[],g5:[]};
 let _errId = 0, currentDocId = null, _unsub = null, _saveT = null;
+let lastSavedSig = null, suppressUntil = 0;   // garde anti-écho Firestore
 const uid = () => 'e' + (++_errId);
+
+// Signature du contenu, INSENSIBLE à l'ordre des clés (Firestore peut réordonner)
+// et sans _savedAt : permet de reconnaître notre propre écho vs un vrai changement distant.
+function sig(o){
+  const norm = v => {
+    if(Array.isArray(v)) return v.map(norm);
+    if(v && typeof v==='object'){ const r={}; Object.keys(v).sort().forEach(k=>{ if(k!=='_savedAt') r[k]=norm(v[k]); }); return r; }
+    return v;
+  };
+  return JSON.stringify(norm(o));
+}
 const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const val = id => { const e=document.getElementById(id); return e?e.value:''; };
 const set = (id,v) => { const e=document.getElementById(id); if(e) e.value=v||''; };
@@ -300,7 +312,9 @@ function save(){
   if(!db){ PZ.status('error','Firebase indisponible'); return; }
   if(!currentDocId) currentDocId=newDocId();
   PZ.status('syncing','Sauvegarde…');
-  const s=getState(); s._savedAt=firebase.firestore.FieldValue.serverTimestamp();
+  const s=getState();
+  lastSavedSig=sig(s); suppressUntil=Date.now()+3000;   // on ignorera l'écho de cette écriture
+  s._savedAt=firebase.firestore.FieldValue.serverTimestamp();
   db.collection(SCRIMS_COL).doc(currentDocId).set(s)
     .then(()=>{ PZ.status('connected','Synchronisé',PZ.nowTime()); updateChip(); })
     .catch(e=>{ console.error(e); PZ.status('error','Erreur Firebase'); });
@@ -309,12 +323,16 @@ function queueSave(){ clearTimeout(_saveT); _saveT=setTimeout(save,900); }
 function startSync(docId){
   if(!db){ PZ.status('error','Firebase indisponible'); PZ.loadingDone(); return; }
   if(_unsub){ _unsub(); _unsub=null; }
-  currentDocId=docId; PZ.status('syncing','Connexion…');
+  currentDocId=docId; PZ.status('syncing','Connexion…'); lastSavedSig=null; suppressUntil=0;
   _unsub=db.collection(SCRIMS_COL).doc(docId).onSnapshot(doc=>{
-    if(doc.metadata.hasPendingWrites) return;
-    if(doc.exists){ applyState(doc.data()); PZ.status('connected','Synchronisé',PZ.nowTime()); }
-    else { PZ.status('connected','Nouveau scrim',''); }
-    updateChip(); PZ.loadingDone();
+    if(doc.metadata.hasPendingWrites) return;            // écriture optimiste locale
+    if(!doc.exists){ PZ.status('connected','Nouveau scrim',''); updateChip(); PZ.loadingDone(); return; }
+    const incoming=sig(doc.data());
+    // On ne reconstruit le formulaire que sur un VRAI changement distant,
+    // jamais sur l'écho de nos propres sauvegardes (sinon le curseur saute).
+    const isEcho = incoming===lastSavedSig || Date.now()<suppressUntil;
+    if(isEcho || incoming===sig(getState())){ PZ.status('connected','Synchronisé',PZ.nowTime()); updateChip(); PZ.loadingDone(); return; }
+    applyState(doc.data()); PZ.status('connected','Synchronisé',PZ.nowTime()); updateChip(); PZ.loadingDone();
   }, err=>{ console.error(err); PZ.status('error','Erreur connexion'); PZ.loadingDone(); });
 }
 function blankForm(){
