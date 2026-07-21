@@ -190,7 +190,8 @@
     { key: 'team',         href: 'plazma-team.html',        label: 'Équipe',       section: 'team' },
     { key: 'dashboard',    href: 'plazma-dashboard.html',   label: 'Dashboard',    section: 'dashboard' },
     { key: 'coach',        href: 'plazma-coach.html',       label: 'Coach',        section: 'coach' },
-    { key: 'satisfaction', href: 'plazma-satisfaction.html',label: 'Satisfaction', section: 'satisfaction' }
+    { key: 'satisfaction', href: 'plazma-satisfaction.html',label: 'Satisfaction', section: 'satisfaction' },
+    { key: 'satisfaction-coach', href: 'plazma-satisfaction-coach.html', label: 'Satisf. Coach', section: 'satisfaction' }
   ];
 
   let _navActive = null, _navMount;

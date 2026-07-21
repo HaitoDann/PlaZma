@@ -80,6 +80,13 @@ service cloud.firestore {
       allow update: if false;
     }
 
+    // ---- Satisfaction Head Coach (même modèle : soumission publique) ----
+    match /plazma-satisfaction-coach/{id} {
+      allow create: if true;
+      allow read, delete: if can('satisfaction');
+      allow update: if false;
+    }
+
     // Tout le reste est refusé par défaut.
   }
 }
