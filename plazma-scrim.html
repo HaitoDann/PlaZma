@@ -110,6 +110,7 @@
     <span class="sync-pill"><span class="sync-dot offline" id="syncDot"></span><span id="syncText">En attente…</span><span class="sync-time" id="syncTime"></span></span>
     <button class="btn btn-sm" onclick="newSession()">＋ Nouveau</button>
     <button class="btn btn-sm" onclick="openHistory()">Historique <span id="histCount" class="muted"></span></button>
+    <button class="btn btn-sm btn-primary" onclick="publishDiscord()">📢 Discord</button>
     <button class="btn btn-sm" id="exportBtn">⬇ PNG</button>
     <button class="btn btn-sm" onclick="importBackup()">Import</button>
     <button class="btn btn-sm btn-danger" onclick="resetCurrentSession()">Vider</button>
@@ -222,7 +223,7 @@ function buildGames(){
       </div>
       <div class="errs">
         <div class="errs-head"><span class="lbl">Erreurs — Game ${g}</span>
-          <button class="btn btn-sm btn-danger" onclick="addError('g${g}')">+ Erreur</button></div>
+          <button class="btn btn-sm btn-danger" data-noexport onclick="addError('g${g}')">+ Erreur</button></div>
         <div id="errlist_g${g}"><div class="no-err" id="errEmpty_g${g}">Aucune erreur.</div></div>
       </div>`;
     host.appendChild(b);
@@ -240,7 +241,7 @@ function addError(gk, data){
     <input id="errt_${err.id}" type="text" value="${esc(err.timer)}" placeholder="00:00" oninput="updErr('${gk}','${err.id}','timer',this.value)">
     <select id="errc_${err.id}" onchange="updErr('${gk}','${err.id}','cat',this.value)">${ERR_CATS.map(c=>`<option${c===err.cat?' selected':''}>${c}</option>`).join('')}</select>
     <input id="errd_${err.id}" type="text" value="${esc(err.desc)}" placeholder="Décris l'erreur…" oninput="updErr('${gk}','${err.id}','desc',this.value)">
-    <button class="err-del" onclick="removeError('${gk}','${err.id}')">✕</button>`;
+    <button class="err-del" data-noexport onclick="removeError('${gk}','${err.id}')">✕</button>`;
   list.appendChild(row);
 }
 function updErr(gk,id,f,v){ const e=errors[gk].find(x=>x.id===id); if(e){ e[f]=v; queueSave(); } }
@@ -403,6 +404,38 @@ document.getElementById('capture').addEventListener('input', e=>{
 function importBackup(){ PZ.importFile(d=>{ applyState(d); save(); }); }
 document.getElementById('exportBtn').addEventListener('click',()=>PZ.exportPNG(document.getElementById('capture'),'archi-scrim'));
 document.getElementById('footDate').textContent='Mise à jour le '+new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+
+// ── Publication Discord (embed écrit) ──
+function buildScrimEmbed(s){
+  const trunc=(t,n)=>{ t=String(t||'').trim(); return t.length>n? t.slice(0,n-1)+'…':t; };
+  const adv=(s.m_adv||'Adversaire').trim();
+  const a=+s.s_plazma, b=+s.s_adv;
+  const color=(isFinite(a)&&isFinite(b)&&a!==b)?(a>b?0x22c55e:0xef4444):0x94a3b8;
+  const dateStr=s.m_date?new Date(s.m_date+'T12:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}):'—';
+  const fields=[
+    {name:'📅 Date',  value:dateStr, inline:true},
+    {name:'🎯 Score', value:`${s.s_plazma||0} – ${s.s_adv||0}`, inline:true},
+    {name:'⭐ Bilan', value:(s.f_note&&s.f_note!=='—')?`${s.f_note}/10`:'—', inline:true},
+  ];
+  const games=[]; for(let g=1;g<=5;g++){ const r=s['g'+g+'_result']; if(r) games.push(`G${g} ${r==='V'?'✅':'❌'}`); }
+  if(games.length) fields.push({name:'🎮 Games', value:games.join('   ·   ')});
+  let et='';
+  for(let g=1;g<=5;g++){ const arr=(s.errors&&s.errors['g'+g])||[]; if(arr.length){
+    et+=`**Game ${g}**\n`+arr.map(e=>`• \`${e.timer||'--:--'}\` **${e.cat}**${e.desc?' — '+e.desc:''}`).join('\n')+'\n'; } }
+  if(et.trim()) fields.push({name:'❌ Erreurs relevées', value:trunc(et,1024)});
+  if((s.t_bien||'').trim())     fields.push({name:'✅ Ce qui a marché', value:trunc(s.t_bien,1024)});
+  if((s.t_corriger||'').trim()) fields.push({name:'🔧 À corriger', value:trunc(s.t_corriger,1024)});
+  const pl=ROSTER.map(p=>{ const r=(s['rem_'+p.id]||'').trim(); return r?`**${p.name}** — ${r}`:''; }).filter(Boolean).join('\n');
+  if(pl) fields.push({name:'👤 Remarques individuelles', value:trunc(pl,1024)});
+  if((s.f_comment||'').trim()) fields.push({name:'📝 Appréciation générale', value:trunc(s.f_comment,1024)});
+  return { title:trunc(`📋 CR Scrim — PlaZma vs ${adv}`,256), color, fields,
+    footer:{text:'ARCHI · PlaZma Esport'}, timestamp:new Date().toISOString() };
+}
+function publishDiscord(){
+  const s=getState();
+  if(!(s.m_adv||'').trim() && !confirm('Aucun adversaire renseigné. Publier quand même ?')) return;
+  PZ.discord.publish({ channel:'scrim', embed:buildScrimEmbed(s) });
+}
 
 // Init
 buildGames(); buildPlayers();

@@ -22,9 +22,11 @@ Remplacement du mot de passe unique (`plazma2026`) par de vrais comptes.
       ou un petit backend (Admin SDK). Le retrait d'accès est déjà géré côté app.
 
 ## 🟢 Priorité 2 — Gros gains fonctionnels
-- [ ] **Intégration Discord (webhook)** : bouton « Publier sur Discord » sur le
-      Planning (programme de la semaine), les CR de scrim (résultat + axes) et le
-      Scouting (synthèse adverse). Simple POST, compatible 100 % statique.
+- [~] **Intégration Discord (webhook)** : module partagé `PZ.discord` (config
+      multi-salons dans `plazma/config`, aperçu + confirmation avant envoi).
+      - [x] CR de scrim → embed écrit (résultat, erreurs time-codées, axes).
+      - [ ] Planning (programme de la semaine) et Scouting (synthèse adverse) :
+            réutiliser `PZ.discord.publish({channel, embed})`.
 - [ ] **Dashboard = centre de commande** : agréger les autres pages (prochains
       créneaux du Planning, dernier CR de scrim, dernière fiche de scouting,
       prochain match).

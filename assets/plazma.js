@@ -300,11 +300,19 @@
     if (!window.html2canvas) { alert('Export indisponible'); return; }
     const hidden = [...document.querySelectorAll('[data-noexport]')];
     hidden.forEach(e => (e.style.visibility = 'hidden'));
+    // Déplie les zones de texte à la hauteur de leur contenu (sinon html2canvas
+    // rogne tout ce qui dépasse la boîte visible).
+    const grown = [...el.querySelectorAll('textarea')].map(t => {
+      const h = t.style.height, ov = t.style.overflow;
+      t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; t.style.overflow = 'hidden';
+      return { t, h, ov };
+    });
     await new Promise(r => setTimeout(r, 60));
     const canvas = await html2canvas(el, {
       scale: 2, backgroundColor: getComputedStyle(document.body).backgroundColor,
       useCORS: true, logging: false
     });
+    grown.forEach(({ t, h, ov }) => { t.style.height = h; t.style.overflow = ov; });
     hidden.forEach(e => (e.style.visibility = ''));
     const a = document.createElement('a');
     a.download = (filename || 'archi') + '.png';
@@ -382,12 +390,104 @@
     setTimeout(() => { const f = ov.querySelector('#pz_cp_cur'); if (f) f.focus(); }, 30);
   }
 
+  // ---- Intégration Discord (webhooks, 100 % statique) ----
+  // Config partagée : plazma/config → { discordWebhooks: { scrim, planning, scouting, … } }.
+  const escHtml = s => String(s == null ? '' : s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  const isWebhookUrl = u => /^https:\/\/(discord|discordapp)\.com\/api\/webhooks\//.test((u || '').trim());
+  let _discordCfg = null;
+  function discordEnsureCfg() {
+    if (_discordCfg) return Promise.resolve(_discordCfg);
+    if (!db) { _discordCfg = {}; return Promise.resolve(_discordCfg); }
+    return db.collection(COLLECTION).doc('config').get()
+      .then(d => { _discordCfg = (d.exists && d.data().discordWebhooks) || {}; return _discordCfg; })
+      .catch(e => { console.error('Discord config', e); _discordCfg = {}; return _discordCfg; });
+  }
+  const discordWebhook = ch => (_discordCfg && _discordCfg[ch]) || '';
+  function discordSetWebhook(ch, url) {
+    if (!db) return Promise.reject(new Error('Firebase indisponible'));
+    return db.collection(COLLECTION).doc('config').set({ discordWebhooks: { [ch]: url } }, { merge: true })
+      .then(() => { _discordCfg = _discordCfg || {}; _discordCfg[ch] = url; });
+  }
+  async function discordSend(url, payload) {
+    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (!res.ok) { let t = ''; try { t = await res.text(); } catch (e) {} throw new Error('Discord ' + res.status + (t ? ' · ' + t.slice(0, 140) : '')); }
+  }
+
+  const _dcInp = 'width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--line,#2a2f3a);background:var(--surface-2,#12151d);color:var(--text,#e7e9ee);font-size:13px;box-sizing:border-box;font-family:inherit';
+  const _dcGhost = 'padding:8px 14px;border-radius:9px;border:1px solid var(--line,#2a2f3a);background:transparent;color:var(--dim,#9aa0ad);font-size:13px;cursor:pointer;font-family:inherit';
+  const _dcPrimary = 'padding:8px 14px;border-radius:9px;border:0;background:var(--accent,#6ea8fe);color:#06101f;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit';
+
+  /** Ouvre l'aperçu d'un embed Discord et le publie après confirmation. */
+  function discordPublish(opts) {
+    opts = opts || {}; const channel = opts.channel || 'scrim'; const embed = opts.embed || {};
+    const ov = document.createElement('div');
+    ov.setAttribute('style', 'position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);padding:20px;font-family:var(--font,system-ui),sans-serif');
+    document.body.appendChild(ov);
+    const close = () => ov.remove();
+    ov.addEventListener('click', e => { if (e.target === ov) close(); });
+    const box = inner => { ov.innerHTML = '<div style="background:var(--card,#171a22);color:var(--text,#e7e9ee);border:1px solid var(--line,#2a2f3a);border-radius:14px;padding:22px;width:540px;max-width:100%;max-height:86vh;overflow:auto">' + inner + '</div>'; };
+    const H = t => '<h3 style="font-family:var(--font-display,inherit);margin:0 0 4px;font-size:17px">' + t + '</h3>';
+
+    function renderPreview() {
+      const c = '#' + ((embed.color || 0x5865F2) & 0xFFFFFF).toString(16).padStart(6, '0');
+      const fields = (embed.fields || []).map(f =>
+        `<div style="margin-top:11px"><div style="font-size:12px;font-weight:700;color:var(--text,#e7e9ee)">${escHtml(f.name)}</div>` +
+        `<div style="font-size:12.5px;color:var(--dim,#9aa0ad);white-space:pre-wrap;margin-top:2px">${escHtml(f.value)}</div></div>`).join('');
+      box(H('Publier sur Discord') +
+        `<div style="font-size:12px;color:var(--muted,#8b90a0);margin-bottom:14px">Aperçu du message — salon « ${escHtml(channel)} »</div>` +
+        `<div style="border-left:4px solid ${c};background:var(--surface-2,#12151d);border-radius:8px;padding:13px 15px">` +
+        `<div style="font-weight:700;font-size:14.5px">${escHtml(embed.title || '')}</div>${fields}</div>` +
+        `<div id="pzdc_msg" style="font-size:12.5px;min-height:16px;margin-top:12px;color:var(--err,#f38b8b)"></div>` +
+        `<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">` +
+        `<button id="pzdc_cancel" style="${_dcGhost}">Annuler</button>` +
+        `<button id="pzdc_send" style="${_dcPrimary}">📢 Publier</button></div>`);
+      ov.querySelector('#pzdc_cancel').onclick = close;
+      ov.querySelector('#pzdc_send').onclick = async () => {
+        const url = discordWebhook(channel);
+        const btn = ov.querySelector('#pzdc_send'); btn.disabled = true; btn.textContent = 'Envoi…';
+        try {
+          await discordSend(url, { username: 'ARCHI', embeds: [embed] });
+          box('<div style="text-align:center;padding:12px 0"><div style="font-size:38px;margin-bottom:8px">✅</div><div style="margin-bottom:18px">Publié sur Discord.</div><button id="pzdc_done" style="' + _dcPrimary + '">Fermer</button></div>');
+          ov.querySelector('#pzdc_done').onclick = close;
+        } catch (e) {
+          console.error(e);
+          const m = ov.querySelector('#pzdc_msg'); if (m) m.textContent = 'Échec de la publication : ' + e.message;
+          btn.disabled = false; btn.textContent = '📢 Publier';
+        }
+      };
+    }
+    function renderConfig(canEdit) {
+      if (!canEdit) {
+        box(H('Publier sur Discord') +
+          `<p style="font-size:13px;color:var(--muted,#8b90a0);line-height:1.5">Aucun salon Discord n'est encore configuré pour « ${escHtml(channel)} ». Demande à un administrateur d'ajouter l'URL du webhook.</p>` +
+          `<div style="text-align:right;margin-top:12px"><button id="pzdc_cancel" style="${_dcGhost}">Fermer</button></div>`);
+        ov.querySelector('#pzdc_cancel').onclick = close; return;
+      }
+      box(H('Configurer le salon Discord') +
+        `<p style="font-size:12.5px;color:var(--muted,#8b90a0);line-height:1.5;margin-bottom:12px">Salon « ${escHtml(channel)} ». Dans Discord : <b>Paramètres du salon → Intégrations → Webhooks → Nouveau webhook → Copier l'URL</b>.</p>` +
+        `<input id="pzdc_url" placeholder="https://discord.com/api/webhooks/…" style="${_dcInp}">` +
+        `<div id="pzdc_msg" style="font-size:12.5px;min-height:16px;margin-top:9px;color:var(--err,#f38b8b)"></div>` +
+        `<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px"><button id="pzdc_cancel" style="${_dcGhost}">Annuler</button><button id="pzdc_save" style="${_dcPrimary}">Enregistrer</button></div>`);
+      ov.querySelector('#pzdc_cancel').onclick = close;
+      ov.querySelector('#pzdc_save').onclick = async () => {
+        const url = ov.querySelector('#pzdc_url').value.trim();
+        const msg = ov.querySelector('#pzdc_msg');
+        if (!isWebhookUrl(url)) { msg.textContent = 'URL de webhook Discord invalide.'; return; }
+        try { await discordSetWebhook(channel, url); renderPreview(); }
+        catch (e) { msg.textContent = 'Enregistrement impossible : ' + e.message; }
+      };
+    }
+    box('<div style="text-align:center;color:var(--muted,#8b90a0);padding:24px">Chargement…</div>');
+    discordEnsureCfg().then(() => { discordWebhook(channel) ? renderPreview() : renderConfig(isAdmin()); });
+  }
+  const discord = { publish: discordPublish, ensureConfig: discordEnsureCfg, webhook: discordWebhook, setWebhook: discordSetWebhook };
+
   // ---- API publique ----
   window.PZ = {
     db, COLLECTION, NAV, FIREBASE_CONFIG,
     mountNav, sync, status, nowTime, loadingDone,
     exportPNG, backup, importFile, logout, changePassword,
-    USER_DOMAIN,
+    USER_DOMAIN, discord,
     // Roster central
     getRoster, getCoach, player, onRoster, setPlayer, saveRoster,
     ROSTER_SLOTS, COACH_SLOT,

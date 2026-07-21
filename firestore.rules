@@ -43,14 +43,16 @@ service cloud.firestore {
       // de satisfaction, public, en a besoin. Rien de sensible ici.
       allow read: if docId == 'roster'
         || (signedIn() && (
-              (docId == 'team-identity'    && can('team'))
+              docId == 'config'
+           || (docId == 'team-identity'    && can('team'))
            || (docId == 'dashboard'        && can('dashboard'))
            || (docId == 'coach-evaluation' && can('coach'))
            || (docId.matches('schedule-.*') && can('planning'))
            || (docId.matches('perf-.*')     && can('perf'))
         ));
       allow write: if signedIn() && (
-              (docId == 'roster'           && can('team'))
+              (docId == 'config'           && isAdmin())
+           || (docId == 'roster'           && can('team'))
            || (docId == 'team-identity'    && can('team'))
            || (docId == 'dashboard'        && can('dashboard'))
            || (docId == 'coach-evaluation' && can('coach'))
