@@ -71,7 +71,38 @@
   .legend{display:flex;flex-wrap:wrap;gap:7px;padding:14px 22px;border-top:1px solid var(--border)}
   .leg{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:5px}
 
+  /* Bascule de vue */
+  .tb-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .view-switch{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:2px}
+  .vsb{background:none;border:0;color:var(--muted);font-family:var(--font);font-size:12.5px;font-weight:600;
+    padding:6px 13px;border-radius:7px;cursor:pointer}
+  .vsb.active{background:var(--accent-soft);color:var(--accent)}
+  .month-nav{display:flex;align-items:center;gap:6px}
+  .month-nav #monthLabel{min-width:150px;text-align:center;font-family:var(--font-display);font-weight:600;font-size:15px}
+
+  /* Grille calendrier (mois) */
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+  .cal-dow{padding:9px 6px;text-align:center;font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted);font-weight:600;border-bottom:1px solid var(--border)}
+  .cal-cell{min-height:104px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);
+    padding:6px 6px 8px;display:flex;flex-direction:column;gap:3px;cursor:pointer;transition:background .12s}
+  .cal-cell:nth-child(7n){border-right:none}
+  .cal-cell:hover{background:var(--surface-2)}
+  .cal-cell.out{background:var(--surface-2);opacity:.45}
+  .cal-cell.today{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+  .cal-daynum{font-size:12px;font-weight:700;color:var(--dim);margin-bottom:1px}
+  .cal-cell.today .cal-daynum{color:var(--accent)}
+  .cal-ev{font-size:10.5px;font-weight:600;line-height:1.3;padding:2px 6px;border-radius:5px;cursor:pointer;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ec);
+    background:color-mix(in srgb,var(--ec) 16%,transparent)}
+  .cal-ev:hover{filter:brightness(1.15)}
+  .cal-more{font-size:10px;color:var(--muted);padding-left:2px}
+  .cal-legend{display:flex;flex-wrap:wrap;gap:14px;padding:14px 22px;border-top:1px solid var(--border);font-size:11.5px;color:var(--dim)}
+  .cal-legend .lg{display:inline-flex;align-items:center;gap:7px}
+  .cal-legend .sw{width:11px;height:11px;border-radius:3px}
+
   @media(max-width:1000px){.grid{grid-template-columns:1fr}.day{border-right:none;border-bottom:1px solid var(--border);min-height:auto}}
+  @media(max-width:760px){.cal-cell{min-height:74px;padding:4px}.cal-ev{font-size:9px;padding:1px 4px}.cal-dow{font-size:9px}}
 </style>
 </head>
 <body>
@@ -81,11 +112,23 @@
 
 <div class="content">
   <div class="toolbar">
-    <div class="week-nav">
-      <button class="btn btn-wk" id="prevWk" title="Semaine précédente">‹</button>
-      <input type="week" id="weekPicker">
-      <button class="btn btn-wk" id="nextWk" title="Semaine suivante">›</button>
-      <button class="btn btn-sm" id="todayBtn">Aujourd'hui</button>
+    <div class="tb-left">
+      <div class="view-switch" data-noexport>
+        <button class="vsb active" id="vwWeek">Semaine</button>
+        <button class="vsb" id="vwMonth">Calendrier</button>
+      </div>
+      <div class="week-nav" id="weekNav">
+        <button class="btn btn-wk" id="prevWk" title="Semaine précédente">‹</button>
+        <input type="week" id="weekPicker">
+        <button class="btn btn-wk" id="nextWk" title="Semaine suivante">›</button>
+        <button class="btn btn-sm" id="todayBtn">Aujourd'hui</button>
+      </div>
+      <div class="month-nav" id="monthNav" style="display:none">
+        <button class="btn btn-wk" id="prevMo" title="Mois précédent">‹</button>
+        <span id="monthLabel">—</span>
+        <button class="btn btn-wk" id="nextMo" title="Mois suivant">›</button>
+        <button class="btn btn-sm" id="todayMo">Aujourd'hui</button>
+      </div>
     </div>
     <div class="actions">
       <span class="sync-pill">
@@ -121,6 +164,21 @@
     <div id="summary"></div>
     <div class="grid" id="grid"></div>
     <div class="legend" id="legend"></div>
+  </div>
+
+  <div class="card" id="viewMonth" style="display:none">
+    <div class="card-head">
+      <div><div class="eyebrow">PlaZma Esport · Calendrier</div>
+        <div class="card-title">Historique &amp; échéances</div></div>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-legend">
+      <span class="lg"><span class="sw" style="background:var(--ok)"></span> Scrim gagné</span>
+      <span class="lg"><span class="sw" style="background:var(--err)"></span> Scrim perdu</span>
+      <span class="lg"><span class="sw" style="background:var(--warn)"></span> Échéance objectif</span>
+      <span class="lg"><span class="sw" style="background:var(--accent)"></span> Événement</span>
+      <span class="lg"><span class="sw" style="background:var(--mid)"></span> Session planifiée</span>
+    </div>
   </div>
 </div>
 
@@ -375,6 +433,120 @@ document.getElementById('exportBtn').addEventListener('click', () => PZ.exportPN
 document.getElementById('backupBtn').addEventListener('click', () => PZ.backup({schedule}, 'archi-planning-'+picker.value));
 document.getElementById('importBtn').addEventListener('click', () => PZ.importFile(d => { schedule=(d&&d.schedule)||{}; renderGrid(); sync.save(); }));
 document.getElementById('resetBtn').addEventListener('click', () => sync.reset('Effacer le planning de cette semaine ?'));
+
+// ═══════════════ Vue calendrier (mois) ═══════════════
+const calGrid = document.getElementById('calGrid');
+let view = 'week';
+let monthCursor = (() => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), 1); })();
+const calCache = { scrims:null, dashboard:null, weeks:{} };
+const pad2 = n => String(n).padStart(2,'0');
+const fmtISO = d => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+const canSec = s => !(PZ.auth && PZ.auth.can) || PZ.auth.can(s);
+
+// Valeur de semaine ISO (identique au format <input type=week>)
+function isoWeekValue(date){
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const day = d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-day);
+  const ys = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  const wk = Math.ceil((((d-ys)/86400000)+1)/7);
+  return `${d.getUTCFullYear()}-W${pad2(wk)}`;
+}
+// Lundi (UTC) d'une semaine ISO donnée
+function mondayOfIsoWeek(y,w){
+  const s = new Date(Date.UTC(y,0,1+(w-1)*7));
+  const dow = s.getUTCDay()||7;
+  s.setUTCDate(s.getUTCDate()-(dow-1)+(dow<=4?0:7));
+  return s;
+}
+// 42 cases (6 semaines) démarrant au lundi ≤ 1er du mois
+function monthCells(cursor){
+  const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+  const fd = first.getDay()||7;
+  const start = new Date(first); start.setDate(1-(fd-1));
+  const out = []; for(let i=0;i<42;i++){ const d=new Date(start); d.setDate(start.getDate()+i); out.push(d); }
+  return out;
+}
+
+async function ensureCalData(){
+  if(canSec('scrim') && calCache.scrims===null){
+    try{ let snap; try{ snap=await db.collection('plazma-scrims').orderBy('_savedAt','desc').get(); }
+      catch(e){ snap=await db.collection('plazma-scrims').get(); }
+      calCache.scrims=[]; snap.forEach(dd=>{ const x=dd.data(); calCache.scrims.push({id:dd.id,date:x.m_date||'',adv:x.m_adv||'',sp:x.s_plazma,sa:x.s_adv}); });
+    }catch(e){ console.error('scrims',e); calCache.scrims=[]; }
+  } else if(!canSec('scrim')) calCache.scrims=[];
+  if(canSec('dashboard') && calCache.dashboard===null){
+    try{ const d=await db.collection(PZ.COLLECTION).doc('dashboard').get(); calCache.dashboard=(d.exists&&d.data())||{}; }
+    catch(e){ console.error('dashboard',e); calCache.dashboard={}; }
+  } else if(!canSec('dashboard')) calCache.dashboard={};
+}
+async function loadMonthWeeks(weeks){
+  if(!canSec('planning')) return;
+  await Promise.all(weeks.map(async wv=>{           // toujours rafraîchi (les sessions changent en vue semaine)
+    try{ const d=await db.collection(PZ.COLLECTION).doc('schedule-'+wv).get(); calCache.weeks[wv]=(d.exists&&d.data().schedule)||{}; }
+    catch(e){ calCache.weeks[wv]={}; }
+  }));
+}
+function buildByDay(){
+  const byDay={}; const push=(ds,ev)=>{ if(ds)(byDay[ds]=byDay[ds]||[]).push(ev); };
+  (calCache.scrims||[]).forEach(s=>{ if(!s.date)return; const a=+s.sp,b=+s.sa;
+    const res=(isFinite(a)&&isFinite(b)&&(a+b)>0)?(a>b?'W':a<b?'L':'D'):null;
+    push(s.date,{kind:'scrim',label:'⚔ '+(s.adv||'Scrim'),color:res==='W'?'var(--ok)':res==='L'?'var(--err)':'var(--muted)',id:s.id}); });
+  const dash=calCache.dashboard||{};
+  (dash.objectives||[]).forEach(o=>{ if(o.deadline && o.status!=='done') push(o.deadline,{kind:'deadline',label:'⚑ '+(o.name||'Objectif'),color:'var(--warn)'}); });
+  if(dash.nextEventDate) push(dash.nextEventDate,{kind:'event',label:'★ '+(dash.nextEvent||'Événement'),color:'var(--accent)'});
+  Object.keys(calCache.weeks).forEach(wv=>{ const sched=calCache.weeks[wv]||{}; const [y,w]=wv.split('-W').map(Number); if(!y||!w)return;
+    const mon=mondayOfIsoWeek(y,w);
+    DAYS.forEach((day,di)=>{ (sched[day]||[]).forEach(sl=>{ const dt=new Date(mon); dt.setUTCDate(mon.getUTCDate()+di);
+      const ds=`${dt.getUTCFullYear()}-${pad2(dt.getUTCMonth()+1)}-${pad2(dt.getUTCDate())}`;
+      const t=getType(sl.type); push(ds,{kind:'session',label:t.label,color:t.color,week:wv}); }); }); });
+  return byDay;
+}
+async function renderMonth(){
+  const lbl=monthCursor.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  document.getElementById('monthLabel').textContent=lbl.charAt(0).toUpperCase()+lbl.slice(1);
+  calGrid.innerHTML='<div style="grid-column:1/-1;padding:34px;text-align:center;color:var(--muted);font-size:13px">Chargement…</div>';
+  const cells=monthCells(monthCursor);
+  await ensureCalData();
+  await loadMonthWeeks([...new Set(cells.map(isoWeekValue))]);
+  const byDay=buildByDay(); calGrid._byDay=byDay;
+  const dows=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  const todayStr=fmtISO(new Date()); const mo=monthCursor.getMonth();
+  let html=dows.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  cells.forEach(d=>{ const ds=fmtISO(d); const out=d.getMonth()!==mo; const evs=byDay[ds]||[];
+    const shown=evs.slice(0,3), extra=evs.length-shown.length;
+    html+=`<div class="cal-cell${out?' out':''}${ds===todayStr?' today':''}" data-week="${isoWeekValue(d)}" data-ds="${ds}">`+
+      `<span class="cal-daynum">${d.getDate()}</span>`+
+      shown.map((e,i)=>`<span class="cal-ev" style="--ec:${e.color}" data-i="${i}" title="${escAttr(e.label)}">${escHtml(e.label)}</span>`).join('')+
+      (extra>0?`<span class="cal-more">+${extra} de plus</span>`:'')+`</div>`;
+  });
+  calGrid.innerHTML=html;
+}
+calGrid.addEventListener('click',e=>{
+  const cell=e.target.closest('.cal-cell'); if(!cell)return;
+  const chip=e.target.closest('.cal-ev');
+  if(chip){ e.stopPropagation(); const ev=(calGrid._byDay[cell.dataset.ds]||[])[+chip.dataset.i]; if(ev)onCalEvent(ev); return; }
+  picker.value=cell.dataset.week; setView('week'); picker.dispatchEvent(new Event('change'));   // case → semaine
+});
+function onCalEvent(ev){
+  if(ev.kind==='scrim') location.href='plazma-scrim.html'+(ev.id?('#'+ev.id):'');
+  else if(ev.kind==='session'){ picker.value=ev.week; setView('week'); picker.dispatchEvent(new Event('change')); }
+  else location.href='plazma-dashboard.html';
+}
+function setView(v){
+  view=v;
+  document.getElementById('vwWeek').classList.toggle('active',v==='week');
+  document.getElementById('vwMonth').classList.toggle('active',v==='month');
+  document.getElementById('weekNav').style.display=v==='week'?'':'none';
+  document.getElementById('monthNav').style.display=v==='month'?'':'none';
+  document.getElementById('capture').style.display=v==='week'?'':'none';
+  document.getElementById('viewMonth').style.display=v==='month'?'':'none';
+  if(v==='month') renderMonth();
+}
+document.getElementById('vwWeek').addEventListener('click',()=>setView('week'));
+document.getElementById('vwMonth').addEventListener('click',()=>setView('month'));
+document.getElementById('prevMo').addEventListener('click',()=>{ monthCursor=new Date(monthCursor.getFullYear(),monthCursor.getMonth()-1,1); renderMonth(); });
+document.getElementById('nextMo').addEventListener('click',()=>{ monthCursor=new Date(monthCursor.getFullYear(),monthCursor.getMonth()+1,1); renderMonth(); });
+document.getElementById('todayMo').addEventListener('click',()=>{ const n=new Date(); monthCursor=new Date(n.getFullYear(),n.getMonth(),1); renderMonth(); });
 
 renderFillMenu();
 loadTemplates();

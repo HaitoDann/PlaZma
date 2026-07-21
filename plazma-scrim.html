@@ -441,6 +441,9 @@ function publishDiscord(){
 buildGames(); buildPlayers();
 (async()=>{
   if(!db){ PZ.status('error','Firebase indisponible'); PZ.loadingDone(); blankForm(); return; }
+  // Lien profond depuis le calendrier : #<docId> ouvre ce CR précis.
+  const hashId=(location.hash||'').replace(/^#/,'').trim();
+  if(hashId){ startSync(hashId); return; }
   try{ const snap=await db.collection(SCRIMS_COL).orderBy('_savedAt','desc').limit(1).get();
     startSync(snap.empty?newDocId():snap.docs[0].id); }
   catch{ startSync(newDocId()); }
