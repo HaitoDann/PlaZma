@@ -18,11 +18,14 @@
   .field{margin-bottom:12px}
   .field label{display:block;font-size:12px;color:var(--dim);font-weight:600;margin-bottom:5px}
   .field input,.field select{width:100%}
-  .secgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
-  .secchk{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text);
-    padding:7px 9px;border-radius:8px;background:var(--surface-2);cursor:pointer;user-select:none}
-  .secchk input{width:auto;margin:0}
-  .secchk.dim{opacity:.5;pointer-events:none}
+  .secgrid{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+  .secgrid.dim{opacity:.5;pointer-events:none}
+  .secrow{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--text)}
+  .secname{flex:1;min-width:0}
+  .seg-ctl{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:2px;flex-shrink:0}
+  .seg{background:none;border:0;color:var(--muted);font-family:var(--font);font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:6px;cursor:pointer}
+  .seg.on{background:var(--accent-soft);color:var(--accent)}
+  .seg[data-v="view"].on{background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
   .presets{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 2px}
   .presets button{font-size:11.5px;padding:4px 9px;border-radius:20px;border:1px solid var(--line);
     background:var(--surface-2);color:var(--dim);cursor:pointer}
@@ -124,26 +127,34 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;',
 function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2600); }
 
 // Grille de cases à cocher pour la création
-function buildSectionGrid(){
-  $('n_sections').innerHTML = SECTIONS.map(([k,l])=>
-    `<label class="secchk"><input type="checkbox" data-sec="${k}"> ${l}</label>`).join('');
-  $('n_presets').innerHTML = Object.keys(PRESETS).map(name=>
-    `<button type="button" onclick="applyPreset('${name}')">${name}</button>`).join('');
-  const role = $('n_role');
-  role.addEventListener('change', ()=> {
-    const admin = role.value==='admin';
-    $('n_sections').classList.toggle('dim', admin);
-  });
+// Contrôle 3 états par module : Aucun / Voir / Modifier.
+const SEG=[['','Aucun'],['view','Voir'],['edit','Modifier']];
+function segRows(levels){
+  return SECTIONS.map(([k,l])=>`<div class="secrow"><span class="secname">${l}</span><div class="seg-ctl" data-sec="${k}">${
+    SEG.map(([v,lab])=>`<button type="button" class="seg${(levels[k]||'')===v?' on':''}" data-v="${v}">${lab}</button>`).join('')}</div></div>`).join('');
 }
-function applyPreset(name){
-  const set = new Set(PRESETS[name]||[]);
-  document.querySelectorAll('#n_sections input[data-sec]').forEach(c=> c.checked = set.has(c.dataset.sec));
+function levelsFromSections(s){ const o={}; SECTIONS.forEach(([k])=>{ const v=s&&s[k]; o[k]=(v===true||v==='edit')?'edit':(v==='view'?'view':''); }); return o; }
+function setLevels(scope, editSet){
+  document.querySelectorAll(scope+' .seg-ctl').forEach(g=>{ const v=editSet.has(g.dataset.sec)?'edit':'';
+    g.querySelectorAll('.seg').forEach(b=>b.classList.toggle('on', b.dataset.v===v)); });
 }
 function readSections(scope){
   const out={};
-  document.querySelectorAll(scope+' input[data-sec]').forEach(c=> out[c.dataset.sec]=c.checked);
+  document.querySelectorAll(scope+' .seg-ctl').forEach(g=>{ const on=g.querySelector('.seg.on'); const v=on?on.dataset.v:''; if(v) out[g.dataset.sec]=v; });
   return out;
 }
+// Un clic sur un segment sélectionne ce niveau dans son groupe.
+document.addEventListener('click', e=>{ const b=e.target.closest('.seg'); if(!b)return; const g=b.closest('.seg-ctl'); if(!g)return;
+  g.querySelectorAll('.seg').forEach(x=>x.classList.remove('on')); b.classList.add('on'); });
+
+function buildSectionGrid(){
+  $('n_sections').innerHTML = segRows({});
+  $('n_presets').innerHTML = Object.keys(PRESETS).map(name=>
+    `<button type="button" onclick="applyPreset('${name}')">${name}</button>`).join('');
+  const role = $('n_role');
+  role.addEventListener('change', ()=> $('n_sections').classList.toggle('dim', role.value==='admin'));
+}
+function applyPreset(name){ setLevels('#n_sections', new Set(PRESETS[name]||[])); }
 
 const USER_DOMAIN = PZ.USER_DOMAIN || 'archi.local';
 const normUser = u => u.trim().toLowerCase().replace(/[^a-z0-9._-]/g,'');
@@ -161,7 +172,7 @@ async function createUser(){
     const cred = await sec.auth().createUserWithEmailAndPassword(username+'@'+USER_DOMAIN, pw);
     const uid = cred.user.uid;
     await sec.auth().signOut();
-    const sections = role==='admin' ? allSections(true) : readSections('#n_sections');
+    const sections = role==='admin' ? {} : readSections('#n_sections');
     await db.collection('users').doc(uid).set({
       name, username, role, disabled:false, sections,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -177,7 +188,6 @@ async function createUser(){
     toast(map[e.code]||('Erreur : '+(e.message||e.code)));
   }finally{ btn.disabled=false; btn.textContent='Créer le compte'; }
 }
-function allSections(v){ const o={}; SECTIONS.forEach(([k])=>o[k]=!!v); return o; }
 
 async function loadUsers(){
   const host=$('ulist');
@@ -199,7 +209,8 @@ async function loadUsers(){
 function renderUser(u){
   const isMe = u.uid===meUid;
   const admin = u.role==='admin';
-  const secs = SECTIONS.map(([k,l])=>`<span class="pill${(admin||u.sections&&u.sections[k])?' on':''}">${l}</span>`).join('');
+  const lvlOf=k=>{ if(admin)return 'edit'; const v=u.sections&&u.sections[k]; return (v===true||v==='edit')?'edit':(v==='view'?'view':''); };
+  const secs = SECTIONS.map(([k,l])=>{ const v=lvlOf(k); return `<span class="pill${v?' on':''}">${l}${v==='view'?' 👁':v?' ✎':''}</span>`; }).join('');
   const roleBadge = admin?'<span class="badge admin">Admin</span>':'<span class="badge staff">Membre</span>';
   const offBadge = u.disabled?'<span class="badge off">Désactivé</span>':'';
   return `<div class="urow${u.disabled?' dis':''}" data-uid="${u.uid}">
@@ -228,15 +239,12 @@ function editAccess(uid){
     box.dataset.open='1';
     box.innerHTML = `<div style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
       <div class="presets">${Object.keys(PRESETS).map(n=>`<button type="button" onclick="editPreset('${uid}','${n}')">${n}</button>`).join('')}</div>
-      <div class="secgrid" id="secs_${uid}">${SECTIONS.map(([k,l])=>`<label class="secchk"><input type="checkbox" data-sec="${k}" ${s[k]?'checked':''}> ${l}</label>`).join('')}</div>
+      <div class="secgrid" id="secs_${uid}">${segRows(levelsFromSections(s))}</div>
       <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="saveAccess('${uid}')">Enregistrer</button>
     </div>`;
   });
 }
-function editPreset(uid,name){
-  const set=new Set(PRESETS[name]||[]);
-  document.querySelectorAll('#secs_'+uid+' input[data-sec]').forEach(c=>c.checked=set.has(c.dataset.sec));
-}
+function editPreset(uid,name){ setLevels('#secs_'+uid, new Set(PRESETS[name]||[])); }
 async function saveAccess(uid){
   const sections=readSections('#secs_'+uid);
   try{ await db.collection('users').doc(uid).update({sections}); toast('Accès mis à jour.'); loadUsers(); }

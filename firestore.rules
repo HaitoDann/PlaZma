@@ -9,10 +9,11 @@ rules_version = '2';
 //  devient "<pseudo>@archi.local" côté Firebase Auth (aucun e-mail réel).
 //  Modèle : chaque utilisateur a un document users/{uid} :
 //    { name, username, role: 'admin'|'staff', disabled: false,
-//      sections: { planning, scrim, scouting, team, dashboard,
-//                  coach, satisfaction, perf } }  // booléens
+//      sections: { planning, scrim, scouting, team, dashboard, coach,
+//                  satisfaction, satisfactionResults, perf } }
+//  Chaque section vaut 'edit' (voir + modifier), 'view' (voir seulement),
+//  true (ancien modèle = 'edit'), ou est absente (aucun accès).
 //  - role 'admin' : accès total + gestion des comptes.
-//  - sinon : accès limité aux compartiments cochés dans `sections`.
 // ============================================================
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -22,68 +23,70 @@ service cloud.firestore {
     function hasProfile() {
       return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
-    function active()   { return hasProfile() && profile().disabled != true; }
-    function isAdmin()  { return active() && profile().role == 'admin'; }
-    // Accès à un compartiment : admin, ou section cochée.
-    function can(section) {
-      return active() && (profile().role == 'admin' || profile().sections[section] == true);
+    function active()  { return hasProfile() && profile().disabled != true; }
+    function isAdmin() { return active() && profile().role == 'admin'; }
+    // Niveau d'accès à une section (null si aucun) ; tolère l'absence du champ.
+    function lvl(section) {
+      return active() && ('sections' in profile()) ? profile().sections.get(section, null) : null;
     }
+    // Lecture : admin, ou section en 'view'/'edit'/true.  Écriture : admin, ou 'edit'/true.
+    function canRead(section)  { return active() && (profile().role == 'admin' || lvl(section) == true || lvl(section) == 'edit' || lvl(section) == 'view'); }
+    function canWrite(section) { return active() && (profile().role == 'admin' || lvl(section) == true || lvl(section) == 'edit'); }
 
     // ---- Comptes utilisateurs ----
     match /users/{uid} {
-      // On peut lire son propre profil ; un admin lit tout le monde.
       allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
-      // Seuls les admins créent / modifient / suppriment des comptes.
       allow write: if isAdmin();
     }
 
     // ---- Collection principale (plazma) : accès par document ----
     match /plazma/{docId} {
-      // Le roster (noms/emojis) est lisible publiquement : le questionnaire
-      // de satisfaction, public, en a besoin. Rien de sensible ici.
       allow read: if docId == 'roster'
         || (signedIn() && (
               docId == 'config'
-           || (docId == 'team-identity'    && can('team'))
-           || (docId == 'dashboard'        && can('dashboard'))
-           || (docId == 'coach-evaluation' && can('coach'))
-           || (docId.matches('schedule-.*') && can('planning'))
-           || (docId.matches('perf-.*')     && can('perf'))
+           || (docId == 'team-identity'    && canRead('team'))
+           || (docId == 'dashboard'        && canRead('dashboard'))
+           || (docId == 'coach-evaluation' && canRead('coach'))
+           || (docId.matches('schedule-.*') && canRead('planning'))
+           || (docId.matches('perf-.*')     && canRead('perf'))
         ));
       allow write: if signedIn() && (
               (docId == 'config'           && isAdmin())
-           || (docId == 'roster'           && can('team'))
-           || (docId == 'team-identity'    && can('team'))
-           || (docId == 'dashboard'        && can('dashboard'))
-           || (docId == 'coach-evaluation' && can('coach'))
-           || (docId.matches('schedule-.*') && can('planning'))
-           || (docId.matches('perf-.*')     && can('perf'))
+           || (docId == 'roster'           && canWrite('team'))
+           || (docId == 'team-identity'    && canWrite('team'))
+           || (docId == 'dashboard'        && canWrite('dashboard'))
+           || (docId == 'coach-evaluation' && canWrite('coach'))
+           || (docId.matches('schedule-.*') && canWrite('planning'))
+           || (docId.matches('perf-.*')     && canWrite('perf'))
       );
     }
 
     // ---- Scrim ----
     match /plazma-scrims/{id} {
-      allow read, write: if can('scrim');
+      allow read:  if canRead('scrim');
+      allow write: if canWrite('scrim');
     }
 
     // ---- Scouting ----
     match /plazma-scouting/{id} {
-      allow read, write: if can('scouting');
+      allow read:  if canRead('scouting');
+      allow write: if canWrite('scouting');
     }
 
-    // ---- Satisfaction ----
-    // Le questionnaire est PUBLIC (les joueurs le remplissent sans compte) :
-    // création autorisée à tous. Lecture / suppression réservées au staff.
+    // ---- Satisfaction (joueurs) ----
+    // Soumission publique ; lecture réservée aux « résultats », suppression = 'edit'.
     match /plazma-satisfaction/{id} {
       allow create: if true;
-      allow read, delete: if can('satisfactionResults');
+      allow read:   if canRead('satisfactionResults');
+      allow delete: if canWrite('satisfactionResults');
       allow update: if false;
     }
 
-    // ---- Satisfaction Head Coach (même modèle : soumission publique) ----
+    // ---- Satisfaction Head Coach ----
     match /plazma-satisfaction-coach/{id} {
       allow create: if true;
-      allow read, delete: if can('satisfactionResults');
+      allow read:   if canRead('satisfactionResults');
+      allow delete: if canWrite('satisfactionResults');
       allow update: if false;
     }
 

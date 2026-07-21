@@ -70,7 +70,8 @@ Réservée aux administrateurs. Elle permet de :
 - **Créer un compte** : nom affiché, nom d'utilisateur, mot de passe provisoire,
   rôle et modules accessibles (des préréglages *Staff complet / Analyste / Coach /
   Joueur* cochent les cases pour toi).
-- **Modifier les accès** d'un membre (cocher/décocher chaque module).
+- **Modifier les accès** d'un membre : pour chaque module, choisir **Aucun**,
+  **Voir** (consultation seule) ou **Modifier** (consultation + édition).
 - **Passer / retirer admin**.
 - **Désactiver** un compte (bloque l'accès sans le supprimer).
 - **Retirer l'accès** (supprime le profil : la personne ne voit plus rien).

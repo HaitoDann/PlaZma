@@ -65,11 +65,19 @@
   const authReadyPromise = new Promise(r => (_resolveReady = r));
 
   const isAdmin = () => !!profile && profile.role === 'admin' && !profile.disabled;
-  function can(section) {
-    if (!profile || profile.disabled) return false;
-    if (profile.role === 'admin') return true;
-    return !!(profile.sections && profile.sections[section] === true);
+  // Niveau d'accès à un module : 'edit' | 'view' | null.
+  // Rétrocompat : une valeur `true` (ancien modèle) vaut 'edit'.
+  function accessLevel(section) {
+    if (!profile || profile.disabled) return null;
+    if (profile.role === 'admin') return 'edit';
+    const v = profile.sections && profile.sections[section];
+    if (v === true || v === 'edit') return 'edit';
+    if (v === 'view') return 'view';
+    return null;
   }
+  const canRead = section => { const l = accessLevel(section); return l === 'edit' || l === 'view'; };
+  const canWrite = section => accessLevel(section) === 'edit';
+  const can = canRead;   // "can" = lecture (voir OU modifier) — nav, garde de page
   function onAuth(cb) { authListeners.push(cb); if (authResolved) { try { cb(authUser, profile); } catch (e) { console.error(e); } } }
   function notifyAuth() { authListeners.forEach(cb => { try { cb(authUser, profile); } catch (e) { console.error(e); } }); }
 
@@ -114,6 +122,18 @@
     if (pageSection && !can(pageSection)) { gate(deniedHtml("Tu n'as pas accès à ce module. Demande l'accès à un administrateur.")); return; }
     ungate();
     refreshNav();
+    if (pageSection && accessLevel(pageSection) === 'view') showReadOnlyBanner();
+  }
+  function showReadOnlyBanner() {
+    if (document.getElementById('pz-ro-banner')) return;
+    const b = document.createElement('div');
+    b.id = 'pz-ro-banner';
+    b.setAttribute('style',
+      'position:fixed;left:12px;bottom:12px;z-index:900;background:var(--warn,#e7a03a);color:#1a1205;' +
+      'border-radius:8px;padding:7px 12px;font-family:var(--font,system-ui),sans-serif;font-size:12px;' +
+      'font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.3)');
+    b.textContent = '👁 Lecture seule — consultation autorisée, modification non.';
+    document.body.appendChild(b);
   }
 
   function startAuth() {
@@ -496,7 +516,7 @@
     auth: {
       get user() { return authUser; },
       get profile() { return profile; },
-      can, isAdmin, onAuth, SECTION_KEYS,
+      can, canRead, canWrite, accessLevel, isAdmin, onAuth, SECTION_KEYS,
       ready: authReadyPromise,
       instance: auth,
       config: FIREBASE_CONFIG

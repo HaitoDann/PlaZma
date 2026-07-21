@@ -203,6 +203,8 @@
 <script>
 PZ.mountNav('schedule', '#nav');
 const db = PZ.db;
+// Droit d'écriture sur le Planning (sinon lecture seule).
+const canEdit = () => !(PZ.auth && PZ.auth.canWrite) || PZ.auth.canWrite('planning');
 
 const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 const TYPES = [
@@ -275,24 +277,29 @@ function renderGrid(){
     const col = document.createElement('div');
     col.className = 'day' + (isCurrentWeek && di===ti ? ' today' : '');
     col.innerHTML = `<div class="day-name">${day}</div>`;
+    const editable = canEdit();
     slots.forEach((slot, idx) => {
       const t = getType(slot.type);
       const time = slotTimeText(slot);
       const el = document.createElement('div');
       el.className = 'slot';
       el.style.setProperty('--sc', t.color);
-      el.innerHTML = `<button class="slot-del" data-noexport title="Supprimer">✕</button>
+      el.innerHTML = `${editable ? '<button class="slot-del" data-noexport title="Supprimer">✕</button>' : ''}
         <span class="slot-type">${t.label}</span>
         ${time ? `<div class="slot-time">⏱ ${time}</div>` : ''}
         ${slot.note ? `<div class="slot-note">${escHtml(slot.note)}</div>` : ''}`;
-      el.addEventListener('click', e => { if(!e.target.classList.contains('slot-del')) openModal(day, idx); });
-      el.querySelector('.slot-del').addEventListener('click', e => { e.stopPropagation(); schedule[day].splice(idx,1); renderGrid(); sync.save(); });
+      if(editable){
+        el.addEventListener('click', e => { if(!e.target.classList.contains('slot-del')) openModal(day, idx); });
+        el.querySelector('.slot-del').addEventListener('click', e => { e.stopPropagation(); schedule[day].splice(idx,1); renderGrid(); sync.save(); });
+      } else { el.style.cursor = 'default'; }
       col.appendChild(el);
     });
-    const add = document.createElement('button');
-    add.className = 'add-slot'; add.textContent = '+'; add.setAttribute('data-noexport','');
-    add.addEventListener('click', () => openModal(day, null));
-    col.appendChild(add);
+    if(editable){
+      const add = document.createElement('button');
+      add.className = 'add-slot'; add.textContent = '+'; add.setAttribute('data-noexport','');
+      add.addEventListener('click', () => openModal(day, null));
+      col.appendChild(add);
+    }
     grid.appendChild(col);
   });
   renderSummary();
@@ -551,6 +558,15 @@ document.getElementById('todayMo').addEventListener('click',()=>{ const n=new Da
 renderFillMenu();
 loadTemplates();
 renderGrid();
+
+// Lecture seule : masque les commandes d'édition si pas de droit « Modifier » sur le Planning.
+function applyPlanningRO(){
+  const ro=!canEdit();
+  const fm=document.getElementById('fillMenu'); if(fm) fm.style.display=ro?'none':'';
+  ['importBtn','resetBtn'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display=ro?'none':''; });
+  renderGrid();
+}
+if(PZ.auth && PZ.auth.ready) PZ.auth.ready.then(applyPlanningRO); else applyPlanningRO();
 </script>
 </body>
 </html>
