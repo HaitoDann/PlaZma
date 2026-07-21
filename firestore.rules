@@ -76,14 +76,14 @@ service cloud.firestore {
     // création autorisée à tous. Lecture / suppression réservées au staff.
     match /plazma-satisfaction/{id} {
       allow create: if true;
-      allow read, delete: if can('satisfaction');
+      allow read, delete: if can('satisfactionResults');
       allow update: if false;
     }
 
     // ---- Satisfaction Head Coach (même modèle : soumission publique) ----
     match /plazma-satisfaction-coach/{id} {
       allow create: if true;
-      allow read, delete: if can('satisfaction');
+      allow read, delete: if can('satisfactionResults');
       allow update: if false;
     }
 

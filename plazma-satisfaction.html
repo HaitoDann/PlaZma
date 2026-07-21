@@ -530,7 +530,7 @@ let responses=[],rpFilter='all';
 async function toggleAdmin(){
   // Accès réservé au staff disposant du compartiment « satisfaction ».
   if(window.PZ&&PZ.auth&&PZ.auth.ready){await PZ.auth.ready;}
-  if(!(window.PZ&&PZ.auth&&PZ.auth.can('satisfaction'))){
+  if(!(window.PZ&&PZ.auth&&PZ.auth.can('satisfactionResults'))){
     if(PZ&&PZ.auth&&PZ.auth.user){showToast("Ton compte n'a pas accès aux résultats staff.");}
     else{location.href='login.html';}
     return;

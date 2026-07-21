@@ -107,13 +107,14 @@
 const SECTIONS = [
   ['planning','Planning'], ['scrim','Scrim (CR)'], ['scouting','Scouting'],
   ['team','Équipe'], ['dashboard','Dashboard'], ['coach','Coach'],
-  ['satisfaction','Satisfaction'], ['perf','Fiches perf']
+  ['satisfaction','Satisfaction (questionnaires)'],
+  ['satisfactionResults','Résultats satisfaction 🔒'], ['perf','Fiches perf']
 ];
 const PRESETS = {
-  'Staff complet': ['planning','scrim','scouting','team','dashboard','coach','satisfaction','perf'],
+  'Staff complet': ['planning','scrim','scouting','team','dashboard','coach','satisfaction','satisfactionResults','perf'],
   'Analyste':      ['scouting','scrim','dashboard','team'],
-  'Coach':         ['planning','scrim','scouting','team','dashboard','coach','satisfaction'],
-  'Joueur':        ['planning','team','perf'],
+  'Coach':         ['planning','scrim','scouting','team','dashboard','coach','satisfaction','satisfactionResults'],
+  'Joueur':        ['planning','team','perf','satisfaction'],
   'Aucun':         []
 };
 const $ = id => document.getElementById(id);

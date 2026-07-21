@@ -56,7 +56,7 @@
   // La protection RÉELLE vient des règles de sécurité Firestore (firestore.rules).
   // Ce module gère la connexion, le profil de l'utilisateur et l'affichage
   // (redirection login, masquage des modules non autorisés).
-  const SECTION_KEYS = ['planning', 'scrim', 'scouting', 'team', 'dashboard', 'coach', 'satisfaction', 'perf'];
+  const SECTION_KEYS = ['planning', 'scrim', 'scouting', 'team', 'dashboard', 'coach', 'satisfaction', 'satisfactionResults', 'perf'];
   let authUser = null;   // { uid, email }
   let profile = null;    // { name, role, sections:{}, disabled }
   let authResolved = false;

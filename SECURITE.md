@@ -94,7 +94,8 @@ Réservée aux administrateurs. Elle permet de :
 
 - **Administrateur** : accès total à tous les modules **+** gestion des comptes.
 - **Membre** : accès **uniquement** aux modules cochés parmi :
-  Planning · Scrim · Scouting · Équipe · Dashboard · Coach · Satisfaction · Fiches perf.
+  Planning · Scrim · Scouting · Équipe · Dashboard · Coach · Satisfaction (questionnaires) ·
+  Résultats satisfaction (🔒 lecture des réponses, sensible) · Fiches perf.
 
 Un module non coché n'apparaît pas dans le menu du membre et son ouverture directe
 est bloquée (et refusée côté serveur par les règles Firestore).
