@@ -541,10 +541,18 @@ async function toggleAdmin(){
 function closeAdmin(){document.getElementById('resultsPanel').classList.remove('open');}
 async function loadAdmin(){
   document.getElementById('resultsPanel').classList.add('open');
-  document.getElementById('rpBody').innerHTML='<div class="empty-rp">Chargement…</div>';
-  try{const snap=await db.collection('plazma-satisfaction').orderBy('submittedAt','desc').get();responses=[];snap.forEach(doc=>responses.push({id:doc.id,...doc.data()}));}
-  catch{const snap=await db.collection('plazma-satisfaction').get();responses=[];snap.forEach(doc=>responses.push({id:doc.id,...doc.data()}));}
-  renderAdmin();
+  const body=document.getElementById('rpBody');
+  body.innerHTML='<div class="empty-rp">Chargement…</div>';
+  try{
+    let snap;
+    try{ snap=await db.collection('plazma-satisfaction').orderBy('submittedAt','desc').get(); }
+    catch(e){ snap=await db.collection('plazma-satisfaction').get(); }
+    responses=[]; snap.forEach(doc=>responses.push({id:doc.id,...doc.data()}));
+    renderAdmin();
+  }catch(e){
+    console.error(e);
+    body.innerHTML='<div class="empty-rp">Lecture impossible : '+esc(e.message||e.code||'')+'.<br><br>Vérifie que les <b>règles Firestore sont déployées</b> et que ton compte a le droit <b>« Résultats satisfaction »</b>.</div>';
+  }
 }
 function renderAdmin(){
   const f=rpFilter==='all'?responses:responses.filter(r=>r.playerId===rpFilter);
