@@ -182,6 +182,7 @@
     <span class="sync-pill"><span class="sync-dot offline" id="syncDot"></span><span id="syncText">En attente…</span><span class="sync-time" id="syncTime"></span></span>
     <button class="btn btn-sm" onclick="newSheet()">＋ Nouvelle</button>
     <button class="btn btn-sm" onclick="openDrawer()">Fiches <span id="sheetCount" class="muted"></span></button>
+    <button class="btn btn-sm btn-primary" id="pubScoutBtn" title="Publier la synthèse adverse sur Discord">📢 Discord</button>
     <button class="btn btn-sm" id="exportBtn">⬇ PNG</button>
     <button class="btn btn-sm btn-danger" onclick="resetCurrentSheet()">Vider</button>
   </div>
@@ -611,6 +612,42 @@ document.querySelectorAll('#m_team,#m_rank,#m_tournoi,#f_note,#f_comment').forEa
 }));
 document.getElementById('multiOpgg').addEventListener('click',()=>{ const url=multiOpggUrl(); if(url) window.open(url,'_blank','noopener'); else alert('Renseigne au moins un identifiant OP.GG (Pseudo#TAG).'); });
 document.getElementById('exportBtn').addEventListener('click',()=>PZ.exportPNG(document.getElementById('capture'),'archi-scouting'));
+
+// ── Publication Discord (synthèse adverse) ──
+function buildScoutEmbed(){
+  const trunc=(t,n)=>{ t=String(t||'').trim(); return t.length>n? t.slice(0,n-1)+'…':t; };
+  const nm=arr=>(arr||[]).map(id=>{ const C=Champ(); return C&&C.nameOf?C.nameOf(id):id; }).filter(Boolean);
+  const team=(state.m_team||'Adversaire').trim();
+  const th=THREAT[state.threatLevel];
+  const color=state.threatLevel==='high'?0xef4444:state.threatLevel==='med'?0xf59e0b:state.threatLevel==='low'?0x22c55e:0x5f84ff;
+  const fields=[];
+  const infos=[];
+  if(state.m_rank) infos.push(`**Rang estimé :** ${state.m_rank}`);
+  if(state.m_tournoi) infos.push(`**Échéance :** ${state.m_tournoi}`);
+  if(th) infos.push(`**Menace :** ${th.l}`);
+  if(infos.length) fields.push({name:'ℹ️ Infos', value:trunc(infos.join('\n'),1024)});
+  ROLES.forEach((r,i)=>{
+    const p=state.roster[i]||{};
+    const tags=STYLE_GROUPS.map(g=>{ const v=p.style&&p.style[g.key]; const o=v&&g.opts.find(x=>x[0]===v); return o?o[1]:''; }).filter(Boolean);
+    const pool=nm(p.pool);
+    const parts=[];
+    if(tags.length) parts.push(tags.join(' · '));
+    if(pool.length) parts.push('Pool : '+pool.join(', '));
+    if(p.note) parts.push('_'+p.note+'_');
+    fields.push({ name:trunc(`${r.label}${p.pseudo?' — '+p.pseudo:''}`,256), value:trunc(parts.join('\n')||'—',1024) });
+  });
+  const bt=nm(state.draft.banTargets), bans=nm(state.draft.bans);
+  const dl=[];
+  if(bt.length) dl.push('**Cibles de ban :** '+bt.join(', '));
+  if(bans.length) dl.push('**Leurs bans fréquents :** '+bans.join(', '));
+  if(dl.length) fields.push({name:'🚫 Draft', value:trunc(dl.join('\n'),1024)});
+  return { title:trunc(`🔍 Scouting — ${team}`,256), color, fields, footer:{text:'ARCHI · PlaZma Esport'}, timestamp:new Date().toISOString() };
+}
+document.getElementById('pubScoutBtn').addEventListener('click',()=>{
+  readInputs();
+  if(!(state.m_team||'').trim() && !confirm('Aucune équipe adverse renseignée. Publier quand même ?')) return;
+  PZ.discord.publish({ channel:'scouting', embed: buildScoutEmbed() });
+});
 document.getElementById('footDate').textContent='Mise à jour le '+new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
 
 // Init

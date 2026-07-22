@@ -457,7 +457,9 @@
       box(H('Publier sur Discord') +
         `<div style="font-size:12px;color:var(--muted,#8b90a0);margin-bottom:14px">Aperçu du message — salon « ${escHtml(channel)} »</div>` +
         `<div style="border-left:4px solid ${c};background:var(--surface-2,#12151d);border-radius:8px;padding:13px 15px">` +
-        `<div style="font-weight:700;font-size:14.5px">${escHtml(embed.title || '')}</div>${fields}</div>` +
+        `<div style="font-weight:700;font-size:14.5px">${escHtml(embed.title || '')}</div>` +
+        (embed.description ? `<div style="font-size:12.5px;color:var(--dim,#9aa0ad);white-space:pre-wrap;margin-top:4px">${escHtml(embed.description)}</div>` : '') +
+        `${fields}</div>` +
         `<div id="pzdc_msg" style="font-size:12.5px;min-height:16px;margin-top:12px;color:var(--err,#f38b8b)"></div>` +
         `<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">` +
         `<button id="pzdc_cancel" style="${_dcGhost}">Annuler</button>` +

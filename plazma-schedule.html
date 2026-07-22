@@ -140,6 +140,7 @@
         <button class="btn btn-sm" id="fillBtn">✎ Pré-remplir ▾</button>
         <div class="menu-list" id="fillList"></div>
       </div>
+      <button class="btn btn-sm btn-primary" id="pubDiscordBtn" title="Publier le programme sur Discord">📢 Discord</button>
       <div class="menu" id="moreMenu">
         <button class="btn btn-sm" id="moreBtn" title="Plus d'actions">⋯</button>
         <div class="menu-list">
@@ -434,6 +435,22 @@ async function deleteTemplate(name){
   if(!confirm(`Supprimer le modèle « ${name} » ?`)) return;
   delete templates[name]; await persistTemplates(); renderFillMenu();
 }
+
+// ---- Publication Discord (programme de la semaine) ----
+function buildWeekEmbed(){
+  const trunc=(t,n)=>{ t=String(t||'').trim(); return t.length>n? t.slice(0,n-1)+'…':t; };
+  const fields=[]; let sessions=0, totalMin=0;
+  DAYS.forEach(day=>{
+    const slots=(schedule[day]||[]).slice().sort((a,b)=>slotStartKey(a).localeCompare(slotStartKey(b)));
+    if(!slots.length) return;
+    const lines=slots.map(s=>{ const t=getType(s.type); const tm=slotTimeText(s); sessions++; totalMin+=(slotDurationMin(s)||0);
+      return `• ${tm?`\`${tm}\` `:''}**${t.label}**${s.note?` — ${s.note}`:''}`; });
+    fields.push({ name:day, value:trunc(lines.join('\n'),1024) });
+  });
+  const desc = sessions ? `**${sessions}** session${sessions>1?'s':''}${totalMin?` · **${fmtDur(totalMin)}** au total`:''}` : 'Aucune session planifiée cette semaine.';
+  return { title:trunc(`📅 Programme — ${weekLabel(picker.value)}`,256), description:desc, color:0x5f84ff, fields, footer:{text:'ARCHI · PlaZma Esport'}, timestamp:new Date().toISOString() };
+}
+document.getElementById('pubDiscordBtn').addEventListener('click', () => PZ.discord.publish({ channel:'planning', embed: buildWeekEmbed() }));
 
 // ---- Actions (menu ⋯) ----
 document.getElementById('exportBtn').addEventListener('click', () => PZ.exportPNG(document.getElementById('capture'), 'archi-planning-'+picker.value));

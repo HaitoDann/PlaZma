@@ -554,6 +554,40 @@ async function loadAdmin(){
     body.innerHTML='<div class="empty-rp">Lecture impossible : '+esc(e.message||e.code||'')+'.<br><br>Vérifie que les <b>règles Firestore sont déployées</b> et que ton compte a le droit <b>« Résultats satisfaction »</b>.</div>';
   }
 }
+// ── Évolution dans le temps (courbes) ──
+const PLAYER_TREND=[
+  {key:'q13_note',label:'Note PlaZma',max:10,color:'#f59e0b'},
+  {key:'q4_ambiance',label:'Ambiance',max:5,color:'#06b6d4'},
+  {key:'q5_motivation',label:'Motivation',max:5,color:'#22c55e'},
+  {key:'q6_fatigue',label:'Sérénité',max:5,color:'#f97316'},
+];
+function tMillis(r){ return r.submittedAt&&r.submittedAt.toMillis?r.submittedAt.toMillis():(r._t||0); }
+function trendSeries(rows,key){
+  const byDay=new Map();
+  [...rows].sort((a,b)=>tMillis(a)-tMillis(b)).forEach(r=>{ const t=tMillis(r); const day=r.date||(t?new Date(t).toLocaleDateString('fr-FR'):'?');
+    const v=r[key]; if(typeof v==='number'&&v>0){ if(!byDay.has(day))byDay.set(day,{sum:0,n:0,t}); const g=byDay.get(day); g.sum+=v; g.n++; } });
+  return [...byDay.values()].sort((a,b)=>a.t-b.t).map(g=>g.sum/g.n);
+}
+function spark(vals,color,max){
+  const W=240,H=40; const xs=i=>vals.length>1?(i/(vals.length-1))*W:W/2; const ys=v=>H-(Math.max(0,Math.min(max,v))/max)*H;
+  const pts=vals.map((v,i)=>`${xs(i).toFixed(1)},${ys(v).toFixed(1)}`).join(' ');
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:40px;display:block">
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${xs(vals.length-1).toFixed(1)}" cy="${ys(vals[vals.length-1]).toFixed(1)}" r="3" fill="${color}"/></svg>`;
+}
+function trendCard(rows,metrics){
+  const blocks=metrics.map(m=>{ const s=trendSeries(rows,m.key); if(s.length<2)return '';
+    const cur=s[s.length-1],prev=s[s.length-2],d=cur-prev;
+    const arr=d>0.05?`▲ +${d.toFixed(1)}`:d<-0.05?`▼ ${d.toFixed(1)}`:'= 0';
+    const col=d>0.05?'var(--green)':d<-0.05?'var(--red)':'var(--text3)';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="min-width:150px"><div style="font-size:12.5px;color:var(--text2);font-weight:600">${m.label}</div>
+      <div style="font-family:var(--font-display);font-size:18px;font-weight:700;color:${m.color}">${cur.toFixed(1)}<span style="font-size:11px;color:var(--text3)">/${m.max}</span> <span style="font-size:11px;color:${col};font-weight:600">${arr}</span></div></div>
+      <div style="flex:1;min-width:0">${spark(s,m.color,m.max)}</div></div>`; }).filter(Boolean).join('');
+  return blocks?`<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:4px">
+    <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;font-weight:600">📈 Évolution dans le temps</div>${blocks}</div>`:'';
+}
+
 function renderAdmin(){
   const f=rpFilter==='all'?responses:responses.filter(r=>r.playerId===rpFilter);
   const avg=key=>{const v=f.filter(r=>r[key]);return v.length?(v.reduce((s,r)=>s+(r[key]||0),0)/v.length).toFixed(1):'—';};
@@ -566,6 +600,7 @@ function renderAdmin(){
   <div class="rp-kpi"><div class="rp-kpi-val" style="color:var(--cyan)">${avg('q4_ambiance')}/5</div><div class="rp-kpi-lbl">Ambiance</div></div>
   <div class="rp-kpi"><div class="rp-kpi-val" style="color:var(--green)">${avg('q5_motivation')}/5</div><div class="rp-kpi-lbl">Motivation</div></div>
 </div>
+${trendCard(f, PLAYER_TREND)}
 <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:4px">
   <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;font-weight:600">Moyennes évaluation par critère</div>
   ${CRITERIA.map(c=>`<div style="display:flex;align-items:center;gap:12px;margin-bottom:7px">
