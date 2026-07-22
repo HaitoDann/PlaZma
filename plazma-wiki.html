@@ -60,8 +60,17 @@
   .spell-name{font-weight:700;font-size:14px;margin-bottom:3px}
   .spell-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);font-family:var(--font-mono);margin-bottom:7px}
   .spell-meta b{color:var(--dim);font-weight:700}
-  .spell-desc{font-size:12.5px;color:var(--dim);line-height:1.55}
+  .spell-desc{font-size:12.5px;color:var(--dim);line-height:1.6}
   .spell-desc br{content:'';display:block;margin:3px 0}
+  /* Balises Data Dragon (rendues en éléments inline) — coloration par type */
+  .spell-desc magicDamage,.spell-desc scaleAP,.spell-desc scaleMana{color:#5cc8ff;font-weight:600}
+  .spell-desc physicalDamage,.spell-desc scaleAD{color:#f9a03c;font-weight:600}
+  .spell-desc trueDamage{color:#f0f0f0;font-weight:600}
+  .spell-desc healing,.spell-desc lifeSteal,.spell-desc scaleHealth{color:#5fd38a;font-weight:600}
+  .spell-desc shield{color:#c3ccdb;font-weight:600}
+  .spell-desc status,.spell-desc keywordMajor,.spell-desc keywordStealth,.spell-desc attention,.spell-desc recast{color:var(--accent);font-weight:600}
+  .spell-desc speed{color:#8b9dff;font-weight:600}
+  .spell-desc rules,.spell-desc flavorText{display:block;margin-top:6px;font-style:italic;color:var(--muted);font-size:11.5px}
 
   .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:9px}
   .stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 13px}
@@ -119,6 +128,23 @@ const STAT_LABELS=[
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 // Data Dragon renvoie du HTML sûr (Riot) ; on retire seulement d'éventuels <script>.
 const safeHtml=s=>String(s||'').replace(/<script[\s\S]*?<\/script>/gi,'');
+
+// Le tooltip contient les vrais chiffres, mais avec des placeholders :
+//  {{ eN }} = valeurs de base par rang (effectBurn) ; {{ aN/fN }} = ratios (vars).
+function resolveTooltip(spell){
+  let t = spell.tooltip || spell.description || '';
+  const eff = spell.effectBurn || [];
+  t = t.replace(/\{\{\s*e(\d+)\s*\}\}/g, (m,n)=> (eff[+n]!=null && eff[+n]!=='') ? eff[+n] : m);
+  const vars = {}; (spell.vars||[]).forEach(v=>{ vars[v.key]=v; });
+  const asPct = x => (typeof x==='number' && x>0 && x<=3) ? Math.round(x*100)+'%' : x;
+  t = t.replace(/\{\{\s*([a-z]\d+)\s*\}\}/gi, (m,key)=>{
+    const v = vars[key]; if(!v) return m;
+    return Array.isArray(v.coeff) ? v.coeff.map(asPct).join('/') : String(asPct(v.coeff));
+  });
+  // Retire les éventuels placeholders non résolus (bruit).
+  t = t.replace(/\{\{\s*[^}]*\}\}/g, '');
+  return t;
+}
 
 let VER='', LIST=[], activeTag='';
 
@@ -201,7 +227,7 @@ async function openChamp(id){
           ${s.costBurn&&s.costBurn!=='0'?`<span><b>Coût</b> ${esc(s.costBurn)}</span>`:''}
           ${s.rangeBurn&&s.rangeBurn!=='0'&&s.rangeBurn!=='self'?`<span><b>Portée</b> ${esc(s.rangeBurn)}</span>`:''}
         </div>
-        <div class="spell-desc">${safeHtml(s.description)}</div>
+        <div class="spell-desc">${safeHtml(resolveTooltip(s))}</div>
       </div>
     </div>`).join('');
   const passive=c.passive?`
