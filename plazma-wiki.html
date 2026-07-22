@@ -185,7 +185,7 @@ document.getElementById('wback').addEventListener('click', showList);
 async function openChamp(id){
   const body=document.getElementById('wdBody');
   document.getElementById('listView').style.display='none';
-  document.getElementById('wdetail').style.display='';
+  document.getElementById('wdetail').style.display='block';
   body.innerHTML='<div class="wiki-empty">Chargement…</div>';
   history.replaceState(null,'','#'+id);
   window.scrollTo({top:0,behavior:'smooth'});
