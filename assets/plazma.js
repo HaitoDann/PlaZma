@@ -207,6 +207,7 @@
     { key: 'schedule',     href: 'plazma-schedule.html',    label: 'Planning',     section: 'planning' },
     { key: 'scrim',        href: 'plazma-scrim.html',       label: 'Scrim',        section: 'scrim' },
     { key: 'scouting',     href: 'plazma-scouting.html',    label: 'Scouting',     section: 'scouting' },
+    { key: 'wiki',         href: 'plazma-wiki.html',        label: 'Wiki' },
     { key: 'team',         href: 'plazma-team.html',        label: 'Équipe',       section: 'team' },
     { key: 'dashboard',    href: 'plazma-dashboard.html',   label: 'Dashboard',    section: 'dashboard' },
     { key: 'coach',        href: 'plazma-coach.html',       label: 'Coach',        section: 'coach' },

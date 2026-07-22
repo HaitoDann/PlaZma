@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARCHI — Wiki champions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+  .content{max-width:1180px;margin:0 auto;padding:22px var(--gut) 80px}
+  .wiki-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  .wiki-head h1{font-size:1.7rem;font-family:var(--font-display)}
+  .wiki-head .pver{font-family:var(--font-mono);font-size:11px;color:var(--muted);background:var(--surface-2);border:1px solid var(--border);padding:3px 8px;border-radius:6px}
+  .wiki-sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+  .wiki-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .wiki-search{flex:1;min-width:220px}
+  .wiki-filters{display:flex;gap:6px;flex-wrap:wrap}
+  .wf{font-size:12px;font-weight:600;padding:6px 11px;border-radius:20px;border:1px solid var(--border);
+    background:var(--surface-2);color:var(--muted);cursor:pointer}
+  .wf.on{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent)}
+
+  .wiki-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
+  .wtile{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;cursor:pointer;
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--r);transition:transform .12s,border-color .12s}
+  .wtile:hover{transform:translateY(-3px);border-color:var(--accent-line)}
+  .wtile img{width:52px;height:52px;border-radius:12px;display:block}
+  .wtile .nm{font-size:11.5px;font-weight:600;text-align:center;line-height:1.2}
+  .wtile .rl{font-size:9px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+  .wiki-empty{grid-column:1/-1;text-align:center;color:var(--muted);font-size:13px;padding:40px}
+
+  /* Détail */
+  .wdetail{display:none}
+  .wback{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--accent);
+    background:none;border:0;cursor:pointer;margin-bottom:14px;padding:0}
+  .wd-hero{position:relative;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--border);margin-bottom:18px;min-height:150px;
+    background:var(--surface-2);display:flex;align-items:flex-end}
+  .wd-hero .bg{position:absolute;inset:0;background-size:cover;background-position:center 22%;opacity:.5}
+  .wd-hero .grad{position:absolute;inset:0;background:linear-gradient(0deg,var(--bg) 0%,transparent 70%)}
+  .wd-hero .inner{position:relative;display:flex;align-items:flex-end;gap:14px;padding:18px 20px}
+  .wd-hero img.ico{width:64px;height:64px;border-radius:14px;border:1px solid var(--border-2);flex-shrink:0}
+  .wd-name{font-family:var(--font-display);font-size:1.8rem;font-weight:700;line-height:1.1}
+  .wd-title{font-size:13px;color:var(--dim);text-transform:capitalize}
+  .wd-tags{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+  .wd-tag{font-size:10.5px;font-weight:700;letter-spacing:.03em;padding:3px 9px;border-radius:20px;background:var(--accent-soft);color:var(--accent)}
+  .wd-tag.res{background:var(--surface);color:var(--muted);border:1px solid var(--border)}
+
+  .wd-sec-t{font-family:var(--font-display);font-size:13px;font-weight:600;color:var(--text);margin:20px 0 10px;
+    padding-bottom:8px;border-bottom:1px solid var(--border)}
+  .spell{display:flex;gap:13px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:9px}
+  .spell-ico{position:relative;flex-shrink:0}
+  .spell-ico img{width:46px;height:46px;border-radius:10px;display:block}
+  .spell-key{position:absolute;bottom:-5px;right:-5px;width:20px;height:20px;border-radius:6px;background:var(--accent);color:#04222a;
+    font-family:var(--font-display);font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center}
+  .spell-body{flex:1;min-width:0}
+  .spell-name{font-weight:700;font-size:14px;margin-bottom:3px}
+  .spell-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);font-family:var(--font-mono);margin-bottom:7px}
+  .spell-meta b{color:var(--dim);font-weight:700}
+  .spell-desc{font-size:12.5px;color:var(--dim);line-height:1.55}
+  .spell-desc br{content:'';display:block;margin:3px 0}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:9px}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 13px}
+  .stat .k{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+  .stat .v{font-family:var(--font-display);font-size:1.15rem;font-weight:700;margin-top:2px}
+  .stat .pl{font-size:10.5px;color:var(--muted);font-family:var(--font-mono)}
+
+  .tips{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .tipbox{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:13px 15px}
+  .tipbox .t{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
+  .tipbox ul{margin:0;padding-left:16px}
+  .tipbox li{font-size:12px;color:var(--dim);line-height:1.5;margin-bottom:4px}
+
+  @media(max-width:640px){.tips{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="loader"><div class="loader-mark">ARCHI</div><div class="loader-bar"></div></div>
+<div id="nav"></div>
+
+<div class="content">
+  <div class="wiki-head"><h1>Wiki champions</h1><span class="pver" id="patchVer">—</span></div>
+  <div class="wiki-sub">Sorts, cooldowns, ratios et statistiques de chaque champion. Données officielles Riot (Data Dragon), à jour au dernier patch.</div>
+
+  <!-- Vue liste -->
+  <div id="listView">
+    <div class="wiki-bar">
+      <input class="wiki-search" id="wikiSearch" type="text" placeholder="Rechercher un champion…" autocomplete="off" spellcheck="false">
+      <div class="wiki-filters" id="wikiFilters"></div>
+    </div>
+    <div class="wiki-grid" id="wikiGrid"><div class="wiki-empty">Chargement des champions…</div></div>
+  </div>
+
+  <!-- Vue détail -->
+  <div class="wdetail" id="wdetail">
+    <button class="wback" id="wback">‹ Tous les champions</button>
+    <div id="wdBody"></div>
+  </div>
+</div>
+
+<script src="assets/plazma.js"></script>
+<script>
+'use strict';
+PZ.mountNav('wiki', '#nav');
+
+const DD='https://ddragon.leagueoflegends.com', LANG='fr_FR';
+const TAG_FR={Fighter:'Combattant',Mage:'Mage',Assassin:'Assassin',Marksman:'Tireur',Support:'Support',Tank:'Tank'};
+const STAT_LABELS=[
+  ['hp','PV','hpperlevel'],['mp','Ressource','mpperlevel'],['hpregen','Régén. PV','hpregenperlevel'],
+  ['armor','Armure','armorperlevel'],['spellblock','Résist. magique','spellblockperlevel'],
+  ['attackdamage','Dégâts (AD)','attackdamageperlevel'],['attackspeed','Vit. attaque','attackspeedperlevel'],
+  ['movespeed','Vitesse','' ],['attackrange','Portée','']
+];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// Data Dragon renvoie du HTML sûr (Riot) ; on retire seulement d'éventuels <script>.
+const safeHtml=s=>String(s||'').replace(/<script[\s\S]*?<\/script>/gi,'');
+
+let VER='', LIST=[], activeTag='';
+
+async function fetchJSON(url){ const r=await fetch(url); if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }
+async function getVersion(){
+  try{ const c=JSON.parse(localStorage.getItem('pz_ddver')||'null'); if(c&&c.v&&c.t&&Date.now()-c.t<6*3600*1000){ VER=c.v; return VER; } }catch(e){}
+  const vs=await fetchJSON(DD+'/api/versions.json'); VER=vs[0];
+  try{ localStorage.setItem('pz_ddver',JSON.stringify({v:VER,t:Date.now()})); }catch(e){}
+  return VER;
+}
+async function getList(){
+  await getVersion();
+  const key='pz_wiki_list_'+VER;
+  try{ const c=JSON.parse(localStorage.getItem(key)||'null'); if(c&&c.length) return c; }catch(e){}
+  const data=await fetchJSON(`${DD}/cdn/${VER}/data/${LANG}/champion.json`);
+  const list=Object.values(data.data).map(c=>({id:c.id,name:c.name,title:c.title,tags:c.tags||[]}))
+    .sort((a,b)=>a.name.localeCompare(b.name,'fr'));
+  try{ localStorage.setItem(key,JSON.stringify(list)); }catch(e){}
+  return list;
+}
+async function getChamp(id){
+  await getVersion();
+  const key='pz_wiki_c_'+VER+'_'+id;
+  try{ const c=JSON.parse(localStorage.getItem(key)||'null'); if(c) return c; }catch(e){}
+  const data=await fetchJSON(`${DD}/cdn/${VER}/data/${LANG}/champion/${id}.json`);
+  const c=data.data[id];
+  try{ localStorage.setItem(key,JSON.stringify(c)); }catch(e){}
+  return c;
+}
+const champIcon=id=>`${DD}/cdn/${VER}/img/champion/${id}.png`;
+const spellIcon=f=>`${DD}/cdn/${VER}/img/spell/${f}`;
+const passiveIcon=f=>`${DD}/cdn/${VER}/img/passive/${f}`;
+const splash=id=>`${DD}/cdn/img/champion/splash/${id}_0.jpg`;
+
+// ── Liste ──
+function renderFilters(){
+  const tags=Object.keys(TAG_FR);
+  document.getElementById('wikiFilters').innerHTML =
+    `<span class="wf${activeTag===''?' on':''}" data-tag="">Tous</span>` +
+    tags.map(t=>`<span class="wf${activeTag===t?' on':''}" data-tag="${t}">${TAG_FR[t]}</span>`).join('');
+}
+function renderGrid(){
+  const q=(document.getElementById('wikiSearch').value||'').trim().toLowerCase();
+  const items=LIST.filter(c=>
+    (!activeTag || c.tags.includes(activeTag)) &&
+    (!q || c.name.toLowerCase().includes(q) || c.id.toLowerCase().includes(q))
+  );
+  const g=document.getElementById('wikiGrid');
+  if(!items.length){ g.innerHTML='<div class="wiki-empty">Aucun champion trouvé.</div>'; return; }
+  g.innerHTML=items.map(c=>`<button class="wtile" data-id="${c.id}">
+    <img src="${champIcon(c.id)}" alt="${esc(c.name)}" loading="lazy" onerror="this.style.visibility='hidden'">
+    <span class="nm">${esc(c.name)}</span>
+    <span class="rl">${(c.tags||[]).map(t=>TAG_FR[t]||t).join(' · ')}</span>
+  </button>`).join('');
+}
+document.getElementById('wikiSearch').addEventListener('input', renderGrid);
+document.getElementById('wikiFilters').addEventListener('click', e=>{ const el=e.target.closest('.wf'); if(!el)return; activeTag=el.dataset.tag; renderFilters(); renderGrid(); });
+document.getElementById('wikiGrid').addEventListener('click', e=>{ const el=e.target.closest('.wtile'); if(el) openChamp(el.dataset.id); });
+
+// ── Détail ──
+function showList(){ document.getElementById('listView').style.display=''; document.getElementById('wdetail').style.display='none'; if(location.hash) history.replaceState(null,'','#'); }
+document.getElementById('wback').addEventListener('click', showList);
+
+async function openChamp(id){
+  const body=document.getElementById('wdBody');
+  document.getElementById('listView').style.display='none';
+  document.getElementById('wdetail').style.display='';
+  body.innerHTML='<div class="wiki-empty">Chargement…</div>';
+  history.replaceState(null,'','#'+id);
+  window.scrollTo({top:0,behavior:'smooth'});
+  let c; try{ c=await getChamp(id); }catch(e){ body.innerHTML='<div class="wiki-empty">Impossible de charger ce champion (hors-ligne ?).</div>'; return; }
+  const keys=['Q','W','E','R'];
+  const spells=(c.spells||[]).map((s,i)=>`
+    <div class="spell">
+      <div class="spell-ico"><img src="${spellIcon(s.image.full)}" alt="" onerror="this.style.visibility='hidden'"><span class="spell-key">${keys[i]||''}</span></div>
+      <div class="spell-body">
+        <div class="spell-name">${esc(s.name)}</div>
+        <div class="spell-meta">
+          ${s.cooldownBurn&&s.cooldownBurn!=='0'?`<span><b>CD</b> ${esc(s.cooldownBurn)}s</span>`:''}
+          ${s.costBurn&&s.costBurn!=='0'?`<span><b>Coût</b> ${esc(s.costBurn)}</span>`:''}
+          ${s.rangeBurn&&s.rangeBurn!=='0'&&s.rangeBurn!=='self'?`<span><b>Portée</b> ${esc(s.rangeBurn)}</span>`:''}
+        </div>
+        <div class="spell-desc">${safeHtml(s.description)}</div>
+      </div>
+    </div>`).join('');
+  const passive=c.passive?`
+    <div class="spell">
+      <div class="spell-ico"><img src="${passiveIcon(c.passive.image.full)}" alt="" onerror="this.style.visibility='hidden'"><span class="spell-key" style="background:var(--muted)">P</span></div>
+      <div class="spell-body"><div class="spell-name">${esc(c.passive.name)}</div><div class="spell-desc">${safeHtml(c.passive.description)}</div></div>
+    </div>`:'';
+  const st=c.stats||{};
+  const round=n=>Math.round((+n||0)*100)/100;
+  const statTiles=STAT_LABELS.map(([k,l,pl])=>{
+    if(st[k]==null) return '';
+    let v=round(st[k]); if(k==='attackspeed') v=round(st[k]);
+    return `<div class="stat"><div class="k">${l}</div><div class="v">${v}</div>${pl&&st[pl]?`<div class="pl">+${round(st[pl])}/niv</div>`:''}</div>`;
+  }).filter(Boolean).join('');
+  const tipBox=(title,arr,color)=> (arr&&arr.length)?`<div class="tipbox"><div class="t" style="color:${color}">${title}</div><ul>${arr.slice(0,5).map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`:'';
+  const tips=(c.allytips&&c.allytips.length)||(c.enemytips&&c.enemytips.length)
+    ? `<div class="wd-sec-t">Conseils</div><div class="tips">${tipBox('Jouer avec',c.allytips,'var(--ok)')}${tipBox('Jouer contre',c.enemytips,'var(--err)')}</div>` : '';
+
+  body.innerHTML=`
+    <div class="wd-hero">
+      <div class="bg" style="background-image:url('${splash(id)}')"></div><div class="grad"></div>
+      <div class="inner">
+        <img class="ico" src="${champIcon(id)}" alt="" onerror="this.style.display='none'">
+        <div>
+          <div class="wd-name">${esc(c.name)}</div>
+          <div class="wd-title">${esc(c.title)}</div>
+          <div class="wd-tags">${(c.tags||[]).map(t=>`<span class="wd-tag">${TAG_FR[t]||t}</span>`).join('')}${c.partype?`<span class="wd-tag res">${esc(c.partype)}</span>`:''}</div>
+        </div>
+      </div>
+    </div>
+    <div class="wd-sec-t">Compétences</div>
+    ${passive}${spells}
+    <div class="wd-sec-t">Statistiques de base</div>
+    <div class="stats">${statTiles}</div>
+    ${tips}`;
+}
+
+// ── Init ──
+(async()=>{
+  try{
+    LIST=await getList();
+    document.getElementById('patchVer').textContent='Patch '+VER;
+    renderFilters(); renderGrid();
+    const h=(location.hash||'').replace(/^#/,'').trim();
+    if(h && LIST.some(c=>c.id===h)) openChamp(h);
+  }catch(e){
+    console.error(e);
+    document.getElementById('wikiGrid').innerHTML='<div class="wiki-empty">Impossible de charger les données des champions (connexion ?). Réessaie plus tard.</div>';
+  }
+  PZ.loadingDone();
+})();
+window.addEventListener('hashchange',()=>{ const h=(location.hash||'').replace(/^#/,'').trim(); if(h && LIST.some(c=>c.id===h)) openChamp(h); else showList(); });
+</script>
+</body>
+</html>

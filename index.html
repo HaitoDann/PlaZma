@@ -65,6 +65,18 @@
   .staff{display:flex;justify-content:center}
   .staff .pcard{flex-direction:row;text-align:left;min-width:230px;padding:16px 22px}
 
+  /* Wiki — chercheur rapide */
+  .sec-head .wiki-all{margin-left:auto;font-size:12px;font-weight:600;color:var(--muted)}
+  .sec-head .wiki-all:hover{color:var(--accent)}
+  #wikiSearch{width:100%}
+  .wiki-res{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:10px;margin-top:12px}
+  .wiki-hint{grid-column:1/-1;color:var(--muted);font-size:12.5px;padding:6px 2px}
+  .wr-tile{display:flex;flex-direction:column;align-items:center;gap:5px;padding:9px 5px;text-decoration:none;
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--r);transition:transform .12s,border-color .12s}
+  .wr-tile:hover{transform:translateY(-3px);border-color:var(--accent-line)}
+  .wr-tile img{width:46px;height:46px;border-radius:11px;display:block}
+  .wr-tile span{font-size:11px;font-weight:600;color:var(--text);text-align:center;line-height:1.2}
+
   footer{margin-top:52px;padding-top:22px;border-top:1px solid var(--border);width:100%;
     display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;
     color:var(--muted);font-size:12px}
@@ -111,7 +123,18 @@
         <span class="tool-ico">💬</span><span class="tool-name">Satisfaction</span>
         <span class="tool-desc">Ressenti et bien-être des joueurs</span>
       </a>
+      <a class="tool" href="plazma-wiki.html" style="--tc:#8b5cf6">
+        <span class="tool-ico">📖</span><span class="tool-name">Wiki</span>
+        <span class="tool-desc">Sorts, stats et cooldowns des champions</span>
+      </a>
     </div>
+  </section>
+
+  <!-- WIKI — chercheur rapide -->
+  <section class="sec">
+    <div class="sec-head"><h2>Wiki champions</h2><span class="line"></span><a class="wiki-all" href="plazma-wiki.html">Tout voir →</a></div>
+    <input id="wikiSearch" type="text" placeholder="Rechercher un champion — sorts, stats, cooldowns…" autocomplete="off" spellcheck="false">
+    <div class="wiki-res" id="wikiRes"><div class="wiki-hint">Tape un nom de champion pour ouvrir sa fiche.</div></div>
   </section>
 
   <!-- ROSTER -->
@@ -137,7 +160,25 @@
 
 </div>
 <script src="assets/plazma.js"></script>
+<script src="assets/champions.js"></script>
 <script>
+  // Chercheur rapide Wiki (Data Dragon — aucune donnée stockée)
+  Champions.ready.then(() => {
+    const inp = document.getElementById('wikiSearch'), res = document.getElementById('wikiRes');
+    if (!inp || !res) return;
+    if (!Champions.list.length) { res.innerHTML = '<div class="wiki-hint">Wiki indisponible (hors-ligne).</div>'; return; }
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    function render() {
+      const q = inp.value.trim().toLowerCase();
+      if (!q) { res.innerHTML = '<div class="wiki-hint">Tape un nom de champion pour ouvrir sa fiche.</div>'; return; }
+      const items = Champions.list.filter(c => c.name.toLowerCase().includes(q) || c.id.toLowerCase().includes(q)).slice(0, 18);
+      res.innerHTML = items.length
+        ? items.map(c => `<a class="wr-tile" href="plazma-wiki.html#${encodeURIComponent(c.id)}"><img src="${Champions.iconUrl(c.id)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span>${esc(c.name)}</span></a>`).join('')
+        : '<div class="wiki-hint">Aucun champion trouvé.</div>';
+    }
+    inp.addEventListener('input', render);
+  });
+
   const PERF_HREF = { top:'plazma-perf-top.html', jungle:'plazma-perf-jungler.html', mid:'plazma-perf-mid.html', adc:'plazma-perf-adc.html', support:'plazma-perf-supp.html' };
   PZ.onRoster((roster, coach) => {
     document.getElementById('rosterGrid').innerHTML = roster.map(p => `
