@@ -435,6 +435,9 @@
     if (!res.ok) { let t = ''; try { t = await res.text(); } catch (e) {} throw new Error('Discord ' + res.status + (t ? ' · ' + t.slice(0, 140) : '')); }
   }
 
+  // Avatar affiché par Discord pour les messages ARCHI (logo, URL publique absolue).
+  const _dcAvatar = (() => { try { return new URL('assets/logo-plazma.png', location.href).href; } catch (e) { return ''; } })();
+
   const _dcInp = 'width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--line,#2a2f3a);background:var(--surface-2,#12151d);color:var(--text,#e7e9ee);font-size:13px;box-sizing:border-box;font-family:inherit';
   const _dcGhost = 'padding:8px 14px;border-radius:9px;border:1px solid var(--line,#2a2f3a);background:transparent;color:var(--dim,#9aa0ad);font-size:13px;cursor:pointer;font-family:inherit';
   const _dcPrimary = 'padding:8px 14px;border-radius:9px;border:0;background:var(--accent,#6ea8fe);color:#06101f;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit';
@@ -470,7 +473,9 @@
         const url = discordWebhook(channel);
         const btn = ov.querySelector('#pzdc_send'); btn.disabled = true; btn.textContent = 'Envoi…';
         try {
-          await discordSend(url, { username: 'ARCHI', embeds: [embed] });
+          const payload = { username: 'ARCHI', embeds: [embed] };
+          if (_dcAvatar) payload.avatar_url = _dcAvatar;
+          await discordSend(url, payload);
           box('<div style="text-align:center;padding:12px 0"><div style="font-size:38px;margin-bottom:8px">✅</div><div style="margin-bottom:18px">Publié sur Discord.</div><button id="pzdc_done" style="' + _dcPrimary + '">Fermer</button></div>');
           ov.querySelector('#pzdc_done').onclick = close;
         } catch (e) {
