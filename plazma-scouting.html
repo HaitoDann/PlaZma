@@ -180,11 +180,11 @@
 <div class="content">
   <div class="toolbar" data-noexport>
     <span class="sync-pill"><span class="sync-dot offline" id="syncDot"></span><span id="syncText">En attente…</span><span class="sync-time" id="syncTime"></span></span>
-    <button class="btn btn-sm" onclick="newSheet()">＋ Nouvelle</button>
+    <button class="btn btn-sm" onclick="newSheet()" data-edit>＋ Nouvelle</button>
     <button class="btn btn-sm" onclick="openDrawer()">Fiches <span id="sheetCount" class="muted"></span></button>
     <button class="btn btn-sm btn-primary" id="pubScoutBtn" title="Publier la synthèse adverse sur Discord">📢 Discord</button>
     <button class="btn btn-sm" id="exportBtn">⬇ PNG</button>
-    <button class="btn btn-sm btn-danger" onclick="resetCurrentSheet()">Vider</button>
+    <button class="btn btn-sm btn-danger" onclick="resetCurrentSheet()" data-edit>Vider</button>
   </div>
   <div style="text-align:center"><span class="chip" id="sheetChip">Chargement…</span></div>
 

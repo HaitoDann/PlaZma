@@ -122,7 +122,24 @@
     if (pageSection && !can(pageSection)) { gate(deniedHtml("Tu n'as pas accès à ce module. Demande l'accès à un administrateur.")); return; }
     ungate();
     refreshNav();
-    if (pageSection && accessLevel(pageSection) === 'view') showReadOnlyBanner();
+    if (pageSection && accessLevel(pageSection) === 'view') { showReadOnlyBanner(); applyReadOnly(); }
+  }
+  // Mode lecture seule générique : verrouille la saisie de texte/nombre et masque
+  // les commandes d'édition marquées [data-edit]. Couvre le contenu rendu dynamiquement
+  // (MutationObserver). Les contrôles de lecture (recherche, filtres) peuvent porter
+  // l'attribut data-ro-keep pour rester actifs.
+  function applyReadOnly() {
+    const lock = root => {
+      if (!root || root.nodeType !== 1) return;
+      if (root.matches && root.matches('[data-edit]')) root.style.display = 'none';
+      if (root.querySelectorAll) {
+        root.querySelectorAll('[data-edit]').forEach(el => { el.style.display = 'none'; });
+        root.querySelectorAll('textarea:not([data-ro-keep]), input[type="text"]:not([data-ro-keep]), input[type="number"]:not([data-ro-keep]), input:not([type]):not([data-ro-keep])')
+          .forEach(el => { el.readOnly = true; });
+      }
+    };
+    lock(document.body);
+    try { new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(lock))).observe(document.body, { childList: true, subtree: true }); } catch (e) {}
   }
   function showReadOnlyBanner() {
     if (document.getElementById('pz-ro-banner')) return;
@@ -274,24 +291,45 @@
    *   onData    : (exists) => appelé après réception (pour re-render)
    * @returns { save, reset, stop, docId }
    */
+  // Signature de contenu insensible à l'ordre des clés (Firestore réordonne) et
+  // sans _savedAt : distingue l'écho de nos propres sauvegardes d'un vrai changement distant.
+  function _sig(o) {
+    const norm = v => {
+      if (Array.isArray(v)) return v.map(norm);
+      if (v && typeof v === 'object') { const r = {}; Object.keys(v).sort().forEach(k => { if (k !== '_savedAt') r[k] = norm(v[k]); }); return r; }
+      return v;
+    };
+    return JSON.stringify(norm(o));
+  }
+
   function sync(opts) {
     const { getState, applyState, onData } = opts;
     const resolveId = () =>
       (typeof opts.docId === 'function' ? opts.docId() : opts.docId);
     let unsub = null;
     let current = null;
+    let lastSavedSig = null, suppressUntil = 0;   // garde anti-écho
 
     function start() {
       if (!db) { status('error', 'Firebase indisponible'); loadingDone(); return; }
       if (unsub) { unsub(); unsub = null; }
       current = resolveId();
+      lastSavedSig = null; suppressUntil = 0;
       status('syncing', 'Connexion…');
       unsub = db.collection(COLLECTION).doc(current).onSnapshot(
         doc => {
-          if (doc.metadata.hasPendingWrites) return;
-          if (doc.exists) { applyState && applyState(doc.data()); status('connected', 'Synchronisé', nowTime()); }
-          else status('connected', 'Vide', '');
-          onData && onData(doc.exists);
+          if (doc.metadata.hasPendingWrites) return;             // écriture optimiste locale
+          if (!doc.exists) { status('connected', 'Vide', ''); onData && onData(false); loadingDone(); return; }
+          // On ne reconstruit (applyState + re-render) que sur un VRAI changement distant,
+          // jamais sur l'écho de nos propres sauvegardes → plus de sauts de curseur.
+          const incoming = _sig(doc.data());
+          const isEcho = incoming === lastSavedSig || Date.now() < suppressUntil;
+          if (isEcho || (getState && incoming === _sig(getState()))) {
+            status('connected', 'Synchronisé', nowTime()); loadingDone(); return;
+          }
+          applyState && applyState(doc.data());
+          status('connected', 'Synchronisé', nowTime());
+          onData && onData(true);
           loadingDone();
         },
         err => { console.error(err); status('error', 'Erreur de connexion'); loadingDone(); }
@@ -301,7 +339,9 @@
     function save() {
       if (!db) { status('error', 'Firebase indisponible'); return Promise.resolve(); }
       status('syncing', 'Sauvegarde…');
-      return db.collection(COLLECTION).doc(resolveId()).set(getState())
+      const state = getState();
+      lastSavedSig = _sig(state); suppressUntil = Date.now() + 3000;   // ignorer l'écho de cette écriture
+      return db.collection(COLLECTION).doc(resolveId()).set(state)
         .then(() => status('connected', 'Synchronisé', nowTime()))
         .catch(e => { console.error(e); status('error', 'Erreur Firebase'); });
     }
@@ -530,6 +570,26 @@
       config: FIREBASE_CONFIG
     }
   };
+
+  // ---- Zones de texte auto-extensibles ----
+  // Chrome/Edge récents : géré nativement en CSS (field-sizing:content, dans theme.css).
+  // Fallback JS pour les autres navigateurs.
+  (function autoGrow() {
+    const supported = window.CSS && CSS.supports && CSS.supports('field-sizing', 'content');
+    if (supported) return;
+    const grow = ta => {
+      const max = Math.round(window.innerHeight * 0.6);
+      ta.style.height = 'auto';
+      ta.style.height = Math.min(ta.scrollHeight, max) + 'px';
+      ta.style.overflowY = ta.scrollHeight > max ? 'auto' : 'hidden';
+    };
+    const growAll = () => document.querySelectorAll('textarea').forEach(grow);
+    document.addEventListener('input', e => { if (e.target && e.target.tagName === 'TEXTAREA') grow(e.target); });
+    document.addEventListener('focusin', e => { if (e.target && e.target.tagName === 'TEXTAREA') grow(e.target); });
+    window.addEventListener('load', growAll);
+    // Re-mesure quand une valeur est posée par programme (chargement Firestore).
+    try { new MutationObserver(() => growAll()).observe(document.body, { childList: true, subtree: true }); } catch (e) {}
+  })();
 
   // Démarre la vérification d'accès (affiche l'overlay avant tout contenu).
   startAuth();

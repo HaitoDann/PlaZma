@@ -108,12 +108,12 @@
 <div class="content">
   <div class="toolbar" data-noexport>
     <span class="sync-pill"><span class="sync-dot offline" id="syncDot"></span><span id="syncText">En attente…</span><span class="sync-time" id="syncTime"></span></span>
-    <button class="btn btn-sm" onclick="newSession()">＋ Nouveau</button>
+    <button class="btn btn-sm" onclick="newSession()" data-edit>＋ Nouveau</button>
     <button class="btn btn-sm" onclick="openHistory()">Historique <span id="histCount" class="muted"></span></button>
     <button class="btn btn-sm btn-primary" onclick="publishDiscord()">📢 Discord</button>
     <button class="btn btn-sm" id="exportBtn">⬇ PNG</button>
-    <button class="btn btn-sm" onclick="importBackup()">Import</button>
-    <button class="btn btn-sm btn-danger" onclick="resetCurrentSession()">Vider</button>
+    <button class="btn btn-sm" onclick="importBackup()" data-edit>Import</button>
+    <button class="btn btn-sm btn-danger" onclick="resetCurrentSession()" data-edit>Vider</button>
   </div>
   <div style="text-align:center"><span class="session-chip" id="sessionChip">Chargement…</span></div>
 

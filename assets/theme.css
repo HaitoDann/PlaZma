@@ -229,6 +229,12 @@ input:focus,select:focus,textarea:focus{
 }
 input::placeholder,textarea::placeholder{color:var(--muted)}
 textarea{resize:vertical;line-height:1.55}
+/* Auto-grandissement des zones de texte selon le contenu (natif Chrome/Edge ;
+   fallback JS dans plazma.js pour les autres). */
+textarea{field-sizing:content;max-height:55vh}
+/* Champs verrouillés en mode lecture seule */
+input:read-only,textarea:read-only{opacity:.75;cursor:default;box-shadow:none}
+input:read-only:focus,textarea:read-only:focus{border-color:var(--border-2);box-shadow:none}
 select option{background:var(--surface)}
 
 /* ---- Tableaux ---- */

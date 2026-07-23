@@ -122,9 +122,9 @@
       <span class="sync-pill"><span class="sync-dot offline" id="syncDot"></span><span id="syncText">En attente…</span><span class="sync-time" id="syncTime"></span></span>
       <button class="btn btn-sm" id="btnRefresh" title="Recharger les données agrégées">↻ Actualiser</button>
       <button class="btn btn-sm" id="btnBackup">Backup</button>
-      <button class="btn btn-sm" id="btnImport">Import</button>
-      <button class="btn btn-sm btn-danger" id="btnReset">Reset</button>
-      <button class="btn btn-sm btn-primary" onclick="openAddOffi()">＋ Officiel</button>
+      <button class="btn btn-sm" id="btnImport" data-edit>Import</button>
+      <button class="btn btn-sm btn-danger" id="btnReset" data-edit>Reset</button>
+      <button class="btn btn-sm btn-primary" onclick="openAddOffi()" data-edit>＋ Officiel</button>
     </div>
   </div>
 
@@ -163,7 +163,7 @@
   <div class="panel">
     <div class="panel-h">
       <div class="card-title">Roster — Rangs SoloQ EUW</div>
-      <button class="btn btn-sm" onclick="saveRanks()">Enregistrer les rangs</button>
+      <button class="btn btn-sm" onclick="saveRanks()" data-edit>Enregistrer les rangs</button>
     </div>
     <div class="roster" id="roster"></div>
   </div>
@@ -172,7 +172,7 @@
   <div class="panel">
     <div class="panel-h">
       <div class="card-title">Objectifs de la saison</div>
-      <button class="btn btn-sm" onclick="openAddObj()">＋ Ajouter</button>
+      <button class="btn btn-sm" onclick="openAddObj()" data-edit>＋ Ajouter</button>
     </div>
     <div class="objs" id="objList"></div>
   </div>
@@ -193,7 +193,7 @@
         <div id="rosterConfig"></div>
       </div>
     </div>
-    <div style="text-align:right;margin-top:12px"><button class="btn btn-sm btn-primary" onclick="saveSettings()">Enregistrer</button></div>
+    <div style="text-align:right;margin-top:12px"><button class="btn btn-sm btn-primary" onclick="saveSettings()" data-edit>Enregistrer</button></div>
   </details>
 </div>
 
