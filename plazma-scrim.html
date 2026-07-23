@@ -370,8 +370,10 @@ async function loadHistoryList(){
   const list=document.getElementById('drawerList'); list.innerHTML='<div class="drawer-empty">Chargement…</div>';
   if(!db){ list.innerHTML='<div class="drawer-empty">Firebase indisponible.</div>'; return; }
   let docs=[];
-  try{ const snap=await db.collection(SCRIMS_COL).orderBy('_savedAt','desc').get(); snap.forEach(d=>docs.push({id:d.id,...d.data()})); }
-  catch{ const snap=await db.collection(SCRIMS_COL).get(); snap.forEach(d=>docs.push({id:d.id,...d.data()})); docs.sort((a,b)=>(b._savedAt?.toMillis?.()||0)-(a._savedAt?.toMillis?.()||0)); }
+  try{
+    try{ const snap=await db.collection(SCRIMS_COL).orderBy('_savedAt','desc').get(); snap.forEach(d=>docs.push({id:d.id,...d.data()})); }
+    catch{ const snap=await db.collection(SCRIMS_COL).get(); snap.forEach(d=>docs.push({id:d.id,...d.data()})); docs.sort((a,b)=>(b._savedAt?.toMillis?.()||0)-(a._savedAt?.toMillis?.()||0)); }
+  }catch(e){ console.error(e); list.innerHTML='<div class="drawer-empty">Lecture impossible : '+(e.message||e.code||'')+'</div>'; return; }
   document.getElementById('histCount').textContent = docs.length?'('+docs.length+')':'';
   if(!docs.length){ list.innerHTML='<div class="drawer-empty">Aucun scrim sauvegardé.</div>'; return; }
   list.innerHTML='';
