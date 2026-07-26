@@ -71,6 +71,12 @@
   .spell-desc status,.spell-desc keywordMajor,.spell-desc keywordStealth,.spell-desc attention,.spell-desc recast{color:var(--accent);font-weight:600}
   .spell-desc speed{color:#8b9dff;font-weight:600}
   .spell-desc rules,.spell-desc flavorText{display:block;margin-top:6px;font-style:italic;color:var(--muted);font-size:11.5px}
+  /* Chiffres précis par rang (source Meraki Analytics) */
+  .lvtable{margin-top:9px;border-top:1px dashed var(--border);padding-top:8px;display:grid;grid-template-columns:auto 1fr;gap:3px 14px;font-size:12px;font-family:var(--font-mono);align-items:baseline}
+  .lv{display:contents}
+  .lv-a{color:var(--muted);white-space:nowrap}
+  .lv-v{color:#e6ebf2;font-weight:600}
+  .mk-note{font-size:11px;color:var(--muted);margin:-4px 0 10px}
 
   .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:9px}
   .stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 13px}
@@ -149,6 +155,120 @@ function resolveTooltip(spell){
   return t;
 }
 
+// ── Chiffres précis par rang : Meraki Analytics ──────────────────────────
+// Data Dragon ne fournit plus les montants exacts sur les champions récents.
+// Meraki publie les valeurs entièrement résolues (dégâts/soin/bouclier par rang).
+// On enrichit la fiche de façon NON bloquante et tolérante : toute erreur
+// (réseau, 404, format inattendu) laisse simplement l'affichage Data Dragon.
+const MERAKI='https://cdn.merakianalytics.com/riot/lol/resources/latest/en/champions/';
+const MK_ATTR={
+  'Damage':'Dégâts','Magic Damage':'Dégâts magiques','Physical Damage':'Dégâts physiques',
+  'True Damage':'Dégâts bruts','Bonus Damage':'Dégâts bonus','Total Damage':'Dégâts totaux',
+  'Base Damage':'Dégâts de base','Minimum Damage':'Dégâts min.','Maximum Damage':'Dégâts max.',
+  'Damage Per Second':'Dégâts/sec','Damage per Tick':'Dégâts/intervalle','AoE Damage':'Dégâts de zone',
+  'Empowered Damage':'Dégâts améliorés','Critical Damage':'Dégâts critiques',
+  'Heal':'Soin','Healing':'Soin','Heal Amount':'Soin','Shield':'Bouclier','Shield Strength':'Bouclier',
+  'Health':'PV','Bonus Health':'PV bonus','Health Restored':'PV rendus',
+  'Attack Damage':"Dégâts d'attaque",'Movement Speed':'Vitesse de dép.','Move Speed':'Vitesse',
+  'Bonus Attack Speed':"Vit. d'attaque bonus",'Attack Speed':"Vit. d'attaque",
+  'Slow':'Ralentissement','Slow Amount':'Ralentissement','Duration':'Durée',
+  'Stun Duration':"Durée d'étourd.",'Root Duration':"Durée d'immob.",
+  'Range':'Portée','Cooldown':'Récupération','Cost':'Coût','Number of Targets':'Cibles',
+  'Energy Restored':'Énergie rendue','Mana Restored':'Mana rendu','Resource':'Ressource',
+  'Armor':'Armure','Bonus Armor':'Armure bonus','Magic Resistance':'Résist. magique',
+  'Magic Resist':'Résist. magique','Grievous Wounds':'Blessures graves'
+};
+function mkAttr(a){ return MK_ATTR[a] || a || ''; }
+function mkUnit(u){
+  if(!u) return '';
+  return String(u)
+    .replace(/% of ability power/gi,"% d'AP")
+    .replace(/% of attack damage/gi,"% d'AD")
+    .replace(/% bonus attack damage/gi,'% AD bonus')
+    .replace(/% bonus ability power/gi,'% AP bonus')
+    .replace(/% bonus AD/gi,'% AD bonus')
+    .replace(/% bonus AP/gi,'% AP bonus')
+    .replace(/% (?:of )?target's maximum health/gi,'% PV max cible')
+    .replace(/% (?:of )?maximum health/gi,'% PV max')
+    .replace(/% (?:of )?max health/gi,'% PV max')
+    .replace(/% (?:of )?missing health/gi,'% PV manquants')
+    .replace(/% (?:of )?current health/gi,'% PV actuels')
+    .replace(/bonus health/gi,'PV bonus')
+    .replace(/maximum health/gi,'PV max')
+    .replace(/max health/gi,'PV max')
+    .replace(/ability power/gi,'AP')
+    .replace(/attack damage/gi,'AD')
+    .replace(/per second/gi,'/s')
+    .replace(/\bseconds?\b/gi,'s');
+}
+function mkNum(n){ if(typeof n!=='number'||!isFinite(n)) return String(n); return String(Math.round(n*100)/100); }
+function mkModifier(m){
+  const vals=Array.isArray(m&&m.values)?m.values:[];
+  const units=Array.isArray(m&&m.units)?m.units:[];
+  if(!vals.length) return '';
+  const allSame=vals.every(v=>v===vals[0]);
+  const vstr=allSame?mkNum(vals[0]):vals.map(mkNum).join('/');
+  const unit=mkUnit(units[0]||'');
+  if(!unit) return vstr;
+  return vstr + (unit[0]==='%'?unit:' '+unit);
+}
+function mkLeveling(arr){
+  return (arr||[]).map(l=>{
+    const attr=mkAttr(l&&l.attribute);
+    const mods=((l&&l.modifiers)||[]).map(mkModifier).filter(Boolean);
+    if(!attr || !mods.length) return '';
+    const body=mods.map((s,i)=> i===0?s:'(+'+s+')').join(' ');
+    return `<div class="lv"><span class="lv-a">${esc(attr)}</span><span class="lv-v">${esc(body)}</span></div>`;
+  }).filter(Boolean).join('');
+}
+function mkBlock(ability){
+  if(!ability) return '';
+  let rows='';
+  (ability.effects||[]).forEach(ef=>{ rows += mkLeveling(ef&&ef.leveling); });
+  return rows ? `<div class="lvtable">${rows}</div>` : '';
+}
+// On ne garde en cache que le strict nécessaire (le JSON Meraki complet est lourd).
+function mkSlim(d){
+  const out={abilities:{}};
+  ['P','Q','W','E','R'].forEach(k=>{
+    const a=d&&d.abilities&&d.abilities[k]&&d.abilities[k][0];
+    if(!a) return;
+    out.abilities[k]=[{ effects:(a.effects||[]).map(ef=>({
+      leveling:((ef&&ef.leveling)||[]).map(l=>({
+        attribute:l.attribute,
+        modifiers:((l&&l.modifiers)||[]).map(m=>({values:m.values,units:m.units}))
+      }))
+    })) }];
+  });
+  return out;
+}
+async function getMeraki(id){
+  const key='pz_wiki_mk_'+id;
+  try{ const c=JSON.parse(localStorage.getItem(key)||'null'); if(c&&c.t&&Date.now()-c.t<24*3600*1000) return c.d; }catch(e){}
+  const slim=mkSlim(await fetchJSON(MERAKI+id+'.json'));
+  try{ localStorage.setItem(key,JSON.stringify({t:Date.now(),d:slim})); }catch(e){}
+  return slim;
+}
+async function enrichMeraki(id){
+  let m; try{ m=await getMeraki(id); }catch(e){ return; }        // silencieux si indispo
+  if(!m || !m.abilities) return;
+  if((location.hash||'').replace(/^#/,'')!==id) return;          // l'utilisateur a changé de fiche
+  const ab=m.abilities, added=[];
+  document.querySelectorAll('#wdBody .spell[data-slot]').forEach(el=>{
+    const slot=el.dataset.slot, a=ab[slot]&&ab[slot][0];
+    if(!a) return;
+    const bodyEl=el.querySelector('.spell-body');
+    if(!bodyEl || bodyEl.querySelector('.lvtable')) return;
+    const html=mkBlock(a);
+    if(html){ bodyEl.insertAdjacentHTML('beforeend', html); added.push(slot); }
+  });
+  const head=document.querySelector('#wdBody .wd-sec-t');        // "Compétences"
+  const after=head&&head.nextElementSibling;
+  if(added.length && head && !(after&&after.classList.contains('mk-note'))){
+    head.insertAdjacentHTML('afterend','<div class="mk-note">Chiffres précis par rang — source Meraki Analytics (libellés en anglais, parfois 1 patch de retard).</div>');
+  }
+}
+
 let VER='', LIST=[], activeTag='';
 
 async function fetchJSON(url){ const r=await fetch(url); if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }
@@ -221,7 +341,7 @@ async function openChamp(id){
   let c; try{ c=await getChamp(id); }catch(e){ body.innerHTML='<div class="wiki-empty">Impossible de charger ce champion (hors-ligne ?).</div>'; return; }
   const keys=['Q','W','E','R'];
   const spells=(c.spells||[]).map((s,i)=>`
-    <div class="spell">
+    <div class="spell" data-slot="${keys[i]||''}">
       <div class="spell-ico"><img src="${spellIcon(s.image.full)}" alt="" onerror="this.style.visibility='hidden'"><span class="spell-key">${keys[i]||''}</span></div>
       <div class="spell-body">
         <div class="spell-name">${esc(s.name)}</div>
@@ -234,7 +354,7 @@ async function openChamp(id){
       </div>
     </div>`).join('');
   const passive=c.passive?`
-    <div class="spell">
+    <div class="spell" data-slot="P">
       <div class="spell-ico"><img src="${passiveIcon(c.passive.image.full)}" alt="" onerror="this.style.visibility='hidden'"><span class="spell-key" style="background:var(--muted)">P</span></div>
       <div class="spell-body"><div class="spell-name">${esc(c.passive.name)}</div><div class="spell-desc">${safeHtml(c.passive.description)}</div></div>
     </div>`:'';
@@ -266,6 +386,8 @@ async function openChamp(id){
     <div class="wd-sec-t">Statistiques de base</div>
     <div class="stats">${statTiles}</div>
     ${tips}`;
+  // Enrichissement non-bloquant : chiffres précis par rang via Meraki Analytics.
+  enrichMeraki(id);
 }
 
 // ── Init ──
