@@ -132,7 +132,9 @@ const safeHtml=s=>String(s||'').replace(/<script[\s\S]*?<\/script>/gi,'');
 // Le tooltip contient les vrais chiffres, mais avec des placeholders :
 //  {{ eN }} = valeurs de base par rang (effectBurn) ; {{ aN/fN }} = ratios (vars).
 function resolveTooltip(spell){
-  let t = spell.tooltip || spell.description || '';
+  const desc = spell.description || '';
+  let t = spell.tooltip || '';
+  if(!t) return desc;
   const eff = spell.effectBurn || [];
   t = t.replace(/\{\{\s*e(\d+)\s*\}\}/g, (m,n)=> (eff[+n]!=null && eff[+n]!=='') ? eff[+n] : m);
   const vars = {}; (spell.vars||[]).forEach(v=>{ vars[v.key]=v; });
@@ -141,8 +143,9 @@ function resolveTooltip(spell){
     const v = vars[key]; if(!v) return m;
     return Array.isArray(v.coeff) ? v.coeff.map(asPct).join('/') : String(asPct(v.coeff));
   });
-  // Retire les éventuels placeholders non résolus (bruit).
-  t = t.replace(/\{\{\s*[^}]*\}\}/g, '');
+  // S'il reste des placeholders NON résolus (fréquent sur les patchs récents),
+  // on préfère la description générique (lisible) plutôt qu'un texte à trous.
+  if(/\{\{/.test(t)) return desc || t.replace(/\{\{[^}]*\}\}/g,'…');
   return t;
 }
 
