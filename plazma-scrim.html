@@ -394,6 +394,8 @@ async function loadHistoryList(){
         </div></div>
       <div class="sess-actions"><button onclick="loadSession('${doc.id}')">${active?'Modifier':'Ouvrir'}</button>
         <button onclick="deleteSession('${doc.id}',event)">Supprimer</button></div>`;
+    // Toute la carte est cliquable (et pas seulement le bouton « Ouvrir »).
+    c.querySelector('.sess-main').addEventListener('click', () => loadSession(doc.id));
     list.appendChild(c);
   });
 }

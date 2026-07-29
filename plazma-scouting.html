@@ -604,6 +604,8 @@ async function loadDrawer(){
       </div>
       <div class="sc-actions"><button onclick="loadSheet('${doc.id}')">${active?'Modifier':'Ouvrir'}</button>
         <button onclick="deleteSheet('${doc.id}',event)">Supprimer</button></div>`;
+    // Toute la carte est cliquable (et pas seulement le bouton « Ouvrir »).
+    c.querySelector('.sc-main').addEventListener('click', () => loadSheet(doc.id));
     list.appendChild(c);
   });
 }
