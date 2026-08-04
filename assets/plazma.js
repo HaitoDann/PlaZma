@@ -484,7 +484,10 @@
 
   /** Ouvre l'aperçu d'un embed Discord et le publie après confirmation. */
   function discordPublish(opts) {
-    opts = opts || {}; const channel = opts.channel || 'scrim'; const embed = opts.embed || {};
+    opts = opts || {}; const channel = opts.channel || 'scrim';
+    // Discord plafonne un message à 6000 caractères : un CR très détaillé peut
+    // exiger plusieurs messages. On accepte donc un tableau d'embeds.
+    const embeds = (opts.embeds && opts.embeds.length) ? opts.embeds : [opts.embed || {}];
     const ov = document.createElement('div');
     ov.setAttribute('style', 'position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);padding:20px;font-family:var(--font,system-ui),sans-serif');
     document.body.appendChild(ov);
@@ -494,16 +497,22 @@
     const H = t => '<h3 style="font-family:var(--font-display,inherit);margin:0 0 4px;font-size:17px">' + t + '</h3>';
 
     function renderPreview() {
-      const c = '#' + ((embed.color || 0x5865F2) & 0xFFFFFF).toString(16).padStart(6, '0');
-      const fields = (embed.fields || []).map(f =>
-        `<div style="margin-top:11px"><div style="font-size:12px;font-weight:700;color:var(--text,#e7e9ee)">${escHtml(f.name)}</div>` +
-        `<div style="font-size:12.5px;color:var(--dim,#9aa0ad);white-space:pre-wrap;margin-top:2px">${escHtml(f.value)}</div></div>`).join('');
+      const renderEmbed = embed => {
+        const c = '#' + ((embed.color || 0x5865F2) & 0xFFFFFF).toString(16).padStart(6, '0');
+        const fields = (embed.fields || []).map(f =>
+          `<div style="margin-top:11px"><div style="font-size:12px;font-weight:700;color:var(--text,#e7e9ee)">${escHtml(f.name)}</div>` +
+          `<div style="font-size:12.5px;color:var(--dim,#9aa0ad);white-space:pre-wrap;margin-top:2px">${escHtml(f.value)}</div></div>`).join('');
+        return `<div style="border-left:4px solid ${c};background:var(--surface-2,#12151d);border-radius:8px;padding:13px 15px;margin-top:10px">` +
+          `<div style="font-weight:700;font-size:14.5px">${escHtml(embed.title || '')}</div>` +
+          (embed.description ? `<div style="font-size:12.5px;color:var(--dim,#9aa0ad);white-space:pre-wrap;margin-top:4px">${escHtml(embed.description)}</div>` : '') +
+          `${fields}</div>`;
+      };
+      const multi = embeds.length > 1
+        ? `<div style="font-size:12px;color:var(--muted,#8b90a0);margin-bottom:8px">Trop long pour un seul message Discord : sera publié en <b>${embeds.length} messages</b> à la suite.</div>`
+        : '';
       box(H('Publier sur Discord') +
         `<div style="font-size:12px;color:var(--muted,#8b90a0);margin-bottom:14px">Aperçu du message — salon « ${escHtml(channel)} »</div>` +
-        `<div style="border-left:4px solid ${c};background:var(--surface-2,#12151d);border-radius:8px;padding:13px 15px">` +
-        `<div style="font-weight:700;font-size:14.5px">${escHtml(embed.title || '')}</div>` +
-        (embed.description ? `<div style="font-size:12.5px;color:var(--dim,#9aa0ad);white-space:pre-wrap;margin-top:4px">${escHtml(embed.description)}</div>` : '') +
-        `${fields}</div>` +
+        multi + embeds.map(renderEmbed).join('') +
         `<div id="pzdc_msg" style="font-size:12.5px;min-height:16px;margin-top:12px;color:var(--err,#f38b8b)"></div>` +
         `<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">` +
         `<button id="pzdc_cancel" style="${_dcGhost}">Annuler</button>` +
@@ -513,9 +522,16 @@
         const url = discordWebhook(channel);
         const btn = ov.querySelector('#pzdc_send'); btn.disabled = true; btn.textContent = 'Envoi…';
         try {
-          const payload = { username: 'ARCHI', embeds: [embed] };
-          if (_dcAvatar) payload.avatar_url = _dcAvatar;
-          await discordSend(url, payload);
+          // Un message par embed → chaque message reste sous la limite Discord.
+          for (let i = 0; i < embeds.length; i++) {
+            const payload = { username: 'ARCHI', embeds: [embeds[i]] };
+            if (_dcAvatar) payload.avatar_url = _dcAvatar;
+            await discordSend(url, payload);
+            if (embeds.length > 1) {
+              btn.textContent = 'Envoi… ' + (i + 1) + '/' + embeds.length;
+              if (i < embeds.length - 1) await new Promise(r => setTimeout(r, 350)); // évite le rate-limit
+            }
+          }
           box('<div style="text-align:center;padding:12px 0"><div style="font-size:38px;margin-bottom:8px">✅</div><div style="margin-bottom:18px">Publié sur Discord.</div><button id="pzdc_done" style="' + _dcPrimary + '">Fermer</button></div>');
           ov.querySelector('#pzdc_done').onclick = close;
         } catch (e) {

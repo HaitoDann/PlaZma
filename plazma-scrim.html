@@ -410,8 +410,41 @@ document.getElementById('exportBtn').addEventListener('click',()=>PZ.exportPNG(d
 document.getElementById('footDate').textContent='Mise à jour le '+new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
 
 // ── Publication Discord (embed écrit) ──
-function buildScrimEmbed(s){
-  const trunc=(t,n)=>{ t=String(t||'').trim(); return t.length>n? t.slice(0,n-1)+'…':t; };
+// Limites Discord : 1024 car./champ, 25 champs et 6000 car./embed, 6000 car./message.
+// On respecte tout cela : un texte trop long est découpé en plusieurs champs, et
+// les champs sont répartis sur plusieurs embeds (= plusieurs messages) si besoin.
+const trunc=(t,n)=>{ t=String(t||'').trim(); return t.length>n? t.slice(0,n-1)+'…':t; };
+// Découpe un texte en tranches ≤ limit, de préférence sur un saut de ligne, sinon un espace.
+function chunkText(text,limit){
+  text=String(text||'').trim(); const out=[];
+  while(text.length>limit){
+    let cut=text.lastIndexOf('\n',limit);
+    if(cut<limit*0.5) cut=text.lastIndexOf(' ',limit);
+    if(cut<=0) cut=limit;
+    out.push(text.slice(0,cut).trim()); text=text.slice(cut).trim();
+  }
+  if(text) out.push(text); return out;
+}
+// Ajoute un texte (potentiellement long) comme un ou plusieurs champs ≤1024.
+function pushLong(fields,name,text){
+  const parts=chunkText(text,1024);
+  // '​' (espace de largeur nulle) = nom de champ « invisible » pour une suite discrète.
+  parts.forEach((p,i)=> fields.push({name:i===0?name:'\u200b', value:p}));
+}
+// Répartit les champs sur autant d'embeds que nécessaire (≤25 champs, ≤5500 car./embed).
+function packEmbeds(base,fields){
+  const embeds=[]; let cur=null,len=0;
+  const start=()=>{ const e={color:base.color, fields:[]};
+    if(!embeds.length){ e.title=base.title; e.footer=base.footer; e.timestamp=base.timestamp; }
+    else e.title=trunc((base.title||'CR Scrim')+' (suite)',256);
+    embeds.push(e); cur=e; len=(e.title||'').length; };
+  start();
+  fields.forEach(f=>{ const fl=(f.name||'').length+(f.value||'').length;
+    if(cur.fields.length>=25 || len+fl>5500) start();
+    cur.fields.push(f); len+=fl; });
+  return embeds;
+}
+function buildScrimMessages(s){
   const adv=(s.m_adv||'Adversaire').trim();
   const a=+s.s_plazma, b=+s.s_adv;
   const color=(isFinite(a)&&isFinite(b)&&a!==b)?(a>b?0x22c55e:0xef4444):0x94a3b8;
@@ -426,19 +459,21 @@ function buildScrimEmbed(s){
   let et='';
   for(let g=1;g<=5;g++){ const arr=(s.errors&&s.errors['g'+g])||[]; if(arr.length){
     et+=`**Game ${g}**\n`+arr.map(e=>`• \`${e.timer||'--:--'}\` **${e.cat}**${e.desc?' — '+e.desc:''}`).join('\n')+'\n'; } }
-  if(et.trim()) fields.push({name:'❌ Erreurs relevées', value:trunc(et,1024)});
-  if((s.t_bien||'').trim())     fields.push({name:'✅ Ce qui a marché', value:trunc(s.t_bien,1024)});
-  if((s.t_corriger||'').trim()) fields.push({name:'🔧 À corriger', value:trunc(s.t_corriger,1024)});
-  const pl=ROSTER.map(p=>{ const r=(s['rem_'+p.id]||'').trim(); return r?`**${p.name}** — ${r}`:''; }).filter(Boolean).join('\n');
-  if(pl) fields.push({name:'👤 Remarques individuelles', value:trunc(pl,1024)});
-  if((s.f_comment||'').trim()) fields.push({name:'📝 Appréciation générale', value:trunc(s.f_comment,1024)});
-  return { title:trunc(`📋 CR Scrim — PlaZma vs ${adv}`,256), color, fields,
-    footer:{text:'ARCHI · PlaZma Esport'}, timestamp:new Date().toISOString() };
+  if(et.trim()) pushLong(fields,'❌ Erreurs relevées',et);
+  if((s.t_bien||'').trim())     pushLong(fields,'✅ Ce qui a marché',s.t_bien);
+  if((s.t_corriger||'').trim()) pushLong(fields,'🔧 À corriger',s.t_corriger);
+  // Une remarque individuelle = son propre champ (découpé si > 1024) → jamais coupée.
+  let first=true;
+  ROSTER.forEach(p=>{ const r=(s['rem_'+p.id]||'').trim(); if(!r) return;
+    pushLong(fields,(first?'👤 ':'')+p.name, r); first=false; });
+  if((s.f_comment||'').trim()) pushLong(fields,'📝 Appréciation générale',s.f_comment);
+  return packEmbeds({ title:trunc(`📋 CR Scrim — PlaZma vs ${adv}`,256), color,
+    footer:{text:'ARCHI · PlaZma Esport'}, timestamp:new Date().toISOString() }, fields);
 }
 function publishDiscord(){
   const s=getState();
   if(!(s.m_adv||'').trim() && !confirm('Aucun adversaire renseigné. Publier quand même ?')) return;
-  PZ.discord.publish({ channel:'scrim', embed:buildScrimEmbed(s) });
+  PZ.discord.publish({ channel:'scrim', embeds:buildScrimMessages(s) });
 }
 
 // Init
