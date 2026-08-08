@@ -471,8 +471,21 @@
       .then(() => { _discordCfg = _discordCfg || {}; _discordCfg[ch] = url; });
   }
   async function discordSend(url, payload) {
-    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    if (!res.ok) { let t = ''; try { t = await res.text(); } catch (e) {} throw new Error('Discord ' + res.status + (t ? ' · ' + t.slice(0, 140) : '')); }
+    // Discord peut renvoyer 429 (rate-limit) sur des envois rapprochés : on
+    // respecte le délai « retry_after » et on retente, pour ne jamais perdre
+    // un message au milieu d'une publication multi-messages.
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (res.status === 429) {
+        let wait = 1000;
+        try { const j = await res.clone().json(); if (j && j.retry_after) wait = Math.ceil(j.retry_after * 1000) + 250; } catch (e) {}
+        await new Promise(r => setTimeout(r, Math.min(wait, 8000)));
+        continue;
+      }
+      if (!res.ok) { let t = ''; try { t = await res.text(); } catch (e) {} throw new Error('Discord ' + res.status + (t ? ' · ' + t.slice(0, 140) : '')); }
+      return;
+    }
+    throw new Error('Discord : rate-limit persistant, réessaie dans un instant.');
   }
 
   // Avatar affiché par Discord pour les messages ARCHI (logo, URL publique absolue).
