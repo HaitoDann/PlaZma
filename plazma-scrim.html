@@ -46,6 +46,9 @@
   .err-del{background:none;border:1px solid var(--border);border-radius:7px;height:34px;color:var(--muted);cursor:pointer}
   .err-del:hover{color:var(--err);border-color:rgba(239,68,68,.4)}
   .no-err{font-size:12px;color:var(--muted);font-style:italic}
+  .errs.strong{border-top:1px dashed var(--border);margin-top:2px}
+  .btn-ok{background:transparent;border-color:var(--border);color:var(--muted)}
+  .btn-ok:hover{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.4);color:var(--ok)}
 
   .ana-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .ana{background:var(--surface-2);border:1px solid var(--border);border-left:3px solid var(--ac,var(--border));border-radius:8px;padding:14px}
@@ -136,7 +139,7 @@
 
     <div class="body">
       <div>
-        <div class="sec-title"><span class="d" style="background:var(--mid)"></span>Games &amp; erreurs</div>
+        <div class="sec-title"><span class="d" style="background:var(--mid)"></span>Games — erreurs &amp; points forts</div>
         <div id="games"></div>
       </div>
 
@@ -189,11 +192,14 @@ const SCRIMS_COL = 'plazma-scrims';
 
 let ROSTER = PZ.getRoster();   // roster central (mercato)
 const ERR_CATS = ['Positionnement','Objectif manqué','Rotation','Communication','Mécanique','Teamfight','Vision','Autre'];
+const STR_CATS = ['Positionnement','Objectif sécurisé','Rotation','Communication','Mécanique','Teamfight','Vision','Autre'];
 
 let errors = {g1:[],g2:[],g3:[],g4:[],g5:[]};
-let _errId = 0, currentDocId = null, _unsub = null, _saveT = null;
+let strengths = {g1:[],g2:[],g3:[],g4:[],g5:[]};   // points forts (time-codés, par game)
+let _errId = 0, _strId = 0, currentDocId = null, _unsub = null, _saveT = null;
 let lastSavedSig = null, suppressUntil = 0;   // garde anti-écho Firestore
 const uid = () => 'e' + (++_errId);
+const sid = () => 's' + (++_strId);
 
 // Signature du contenu, INSENSIBLE à l'ordre des clés (Firestore peut réordonner)
 // et sans _savedAt : permet de reconnaître notre propre écho vs un vrai changement distant.
@@ -225,6 +231,11 @@ function buildGames(){
         <div class="errs-head"><span class="lbl">Erreurs — Game ${g}</span>
           <button class="btn btn-sm btn-danger" data-noexport onclick="addError('g${g}')">+ Erreur</button></div>
         <div id="errlist_g${g}"><div class="no-err" id="errEmpty_g${g}">Aucune erreur.</div></div>
+      </div>
+      <div class="errs strong">
+        <div class="errs-head"><span class="lbl">Points forts — Game ${g}</span>
+          <button class="btn btn-sm btn-ok" data-noexport onclick="addStrength('g${g}')">+ Point fort</button></div>
+        <div id="strlist_g${g}"><div class="no-err" id="strEmpty_g${g}">Aucun point fort.</div></div>
       </div>`;
     host.appendChild(b);
   }
@@ -260,6 +271,36 @@ function renderErrors(){
   }
 }
 
+// ── Points forts (même mécanique que les erreurs) ──
+function addStrength(gk, data){
+  const list=document.getElementById('strlist_'+gk), empty=document.getElementById('strEmpty_'+gk);
+  if(empty) empty.style.display='none';
+  const st = data || {id:sid(),timer:'',cat:STR_CATS[0],desc:''};
+  if(!data) strengths[gk].push(st);
+  const row=document.createElement('div'); row.className='err-row'; row.id='strrow_'+st.id;
+  row.innerHTML=`
+    <input id="strt_${st.id}" type="text" value="${esc(st.timer)}" placeholder="00:00" oninput="updStr('${gk}','${st.id}','timer',this.value)">
+    <select id="strc_${st.id}" onchange="updStr('${gk}','${st.id}','cat',this.value)">${STR_CATS.map(c=>`<option${c===st.cat?' selected':''}>${c}</option>`).join('')}</select>
+    <input id="strd_${st.id}" type="text" value="${esc(st.desc)}" placeholder="Décris le point fort…" oninput="updStr('${gk}','${st.id}','desc',this.value)">
+    <button class="err-del" data-noexport onclick="removeStrength('${gk}','${st.id}')">✕</button>`;
+  list.appendChild(row);
+}
+function updStr(gk,id,f,v){ const e=strengths[gk].find(x=>x.id===id); if(e){ e[f]=v; queueSave(); } }
+function removeStrength(gk,id){
+  strengths[gk]=strengths[gk].filter(e=>e.id!==id);
+  document.getElementById('strrow_'+id)?.remove();
+  const empty=document.getElementById('strEmpty_'+gk); if(empty&&!strengths[gk].length) empty.style.display='';
+  queueSave();
+}
+function renderStrengths(){
+  for(let g=1;g<=5;g++){ const gk='g'+g;
+    document.querySelectorAll('#strlist_'+gk+' .err-row').forEach(r=>r.remove());
+    const empty=document.getElementById('strEmpty_'+gk);
+    if(strengths[gk]&&strengths[gk].length){ if(empty)empty.style.display='none'; strengths[gk].forEach(e=>addStrength(gk,e)); }
+    else if(empty) empty.style.display='';
+  }
+}
+
 // ── Players ──
 function buildPlayers(){
   const grid=document.getElementById('players'); grid.innerHTML='';
@@ -285,7 +326,7 @@ PZ.onRoster(r => {
 function getState(){
   const s={ m_date:val('m_date'), m_adv:val('m_adv'), s_plazma:val('s_plazma'), s_adv:val('s_adv'),
     t_bien:val('t_bien'), t_corriger:val('t_corriger'), f_note:val('f_note'), f_comment:val('f_comment'),
-    errors:JSON.parse(JSON.stringify(errors)) };
+    errors:JSON.parse(JSON.stringify(errors)), strengths:JSON.parse(JSON.stringify(strengths)) };
   for(let g=1;g<=5;g++) s[`g${g}_result`]=val(`g${g}_result`);
   ROSTER.forEach(p=>s['rem_'+p.id]=val('rem_'+p.id));
   return s;
@@ -300,6 +341,9 @@ function applyState(s){
   errors={g1:[],g2:[],g3:[],g4:[],g5:[]};
   if(s.errors) Object.keys(s.errors).forEach(gk=>{ if(s.errors[gk]) errors[gk]=[...s.errors[gk]]; });
   renderErrors();
+  strengths={g1:[],g2:[],g3:[],g4:[],g5:[]};
+  if(s.strengths) Object.keys(s.strengths).forEach(gk=>{ if(s.strengths[gk]) strengths[gk]=[...s.strengths[gk]]; });
+  renderStrengths();
 }
 
 // ── Firestore (multi-doc + historique) ──
@@ -338,6 +382,7 @@ function startSync(docId){
 }
 function blankForm(){
   errors={g1:[],g2:[],g3:[],g4:[],g5:[]}; renderErrors();
+  strengths={g1:[],g2:[],g3:[],g4:[],g5:[]}; renderStrengths();
   ['m_adv','t_bien','t_corriger','f_comment'].forEach(k=>set(k,''));
   set('s_plazma','0'); set('s_adv','0'); set('f_note','—');
   for(let g=1;g<=5;g++){ set(`g${g}_result`,''); const s=document.getElementById(`g${g}_result`); if(s)styleResult(s); }
@@ -460,6 +505,10 @@ function buildScrimMessages(s){
   for(let g=1;g<=5;g++){ const arr=(s.errors&&s.errors['g'+g])||[]; if(arr.length){
     et+=`**Game ${g}**\n`+arr.map(e=>`• \`${e.timer||'--:--'}\` **${e.cat}**${e.desc?' — '+e.desc:''}`).join('\n')+'\n'; } }
   if(et.trim()) pushLong(fields,'❌ Erreurs relevées',et);
+  let st='';
+  for(let g=1;g<=5;g++){ const arr=(s.strengths&&s.strengths['g'+g])||[]; if(arr.length){
+    st+=`**Game ${g}**\n`+arr.map(e=>`• \`${e.timer||'--:--'}\` **${e.cat}**${e.desc?' — '+e.desc:''}`).join('\n')+'\n'; } }
+  if(st.trim()) pushLong(fields,'⭐ Points forts',st);
   if((s.t_bien||'').trim())     pushLong(fields,'✅ Ce qui a marché',s.t_bien);
   if((s.t_corriger||'').trim()) pushLong(fields,'🔧 À corriger',s.t_corriger);
   // Une remarque individuelle = son propre champ (découpé si > 1024) → jamais coupée.
