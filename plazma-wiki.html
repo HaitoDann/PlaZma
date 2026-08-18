@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260818a">
+<link rel="stylesheet" href="assets/theme.css?v=20260818b">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -118,12 +118,16 @@
   </div>
 </div>
 
-<script src="assets/plazma.js?v=20260818a"></script>
+<script src="assets/plazma.js?v=20260818b"></script>
 <script>
 'use strict';
 PZ.mountNav('wiki', '#nav');
 
 const DD='https://ddragon.leagueoflegends.com', LANG='fr_FR';
+// Miroir indépendant (Community Dragon) : secours si Data Dragon est injoignable.
+const CD_SUMMARY='https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-summary.json';
+const CD_ICON=key=> key?`https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/${key}.png`:'';
+const KEY_BY_ID={};   // id de champion (alias) -> clé numérique, pour le miroir
 const TAG_FR={Fighter:'Combattant',Mage:'Mage',Assassin:'Assassin',Marksman:'Tireur',Support:'Support',Tank:'Tank'};
 const STAT_LABELS=[
   ['hp','PV','hpperlevel'],['mp','Ressource','mpperlevel'],['hpregen','Régén. PV','hpregenperlevel'],
@@ -275,7 +279,14 @@ let VER='', VER_ALT='', LIST=[], activeTag='';
 // soient sur le CDN → on réessaie avec le patch précédent, puis on masque.
 function wImgAlt(img){
   if(!img) return;
-  if(!img._alt && VER_ALT && VER_ALT!==VER){ img._alt=true; img.src=img.src.replace('/cdn/'+VER+'/','/cdn/'+VER_ALT+'/'); return; }
+  if(!img._alt && VER && VER_ALT && VER_ALT!==VER){ img._alt=true; img.src=img.src.replace('/cdn/'+VER+'/','/cdn/'+VER_ALT+'/'); return; }
+  img.onerror=null; img.style.visibility='hidden';
+}
+// Icône de champion : patch précédent → miroir Community Dragon → masquer.
+function wChampImg(img,id){
+  if(!img) return;
+  if(!img._alt && VER && VER_ALT && VER_ALT!==VER){ img._alt=true; img.src=img.src.replace('/cdn/'+VER+'/','/cdn/'+VER_ALT+'/'); return; }
+  if(!img._cd && KEY_BY_ID[id]){ img._cd=true; img.src=CD_ICON(KEY_BY_ID[id]); return; }
   img.onerror=null; img.style.visibility='hidden';
 }
 
@@ -286,15 +297,25 @@ async function getVersion(){
   try{ localStorage.setItem('pz_ddver',JSON.stringify({v:VER,a:VER_ALT,t:Date.now()})); }catch(e){}
   return VER;
 }
+function mapKeys(arr){ arr.forEach(x=>{ if(x.key) KEY_BY_ID[x.id]=x.key; }); return arr; }
 async function getList(){
-  await getVersion();
-  const key='pz_wiki_list_'+VER;
-  try{ const c=JSON.parse(localStorage.getItem(key)||'null'); if(c&&c.length) return c; }catch(e){}
-  const data=await fetchJSON(`${DD}/cdn/${VER}/data/${LANG}/champion.json`);
-  const list=Object.values(data.data).map(c=>({id:c.id,name:c.name,title:c.title,tags:c.tags||[]}))
+  try{ await getVersion(); }catch(e){ /* ddragon injoignable : on tentera Community Dragon */ }
+  if(VER){
+    const key='pz_wiki_list2_'+VER;
+    try{ const c=JSON.parse(localStorage.getItem(key)||'null'); if(c&&c.length) return mapKeys(c); }catch(e){}
+    try{
+      const data=await fetchJSON(`${DD}/cdn/${VER}/data/${LANG}/champion.json`);
+      const list=Object.values(data.data).map(c=>({id:c.id,name:c.name,title:c.title,tags:c.tags||[],key:c.key}))
+        .sort((a,b)=>a.name.localeCompare(b.name,'fr'));
+      try{ localStorage.setItem(key,JSON.stringify(list)); }catch(e){}
+      return mapKeys(list);
+    }catch(e){ /* bascule sur Community Dragon */ }
+  }
+  // Filet Community Dragon (indépendant de ddragon) : noms + clés d'icônes.
+  const sum=await fetchJSON(CD_SUMMARY);
+  const list=sum.filter(c=>c&&c.id>0).map(c=>({id:c.alias,name:c.name,title:'',tags:[],key:String(c.id)}))
     .sort((a,b)=>a.name.localeCompare(b.name,'fr'));
-  try{ localStorage.setItem(key,JSON.stringify(list)); }catch(e){}
-  return list;
+  return mapKeys(list);
 }
 async function getChamp(id){
   await getVersion();
@@ -305,7 +326,7 @@ async function getChamp(id){
   try{ localStorage.setItem(key,JSON.stringify(c)); }catch(e){}
   return c;
 }
-const champIcon=id=>`${DD}/cdn/${VER}/img/champion/${id}.png`;
+const champIcon=id=> VER ? `${DD}/cdn/${VER}/img/champion/${id}.png` : CD_ICON(KEY_BY_ID[id]);
 const spellIcon=f=>`${DD}/cdn/${VER}/img/spell/${f}`;
 const passiveIcon=f=>`${DD}/cdn/${VER}/img/passive/${f}`;
 const splash=id=>`${DD}/cdn/img/champion/splash/${id}_0.jpg`;
@@ -326,7 +347,7 @@ function renderGrid(){
   const g=document.getElementById('wikiGrid');
   if(!items.length){ g.innerHTML='<div class="wiki-empty">Aucun champion trouvé.</div>'; return; }
   g.innerHTML=items.map(c=>`<button class="wtile" data-id="${c.id}">
-    <img src="${champIcon(c.id)}" alt="${esc(c.name)}" loading="lazy" onerror="wImgAlt(this)">
+    <img src="${champIcon(c.id)}" alt="${esc(c.name)}" loading="lazy" onerror="wChampImg(this,'${c.id}')">
     <span class="nm">${esc(c.name)}</span>
     <span class="rl">${(c.tags||[]).map(t=>TAG_FR[t]||t).join(' · ')}</span>
   </button>`).join('');
@@ -381,7 +402,7 @@ async function openChamp(id){
     <div class="wd-hero">
       <div class="bg" style="background-image:url('${splash(id)}')"></div><div class="grad"></div>
       <div class="inner">
-        <img class="ico" src="${champIcon(id)}" alt="" onerror="wImgAlt(this)">
+        <img class="ico" src="${champIcon(id)}" alt="" onerror="wChampImg(this,'${id}')">
         <div>
           <div class="wd-name">${esc(c.name)}</div>
           <div class="wd-title">${esc(c.title)}</div>
@@ -402,7 +423,7 @@ async function openChamp(id){
 (async()=>{
   try{
     LIST=await getList();
-    document.getElementById('patchVer').textContent='Patch '+VER;
+    document.getElementById('patchVer').textContent=VER?('Patch '+VER):'Miroir communautaire';
     renderFilters(); renderGrid();
     const h=(location.hash||'').replace(/^#/,'').trim();
     if(h && LIST.some(c=>c.id===h)) openChamp(h);

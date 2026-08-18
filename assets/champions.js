@@ -14,47 +14,72 @@
 (function () {
   'use strict';
   const VERSIONS = 'https://ddragon.leagueoflegends.com/api/versions.json';
+  // Community Dragon : miroir indépendant de Data Dragon (autre domaine, autre
+  // CDN). Sert de filet quand ddragon est en panne ou bloqué par le réseau.
+  const CD_SUMMARY = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-summary.json';
+  const CD_ICON = key => key ? `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/${key}.png` : '';
   const LS = 'pz_champs_v1';
-  // `version` = dernier patch ; `versionAlt` = patch précédent, utilisé en
-  // secours car Data Dragon liste parfois un nouveau patch AVANT que ses images
-  // ne soient disponibles sur le CDN (toutes les icônes renvoient alors 404).
+  // `version` = dernier patch ; `versionAlt` = patch précédent (secours images).
   let version = '', versionAlt = '', list = [], byId = {};
 
   function index() { byId = {}; list.forEach(c => (byId[c.id] = c)); }
+  const hasKeys = () => list.length && list[0] && list[0].key;
 
   async function load() {
     // Cache local d'abord (affichage instantané hors-ligne)
     try {
       const c = JSON.parse(localStorage.getItem(LS) || 'null');
-      if (c && c.version && c.list) { version = c.version; versionAlt = c.versionAlt || ''; list = c.list; index(); }
+      if (c && c.list) { version = c.version || ''; versionAlt = c.versionAlt || ''; list = c.list; index(); }
     } catch (e) {}
-    // Rafraîchit depuis Data Dragon
+    // 1) Data Dragon (source principale, noms en français)
     try {
       const versions = await fetch(VERSIONS).then(r => r.json());
       const v = versions[0];
       versionAlt = versions[1] || versionAlt || v;
-      if (v !== version || !list.length) {
+      if (v !== version || !hasKeys()) {
         const data = await fetch(`https://ddragon.leagueoflegends.com/cdn/${v}/data/fr_FR/champion.json`).then(r => r.json());
         version = v;
-        list = Object.values(data.data).map(c => ({ id: c.id, name: c.name }))
+        list = Object.values(data.data).map(c => ({ id: c.id, name: c.name, key: c.key }))
           .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
         index();
       }
       try { localStorage.setItem(LS, JSON.stringify({ version, versionAlt, list })); } catch (e) {}
     } catch (e) {
-      console.warn('Champions : Data Dragon indisponible, saisie manuelle possible.', e);
+      console.warn('Champions : Data Dragon indisponible.', e);
+    }
+    // 2) Filet Community Dragon : garantit noms + clés (donc icônes) même si
+    //    ddragon est injoignable. On ne l'utilise que si on n'a pas déjà tout.
+    if (!hasKeys()) {
+      try {
+        const sum = await fetch(CD_SUMMARY).then(r => r.json());
+        const arr = sum.filter(c => c && c.id > 0)
+          .map(c => ({ id: c.alias, name: c.name, key: String(c.id) }))
+          .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+        if (arr.length) { list = arr; index(); try { localStorage.setItem(LS, JSON.stringify({ version, versionAlt, list })); } catch (e) {} }
+      } catch (e) {
+        console.warn('Champions : Community Dragon indisponible aussi.', e);
+      }
     }
   }
 
   const urlFor = (ver, id) => `https://ddragon.leagueoflegends.com/cdn/${ver}/img/champion/${id}.png`;
-  const iconUrl = id => (version && id && byId[id]) ? urlFor(version, id) : '';
+  const iconUrl = id => {
+    const c = byId[id]; if (!c || !id) return '';
+    if (version) return urlFor(version, id);   // ddragon d'abord (secours via onerror)
+    return CD_ICON(c.key);                      // ddragon indispo → miroir direct
+  };
   const nameOf = id => (byId[id] && byId[id].name) || id || '';
 
-  // Secours d'image : essaie le patch précédent, puis retombe sur les initiales.
+  // Secours d'image en cascade : patch précédent → miroir Community Dragon →
+  // initiales du champion. Ne laisse jamais une image cassée à l'écran.
   function imgFallback(img, id) {
     if (!img) return;
+    const c = byId[id] || {};
     if (!img._triedAlt && versionAlt && versionAlt !== version && id) {
       img._triedAlt = true; img.src = urlFor(versionAlt, id); return;
+    }
+    if (!img._triedCd && c.key) {
+      img._triedCd = true; img.src = CD_ICON(c.key); return;
     }
     img.onerror = null;
     const span = document.createElement('span');
