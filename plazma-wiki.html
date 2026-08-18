@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260818b">
+<link rel="stylesheet" href="assets/theme.css?v=20260818c">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -118,12 +118,16 @@
   </div>
 </div>
 
-<script src="assets/plazma.js?v=20260818b"></script>
+<script src="assets/plazma.js?v=20260818c"></script>
 <script>
 'use strict';
 PZ.mountNav('wiki', '#nav');
 
 const DD='https://ddragon.leagueoflegends.com', LANG='fr_FR';
+// Icônes hébergées dans le repo (rafraîchies chaque jour par une GitHub Action).
+const MANIFEST='assets/champions/manifest.json';
+const localIcon=id=> new URL('assets/champions/'+id+'.png', document.baseURI).href;
+let WIKI_LOCAL=false;   // true quand le manifeste local est disponible
 // Miroir indépendant (Community Dragon) : secours si Data Dragon est injoignable.
 const CD_SUMMARY='https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-summary.json';
 const CD_ICON=key=> key?`https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/${key}.png`:'';
@@ -282,11 +286,21 @@ function wImgAlt(img){
   if(!img._alt && VER && VER_ALT && VER_ALT!==VER){ img._alt=true; img.src=img.src.replace('/cdn/'+VER+'/','/cdn/'+VER_ALT+'/'); return; }
   img.onerror=null; img.style.visibility='hidden';
 }
-// Icône de champion : patch précédent → miroir Community Dragon → masquer.
+// Sources d'icône de champion, par ordre de préférence :
+// local (repo) → ddragon → patch précédent → miroir Community Dragon.
+function wChampCands(id){
+  const out=[];
+  if(WIKI_LOCAL) out.push(localIcon(id));
+  if(VER) out.push(`${DD}/cdn/${VER}/img/champion/${id}.png`);
+  if(VER && VER_ALT && VER_ALT!==VER) out.push(`${DD}/cdn/${VER_ALT}/img/champion/${id}.png`);
+  if(KEY_BY_ID[id]) out.push(CD_ICON(KEY_BY_ID[id]));
+  return out;
+}
 function wChampImg(img,id){
   if(!img) return;
-  if(!img._alt && VER && VER_ALT && VER_ALT!==VER){ img._alt=true; img.src=img.src.replace('/cdn/'+VER+'/','/cdn/'+VER_ALT+'/'); return; }
-  if(!img._cd && KEY_BY_ID[id]){ img._cd=true; img.src=CD_ICON(KEY_BY_ID[id]); return; }
+  img._t=img._t||{}; if(img.src) img._t[img.src]=1;
+  const next=wChampCands(id).find(u=>!img._t[u]);
+  if(next){ img._t[next]=1; img.src=next; return; }
   img.onerror=null; img.style.visibility='hidden';
 }
 
@@ -299,6 +313,19 @@ async function getVersion(){
 }
 function mapKeys(arr){ arr.forEach(x=>{ if(x.key) KEY_BY_ID[x.id]=x.key; }); return arr; }
 async function getList(){
+  // 0) Manifeste local (icônes du repo) — prioritaire et hors-ligne.
+  try{
+    const m=await fetch(MANIFEST,{cache:'no-cache'}).then(r=>r.ok?r.json():null);
+    if(m && Array.isArray(m.champions) && m.champions.length){
+      WIKI_LOCAL=true;
+      if(m.version) VER=m.version;   // patch du manifeste (icônes de sorts + étiquette)
+      // On récupère quand même les versions ddragon (VER_ALT), sans bloquer.
+      getVersion().catch(()=>{});
+      const list=m.champions.map(c=>({id:c.id,name:c.name,title:c.title||'',tags:c.tags||[],key:String(c.key||'')}))
+        .sort((a,b)=>a.name.localeCompare(b.name,'fr'));
+      return mapKeys(list);
+    }
+  }catch(e){}
   try{ await getVersion(); }catch(e){ /* ddragon injoignable : on tentera Community Dragon */ }
   if(VER){
     const key='pz_wiki_list2_'+VER;
@@ -326,7 +353,7 @@ async function getChamp(id){
   try{ localStorage.setItem(key,JSON.stringify(c)); }catch(e){}
   return c;
 }
-const champIcon=id=> VER ? `${DD}/cdn/${VER}/img/champion/${id}.png` : CD_ICON(KEY_BY_ID[id]);
+const champIcon=id=> wChampCands(id)[0] || '';
 const spellIcon=f=>`${DD}/cdn/${VER}/img/spell/${f}`;
 const passiveIcon=f=>`${DD}/cdn/${VER}/img/passive/${f}`;
 const splash=id=>`${DD}/cdn/img/champion/splash/${id}_0.jpg`;
