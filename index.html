@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260808a">
+<link rel="stylesheet" href="assets/theme.css?v=20260818a">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -159,8 +159,8 @@
   </footer>
 
 </div>
-<script src="assets/plazma.js?v=20260808a"></script>
-<script src="assets/champions.js?v=20260808a"></script>
+<script src="assets/plazma.js?v=20260818a"></script>
+<script src="assets/champions.js?v=20260818a"></script>
 <script>
   // Chercheur rapide Wiki (Data Dragon — aucune donnée stockée)
   Champions.ready.then(() => {
@@ -173,7 +173,7 @@
       if (!q) { res.innerHTML = '<div class="wiki-hint">Tape un nom de champion pour ouvrir sa fiche.</div>'; return; }
       const items = Champions.list.filter(c => c.name.toLowerCase().includes(q) || c.id.toLowerCase().includes(q)).slice(0, 18);
       res.innerHTML = items.length
-        ? items.map(c => `<a class="wr-tile" href="plazma-wiki.html#${encodeURIComponent(c.id)}"><img src="${Champions.iconUrl(c.id)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span>${esc(c.name)}</span></a>`).join('')
+        ? items.map(c => `<a class="wr-tile" href="plazma-wiki.html#${encodeURIComponent(c.id)}"><img src="${Champions.iconUrl(c.id)}" alt="" loading="lazy" onerror="Champions.imgFallback(this,'${c.id}')"><span>${esc(c.name)}</span></a>`).join('')
         : '<div class="wiki-hint">Aucun champion trouvé.</div>';
     }
     inp.addEventListener('input', render);

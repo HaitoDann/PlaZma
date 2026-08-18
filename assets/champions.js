@@ -15,7 +15,10 @@
   'use strict';
   const VERSIONS = 'https://ddragon.leagueoflegends.com/api/versions.json';
   const LS = 'pz_champs_v1';
-  let version = '', list = [], byId = {};
+  // `version` = dernier patch ; `versionAlt` = patch précédent, utilisé en
+  // secours car Data Dragon liste parfois un nouveau patch AVANT que ses images
+  // ne soient disponibles sur le CDN (toutes les icônes renvoient alors 404).
+  let version = '', versionAlt = '', list = [], byId = {};
 
   function index() { byId = {}; list.forEach(c => (byId[c.id] = c)); }
 
@@ -23,32 +26,49 @@
     // Cache local d'abord (affichage instantané hors-ligne)
     try {
       const c = JSON.parse(localStorage.getItem(LS) || 'null');
-      if (c && c.version && c.list) { version = c.version; list = c.list; index(); }
+      if (c && c.version && c.list) { version = c.version; versionAlt = c.versionAlt || ''; list = c.list; index(); }
     } catch (e) {}
     // Rafraîchit depuis Data Dragon
     try {
       const versions = await fetch(VERSIONS).then(r => r.json());
       const v = versions[0];
+      versionAlt = versions[1] || versionAlt || v;
       if (v !== version || !list.length) {
         const data = await fetch(`https://ddragon.leagueoflegends.com/cdn/${v}/data/fr_FR/champion.json`).then(r => r.json());
         version = v;
         list = Object.values(data.data).map(c => ({ id: c.id, name: c.name }))
           .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
         index();
-        try { localStorage.setItem(LS, JSON.stringify({ version, list })); } catch (e) {}
       }
+      try { localStorage.setItem(LS, JSON.stringify({ version, versionAlt, list })); } catch (e) {}
     } catch (e) {
       console.warn('Champions : Data Dragon indisponible, saisie manuelle possible.', e);
     }
   }
 
-  const iconUrl = id => (version && id && byId[id]) ? `https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${id}.png` : '';
+  const urlFor = (ver, id) => `https://ddragon.leagueoflegends.com/cdn/${ver}/img/champion/${id}.png`;
+  const iconUrl = id => (version && id && byId[id]) ? urlFor(version, id) : '';
   const nameOf = id => (byId[id] && byId[id].name) || id || '';
+
+  // Secours d'image : essaie le patch précédent, puis retombe sur les initiales.
+  function imgFallback(img, id) {
+    if (!img) return;
+    if (!img._triedAlt && versionAlt && versionAlt !== version && id) {
+      img._triedAlt = true; img.src = urlFor(versionAlt, id); return;
+    }
+    img.onerror = null;
+    const span = document.createElement('span');
+    const name = nameOf(id);
+    span.textContent = name ? name.slice(0, 4) : '?';
+    span.title = name;
+    span.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:10px;font-weight:700;color:var(--muted,#8b90a0);text-align:center;padding:2px;line-height:1.1;box-sizing:border-box';
+    if (img.parentNode) img.parentNode.replaceChild(span, img);
+  }
 
   function chipHtml(id, opts) {
     opts = opts || {};
     const u = iconUrl(id);
-    return `<span class="champ-chip" data-champ="${id}">${u ? `<img src="${u}" alt="" loading="lazy">` : ''}<span>${nameOf(id)}</span>${opts.removable ? '<span class="x" title="Retirer">✕</span>' : ''}</span>`;
+    return `<span class="champ-chip" data-champ="${id}">${u ? `<img src="${u}" alt="" loading="lazy" onerror="Champions.imgFallback(this,'${id}')">` : ''}<span>${nameOf(id)}</span>${opts.removable ? '<span class="x" title="Retirer">✕</span>' : ''}</span>`;
   }
 
   // ---- Modale de sélection ----
@@ -96,7 +116,7 @@
     grid.innerHTML = items.map(c => {
       const used = excludeSet.has(c.id);
       return `<button type="button" class="champ-tile${used?' used':''}" data-id="${c.id}"${used?' disabled':''}>
-        <img src="${iconUrl(c.id)}" alt="" loading="lazy"><span>${c.name}</span>
+        <img src="${iconUrl(c.id)}" alt="" loading="lazy" onerror="Champions.imgFallback(this,'${c.id}')"><span>${c.name}</span>
       </button>`;
     }).join('');
     grid.querySelectorAll('.champ-tile:not(.used)').forEach(t => t.addEventListener('click', () => pick(t.dataset.id)));
@@ -111,6 +131,6 @@
   function pick(id) { const c = cb; close(); if (c) c(id); }
 
   const ready = load();
-  window.Champions = { ready, iconUrl, nameOf, chipHtml, open,
-    get version() { return version; }, get list() { return list; } };
+  window.Champions = { ready, iconUrl, nameOf, chipHtml, open, imgFallback,
+    get version() { return version; }, get versionAlt() { return versionAlt; }, get list() { return list; } };
 })();

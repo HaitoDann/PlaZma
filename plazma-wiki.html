@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260808a">
+<link rel="stylesheet" href="assets/theme.css?v=20260818a">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -118,7 +118,7 @@
   </div>
 </div>
 
-<script src="assets/plazma.js?v=20260808a"></script>
+<script src="assets/plazma.js?v=20260818a"></script>
 <script>
 'use strict';
 PZ.mountNav('wiki', '#nav');
@@ -269,13 +269,21 @@ async function enrichMeraki(id){
   }
 }
 
-let VER='', LIST=[], activeTag='';
+let VER='', VER_ALT='', LIST=[], activeTag='';
+
+// Secours d'image : Data Dragon publie parfois un patch avant que ses images ne
+// soient sur le CDN → on réessaie avec le patch précédent, puis on masque.
+function wImgAlt(img){
+  if(!img) return;
+  if(!img._alt && VER_ALT && VER_ALT!==VER){ img._alt=true; img.src=img.src.replace('/cdn/'+VER+'/','/cdn/'+VER_ALT+'/'); return; }
+  img.onerror=null; img.style.visibility='hidden';
+}
 
 async function fetchJSON(url){ const r=await fetch(url); if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }
 async function getVersion(){
-  try{ const c=JSON.parse(localStorage.getItem('pz_ddver')||'null'); if(c&&c.v&&c.t&&Date.now()-c.t<6*3600*1000){ VER=c.v; return VER; } }catch(e){}
-  const vs=await fetchJSON(DD+'/api/versions.json'); VER=vs[0];
-  try{ localStorage.setItem('pz_ddver',JSON.stringify({v:VER,t:Date.now()})); }catch(e){}
+  try{ const c=JSON.parse(localStorage.getItem('pz_ddver')||'null'); if(c&&c.v&&c.a&&c.t&&Date.now()-c.t<6*3600*1000){ VER=c.v; VER_ALT=c.a; return VER; } }catch(e){}
+  const vs=await fetchJSON(DD+'/api/versions.json'); VER=vs[0]; VER_ALT=vs[1]||VER;
+  try{ localStorage.setItem('pz_ddver',JSON.stringify({v:VER,a:VER_ALT,t:Date.now()})); }catch(e){}
   return VER;
 }
 async function getList(){
@@ -318,7 +326,7 @@ function renderGrid(){
   const g=document.getElementById('wikiGrid');
   if(!items.length){ g.innerHTML='<div class="wiki-empty">Aucun champion trouvé.</div>'; return; }
   g.innerHTML=items.map(c=>`<button class="wtile" data-id="${c.id}">
-    <img src="${champIcon(c.id)}" alt="${esc(c.name)}" loading="lazy" onerror="this.style.visibility='hidden'">
+    <img src="${champIcon(c.id)}" alt="${esc(c.name)}" loading="lazy" onerror="wImgAlt(this)">
     <span class="nm">${esc(c.name)}</span>
     <span class="rl">${(c.tags||[]).map(t=>TAG_FR[t]||t).join(' · ')}</span>
   </button>`).join('');
@@ -342,7 +350,7 @@ async function openChamp(id){
   const keys=['Q','W','E','R'];
   const spells=(c.spells||[]).map((s,i)=>`
     <div class="spell" data-slot="${keys[i]||''}">
-      <div class="spell-ico"><img src="${spellIcon(s.image.full)}" alt="" onerror="this.style.visibility='hidden'"><span class="spell-key">${keys[i]||''}</span></div>
+      <div class="spell-ico"><img src="${spellIcon(s.image.full)}" alt="" onerror="wImgAlt(this)"><span class="spell-key">${keys[i]||''}</span></div>
       <div class="spell-body">
         <div class="spell-name">${esc(s.name)}</div>
         <div class="spell-meta">
@@ -355,7 +363,7 @@ async function openChamp(id){
     </div>`).join('');
   const passive=c.passive?`
     <div class="spell" data-slot="P">
-      <div class="spell-ico"><img src="${passiveIcon(c.passive.image.full)}" alt="" onerror="this.style.visibility='hidden'"><span class="spell-key" style="background:var(--muted)">P</span></div>
+      <div class="spell-ico"><img src="${passiveIcon(c.passive.image.full)}" alt="" onerror="wImgAlt(this)"><span class="spell-key" style="background:var(--muted)">P</span></div>
       <div class="spell-body"><div class="spell-name">${esc(c.passive.name)}</div><div class="spell-desc">${safeHtml(c.passive.description)}</div></div>
     </div>`:'';
   const st=c.stats||{};
@@ -373,7 +381,7 @@ async function openChamp(id){
     <div class="wd-hero">
       <div class="bg" style="background-image:url('${splash(id)}')"></div><div class="grad"></div>
       <div class="inner">
-        <img class="ico" src="${champIcon(id)}" alt="" onerror="this.style.display='none'">
+        <img class="ico" src="${champIcon(id)}" alt="" onerror="wImgAlt(this)">
         <div>
           <div class="wd-name">${esc(c.name)}</div>
           <div class="wd-title">${esc(c.title)}</div>

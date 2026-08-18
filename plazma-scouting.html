@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260808a">
+<link rel="stylesheet" href="assets/theme.css?v=20260818a">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -274,8 +274,8 @@
   <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
 </div>
 
-<script src="assets/plazma.js?v=20260808a" data-section="scouting"></script>
-<script src="assets/champions.js?v=20260808a"></script>
+<script src="assets/plazma.js?v=20260818a" data-section="scouting"></script>
+<script src="assets/champions.js?v=20260818a"></script>
 <script>
 'use strict';
 PZ.mountNav('scouting', '#nav');
@@ -321,7 +321,7 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
 function iconsHtml(ids){
   return ids.map((id,i)=>{
     const u=Champ().iconUrl(id);
-    return `<span class="champ-ico" data-i="${i}" title="${esc(Champ().nameOf(id))}">${u?`<img src="${u}" alt="">`:`<span class="ph">${esc(Champ().nameOf(id))}</span>`}<span class="x">✕</span></span>`;
+    return `<span class="champ-ico" data-i="${i}" title="${esc(Champ().nameOf(id))}">${u?`<img src="${u}" alt="" onerror="Champions.imgFallback(this,'${id}')">`:`<span class="ph">${esc(Champ().nameOf(id))}</span>`}<span class="x">✕</span></span>`;
   }).join('');
 }
 // Remplit un conteneur avec les icônes + un bouton "+" ; gère ajout/suppression.
@@ -334,7 +334,7 @@ function fillIcons(container, arr){
 }
 function slotHtml(id, cls){
   const u=id?Champ().iconUrl(id):'';
-  return `<div class="cslot ${id?'filled':''} ${cls||''}">${u?`<img src="${u}" alt="">`:''}<span class="${id?'':'ph'}">${id?esc(Champ().nameOf(id)):'+ Champion'}</span><span class="clr">✕</span></div>`;
+  return `<div class="cslot ${id?'filled':''} ${cls||''}">${u?`<img src="${u}" alt="" onerror="Champions.imgFallback(this,'${id}')">`:''}<span class="${id?'':'ph'}">${id?esc(Champ().nameOf(id)):'+ Champion'}</span><span class="clr">✕</span></div>`;
 }
 
 // ═══ Roster adverse ═══
@@ -413,7 +413,7 @@ function renderDraft(){
       const row=document.createElement('div'); row.className='mu';
       const u=mu.opp?Champ().iconUrl(mu.opp):'';
       row.innerHTML=`<div class="mu-row">
-          <span class="champ-ico oppslot" title="${esc(Champ().nameOf(mu.opp))}" style="cursor:pointer">${u?`<img src="${u}" alt="">`:`<span class="ph">${mu.opp?esc(Champ().nameOf(mu.opp)):'Leur champ'}</span>`}</span>
+          <span class="champ-ico oppslot" title="${esc(Champ().nameOf(mu.opp))}" style="cursor:pointer">${u?`<img src="${u}" alt="" onerror="Champions.imgFallback(this,'${mu.opp}')">`:`<span class="ph">${mu.opp?esc(Champ().nameOf(mu.opp)):'Leur champ'}</span>`}</span>
           <span class="mu-arrow">→</span>
           <div class="mu-ours"></div>
           <button class="mu-del" title="Retirer ce match-up">✕</button>
@@ -471,7 +471,7 @@ function renderScenarios(){
     const wrap=board.querySelector(`[data-bans="${side}"]`);
     wrap.innerHTML=scn[side].map((id,i)=>{
       const u=id?Champ().iconUrl(id):'';
-      return `<div class="ban-slot ${id?'filled':''}" data-i="${i}" title="${id?esc(Champ().nameOf(id)):'Ban'}">${u?`<img src="${u}" alt="">`:'🚫'}<span class="clr">✕</span></div>`;
+      return `<div class="ban-slot ${id?'filled':''}" data-i="${i}" title="${id?esc(Champ().nameOf(id)):'Ban'}">${u?`<img src="${u}" alt="" onerror="Champions.imgFallback(this,'${id}')">`:'🚫'}<span class="clr">✕</span></div>`;
     }).join('');
     wrap.querySelectorAll('.ban-slot').forEach(sl=>sl.addEventListener('click',e=>{
       const i=+sl.dataset.i;
@@ -495,7 +495,7 @@ function renderScenarios(){
 }
 function pickInner(id){
   const u=id?Champ().iconUrl(id):'';
-  return `${u?`<img src="${u}" alt="">`:''}<span class="${id?'nm':'ph'}">${id?esc(Champ().nameOf(id)):'+ Pick'}</span><span class="clr">✕</span>`;
+  return `${u?`<img src="${u}" alt="" onerror="Champions.imgFallback(this,'${id}')">`:''}<span class="${id?'nm':'ph'}">${id?esc(Champ().nameOf(id)):'+ Pick'}</span><span class="clr">✕</span>`;
 }
 function renderScnTabsName(){ // maj léger des noms d'onglets sans tout reconstruire
   document.querySelectorAll('#scnTabs .scn-tab').forEach((t,i)=>{ if(state.scenarios[i]) t.textContent=state.scenarios[i].name||('Scénario '+(i+1)); });
