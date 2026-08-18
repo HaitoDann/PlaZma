@@ -125,6 +125,37 @@
   border:1px solid var(--border);background:var(--surface-2);margin-bottom:7px;transition:border-color .15s}
 .scout-item:hover{border-color:var(--accent)}
 
+/* Synergy pills */
+.syn-pills{display:flex;flex-wrap:wrap;gap:4px;margin:5px 0 6px}
+.syn-pill{font-size:10px;font-weight:700;background:rgba(34,197,94,.12);color:#4ade80;
+  border:1px solid rgba(34,197,94,.22);border-radius:999px;padding:2px 8px;white-space:nowrap}
+
+/* Timing */
+.timing-row{display:flex;gap:3px;margin:6px 0 2px}
+.timing-cell{flex:1;text-align:center;font-size:9.5px;font-weight:700;padding:4px 2px;border-radius:6px;
+  background:var(--surface-2);border:1px solid var(--border-2);color:var(--muted);
+  text-transform:uppercase;letter-spacing:.06em;transition:all .2s}
+.timing-cell.peak{background:rgba(34,211,238,.14);border-color:rgba(34,211,238,.3);color:#67e8f9}
+
+/* Win condition */
+.win-cond{font-size:11px;color:var(--dim);line-height:1.45;margin:4px 0 0;font-style:italic;min-height:.8em}
+
+/* Cross-analysis */
+.threat-line{font-size:11px;color:var(--err);margin-bottom:4px;padding-left:15px;position:relative;line-height:1.4}
+.threat-line::before{content:'⚡';position:absolute;left:0;font-size:10px;top:1px}
+.adv-line{font-size:11px;color:var(--ok);margin-bottom:4px;padding-left:15px;position:relative;line-height:1.4}
+.adv-line::before{content:'✓';position:absolute;left:0;font-size:10px;font-weight:700;top:1px}
+.cross-sep{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:7px 0 4px}
+
+/* Pool fit */
+.pool-chip{position:relative}
+.fit-dot{position:absolute;bottom:-3px;right:-3px;width:9px;height:9px;border-radius:50%;
+  border:1.5px solid var(--surface);z-index:1}
+.pool-chip.fit-high{border-color:rgba(74,222,128,.5) !important}
+.pool-chip.fit-med{border-color:rgba(251,191,36,.4) !important}
+.pool-rec-badge{position:absolute;top:-5px;left:50%;transform:translateX(-50%);
+  font-size:8px;font-weight:800;color:#4ade80;white-space:nowrap;pointer-events:none}
+
 @media(max-width:900px){
   .draft-wrap{grid-template-columns:1fr}
   .analysis-panel{position:static}
@@ -203,17 +234,28 @@
       <div class="ap-section">
         <div class="ap-title">Composition Blue</div>
         <div id="barsBlue"></div>
+        <div id="synBlue"></div>
+        <div id="timingBlue" class="timing-row"></div>
         <div class="comp-name" id="nameBlue">—</div>
+        <div id="wincondBlue" class="win-cond"></div>
       </div>
 
       <div class="ap-section">
         <div class="ap-title" style="color:#f87171">Composition Red</div>
         <div id="barsRed"></div>
+        <div id="synRed"></div>
+        <div id="timingRed" class="timing-row"></div>
         <div class="comp-name red" id="nameRed">—</div>
+        <div id="wincondRed" class="win-cond"></div>
+      </div>
+
+      <div class="ap-section" id="crossSection" style="display:none">
+        <div class="ap-title" style="color:var(--warn)">Analyse croisée</div>
+        <div id="crossContent"></div>
       </div>
 
       <div class="ap-section" id="gapsSection" style="display:none">
-        <div class="ap-title" style="color:var(--warn)">Manques (PlaZma)</div>
+        <div class="ap-title" style="color:var(--warn)">Manques PlaZma</div>
         <div id="gapsList"></div>
       </div>
     </div>
@@ -342,6 +384,149 @@ const AXES = [
 ];
 const AXIS_NAMES = {e:'Engage',tf:'Team Fight',po:'Poke',sp:'Split Push',pk:'Pick',pr:'Protect'};
 const MAX_SCORE = 9;
+
+// ── Synergies connues (IDs Data Dragon) ──
+const SYNERGIES = [
+  {c:['Malphite','Yasuo'],      l:'Zone ultimes'},
+  {c:['Malphite','Yone'],       l:'Zone ultimes'},
+  {c:['Malphite','Orianna'],    l:'Zone ultime'},
+  {c:['Amumu','Orianna'],       l:'Zone ultime'},
+  {c:['JarvanIV','Orianna'],    l:'Zone ultime'},
+  {c:['Hecarim','Orianna'],     l:'Engage + zone'},
+  {c:['Wukong','Orianna'],      l:'Zone ultime'},
+  {c:['Kennen','Orianna'],      l:'Double zone'},
+  {c:['Rumble','Orianna'],      l:'Double zone'},
+  {c:['Kalista','Alistar'],     l:'All-in ADC'},
+  {c:['Kalista','Thresh'],      l:'Protect carry'},
+  {c:['Xayah','Rakan'],         l:'Duo synchro'},
+  {c:['Yasuo','Gragas'],        l:'Knock-up chain'},
+  {c:['Yone','Alistar'],        l:'Knock-up chain'},
+  {c:['TwistedFate','Nocturne'],l:'Double global'},
+  {c:['TwistedFate','Shen'],    l:'Double global'},
+  {c:['Kaisa','Nautilus'],      l:'Engage + dive'},
+  {c:['Kaisa','Leona'],         l:'Engage + dive'},
+  {c:['Lulu','Vayne'],          l:'Hyper protect'},
+  {c:['Lulu','KogMaw'],         l:'Hyper protect'},
+  {c:['Lulu','Jinx'],           l:'Carry protect'},
+  {c:['Soraka','KogMaw'],       l:'Hyper protect'},
+  {c:['Soraka','Jinx'],         l:'Carry protect'},
+  {c:['Zilean','Jinx'],         l:'Carry protect'},
+  {c:['Zilean','Vayne'],        l:'Carry protect'},
+  {c:['Fiora','Shen'],          l:'Split global'},
+  {c:['Camille','Shen'],        l:'Split global'},
+  {c:['Tryndamere','Shen'],     l:'Split global'},
+  {c:['Sivir','Amumu'],         l:'Engage global'},
+  {c:['Sivir','Rakan'],         l:'Engage wave'},
+  {c:['Azir','Alistar'],        l:'Emperor combo'},
+  {c:['Renekton','JarvanIV'],   l:'Domination early'},
+  {c:['Braum','Caitlyn'],       l:'Piège + stun'},
+  {c:['Thresh','Blitzcrank'],   l:'Double hook'},
+  {c:['Seraphine','Amumu'],     l:'Chain CC'},
+  {c:['Viktor','Orianna'],      l:'Double zone'},
+  {c:['Kindred','Zilean'],      l:'Double résurrection'},
+];
+
+function detectSynergies(picks) {
+  const p = picks.filter(Boolean);
+  return SYNERGIES.filter(s => s.c.every(c => p.includes(c)));
+}
+
+// ── Timing (dérivé des axes) ──
+function compTiming(scores, picks) {
+  if (picks.filter(Boolean).length < 2) return null;
+  const early = Math.min(10, (scores.e * 0.7 + scores.pk * 0.9) * 1.5);
+  const mid   = Math.min(10, (scores.tf * 0.7 + scores.po * 0.7) * 1.4);
+  const late  = Math.min(10, (scores.pr * 0.9 + scores.tf * 0.4 + scores.sp * 0.3) * 1.5);
+  const peak  = early >= mid && early >= late ? 'early' : mid >= late ? 'mid' : 'late';
+  return { early: Math.round(early), mid: Math.round(mid), late: Math.round(late), peak };
+}
+
+function renderTiming(elId, timing) {
+  const el = document.getElementById(elId);
+  if (!timing) { el.innerHTML = ''; return; }
+  const labels = [{k:'early',l:'Early'},{k:'mid',l:'Mid'},{k:'late',l:'Late'}];
+  el.innerHTML = labels.map(t =>
+    `<div class="timing-cell${timing.peak===t.k?' peak':''}">${t.l}</div>`
+  ).join('');
+}
+
+// ── Archétype de composition ──
+function compArchetype(scores, picks) {
+  if (picks.filter(Boolean).length < 2) return '—';
+  const s = scores;
+  if (s.e >= 5 && s.tf >= 3) return 'Engage comp';
+  if (s.po >= 5 && s.e  < 2) return 'Poke comp';
+  if (s.sp >= 5)              return 'Split push';
+  if (s.pk >= 5 && s.e  < 2) return 'Pick comp';
+  if (s.pr >= 5)              return 'Protect comp';
+  if (s.tf >= 4 && s.po >= 3) return 'Poke-fight';
+  if (s.tf >= 4)              return 'Team fight';
+  if (s.e  >= 3 && s.pk >= 2) return 'Pick-engage';
+  if (s.e  >= 3)              return 'Engage';
+  if (s.po >= 3)              return 'Poke';
+  if (s.pr >= 3)              return 'Protect / peel';
+  if (s.sp >= 3)              return 'Split push';
+  const top = Object.entries(s).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  return top.length ? top.slice(0,2).map(([k])=>AXIS_NAMES[k]).join(' / ') : 'Non définie';
+}
+
+// ── Condition de victoire (narrative) ──
+function winCondition(scores, picks) {
+  if (picks.filter(Boolean).length < 2) return '';
+  const sorted = Object.entries(scores).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  if (!sorted.length) return '';
+  const [top, sec] = sorted;
+  const descs = {
+    e:  'Initier le combat, exploiter le chaos',
+    tf: 'Gagner les teamfights et convertir sur objectifs',
+    po: 'Poke en phase de siège, all-in quand adverse est bas',
+    sp: 'Split-push, créer des réponses, ouvrir la map',
+    pk: 'Isoler et éliminer les cibles clés avant le fight',
+    pr: 'Protéger le carry, gagner les échanges prolongés',
+  };
+  const mods = { e:'via l\'engage', tf:'en teamfight', po:'après poke', sp:'avec pression map', pk:'par picks', pr:'avec protection' };
+  let txt = descs[top[0]] || '';
+  if (sec && sec[1] >= 2 && sec[0] !== top[0]) txt += ' — ' + (mods[sec[0]] || '');
+  return txt;
+}
+
+// ── Analyse croisée Blue vs Red ──
+function crossAnalysis(pzScores, oppScores, pzPicks, oppPicks) {
+  const pzN  = pzPicks.filter(Boolean).length;
+  const oppN = oppPicks.filter(Boolean).length;
+  if (pzN < 2 || oppN < 2) return { threats:[], adv:[] };
+  const threats = [], adv = [];
+  if (oppScores.po > 4 && pzScores.e  > 3 && pzScores.po < 2)   threats.push('Leur poke contrecarré ton engage — approche difficile');
+  if (oppScores.e  > 4 && pzScores.pr < 2 && pzScores.tf < 3)   threats.push('Leur engage est fort — carry non protégé ?');
+  if (oppScores.sp > 4 && pzScores.e  < 2 && pzScores.tf > 3)   threats.push('Leur split est libre — impossible de forcer teamfight');
+  if (oppScores.pk > 4 && pzScores.pr < 2)                       threats.push('Leur pick comp cible ton carry sans protection');
+  if (oppScores.pr > 4 && pzScores.pk > 3)                       threats.push('Leur protection neutralise tes assassins / picks');
+  if (oppScores.pr > 4 && pzScores.po < 2 && pzScores.e  < 3)   threats.push('Comp protect adverse — besoin de poke ou engage dur');
+  if (pzScores.e  > oppScores.pr + 1 && pzScores.e  > 3)         adv.push('Ton engage surpasse leur protection');
+  if (pzScores.po > 3 && oppScores.pr < 2)                        adv.push('Leur carry non protégé — poke et siege libres');
+  if (pzScores.tf > oppScores.tf + 2)                             adv.push('Avantage net en teamfight 5v5');
+  if (pzScores.sp > 3 && oppScores.e  < 2)                        adv.push('Ton split push est libre — aucun engage adverse');
+  if (pzScores.pk > 3 && oppScores.pr < 2)                        adv.push('Tes assassins sont libres — pas de peel adverse');
+  return { threats, adv };
+}
+
+// ── Fit score pour suggestions pool ──
+function compNeeds(scores) {
+  const needs = {};
+  AXES.forEach(a => { needs[a.k] = Math.max(0, 3 - scores[a.k]); });
+  return needs;
+}
+function fitScore(champId, needs) {
+  const entry = DB[champId] || {};
+  return Object.entries(needs).reduce((sum,[k,n]) => sum + (entry[k]||0)*n, 0);
+}
+function gapSuggestions(axisKey, pzPicks) {
+  const allPool = Object.values(teamPools).flat().filter(id => !pzPicks.includes(id));
+  return [...new Set(allPool)]
+    .filter(id => (DB[id]?.[axisKey] || 0) >= 2)
+    .sort((a,b) => (DB[b]?.[axisKey]||0)-(DB[a]?.[axisKey]||0))
+    .slice(0,3);
+}
 
 // ── État ──
 function emptyScenario() {
@@ -509,21 +694,15 @@ function compScores(picks) {
   return s;
 }
 
-function compLabel(scores, picks) {
-  if (picks.filter(Boolean).length < 2) return '—';
-  const top = Object.entries(scores).filter(([,v]) => v >= 2).sort((a,b) => b[1]-a[1]);
-  if (!top.length) return 'Non définie';
-  return top.slice(0, 2).map(([k]) => AXIS_NAMES[k]).join(' / ');
-}
-
 function compGaps(picks, scores) {
   if (picks.filter(Boolean).length < 3) return [];
   const g = [];
-  if (scores.e < 2)  g.push('Pas d\'initiateur fort — comment tu engages ?');
-  if (scores.po < 2 && scores.e < 2) g.push('Peu de moyen de forcer l\'engagement');
-  if (scores.pr < 2 && scores.tf > 4) g.push('Comp fight sans protection du carry');
-  if (scores.sp > 4 && scores.tf < 2) g.push('Full split — dangereux si teamfight forcé');
-  if (scores.pk > 4 && scores.e  < 2) g.push('Pick comp sans engage dur (fragile)');
+  if (scores.e  < 2)                    g.push({msg:'Pas d\'initiateur fort — comment tu engages ?',  axis:'e'});
+  if (scores.po < 2 && scores.e  < 2)   g.push({msg:'Peu de moyen de forcer l\'engagement adverse',   axis:'e'});
+  if (scores.pr < 2 && scores.tf > 4)   g.push({msg:'Teamfight comp sans protection du carry',         axis:'pr'});
+  if (scores.sp > 4 && scores.tf < 2)   g.push({msg:'Full split — dangereux si teamfight forcé',       axis:'tf'});
+  if (scores.pk > 4 && scores.e  < 2)   g.push({msg:'Pick comp sans engage dur (fragile)',             axis:'e'});
+  if (scores.po < 2 && scores.pr < 2 && scores.e < 2) g.push({msg:'Peu de pression à distance ou d\'initiation', axis:'po'});
   return g;
 }
 
@@ -539,26 +718,79 @@ function renderBars(elId, scores) {
   }).join('');
 }
 
+function renderSynergies(elId, picks) {
+  const syns = detectSynergies(picks);
+  const el = document.getElementById(elId);
+  if (!syns.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="syn-pills">${syns.map(s=>`<span class="syn-pill">${esc(s.l)}</span>`).join('')}</div>`;
+}
+
 function renderAnalysis() {
   const s = scn();
   const bScores = compScores(s.bluePicks);
   const rScores = compScores(s.redPicks);
+
+  // Bars
   renderBars('barsBlue', bScores);
   renderBars('barsRed',  rScores);
-  document.getElementById('nameBlue').textContent = compLabel(bScores, s.bluePicks);
-  document.getElementById('nameRed').textContent  = compLabel(rScores, s.redPicks);
 
-  // Gaps pour PlaZma uniquement
-  const pzKey   = s.plazmaside === 'blue' ? 'bluePicks' : 'redPicks';
-  const pzScores = s.plazmaside === 'blue' ? bScores : rScores;
+  // Synergies
+  renderSynergies('synBlue', s.bluePicks);
+  renderSynergies('synRed',  s.redPicks);
+
+  // Timing
+  renderTiming('timingBlue', compTiming(bScores, s.bluePicks));
+  renderTiming('timingRed',  compTiming(rScores, s.redPicks));
+
+  // Archétype + win condition
+  document.getElementById('nameBlue').textContent   = compArchetype(bScores, s.bluePicks);
+  document.getElementById('nameRed').textContent    = compArchetype(rScores, s.redPicks);
+  document.getElementById('wincondBlue').textContent = winCondition(bScores, s.bluePicks);
+  document.getElementById('wincondRed').textContent  = winCondition(rScores, s.redPicks);
+
+  // PlaZma keys
+  const pzKey    = s.plazmaside === 'blue' ? 'bluePicks'  : 'redPicks';
+  const oppKey   = s.plazmaside === 'blue' ? 'redPicks'   : 'bluePicks';
+  const pzScores = s.plazmaside === 'blue' ? bScores      : rScores;
+  const oppScores= s.plazmaside === 'blue' ? rScores      : bScores;
+
+  // Analyse croisée
+  const { threats, adv } = crossAnalysis(pzScores, oppScores, s[pzKey], s[oppKey]);
+  const crossSec = document.getElementById('crossSection');
+  if (threats.length || adv.length) {
+    crossSec.style.display = '';
+    let html = '';
+    if (threats.length) {
+      html += `<div class="cross-sep">Vigilance</div>`;
+      html += threats.map(t=>`<div class="threat-line">${esc(t)}</div>`).join('');
+    }
+    if (adv.length) {
+      html += `<div class="cross-sep" style="color:var(--ok)">Vos atouts</div>`;
+      html += adv.map(a=>`<div class="adv-line">${esc(a)}</div>`).join('');
+    }
+    document.getElementById('crossContent').innerHTML = html;
+  } else {
+    crossSec.style.display = 'none';
+  }
+
+  // Gaps PlaZma avec suggestions pool
   const gaps = compGaps(s[pzKey], pzScores);
   const gapSec = document.getElementById('gapsSection');
   if (gaps.length) {
     gapSec.style.display = '';
-    document.getElementById('gapsList').innerHTML = gaps.map(g => `<div class="gap-line">${esc(g)}</div>`).join('');
+    document.getElementById('gapsList').innerHTML = gaps.map(g => {
+      const sugg = gapSuggestions(g.axis, s[pzKey]);
+      let html = `<div class="gap-line">${esc(g.msg)}`;
+      if (sugg.length && C()) {
+        const names = sugg.map(id => C().nameOf(id)).join(', ');
+        html += `<div style="font-size:10px;color:var(--muted);margin-top:2px;padding-left:0">Pool: ${esc(names)}</div>`;
+      }
+      return html + '</div>';
+    }).join('');
   } else {
     gapSec.style.display = 'none';
   }
+
   renderPool();
 }
 
@@ -573,13 +805,28 @@ function renderPool() {
   if (!pool.length) { poolSec.style.display = 'none'; return; }
   poolSec.style.display = '';
   const player = PZ.getRoster().find(p => p.roleKey === role.key);
-  document.getElementById('poolTitle').textContent = `Pool ${player ? player.name : role.label} (${role.label})`;
-  const used = allUsed(s);
-  document.getElementById('poolGrid').innerHTML = pool.map(id => {
-    const u = C() ? C().iconUrl(id) : '';
-    const isUsed = used.includes(id);
-    return `<div class="pool-chip${isUsed?' used':''}" title="${esc(C()?C().nameOf(id):id)}">
+  document.getElementById('poolTitle').textContent = `Pool ${player ? player.name : role.label}`;
+
+  // Fit scoring
+  const pzKey    = s.plazmaside === 'blue' ? 'bluePicks' : 'redPicks';
+  const pzScores = compScores(s[pzKey]);
+  const needs    = compNeeds(pzScores);
+  const used     = allUsed(s);
+
+  const scored = pool.map(id => ({ id, score: fitScore(id, needs), used: used.includes(id) }))
+    .sort((a,b) => a.used - b.used || b.score - a.score);
+  const maxFit = scored.reduce((m,x)=>!x.used?Math.max(m,x.score):m, 0);
+
+  document.getElementById('poolGrid').innerHTML = scored.map(({id, score, used:isUsed}) => {
+    const u    = C() ? C().iconUrl(id)  : '';
+    const nm   = C() ? C().nameOf(id)   : id;
+    const fitH = !isUsed && maxFit > 0 && score >= maxFit * .7;
+    const fitM = !isUsed && maxFit > 0 && score >= maxFit * .35 && !fitH;
+    const cls  = `pool-chip${isUsed?' used':''}${fitH?' fit-high':''}${fitM?' fit-med':''}`;
+    return `<div class="${cls}" title="${esc(nm)}${!isUsed&&fitH?' ★ Recommandé':''}">
       ${u ? `<img src="${u}" alt="">` : ''}
+      ${fitH ? `<span class="fit-dot" style="background:#4ade80"></span>` : ''}
+      ${fitM ? `<span class="fit-dot" style="background:#fbbf24"></span>` : ''}
     </div>`;
   }).join('');
 }
