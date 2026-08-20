@@ -314,3 +314,91 @@ select option{background:var(--surface)}
 
 /* ---- Divers ---- */
 hr.sep{border:none;border-top:1px solid var(--border);margin:24px 0}
+
+/* ════════════════════════════════════════════════════════
+   UX IMPROVEMENTS — v2
+   ════════════════════════════════════════════════════════ */
+
+/* ── Scrollbar fine et thémée ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+*{scrollbar-width:thin;scrollbar-color:var(--border-2) transparent}
+
+/* ── Page fade-in ── */
+@keyframes page-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.content{animation:page-in .22s ease-out}
+
+/* ── Cards interactives (ajout de la classe .card-hover) ── */
+.card-hover{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;cursor:pointer}
+.card-hover:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.45);border-color:var(--border-2)}
+.card-hover:active{transform:translateY(0);transition-duration:.08s}
+
+/* ── Nav active : dot + underline ── */
+.pz-nav a.active{position:relative}
+.pz-nav a.active::after{
+  content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);
+  width:18px;height:2px;border-radius:1px;background:var(--accent);
+}
+
+/* ── Skeleton loaders ── */
+@keyframes skel-shine{
+  0%{background-position:200% 0}100%{background-position:-200% 0}
+}
+.skel{
+  background:linear-gradient(90deg,var(--surface-2) 25%,var(--elevated) 50%,var(--surface-2) 75%);
+  background-size:400% 100%;
+  animation:skel-shine 1.5s ease-in-out infinite;
+  border-radius:var(--r-sm);
+  display:block;
+}
+.skel-text{height:12px;width:60%;margin-bottom:6px}
+.skel-title{height:18px;width:42%;margin-bottom:10px}
+.skel-line{height:11px;width:80%;margin-bottom:5px}
+.skel-img{border-radius:var(--r);aspect-ratio:1}
+.skel-full{width:100%}
+
+/* ── Sync pill : flash vert au save ── */
+@keyframes sync-flash{
+  0%,100%{background:var(--surface-2);border-color:var(--border)}
+  40%{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.35)}
+}
+.sync-pill.flash{animation:sync-flash .7s ease-out}
+
+/* ── Bouton en état chargement ── */
+@keyframes btn-spin{to{transform:rotate(360deg)}}
+.btn.loading{pointer-events:none;color:transparent !important;position:relative}
+.btn.loading::after{
+  content:'';position:absolute;width:13px;height:13px;
+  border:2px solid var(--dim);border-top-color:transparent;
+  border-radius:50%;animation:btn-spin .65s linear infinite;
+}
+
+/* ── Empty states ── */
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:52px 24px;text-align:center;gap:10px;
+}
+.empty-state-icon{font-size:38px;opacity:.45}
+.empty-state-title{font-family:var(--font-display);font-weight:600;color:var(--dim);font-size:1rem}
+.empty-state-desc{font-size:13px;color:var(--muted);max-width:290px;line-height:1.5}
+.empty-state .btn{margin-top:6px}
+
+/* ── Tooltip natif amélioré (via aria-label + ::after) ── */
+[data-tip]{position:relative}
+[data-tip]::after{
+  content:attr(data-tip);
+  position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%);
+  background:var(--elevated);border:1px solid var(--border-2);color:var(--text);
+  font-size:11px;font-weight:500;padding:4px 9px;border-radius:7px;
+  white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:200;
+}
+[data-tip]:hover::after{opacity:1}
+
+/* ── Touch targets sur mobile ── */
+@media(pointer:coarse){
+  .btn{min-height:44px}
+  .btn-sm{min-height:38px}
+  .pz-nav a{padding:9px 12px;min-height:44px;display:inline-flex;align-items:center}
+}

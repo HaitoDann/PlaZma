@@ -68,10 +68,22 @@
 @keyframes step-pulse{0%,100%{box-shadow:0 0 0 3px var(--accent-soft)}60%{box-shadow:0 0 0 5px rgba(34,211,238,.04)}}
 
 /* Step navigator */
-.step-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 16px;border-top:1px solid var(--border)}
+.step-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 16px;border-top:1px solid var(--border);transition:background .4s,border-color .4s}
+.step-nav.done{background:rgba(34,197,94,.06);border-color:rgba(34,197,94,.2)}
 .step-info{text-align:center;min-width:90px}
 .step-num{font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--dim)}
+.step-num.done{color:var(--ok)}
 .step-desc{font-size:11px;color:var(--muted);margin-top:1px}
+
+/* Copier la compo — toast */
+.copy-toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);
+  background:var(--elevated);border:1px solid var(--border-2);color:var(--text);
+  font-size:13px;font-weight:600;padding:10px 20px;border-radius:999px;
+  box-shadow:var(--shadow-3);z-index:300;opacity:0;
+  transition:opacity .2s,transform .2s;pointer-events:none;
+}
+.copy-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* Side picker */
 .side-tabs{display:inline-flex;border:1px solid var(--border);border-radius:999px;overflow:hidden;gap:0}
@@ -182,6 +194,7 @@
       <button class="side-tab red" id="sideRed" onclick="setPlazmaside('red')">PlaZma Red</button>
     </div>
     <span style="flex:1"></span>
+    <button class="btn btn-sm" onclick="copyComp()" id="btnCopy" data-tip="Copier la compo en texte">📋</button>
     <button class="btn btn-sm" onclick="newDraft()" data-edit>＋ Nouvelle</button>
     <button class="btn btn-sm" onclick="openDrawer()">Historique <span id="draftCount" class="muted"></span></button>
     <button class="btn btn-sm" onclick="openScoutModal()" data-edit>📥 Scouting</button>
@@ -214,7 +227,7 @@
           <div class="bans-side red" id="ban-red-p2"></div>
         </div>
 
-        <div class="step-nav">
+        <div class="step-nav" id="stepNav">
           <button class="btn btn-sm" id="btnBack" onclick="stepBack()">◀ Reculer</button>
           <div class="step-info">
             <div class="step-num" id="stepNum">Étape 1 / 20</div>
@@ -262,6 +275,9 @@
     </div>
   </div>
 </div>
+
+<!-- Toast copie -->
+<div class="copy-toast" id="copyToast">✓ Compo copiée</div>
 
 <!-- Drawer historique -->
 <div class="drawer-ov" id="drawerOv" onclick="closeDrawer()"></div>
@@ -578,6 +594,7 @@ function renderAll() {
   renderPicks();
   renderAnalysis();
   renderStepNav();
+  updateTitle();
 }
 
 function renderTeams() {
@@ -667,23 +684,70 @@ function wirePick(el, key, ri, ss, s) {
 
 function renderStepNav() {
   const done = step >= SEQ.length;
+  const nav = document.getElementById('stepNav');
+  const numEl = document.getElementById('stepNum');
   document.getElementById('btnBack').disabled = step === 0;
   document.getElementById('btnNext').disabled = done;
+  nav.classList.toggle('done', done);
   if (done) {
-    document.getElementById('stepNum').textContent = 'Draft complète';
-    document.getElementById('stepDesc').textContent = '';
+    numEl.textContent = '✓ Draft complète';
+    numEl.className = 'step-num done';
+    document.getElementById('stepDesc').textContent = compArchetype(
+      compScores(scn().bluePicks), scn().bluePicks
+    ) + ' vs ' + compArchetype(compScores(scn().redPicks), scn().redPicks);
     return;
   }
+  numEl.className = 'step-num';
   const cur = SEQ[step];
-  const teamFr = cur.team === 'blue' ? '🔵 Bleu' : '🔴 Rouge';
-  const typeFr = cur.type === 'ban' ? 'ban' : 'pick';
+  const s = scn();
+  const teamName = cur.team === 'blue'
+    ? (s.blueTeam || '🔵 Bleu')
+    : (s.redTeam   || '🔴 Rouge');
+  const typeFr = cur.type === 'ban' ? 'Ban' : 'Pick';
   const roleFr = cur.type === 'pick' ? ' · ' + ROLES[cur.ri].label : '';
-  document.getElementById('stepNum').textContent = `Étape ${step + 1} / ${SEQ.length}`;
-  document.getElementById('stepDesc').textContent = `${teamFr} — ${typeFr}${roleFr}`;
+  numEl.textContent = `Étape ${step + 1} / ${SEQ.length}`;
+  document.getElementById('stepDesc').textContent = `${teamName} — ${typeFr}${roleFr}`;
 }
 
 function stepNext() { if (step < SEQ.length) { step++; renderAll(); } }
 function stepBack() { if (step > 0) { step--; renderAll(); } }
+
+// ── Flèches clavier ──
+document.addEventListener('keydown', e => {
+  // N'interfère pas si un input est actif ou si un modal est ouvert
+  if (document.activeElement.tagName === 'INPUT') return;
+  if (document.querySelector('.champ-overlay.open, .overlay.open')) return;
+  if (e.key === 'ArrowRight') { e.preventDefault(); stepNext(); }
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); stepBack(); }
+});
+
+// ── Titre dynamique ──
+function updateTitle() {
+  const s = scn();
+  const opp = s.plazmaside === 'blue' ? s.redTeam : s.blueTeam;
+  document.title = opp ? `Archi — Draft vs ${opp}` : 'Archi — Draft';
+}
+
+// ── Copier la compo ──
+function copyComp() {
+  const s = scn();
+  const fmt = (picks, bans, side) => {
+    const p = picks.map((id,i) => id && C() ? C().nameOf(id) : '?').join(', ');
+    const b = bans.filter(Boolean).map(id => C() ? C().nameOf(id) : id).join(', ');
+    return `${side}: ${p || '—'}${b ? ` | Bans: ${b}` : ''}`;
+  };
+  const txt = [
+    s.blueTeam ? `Blue (${s.blueTeam})` : 'Blue',
+    fmt(s.bluePicks, s.blueBans, '  Picks'),
+    s.redTeam ? `Red (${s.redTeam})` : 'Red',
+    fmt(s.redPicks, s.redBans, '  Picks'),
+  ].join('\n');
+  navigator.clipboard.writeText(txt).catch(() => {});
+  // Toast
+  const t = document.getElementById('copyToast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
 
 // ── Analyse de composition ──
 function compScores(picks) {

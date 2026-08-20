@@ -268,12 +268,37 @@
   // ---- Pastille de synchro ----
   // Attend des éléments #syncDot / #syncText / #syncTime si présents.
   function status(state, text, time) {
-    const dot = document.getElementById('syncDot');
-    const txt = document.getElementById('syncText');
-    const tim = document.getElementById('syncTime');
+    const dot  = document.getElementById('syncDot');
+    const txt  = document.getElementById('syncText');
+    const tim  = document.getElementById('syncTime');
+    const pill = dot && dot.closest('.sync-pill');
     if (dot) dot.className = 'sync-dot ' + state;
     if (txt) txt.textContent = text || '';
     if (tim) tim.textContent = time || '';
+    // Flash vert discret quand la sauvegarde réussit
+    if (state === 'connected' && pill) {
+      pill.classList.remove('flash');
+      requestAnimationFrame(() => pill.classList.add('flash'));
+      pill.addEventListener('animationend', () => pill.classList.remove('flash'), { once: true });
+    }
+  }
+
+  /** Renvoie un timestamp relatif en français.
+   *  @param {Date|firebase.firestore.Timestamp|string} date
+   */
+  function relTime(date) {
+    if (!date) return '';
+    const d = date instanceof Date ? date
+            : date.toDate ? date.toDate()
+            : new Date(date);
+    const s = (Date.now() - d.getTime()) / 1000;
+    if (s < 45)      return 'À l\'instant';
+    if (s < 3600)    return 'Il y a ' + Math.round(s / 60) + ' min';
+    if (s < 7200)    return 'Il y a 1h';
+    if (s < 86400)   return 'Il y a ' + Math.floor(s / 3600) + 'h';
+    if (s < 172800)  return 'Hier';
+    if (s < 604800)  return 'Il y a ' + Math.floor(s / 86400) + ' jours';
+    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
   }
   const nowTime = () =>
     new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -584,7 +609,7 @@
   // ---- API publique ----
   window.PZ = {
     db, COLLECTION, NAV, FIREBASE_CONFIG,
-    mountNav, sync, status, nowTime, loadingDone,
+    mountNav, sync, status, nowTime, relTime, loadingDone,
     exportPNG, backup, importFile, logout, changePassword,
     USER_DOMAIN, discord,
     // Roster central
@@ -600,6 +625,20 @@
       config: FIREBASE_CONFIG
     }
   };
+
+  // ---- Escape global : ferme modaux / drawers / overlays ----
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    // Ferme le sélecteur de champions (priorité maximale)
+    const champOv = document.querySelector('.champ-overlay.open');
+    if (champOv) { champOv.classList.remove('open'); return; }
+    // Ferme tout overlay ou drawer ouvert
+    const ov = document.querySelector('.overlay.open, .drawer-ov.open');
+    if (!ov) return;
+    ov.classList.remove('open');
+    // Ferme aussi les panneaux associés
+    document.querySelectorAll('.modal, .drawer').forEach(el => el.classList.remove('open'));
+  });
 
   // ---- Zones de texte auto-extensibles ----
   // Chrome/Edge récents : géré nativement en CSS (field-sizing:content, dans theme.css).
