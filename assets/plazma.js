@@ -654,6 +654,121 @@
     document.querySelectorAll('.modal, .drawer').forEach(el => el.classList.remove('open'));
   });
 
+  // ---- Spotlight hover (suit le curseur dans les .card) ----
+  function _initSpotlight() {
+    function attach(card) {
+      if (card._spotlightBound) return;
+      card._spotlightBound = true;
+      card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+        card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+      });
+    }
+    document.querySelectorAll('.card').forEach(attach);
+    new MutationObserver(muts => {
+      muts.forEach(m => m.addedNodes.forEach(n => {
+        if (n.nodeType !== 1) return;
+        if (n.classList && n.classList.contains('card')) attach(n);
+        if (n.querySelectorAll) n.querySelectorAll('.card').forEach(attach);
+      }));
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+
+  // ---- Command Palette (Ctrl+K / Cmd+K) ----
+  function _initCmdPalette() {
+    const ICONS = {
+      home:'🏠', schedule:'📅', scrim:'⚔️', scouting:'🔍',
+      draft:'🎯', wiki:'📚', team:'👥', dashboard:'📊',
+      coach:'🎙️', satisfaction:'⭐', 'satisfaction-coach':'📋', admin:'🔧'
+    };
+    const ov = document.createElement('div');
+    ov.className = 'cmd-overlay';
+    ov.id = 'pzCmdOv';
+    ov.innerHTML =
+      '<div class="cmd-palette">' +
+        '<div class="cmd-search-wrap">' +
+          '<span class="cmd-search-icon">🔍</span>' +
+          '<input class="cmd-input" id="pzCmdInput" type="text" placeholder="Naviguer vers…" autocomplete="off">' +
+          '<span class="cmd-shortcut-hint">Esc pour fermer</span>' +
+        '</div>' +
+        '<div class="cmd-results" id="pzCmdResults"></div>' +
+        '<div class="cmd-foot">' +
+          '<span class="cmd-kbd"><span class="cmd-key">↑</span><span class="cmd-key">↓</span> naviguer</span>' +
+          '<span class="cmd-kbd"><span class="cmd-key">↵</span> ouvrir</span>' +
+          '<span class="cmd-kbd"><span class="cmd-key">Esc</span> fermer</span>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(ov);
+
+    const input = ov.querySelector('#pzCmdInput');
+    const resultsEl = ov.querySelector('#pzCmdResults');
+    let selIdx = 0, currentItems = [];
+
+    function getItems(q) {
+      const list = NAV.filter(n => !n.section || can(n.section));
+      if (isAdmin()) list.push({ key: 'admin', href: 'plazma-admin.html', label: 'Comptes' });
+      if (!q) return list;
+      const lq = q.toLowerCase();
+      return list.filter(n => n.label.toLowerCase().includes(lq));
+    }
+
+    function render(q) {
+      currentItems = getItems(q);
+      selIdx = 0;
+      if (!currentItems.length) {
+        resultsEl.innerHTML = '<div class="cmd-empty">Aucun résultat pour « ' + q + ' »</div>';
+        return;
+      }
+      resultsEl.innerHTML = (q ? '' : '<div class="cmd-section-label">Pages</div>') +
+        currentItems.map((n, i) =>
+          '<a class="cmd-item' + (i === 0 ? ' sel' : '') + '" href="' + n.href + '" data-idx="' + i + '">' +
+            '<span class="cmd-item-icon">' + (ICONS[n.key] || '📄') + '</span>' +
+            '<span class="cmd-item-label">' + n.label + '</span>' +
+            '<span class="cmd-item-arrow">→</span>' +
+          '</a>'
+        ).join('');
+      resultsEl.querySelectorAll('.cmd-item').forEach(el => {
+        el.addEventListener('mouseenter', () => { selIdx = +el.dataset.idx; updateSel(); });
+        el.addEventListener('click', close);
+      });
+    }
+
+    function updateSel() {
+      resultsEl.querySelectorAll('.cmd-item').forEach((el, i) => el.classList.toggle('sel', i === selIdx));
+      const s = resultsEl.querySelector('.cmd-item.sel');
+      if (s) s.scrollIntoView({ block: 'nearest' });
+    }
+
+    function open() {
+      ov.classList.add('open');
+      input.value = '';
+      render('');
+      requestAnimationFrame(() => input.focus());
+    }
+    function close() { ov.classList.remove('open'); }
+
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); ov.classList.contains('open') ? close() : open(); return; }
+      if (!ov.classList.contains('open')) return;
+      const items = resultsEl.querySelectorAll('.cmd-item');
+      if (e.key === 'Escape') { e.stopPropagation(); close(); return; }
+      if (e.key === 'ArrowDown') { e.preventDefault(); selIdx = (selIdx + 1) % Math.max(1, items.length); updateSel(); }
+      if (e.key === 'ArrowUp')   { e.preventDefault(); selIdx = (selIdx - 1 + Math.max(1, items.length)) % Math.max(1, items.length); updateSel(); }
+      if (e.key === 'Enter' && items[selIdx]) { items[selIdx].click(); }
+    });
+
+    input.addEventListener('input', () => render(input.value.trim()));
+    ov.addEventListener('click', e => { if (e.target === ov) close(); });
+  }
+
+  // Init spotlight + command palette après le DOM
+  (function() {
+    function _boot() { _initSpotlight(); _initCmdPalette(); }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _boot, { once: true });
+    else _boot();
+  })();
+
   // ---- Zones de texte auto-extensibles ----
   // Chrome/Edge récents : géré nativement en CSS (field-sizing:content, dans theme.css).
   // Fallback JS pour les autres navigateurs.
