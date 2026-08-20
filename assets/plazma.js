@@ -303,9 +303,23 @@
   const nowTime = () =>
     new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
+  function _initLoaderStatus() {
+    const loader = document.querySelector('.loader');
+    if (!loader || loader.querySelector('.loader-status')) return;
+    const s = document.createElement('div');
+    s.className = 'loader-status';
+    s.textContent = 'Vérification de l\'accès…';
+    loader.appendChild(s);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _initLoaderStatus, { once: true });
+  } else {
+    _initLoaderStatus();
+  }
+
   function loadingDone() {
     const el = document.querySelector('.loader');
-    if (el) { el.classList.add('hidden'); setTimeout(() => (el.style.display = 'none'), 400); }
+    if (el) { el.classList.add('hidden'); setTimeout(() => (el.style.display = 'none'), 600); }
   }
 
   /**
