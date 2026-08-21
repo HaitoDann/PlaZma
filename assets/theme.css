@@ -575,3 +575,34 @@ body{
 }
 .pz-emoji-shake{display:inline-block;transform-origin:center bottom;animation:emoji-shake .5s cubic-bezier(.36,.07,.19,.97) infinite;animation-play-state:paused}
 button:hover .pz-emoji-shake,a:hover .pz-emoji-shake,[role="button"]:hover .pz-emoji-shake{animation-play-state:running}
+
+/* ── Animations sémantiques des icônes outils (accueil) ── */
+@keyframes tool-scan{
+  0%,100%{transform:scale(1.12)rotate(0)}
+  25%{transform:scale(1.12)translate(-3px,1px)rotate(-14deg)}
+  75%{transform:scale(1.12)translate(3px,-1px)rotate(14deg)}
+}
+@keyframes tool-bars{
+  0%,100%{transform:scale(1.12)}
+  35%{transform:scale(1.12)scaleY(1.14)translateY(-3px)}
+  65%{transform:scale(1.12)scaleY(.95)}
+}
+@keyframes tool-ping{
+  0%,100%{transform:scale(1.12)}
+  40%{transform:scale(1.24)}
+  70%{transform:scale(1.07)}
+}
+@keyframes tool-flip{
+  0%,100%{transform:scale(1.12)rotateY(0)}
+  50%{transform:scale(1.12)rotateY(22deg)}
+}
+@keyframes tool-bounce{
+  0%,100%{transform:scale(1.12)translateY(0)}
+  40%{transform:scale(1.12)translateY(-5px)}
+  70%{transform:scale(1.12)translateY(-1px)}
+}
+a[href="plazma-scouting.html"]:hover .tool-ico svg{animation:tool-scan .65s ease-in-out infinite}
+a[href="plazma-dashboard.html"]:hover .tool-ico svg{animation:tool-bars .8s ease-in-out infinite}
+a[href="plazma-satisfaction.html"]:hover .tool-ico svg{animation:tool-ping .7s ease-in-out infinite}
+a[href="plazma-schedule.html"]:hover .tool-ico svg{animation:tool-flip .9s ease-in-out infinite}
+a[href="plazma-team.html"]:hover .tool-ico svg{animation:tool-bounce .7s ease-in-out infinite}
