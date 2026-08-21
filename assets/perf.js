@@ -13,6 +13,24 @@
   const QUAL = ['—','Très insuffisant','Insuffisant','Insuffisant','Passable','Moyen',
                 'Correct','Bon','Très bon','Excellent','Exceptionnel'];
 
+  const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Count-up : la note « monte » vers sa valeur (donne vie au chiffre).
+  let _scoreRAF = null, _scoreShown = 0;
+  function tweenScore(el, target) {
+    if (REDUCE) { el.textContent = target.toFixed(1); _scoreShown = target; return; }
+    cancelAnimationFrame(_scoreRAF);
+    const from = _scoreShown, start = performance.now(), dur = 420;
+    (function step(now) {
+      const p = Math.min((now - start) / dur, 1);
+      const cur = from + (target - from) * (1 - Math.pow(1 - p, 3));
+      el.textContent = cur.toFixed(1);
+      _scoreShown = cur;
+      if (p < 1) _scoreRAF = requestAnimationFrame(step);
+      else { _scoreShown = target; el.textContent = target.toFixed(1); }
+    })(performance.now());
+  }
+
   const jV = {};
   P.cats.forEach(c => c.items.forEach(i => { jV[i.id] = 0; }));
 
@@ -156,7 +174,8 @@
     const sn = document.getElementById('scoreNum');
     const sq = document.getElementById('scoreQual');
     const sf = document.getElementById('scoreFill');
-    sn.textContent = g > 0 ? (Math.round(g * 10) / 10).toFixed(1) : '—';
+    if (g > 0) tweenScore(sn, Math.round(g * 10) / 10);
+    else { cancelAnimationFrame(_scoreRAF); _scoreShown = 0; sn.textContent = '—'; }
     sn.style.color = col; sq.textContent = QUAL[Math.round(g)] || '—'; sq.style.color = col;
     sf.style.width = (g / 10 * 100) + '%'; sf.style.background = col;
   }
