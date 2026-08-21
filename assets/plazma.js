@@ -153,19 +153,56 @@
     document.body.appendChild(b);
   }
 
+  // ---- Cache d'authentification (sessionStorage) ----
+  // Affiche la page immédiatement depuis le cache, sans attendre Firebase.
+  // Évite l'écran "Vérification de l'accès…" à chaque navigation.
+  const _AUTH_CACHE_KEY = 'pz_auth_v1';
+  const _AUTH_CACHE_TTL = 30 * 60 * 1000; // 30 min
+  function _saveAuthCache() {
+    if (!authUser || !profile || profile.disabled) return;
+    try {
+      sessionStorage.setItem(_AUTH_CACHE_KEY, JSON.stringify({
+        uid: authUser.uid, email: authUser.email, profile, ts: Date.now()
+      }));
+    } catch (e) {}
+  }
+  function _loadAuthCache() {
+    try {
+      const raw = sessionStorage.getItem(_AUTH_CACHE_KEY);
+      if (!raw) return null;
+      const d = JSON.parse(raw);
+      if (!d || Date.now() - d.ts > _AUTH_CACHE_TTL) { sessionStorage.removeItem(_AUTH_CACHE_KEY); return null; }
+      return d;
+    } catch (e) { return null; }
+  }
+  function _clearAuthCache() { try { sessionStorage.removeItem(_AUTH_CACHE_KEY); } catch (e) {} }
+
   function startAuth() {
     if (!auth) {
       authResolved = true; _resolveReady({ user: null, profile: null });
       if (NEEDS_AUTH) location.replace('login.html');
       return;
     }
-    if (NEEDS_AUTH) gate(spinnerHtml);
+
+    // Affichage immédiat depuis le cache — saute l'écran de vérification
+    if (NEEDS_AUTH) {
+      const cached = _loadAuthCache();
+      if (cached) {
+        authUser = { uid: cached.uid, email: cached.email };
+        profile = cached.profile;
+        handleAccess(); // dégate immédiatement si accès OK
+      } else {
+        gate(spinnerHtml);
+      }
+    }
+
     auth.onAuthStateChanged(async user => {
       authUser = user ? { uid: user.uid, email: user.email } : null;
       if (user && db) {
         try { const s = await db.collection('users').doc(user.uid).get(); profile = s.exists ? s.data() : null; }
         catch (e) { console.error('Chargement du profil impossible', e); profile = null; }
-      } else profile = null;
+      } else { profile = null; _clearAuthCache(); }
+      if (authUser && profile && !profile.disabled) _saveAuthCache();
       authResolved = true; _resolveReady({ user: authUser, profile });
       handleAccess();
       notifyAuth();
