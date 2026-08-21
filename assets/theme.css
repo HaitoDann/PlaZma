@@ -564,3 +564,14 @@ body{
 @keyframes vt-fade-in{from{opacity:0;transform:translateY(4px)}}
 ::view-transition-old(root){animation:90ms ease-out both vt-fade-out}
 ::view-transition-new(root){animation:200ms cubic-bezier(.16,1,.3,1) both vt-fade-in}
+
+/* ── Emoji shake (📢 mégaphone) — paused/running pattern ── */
+@keyframes emoji-shake{
+  0%,100%{transform:rotate(0)scale(1)}
+  18%{transform:rotate(-18deg)scale(1.15)translate(-1px,1px)}
+  36%{transform:rotate(14deg)scale(1.1)translate(1px,-1px)}
+  54%{transform:rotate(-10deg)scale(1.08)}
+  72%{transform:rotate(6deg)scale(1.04)}
+}
+.pz-emoji-shake{display:inline-block;transform-origin:center bottom;animation:emoji-shake .5s cubic-bezier(.36,.07,.19,.97) infinite;animation-play-state:paused}
+button:hover .pz-emoji-shake,a:hover .pz-emoji-shake,[role="button"]:hover .pz-emoji-shake{animation-play-state:running}

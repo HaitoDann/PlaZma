@@ -764,9 +764,22 @@
     ov.addEventListener('click', e => { if (e.target === ov) close(); });
   }
 
+  // ---- Auto-wrap 📢 dans les boutons statiques pour l'animation shake ----
+  function _initEmojiShake() {
+    document.querySelectorAll('button, a[role="button"]').forEach(el => {
+      if (el.querySelector('.pz-emoji-shake')) return;
+      Array.from(el.childNodes).forEach(node => {
+        if (node.nodeType !== 3 || !node.textContent.includes('📢')) return;
+        const tmp = document.createElement('span');
+        tmp.innerHTML = node.textContent.replace('📢', '<span class="pz-emoji-shake">📢</span>');
+        node.replaceWith(...Array.from(tmp.childNodes));
+      });
+    });
+  }
+
   // Init spotlight + command palette après le DOM
   (function() {
-    function _boot() { _initCmdPalette(); }
+    function _boot() { _initCmdPalette(); _initEmojiShake(); }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _boot, { once: true });
     else _boot();
   })();
