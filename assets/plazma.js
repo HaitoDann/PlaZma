@@ -268,19 +268,58 @@
   // ---- Pastille de synchro ----
   // Attend des éléments #syncDot / #syncText / #syncTime si présents.
   function status(state, text, time) {
-    const dot = document.getElementById('syncDot');
-    const txt = document.getElementById('syncText');
-    const tim = document.getElementById('syncTime');
+    const dot  = document.getElementById('syncDot');
+    const txt  = document.getElementById('syncText');
+    const tim  = document.getElementById('syncTime');
+    const pill = dot && dot.closest('.sync-pill');
     if (dot) dot.className = 'sync-dot ' + state;
     if (txt) txt.textContent = text || '';
     if (tim) tim.textContent = time || '';
+    // Flash vert discret quand la sauvegarde réussit
+    if (state === 'connected' && pill) {
+      pill.classList.remove('flash');
+      requestAnimationFrame(() => pill.classList.add('flash'));
+      pill.addEventListener('animationend', () => pill.classList.remove('flash'), { once: true });
+    }
+  }
+
+  /** Renvoie un timestamp relatif en français.
+   *  @param {Date|firebase.firestore.Timestamp|string} date
+   */
+  function relTime(date) {
+    if (!date) return '';
+    const d = date instanceof Date ? date
+            : date.toDate ? date.toDate()
+            : new Date(date);
+    const s = (Date.now() - d.getTime()) / 1000;
+    if (s < 45)      return 'À l\'instant';
+    if (s < 3600)    return 'Il y a ' + Math.round(s / 60) + ' min';
+    if (s < 7200)    return 'Il y a 1h';
+    if (s < 86400)   return 'Il y a ' + Math.floor(s / 3600) + 'h';
+    if (s < 172800)  return 'Hier';
+    if (s < 604800)  return 'Il y a ' + Math.floor(s / 86400) + ' jours';
+    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
   }
   const nowTime = () =>
     new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
+  function _initLoaderStatus() {
+    const loader = document.querySelector('.loader');
+    if (!loader || loader.querySelector('.loader-status')) return;
+    const s = document.createElement('div');
+    s.className = 'loader-status';
+    s.textContent = 'Vérification de l\'accès…';
+    loader.appendChild(s);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _initLoaderStatus, { once: true });
+  } else {
+    _initLoaderStatus();
+  }
+
   function loadingDone() {
     const el = document.querySelector('.loader');
-    if (el) { el.classList.add('hidden'); setTimeout(() => (el.style.display = 'none'), 400); }
+    if (el) { el.classList.add('hidden'); setTimeout(() => (el.style.display = 'none'), 600); }
   }
 
   /**
@@ -584,7 +623,7 @@
   // ---- API publique ----
   window.PZ = {
     db, COLLECTION, NAV, FIREBASE_CONFIG,
-    mountNav, sync, status, nowTime, loadingDone,
+    mountNav, sync, status, nowTime, relTime, loadingDone,
     exportPNG, backup, importFile, logout, changePassword,
     USER_DOMAIN, discord,
     // Roster central
@@ -600,6 +639,135 @@
       config: FIREBASE_CONFIG
     }
   };
+
+  // ---- Escape global : ferme modaux / drawers / overlays ----
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    // Ferme le sélecteur de champions (priorité maximale)
+    const champOv = document.querySelector('.champ-overlay.open');
+    if (champOv) { champOv.classList.remove('open'); return; }
+    // Ferme tout overlay ou drawer ouvert
+    const ov = document.querySelector('.overlay.open, .drawer-ov.open');
+    if (!ov) return;
+    ov.classList.remove('open');
+    // Ferme aussi les panneaux associés
+    document.querySelectorAll('.modal, .drawer').forEach(el => el.classList.remove('open'));
+  });
+
+  // ---- Spotlight hover (suit le curseur dans les .card) ----
+  function _initSpotlight() {
+    function attach(card) {
+      if (card._spotlightBound) return;
+      card._spotlightBound = true;
+      card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+        card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+      });
+    }
+    document.querySelectorAll('.card').forEach(attach);
+    new MutationObserver(muts => {
+      muts.forEach(m => m.addedNodes.forEach(n => {
+        if (n.nodeType !== 1) return;
+        if (n.classList && n.classList.contains('card')) attach(n);
+        if (n.querySelectorAll) n.querySelectorAll('.card').forEach(attach);
+      }));
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+
+  // ---- Command Palette (Ctrl+K / Cmd+K) ----
+  function _initCmdPalette() {
+    const ICONS = {
+      home:'🏠', schedule:'📅', scrim:'⚔️', scouting:'🔍',
+      draft:'🎯', wiki:'📚', team:'👥', dashboard:'📊',
+      coach:'🎙️', satisfaction:'⭐', 'satisfaction-coach':'📋', admin:'🔧'
+    };
+    const ov = document.createElement('div');
+    ov.className = 'cmd-overlay';
+    ov.id = 'pzCmdOv';
+    ov.innerHTML =
+      '<div class="cmd-palette">' +
+        '<div class="cmd-search-wrap">' +
+          '<span class="cmd-search-icon">🔍</span>' +
+          '<input class="cmd-input" id="pzCmdInput" type="text" placeholder="Naviguer vers…" autocomplete="off">' +
+          '<span class="cmd-shortcut-hint">Esc pour fermer</span>' +
+        '</div>' +
+        '<div class="cmd-results" id="pzCmdResults"></div>' +
+        '<div class="cmd-foot">' +
+          '<span class="cmd-kbd"><span class="cmd-key">↑</span><span class="cmd-key">↓</span> naviguer</span>' +
+          '<span class="cmd-kbd"><span class="cmd-key">↵</span> ouvrir</span>' +
+          '<span class="cmd-kbd"><span class="cmd-key">Esc</span> fermer</span>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(ov);
+
+    const input = ov.querySelector('#pzCmdInput');
+    const resultsEl = ov.querySelector('#pzCmdResults');
+    let selIdx = 0, currentItems = [];
+
+    function getItems(q) {
+      const list = NAV.filter(n => !n.section || can(n.section));
+      if (isAdmin()) list.push({ key: 'admin', href: 'plazma-admin.html', label: 'Comptes' });
+      if (!q) return list;
+      const lq = q.toLowerCase();
+      return list.filter(n => n.label.toLowerCase().includes(lq));
+    }
+
+    function render(q) {
+      currentItems = getItems(q);
+      selIdx = 0;
+      if (!currentItems.length) {
+        resultsEl.innerHTML = '<div class="cmd-empty">Aucun résultat pour « ' + q + ' »</div>';
+        return;
+      }
+      resultsEl.innerHTML = (q ? '' : '<div class="cmd-section-label">Pages</div>') +
+        currentItems.map((n, i) =>
+          '<a class="cmd-item' + (i === 0 ? ' sel' : '') + '" href="' + n.href + '" data-idx="' + i + '">' +
+            '<span class="cmd-item-icon">' + (ICONS[n.key] || '📄') + '</span>' +
+            '<span class="cmd-item-label">' + n.label + '</span>' +
+            '<span class="cmd-item-arrow">→</span>' +
+          '</a>'
+        ).join('');
+      resultsEl.querySelectorAll('.cmd-item').forEach(el => {
+        el.addEventListener('mouseenter', () => { selIdx = +el.dataset.idx; updateSel(); });
+        el.addEventListener('click', close);
+      });
+    }
+
+    function updateSel() {
+      resultsEl.querySelectorAll('.cmd-item').forEach((el, i) => el.classList.toggle('sel', i === selIdx));
+      const s = resultsEl.querySelector('.cmd-item.sel');
+      if (s) s.scrollIntoView({ block: 'nearest' });
+    }
+
+    function open() {
+      ov.classList.add('open');
+      input.value = '';
+      render('');
+      requestAnimationFrame(() => input.focus());
+    }
+    function close() { ov.classList.remove('open'); }
+
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); ov.classList.contains('open') ? close() : open(); return; }
+      if (!ov.classList.contains('open')) return;
+      const items = resultsEl.querySelectorAll('.cmd-item');
+      if (e.key === 'Escape') { e.stopPropagation(); close(); return; }
+      if (e.key === 'ArrowDown') { e.preventDefault(); selIdx = (selIdx + 1) % Math.max(1, items.length); updateSel(); }
+      if (e.key === 'ArrowUp')   { e.preventDefault(); selIdx = (selIdx - 1 + Math.max(1, items.length)) % Math.max(1, items.length); updateSel(); }
+      if (e.key === 'Enter' && items[selIdx]) { items[selIdx].click(); }
+    });
+
+    input.addEventListener('input', () => render(input.value.trim()));
+    ov.addEventListener('click', e => { if (e.target === ov) close(); });
+  }
+
+  // Init spotlight + command palette après le DOM
+  (function() {
+    function _boot() { _initSpotlight(); _initCmdPalette(); }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _boot, { once: true });
+    else _boot();
+  })();
 
   // ---- Zones de texte auto-extensibles ----
   // Chrome/Edge récents : géré nativement en CSS (field-sizing:content, dans theme.css).
