@@ -303,23 +303,9 @@
   const nowTime = () =>
     new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
-  function _initLoaderStatus() {
-    const loader = document.querySelector('.loader');
-    if (!loader || loader.querySelector('.loader-status')) return;
-    const s = document.createElement('div');
-    s.className = 'loader-status';
-    s.textContent = 'Vérification de l\'accès…';
-    loader.appendChild(s);
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', _initLoaderStatus, { once: true });
-  } else {
-    _initLoaderStatus();
-  }
-
   function loadingDone() {
     const el = document.querySelector('.loader');
-    if (el) { el.classList.add('hidden'); setTimeout(() => (el.style.display = 'none'), 600); }
+    if (el) { el.classList.add('hidden'); setTimeout(() => (el.style.display = 'none'), 400); }
   }
 
   /**
@@ -654,27 +640,6 @@
     document.querySelectorAll('.modal, .drawer').forEach(el => el.classList.remove('open'));
   });
 
-  // ---- Spotlight hover (suit le curseur dans les .card) ----
-  function _initSpotlight() {
-    function attach(card) {
-      if (card._spotlightBound) return;
-      card._spotlightBound = true;
-      card.addEventListener('mousemove', e => {
-        const r = card.getBoundingClientRect();
-        card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
-        card.style.setProperty('--my', (e.clientY - r.top) + 'px');
-      });
-    }
-    document.querySelectorAll('.card').forEach(attach);
-    new MutationObserver(muts => {
-      muts.forEach(m => m.addedNodes.forEach(n => {
-        if (n.nodeType !== 1) return;
-        if (n.classList && n.classList.contains('card')) attach(n);
-        if (n.querySelectorAll) n.querySelectorAll('.card').forEach(attach);
-      }));
-    }).observe(document.body, { childList: true, subtree: true });
-  }
-
   // ---- Command Palette (Ctrl+K / Cmd+K) ----
   function _initCmdPalette() {
     const ICONS = {
@@ -764,7 +729,7 @@
 
   // Init spotlight + command palette après le DOM
   (function() {
-    function _boot() { _initSpotlight(); _initCmdPalette(); }
+    function _boot() { _initCmdPalette(); }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _boot, { once: true });
     else _boot();
   })();
