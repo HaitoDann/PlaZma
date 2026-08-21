@@ -447,6 +447,16 @@ hr.sep{border:none;border-top:1px solid var(--border);margin:24px 0}
 }
 [data-tip]:hover::after{opacity:1}
 
+/* ── Flash blanc au clic sur tous les .btn ── */
+.btn{position:relative;overflow:hidden}
+.btn::after{
+  content:'';position:absolute;inset:0;
+  background:rgba(255,255,255,.18);
+  opacity:0;border-radius:inherit;
+  transition:opacity .12s ease;
+}
+.btn:active::after{opacity:1;transition-duration:0s}
+
 /* ── Touch targets sur mobile ── */
 @media(pointer:coarse){
   .btn{min-height:44px}
