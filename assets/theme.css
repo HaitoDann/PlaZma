@@ -621,28 +621,38 @@ a[href="plazma-satisfaction.html"]:hover .tool-ico svg{animation:tool-ping .7s e
 a[href="plazma-schedule.html"]:hover .tool-ico svg{animation:tool-flip .9s ease-in-out infinite}
 a[href="plazma-team.html"]:hover .tool-ico svg{animation:tool-bounce .7s ease-in-out infinite}
 
-/* ── Halos de fond — deux blobs qui respirent très lentement ── */
+/* ── Halos de fond — blobs vivants : dérive + respiration d'opacité ──
+   Discret mais perceptiblement en mouvement. GPU-friendly (transform+opacity
+   uniquement). Figé par le bloc prefers-reduced-motion plus bas. ── */
 @keyframes halo-a{
-  0%,100%{transform:translate(0,0)scale(1)}
-  45%{transform:translate(-45px,30px)scale(1.1)}
-  75%{transform:translate(20px,-24px)scale(.94)}
+  0%  {transform:translate(0,0) scale(1);           opacity:.6}
+  30% {transform:translate(-58px,44px) scale(1.16); opacity:1}
+  62% {transform:translate(40px,-28px) scale(.9);   opacity:.5}
+  100%{transform:translate(0,0) scale(1);           opacity:.6}
 }
 @keyframes halo-b{
-  0%,100%{transform:translate(0,0)scale(1)}
-  38%{transform:translate(32px,-20px)scale(1.08)}
-  68%{transform:translate(-26px,36px)scale(.96)}
+  0%  {transform:translate(0,0) scale(1);           opacity:.55}
+  36% {transform:translate(46px,-32px) scale(1.14); opacity:.95}
+  70% {transform:translate(-36px,48px) scale(.88);  opacity:.45}
+  100%{transform:translate(0,0) scale(1);           opacity:.55}
 }
 body{isolation:isolate}
-body::before,body::after{content:'';position:fixed;border-radius:50%;pointer-events:none;z-index:-1;filter:blur(110px)}
+/* Chaque blob porte deux teintes (grand halo + petit accent décalé) pour plus
+   de richesse ; ils dérivent et respirent sur des périodes différentes. */
+body::before,body::after{content:'';position:fixed;border-radius:50%;pointer-events:none;z-index:-1;filter:blur(110px);will-change:transform,opacity}
 body::before{
-  width:700px;height:700px;top:-180px;right:-160px;
-  background:radial-gradient(circle,rgba(34,211,238,.038) 0%,transparent 65%);
-  animation:halo-a 24s ease-in-out infinite;
+  width:720px;height:720px;top:-190px;right:-170px;
+  background:
+    radial-gradient(circle at 60% 40%, rgba(34,211,238,.075) 0%, transparent 60%),
+    radial-gradient(circle at 30% 70%, rgba(94,234,212,.045) 0%, transparent 55%);
+  animation:halo-a 20s ease-in-out infinite;
 }
 body::after{
-  width:620px;height:620px;bottom:-160px;left:-110px;
-  background:radial-gradient(circle,rgba(99,102,241,.03) 0%,transparent 65%);
-  animation:halo-b 30s ease-in-out infinite;
+  width:640px;height:640px;bottom:-170px;left:-120px;
+  background:
+    radial-gradient(circle at 45% 55%, rgba(99,102,241,.06) 0%, transparent 60%),
+    radial-gradient(circle at 70% 30%, rgba(129,140,248,.04) 0%, transparent 55%);
+  animation:halo-b 26s ease-in-out infinite;
 }
 
 /* ════════════════════════════════════════════════════════
