@@ -777,9 +777,22 @@
     });
   }
 
-  // Init spotlight + command palette après le DOM
+  // Fond animé partagé — 3 orbes qui dérivent (stylées dans theme.css).
+  // Injecté ici pour couvrir toutes les pages sans toucher au HTML.
+  function _mountBackground() {
+    if (!document.body || document.querySelector('.pz-bg')) return;
+    const bg = document.createElement('div');
+    bg.className = 'pz-bg';
+    bg.setAttribute('aria-hidden', 'true');
+    bg.innerHTML = '<span class="pz-blob pz-blob-1"></span>' +
+                   '<span class="pz-blob pz-blob-2"></span>' +
+                   '<span class="pz-blob pz-blob-3"></span>';
+    document.body.insertBefore(bg, document.body.firstChild);
+  }
+
+  // Init fond animé + command palette après le DOM
   (function() {
-    function _boot() { _initCmdPalette(); _initEmojiShake(); }
+    function _boot() { _mountBackground(); _initCmdPalette(); _initEmojiShake(); }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _boot, { once: true });
     else _boot();
   })();

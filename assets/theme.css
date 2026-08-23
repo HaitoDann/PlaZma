@@ -621,38 +621,42 @@ a[href="plazma-satisfaction.html"]:hover .tool-ico svg{animation:tool-ping .7s e
 a[href="plazma-schedule.html"]:hover .tool-ico svg{animation:tool-flip .9s ease-in-out infinite}
 a[href="plazma-team.html"]:hover .tool-ico svg{animation:tool-bounce .7s ease-in-out infinite}
 
-/* ── Halos de fond — blobs vivants : dérive + respiration d'opacité ──
-   Discret mais perceptiblement en mouvement. GPU-friendly (transform+opacity
-   uniquement). Figé par le bloc prefers-reduced-motion plus bas. ── */
-@keyframes halo-a{
-  0%  {transform:translate(0,0) scale(1);           opacity:.6}
-  30% {transform:translate(-58px,44px) scale(1.16); opacity:1}
-  62% {transform:translate(40px,-28px) scale(.9);   opacity:.5}
-  100%{transform:translate(0,0) scale(1);           opacity:.6}
-}
-@keyframes halo-b{
-  0%  {transform:translate(0,0) scale(1);           opacity:.55}
-  36% {transform:translate(46px,-32px) scale(1.14); opacity:.95}
-  70% {transform:translate(-36px,48px) scale(.88);  opacity:.45}
-  100%{transform:translate(0,0) scale(1);           opacity:.55}
-}
+/* ── Fond animé — 3 orbes qui dérivent (conteneur injecté par plazma.js) ──
+   Inspiré d'une maquette « orbes flottantes », adapté à la palette ARCHI
+   (cyan / indigo / teal) et à une opacité basse pour rester lisible derrière
+   tableaux et formulaires. GPU-friendly : transform + opacity uniquement.
+   `alternate` = va-et-vient fluide (pas de saut). Figé en reduced-motion. ── */
 body{isolation:isolate}
-/* Chaque blob porte deux teintes (grand halo + petit accent décalé) pour plus
-   de richesse ; ils dérivent et respirent sur des périodes différentes. */
-body::before,body::after{content:'';position:fixed;border-radius:50%;pointer-events:none;z-index:-1;filter:blur(110px);will-change:transform,opacity}
-body::before{
-  width:720px;height:720px;top:-190px;right:-170px;
-  background:
-    radial-gradient(circle at 60% 40%, rgba(34,211,238,.075) 0%, transparent 60%),
-    radial-gradient(circle at 30% 70%, rgba(94,234,212,.045) 0%, transparent 55%);
-  animation:halo-a 20s ease-in-out infinite;
+.pz-bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;isolation:isolate}
+.pz-blob{position:absolute;border-radius:50%;filter:blur(100px);will-change:transform,opacity}
+.pz-blob-1{
+  width:520px;height:520px;top:-150px;left:-120px;
+  background:radial-gradient(circle,rgba(34,211,238,.16) 0%,transparent 68%);
+  animation:pz-float-1 22s ease-in-out infinite alternate;
 }
-body::after{
-  width:640px;height:640px;bottom:-170px;left:-120px;
-  background:
-    radial-gradient(circle at 45% 55%, rgba(99,102,241,.06) 0%, transparent 60%),
-    radial-gradient(circle at 70% 30%, rgba(129,140,248,.04) 0%, transparent 55%);
-  animation:halo-b 26s ease-in-out infinite;
+.pz-blob-2{
+  width:560px;height:560px;bottom:-170px;right:-120px;
+  background:radial-gradient(circle,rgba(129,140,248,.14) 0%,transparent 68%);
+  animation:pz-float-2 28s ease-in-out infinite alternate;
+  animation-delay:-6s;
+}
+.pz-blob-3{
+  width:440px;height:440px;top:32%;left:42%;
+  background:radial-gradient(circle,rgba(94,234,212,.11) 0%,transparent 68%);
+  animation:pz-float-3 25s ease-in-out infinite alternate;
+  animation-delay:-12s;
+}
+@keyframes pz-float-1{
+  from{transform:translate(0,0) scale(1);          opacity:.7}
+  to  {transform:translate(130px,90px) scale(1.2); opacity:1}
+}
+@keyframes pz-float-2{
+  from{transform:translate(0,0) scale(1);            opacity:.6}
+  to  {transform:translate(-110px,-70px) scale(1.15);opacity:.95}
+}
+@keyframes pz-float-3{
+  from{transform:translate(-40px,20px) scale(.9);   opacity:.5}
+  to  {transform:translate(90px,-80px) scale(1.12); opacity:.85}
 }
 
 /* ════════════════════════════════════════════════════════
@@ -667,5 +671,5 @@ body::after{
     scroll-behavior:auto !important;
   }
   /* Fige les décors animés sur une pose neutre */
-  body::before,body::after{animation:none !important}
+  .pz-blob{animation:none !important}
 }
