@@ -6,7 +6,7 @@
 <p align="center">Plateforme interne de gestion · PlaZma Esport</p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.1.0-22d3ee?style=flat-square&labelColor=0b0f14" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.10.0-22d3ee?style=flat-square&labelColor=0b0f14" alt="Version">
   <img src="https://img.shields.io/badge/déploiement-GitHub%20Pages-6366f1?style=flat-square&labelColor=0b0f14" alt="GitHub Pages">
   <img src="https://img.shields.io/badge/backend-Firebase-f59e0b?style=flat-square&labelColor=0b0f14" alt="Firebase">
   <img src="https://img.shields.io/badge/statut-production-22c55e?style=flat-square&labelColor=0b0f14" alt="Statut">
@@ -75,50 +75,72 @@ Les ressources partagées (`theme.css`, `plazma.js`) sont versionnées via un pa
 
 ## Changelog
 
-### v1.1.0 — Animations vivantes
-- Animation mégaphone 📢 au survol des boutons Discord (shake)
-- Animations sémantiques par outil sur l'accueil (loupe, barres, rebond…)
-- Halos de fond ambiants animés sur toutes les pages
+> Les versions **0.x** correspondent à l'ARCHI originel, avant la refonte complète de la plateforme.
+> À partir de la **1.0**, tout est reconstruit from scratch sur les bases actuelles.
 
-### v1.0.0 — Navigation sans friction
+---
+
+### v1.10.0 — Animations vivantes
+- Animation mégaphone 📢 au survol des boutons Discord (shake continu au hover)
+- Animations sémantiques par outil sur l'accueil (loupe, barres, rebond, flip…)
+- Halos de fond ambiants animés sur toutes les pages (blobs cyan/indigo, 24s/30s)
+
+### v1.9.0 — Navigation sans friction
 - Loader premium avec logo et arcs contra-rotatifs
 - Cache auth sessionStorage (TTL 30 min) — supprime la vérification à chaque page
 - View Transitions CSS natives MPA (Chrome 126+)
 - Flash de confirmation au clic sur tous les boutons
 
-### v0.8.0 — Redesign & expérience
+### v1.8.0 — Redesign & expérience
 - Icônes SVG Lucide sur les cartes outils de l'accueil
-- Command palette (Ctrl+K)
+- Command palette (Ctrl+K) — navigation rapide clavier
 - Redesign visuel : glassmorphism, spotlight, animations de sections
 
-### v0.7.0 — Draft simulator
+### v1.7.0 — Draft simulator
 - Simulateur de draft complet avec analyse de composition
 
-### v0.6.0 — Champions autonomes
+### v1.6.0 — Champions autonomes
 - Miroir local des icônes champions (Community Dragon)
 - Synchro quotidienne automatique via GitHub Actions
 
-### v0.5.0 — Stabilisation
+### v1.5.0 — Stabilisation
 - Solidification de la synchronisation Firestore sur toutes les pages
 - Mode lecture seule généralisé, textareas auto-extensibles
 - Corrections de bugs majeurs (flexbox, tiroirs, synchro)
 
-### v0.4.0 — Discord & Wiki
+### v1.4.0 — Discord & Wiki
 - Intégration webhooks Discord (scrim, planning, scouting)
 - Avatar ARCHI sur les messages publiés
 - Wiki : chiffres précis des sorts par rang (Meraki Analytics)
 
-### v0.3.0 — Scouting & Satisfaction
-- Refonte Scouting en outil pro (roster adverse, draft board, scénarios)
-- Tier list drag-and-drop par joueur
-- Module Satisfaction avec défilement des résultats
+### v1.3.0 — Accès & Dashboard
+- Authentification par nom d'utilisateur (style GLPI)
+- Droits par module : lecture / édition / aucun
+- Dashboard cockpit (agrégation, agenda, matchs officiels)
+- Planning : vue calendrier, résumé de semaine
+- Satisfaction : questionnaire Head Coach, résultats staff
 
-### v0.2.0 — Données & Roster
-- Planning avec horaires début/fin
+### v1.2.0 — Tier list & Scouting
+- Tier list drag-and-drop par joueur
+- Scouting refonte en outil pro (roster adverse, draft board, scénarios)
+
+### v1.1.0 — Données & Roster
 - Roster central dynamique
+- Planning avec horaires début/fin
 - Sélecteur de champions via Riot Data Dragon
 
-### v0.1.0 — Fondation
-- Refonte complète de l'architecture ARCHI
-- Système d'authentification Firebase
-- Navigation partagée, design system initial
+### v1.0.0 — Refonte complète *(nouveau départ)*
+- Refonte intégrale de l'architecture et du design system
+- Authentification Firebase
+- Navigation partagée, loader, design tokens
+
+---
+
+### v0.2.x — Pré-refonte : ajustements
+- Modifications mineures des pages draft et satisfaction
+- Corrections d'affichage sur l'accueil
+
+### v0.1.0 — Pré-refonte : premières pages
+- Premières versions de l'accueil, du draft et de la satisfaction
+
+### v0.0.1 — Initialisation du dépôt
