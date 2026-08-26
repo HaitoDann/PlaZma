@@ -42,18 +42,22 @@
   .errs{padding:12px 14px}
   .errs-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
   .errs-head .lbl{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
-  .err-row{display:grid;grid-template-columns:70px 130px 1fr 30px;gap:8px;align-items:center;margin-bottom:6px}
+  .err-row{display:grid;grid-template-columns:70px 130px 1fr 30px 30px;gap:8px;align-items:center;margin-bottom:6px}
   .err-row input,.err-row select{padding:7px 9px;font-size:13px}
   .err-del{background:none;border:1px solid var(--border);border-radius:7px;height:34px;color:var(--muted);cursor:pointer}
   .err-del:hover{color:var(--err);border-color:rgba(239,68,68,.4)}
+  .err-flag{background:none;border:1px solid var(--border);border-radius:7px;height:34px;color:var(--border-2);cursor:pointer;font-size:14px;line-height:1;transition:color .12s,border-color .12s}
+  .err-flag:hover{color:#fbbf24;border-color:rgba(251,191,36,.4)}
+  .err-flag.active{color:#fbbf24;border-color:rgba(251,191,36,.5)}
   .no-err{font-size:12px;color:var(--muted);font-style:italic}
   .note-btns{display:flex;gap:6px}
   .btn-ok{background:transparent;border-color:var(--border);color:var(--muted)}
   .btn-ok:hover{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.4);color:var(--ok)}
-  /* Lignes de notes : aura rouge (erreur) / verte (point fort) */
-  #games .err-row{padding:6px 8px;border-radius:9px;border-left:3px solid transparent;transition:background .12s}
+  /* Lignes de notes : aura rouge (erreur) / verte (point fort) / ambre (erreur principale) */
+  #games .err-row{padding:6px 8px;border-radius:9px;border-left:3px solid transparent;transition:background .12s,border-left-color .12s}
   .err-row.note-err{background:rgba(239,68,68,.06);border-left-color:rgba(239,68,68,.55)}
   .err-row.note-str{background:rgba(34,197,94,.06);border-left-color:rgba(34,197,94,.55)}
+  .err-row.note-main{background:rgba(251,191,36,.08)!important;border-left-color:rgba(251,191,36,.7)!important}
 
   .ana-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .ana{background:var(--surface-2);border:1px solid var(--border);border-left:3px solid var(--ac,var(--border));border-radius:8px;padding:14px}
@@ -256,14 +260,15 @@ function noteEmptyState(gk){
 
 function addError(gk, data){
   const list=document.getElementById('notelist_'+gk);
-  const err = data || {id:uid(),timer:'',cat:ERR_CATS[0],desc:'',order:nextOrder()};
+  const err = data || {id:uid(),timer:'',cat:ERR_CATS[0],desc:'',order:nextOrder(),main:false};
   if(!data) errors[gk].push(err);
-  const row=document.createElement('div'); row.className='err-row note-err'; row.id='errrow_'+err.id;
+  const row=document.createElement('div'); row.className='err-row note-err'+(err.main?' note-main':''); row.id='errrow_'+err.id;
   row.innerHTML=`
     <input id="errt_${err.id}" type="text" value="${esc(err.timer)}" placeholder="00:00" oninput="updErr('${gk}','${err.id}','timer',this.value)">
     <select id="errc_${err.id}" onchange="updErr('${gk}','${err.id}','cat',this.value)">${ERR_CATS.map(c=>`<option${c===err.cat?' selected':''}>${c}</option>`).join('')}</select>
     <input id="errd_${err.id}" type="text" value="${esc(err.desc)}" placeholder="Décris l'erreur…" oninput="updErr('${gk}','${err.id}','desc',this.value)">
-    <button class="err-del" data-noexport onclick="removeError('${gk}','${err.id}')">✕</button>`;
+    <button class="err-del" data-noexport onclick="removeError('${gk}','${err.id}')">✕</button>
+    <button class="err-flag${err.main?' active':''}" id="errflag_${err.id}" data-noexport onclick="toggleMain('${gk}','${err.id}')" title="Marquer comme erreur principale">★</button>`;
   list.appendChild(row); noteEmptyState(gk);
 }
 function updErr(gk,id,f,v){ const e=errors[gk].find(x=>x.id===id); if(e){ e[f]=v; queueSave(); } }
@@ -271,6 +276,13 @@ function removeError(gk,id){
   errors[gk]=errors[gk].filter(e=>e.id!==id);
   document.getElementById('errrow_'+id)?.remove();
   noteEmptyState(gk); queueSave();
+}
+function toggleMain(gk,id){
+  const e=errors[gk].find(x=>x.id===id); if(!e) return;
+  e.main=!e.main;
+  document.getElementById('errrow_'+id)?.classList.toggle('note-main',e.main);
+  document.getElementById('errflag_'+id)?.classList.toggle('active',e.main);
+  queueSave();
 }
 
 // ── Points forts (même mécanique que les erreurs, aura verte) ──
@@ -283,7 +295,8 @@ function addStrength(gk, data){
     <input id="strt_${st.id}" type="text" value="${esc(st.timer)}" placeholder="00:00" oninput="updStr('${gk}','${st.id}','timer',this.value)">
     <select id="strc_${st.id}" onchange="updStr('${gk}','${st.id}','cat',this.value)">${STR_CATS.map(c=>`<option${c===st.cat?' selected':''}>${c}</option>`).join('')}</select>
     <input id="strd_${st.id}" type="text" value="${esc(st.desc)}" placeholder="Décris le point fort…" oninput="updStr('${gk}','${st.id}','desc',this.value)">
-    <button class="err-del" data-noexport onclick="removeStrength('${gk}','${st.id}')">✕</button>`;
+    <button class="err-del" data-noexport onclick="removeStrength('${gk}','${st.id}')">✕</button>
+    <span></span>`;
   list.appendChild(row); noteEmptyState(gk);
 }
 function updStr(gk,id,f,v){ const e=strengths[gk].find(x=>x.id===id); if(e){ e[f]=v; queueSave(); } }
