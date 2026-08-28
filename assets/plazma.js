@@ -787,61 +787,49 @@
     svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
     svg.setAttribute('aria-hidden', 'true');
 
-    // Orthogonal paths scattered across the canvas (L = horizontal/vertical only)
-    const paths = [
-      'M80,100 L80,280 L260,280 L260,180 L420,180',
-      'M1360,80 L1360,200 L1180,200 L1180,340 L980,340',
-      'M200,750 L200,600 L400,600 L400,500 L600,500 L600,620',
-      'M1240,820 L1240,680 L1060,680 L1060,520 L880,520',
-      'M40,440 L200,440 L200,360 L380,360',
-      'M1400,460 L1240,460 L1240,560 L1060,560',
-      'M600,820 L600,700 L760,700 L760,580 L900,580',
-      'M700,80 L700,220 L560,220 L560,340 L400,340',
-      'M900,140 L900,260 L1080,260 L1080,380 L1200,380',
-      'M320,480 L320,560 L480,560 L480,640 L640,640',
-      'M1100,700 L900,700 L900,780 L760,780',
-      'M440,200 L580,200 L580,120 L740,120 L740,240',
-    ];
-    // Corresponding node dots (circuit junction points)
-    const nodes = [
-      [260,280],[420,180],[1180,200],[980,340],[400,600],[600,620],
-      [1060,680],[880,520],[200,440],[1240,460],[760,700],[560,340],
+    // Orthogonal paths: lengths pre-calculated (sum of |dx|+|dy| per segment).
+    // Using SVG attributes for dasharray/dashoffset avoids CSS unitless-number ambiguity.
+    const pathDefs = [
+      { d:'M80,100 L80,280 L260,280 L260,180 L420,180',           len:620, node:[260,280] },
+      { d:'M1360,80 L1360,200 L1180,200 L1180,340 L980,340',      len:640, node:[1180,200] },
+      { d:'M200,750 L200,600 L400,600 L400,500 L600,500 L600,620',len:770, node:[400,600]  },
+      { d:'M1240,820 L1240,680 L1060,680 L1060,520 L880,520',     len:660, node:[1060,680] },
+      { d:'M40,440 L200,440 L200,360 L380,360',                   len:420, node:[200,440]  },
+      { d:'M1400,460 L1240,460 L1240,560 L1060,560',              len:440, node:[1240,460] },
+      { d:'M600,820 L600,700 L760,700 L760,580 L900,580',         len:540, node:[760,700]  },
+      { d:'M700,80 L700,220 L560,220 L560,340 L400,340',          len:560, node:[560,220]  },
+      { d:'M900,140 L900,260 L1080,260 L1080,380 L1200,380',      len:540, node:[1080,260] },
+      { d:'M320,480 L320,560 L480,560 L480,640 L640,640',         len:480, node:[480,560]  },
+      { d:'M1100,700 L900,700 L900,780 L760,780',                 len:420, node:[900,700]  },
+      { d:'M440,200 L580,200 L580,120 L740,120 L740,240',         len:500, node:[580,200]  },
     ];
 
-    // Build paths and nodes (no animation yet — need getTotalLength first)
-    const pathEls = [];
-    paths.forEach((d, i) => {
+    pathDefs.forEach(({ d, len, node }) => {
       const p = document.createElementNS(NS, 'path');
       p.setAttribute('d', d);
+      p.setAttribute('stroke-dasharray', len);
+      p.setAttribute('stroke-dashoffset', len);
       p.className = 'pz-cpath';
+      const dur   = (14 + Math.random() * 16).toFixed(1);
+      const delay = -(Math.random() * parseFloat(dur)).toFixed(1);
+      p.style.setProperty('--len', len);
+      p.style.animationDuration = dur + 's';
+      p.style.animationDelay   = delay + 's';
       svg.appendChild(p);
-      pathEls.push(p);
 
       const c = document.createElementNS(NS, 'circle');
-      c.setAttribute('cx', nodes[i][0]);
-      c.setAttribute('cy', nodes[i][1]);
+      c.setAttribute('cx', node[0]);
+      c.setAttribute('cy', node[1]);
       c.setAttribute('r', '2.5');
       c.className = 'pz-cnode';
-      const ndur = (3 + Math.random() * 4).toFixed(1);
+      const ndur   = (3 + Math.random() * 4).toFixed(1);
       const ndelay = -(Math.random() * parseFloat(ndur)).toFixed(1);
-      c.style.cssText = `animation-duration:${ndur}s;animation-delay:${ndelay}s;`;
+      c.style.animationDuration = ndur + 's';
+      c.style.animationDelay   = ndelay + 's';
       svg.appendChild(c);
     });
 
-    // Insert into DOM first so getTotalLength() returns real values
     document.body.prepend(svg);
-
-    // Now measure and wire up the dash animation
-    pathEls.forEach(p => {
-      const len = Math.ceil(p.getTotalLength());
-      const dur = (14 + Math.random() * 16).toFixed(1);
-      const delay = -(Math.random() * parseFloat(dur)).toFixed(1);
-      p.style.setProperty('--len', len);
-      p.style.strokeDasharray = len;
-      p.style.strokeDashoffset = len;
-      p.style.animationDuration = dur + 's';
-      p.style.animationDelay = delay + 's';
-    });
   }
 
   // Init spotlight + command palette après le DOM
