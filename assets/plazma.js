@@ -948,24 +948,31 @@
     try { new MutationObserver(muts => muts.forEach(m => m.addedNodes.forEach(scan))).observe(document.body, { childList: true, subtree: true }); } catch (e) {}
   }
 
-  // ---- Ondulation au clic (ripple léger) ----
+  // ---- Ondulation au clic (léger, sur tout clic) ----
   function _initRipple() {
     document.addEventListener('pointerdown', e => {
       if (e.button != null && e.button !== 0) return;
-      const host = e.target && e.target.closest ? e.target.closest('.btn:not(:disabled)') : null;
-      if (!host) return;
-      const rect = host.getBoundingClientRect();
-      const size = Math.max(rect.width, rect.height);
       const r = document.createElement('span');
-      r.className = 'pz-ripple';
-      r.style.width = r.style.height = size + 'px';
-      r.style.left = (e.clientX - rect.left - size / 2) + 'px';
-      r.style.top  = (e.clientY - rect.top  - size / 2) + 'px';
-      if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
-      host.classList.add('pz-ripple-host');
-      host.appendChild(r);
+      r.className = 'pz-click';
+      r.style.left = e.clientX + 'px';
+      r.style.top  = e.clientY + 'px';
+      document.body.appendChild(r);
       r.addEventListener('animationend', () => r.remove());
     }, { passive: true });
+  }
+
+  // ---- Élévation de la barre de navigation au défilement ----
+  function _initTopbar() {
+    let bar = null, queued = false;
+    function upd() {
+      queued = false;
+      if (!bar) bar = document.querySelector('.pz-topbar');
+      if (bar) bar.classList.toggle('pz-scrolled', window.scrollY > 8);
+    }
+    window.addEventListener('scroll', () => {
+      if (!queued) { queued = true; requestAnimationFrame(upd); }
+    }, { passive: true });
+    upd();
   }
 
   // ---- Apparition en cascade (reveal au défilement, décalage entre voisins) ----
@@ -1000,6 +1007,7 @@
     function _boot() {
       _initParticles();
       if (!reduce) { _initGrid(); _initStars(); _initCursor(); _initRipple(); _initReveal(); }
+      _initTopbar();
       _initCounters(reduce);
       _initCmdPalette();
       _initEmojiShake();

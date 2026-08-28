@@ -668,12 +668,44 @@ a[href="plazma-team.html"]:hover .tool-ico svg{animation:tool-bounce .7s ease-in
 #pz-cur-dot.pz-hot{width:14px;height:14px;box-shadow:0 0 16px rgba(34,211,238,1)}
 #pz-cur-dot.pz-hide{opacity:0}
 
-/* ── Ondulation au clic (ripple) ── */
-.pz-ripple-host{overflow:hidden}
-.pz-ripple{position:absolute;border-radius:50%;pointer-events:none;z-index:0;
-  background:radial-gradient(circle,rgba(255,255,255,.35) 0%,rgba(34,211,238,.18) 45%,transparent 70%);
-  transform:scale(0);opacity:.7;animation:pz-ripple .55s ease-out forwards}
-@keyframes pz-ripple{to{transform:scale(2.3);opacity:0}}
+/* ── Ondulation au clic (pulse discret, partout) ── */
+.pz-click{position:fixed;top:0;left:0;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;
+  border:1.5px solid rgba(34,211,238,.5);pointer-events:none;z-index:99990;
+  transform:scale(.35);opacity:.7;animation:pz-click .5s ease-out forwards}
+@keyframes pz-click{to{transform:scale(2.6);opacity:0}}
+
+/* ── Élévation de la barre de navigation au défilement ── */
+.pz-topbar{transition:box-shadow .25s ease,border-color .25s ease,background .25s ease}
+.pz-topbar.pz-scrolled{box-shadow:0 8px 24px -10px rgba(0,0,0,.55);border-bottom-color:var(--border-2);background:rgba(11,15,20,.92)}
+
+/* ── Reflet au survol des boutons ── */
+.btn{position:relative;overflow:hidden}
+.btn::after{content:'';position:absolute;top:0;left:-120%;width:60%;height:100%;pointer-events:none;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.18),transparent);
+  transform:skewX(-18deg);transition:none}
+.btn:hover::after{animation:pz-btn-shine .7s ease}
+@keyframes pz-btn-shine{from{left:-120%}to{left:160%}}
+
+/* ── Lueur cyan au focus des champs ── */
+input:not([type=checkbox]):not([type=radio]):focus,
+textarea:focus,select:focus{
+  border-color:var(--accent-line);
+  box-shadow:0 0 0 3px rgba(34,211,238,.12);
+}
+
+/* ── Soulignement animé des liens de navigation ── */
+.pz-nav a{position:relative}
+.pz-nav a::after{content:'';position:absolute;left:11px;right:11px;bottom:3px;height:2px;border-radius:2px;
+  background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .22s cubic-bezier(.2,.8,.2,1)}
+.pz-nav a:hover::after{transform:scaleX(1)}
+.pz-nav a.active::after{display:none}
+
+/* ── Barre de défilement personnalisée ── */
+*{scrollbar-width:thin;scrollbar-color:var(--border-2) transparent}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:8px;border:3px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:var(--accent-2);background-clip:content-box}
 
 /* ── Apparition en cascade ── */
 .pz-anim{opacity:0;transform:translateY(14px);
