@@ -777,9 +777,65 @@
     });
   }
 
+  // ---- Circuit board overlay ----
+  function _initCircuit() {
+    if (document.getElementById('pz-circuit')) return;
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.id = 'pz-circuit';
+    svg.setAttribute('viewBox', '0 0 1440 900');
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+    svg.setAttribute('aria-hidden', 'true');
+
+    // Orthogonal paths scattered across the canvas (L = horizontal/vertical only)
+    const paths = [
+      'M80,100 L80,280 L260,280 L260,180 L420,180',
+      'M1360,80 L1360,200 L1180,200 L1180,340 L980,340',
+      'M200,750 L200,600 L400,600 L400,500 L600,500 L600,620',
+      'M1240,820 L1240,680 L1060,680 L1060,520 L880,520',
+      'M40,440 L200,440 L200,360 L380,360',
+      'M1400,460 L1240,460 L1240,560 L1060,560',
+      'M600,820 L600,700 L760,700 L760,580 L900,580',
+      'M700,80 L700,220 L560,220 L560,340 L400,340',
+      'M900,140 L900,260 L1080,260 L1080,380 L1200,380',
+      'M320,480 L320,560 L480,560 L480,640 L640,640',
+      'M1100,700 L900,700 L900,780 L760,780',
+      'M440,200 L580,200 L580,120 L740,120 L740,240',
+    ];
+    // Corresponding node dots (circuit junction points)
+    const nodes = [
+      [260,280],[420,180],[1180,200],[980,340],[400,600],[600,620],
+      [1060,680],[880,520],[200,440],[1240,460],[760,700],[560,340],
+    ];
+
+    paths.forEach((d, i) => {
+      const p = document.createElementNS(NS, 'path');
+      p.setAttribute('d', d);
+      p.className = 'pz-cpath';
+      // Approximate path length by counting segments (M+L chars * 60px avg)
+      const approxLen = (d.match(/L/g) || []).length * 180 + 100;
+      const dur = (14 + Math.random() * 16).toFixed(1);
+      const delay = -(Math.random() * parseFloat(dur)).toFixed(1);
+      p.style.cssText = `--len:${approxLen};animation-duration:${dur}s;animation-delay:${delay}s;`;
+      svg.appendChild(p);
+
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', nodes[i][0]);
+      c.setAttribute('cy', nodes[i][1]);
+      c.setAttribute('r', '2.5');
+      c.className = 'pz-cnode';
+      const ndur = (3 + Math.random() * 4).toFixed(1);
+      const ndelay = -(Math.random() * parseFloat(ndur)).toFixed(1);
+      c.style.cssText = `animation-duration:${ndur}s;animation-delay:${ndelay}s;`;
+      svg.appendChild(c);
+    });
+
+    document.body.prepend(svg);
+  }
+
   // Init spotlight + command palette après le DOM
   (function() {
-    function _boot() { _initCmdPalette(); _initEmojiShake(); }
+    function _boot() { _initCircuit(); _initCmdPalette(); _initEmojiShake(); }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _boot, { once: true });
     else _boot();
   })();
