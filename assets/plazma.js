@@ -829,7 +829,13 @@
       svg.appendChild(c);
     });
 
-    document.body.prepend(svg);
+    // Wrap SVG in a div — same pattern as #pz-particles — so position:fixed z-index:-1
+    // sits on the div (HTML element), not directly on the SVG.
+    const host = document.createElement('div');
+    host.id = 'pz-circuit-host';
+    host.setAttribute('aria-hidden', 'true');
+    host.appendChild(svg);
+    document.body.prepend(host);
   }
 
   // Init spotlight + command palette après le DOM

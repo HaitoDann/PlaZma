@@ -619,10 +619,11 @@ a[href="plazma-team.html"]:hover .tool-ico svg{animation:tool-bounce .7s ease-in
   68%{transform:translate(-26px,36px)scale(.96)}
 }
 /* ── Circuit board overlay ── */
-#pz-circuit{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;overflow:visible}
+#pz-circuit-host{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+#pz-circuit{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .pz-cpath{
   fill:none;stroke:#22d3ee;stroke-width:1;stroke-linecap:square;
-  animation:pz-cdraw linear infinite;
+  animation:pz-cdraw 20s linear infinite;
 }
 @keyframes pz-cdraw{
   0%  {stroke-dashoffset:var(--len);opacity:0}
@@ -631,7 +632,7 @@ a[href="plazma-team.html"]:hover .tool-ico svg{animation:tool-bounce .7s ease-in
   80% {opacity:0}
   100%{stroke-dashoffset:0;opacity:0}
 }
-.pz-cnode{fill:#22d3ee;animation:pz-cpulse ease-in-out infinite}
+.pz-cnode{fill:#22d3ee;animation:pz-cpulse 4s ease-in-out infinite}
 @keyframes pz-cpulse{0%,100%{opacity:0}50%{opacity:.5}}
 
 body{isolation:isolate}
