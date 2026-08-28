@@ -800,9 +800,147 @@
     }
   }
 
+  // ---- Poussière d'étoiles avec parallaxe ----
+  function _initStars() {
+    if (document.getElementById('pz-stars')) return;
+    const wrap = document.createElement('div');
+    wrap.id = 'pz-stars';
+    wrap.setAttribute('aria-hidden', 'true');
+    // 3 couches : plus la couche est "proche", plus elle bouge (depth).
+    const layers = [
+      { count: 40, depth: 8,  smax: 1.4, op: [.20, .45] },
+      { count: 26, depth: 18, smax: 2.0, op: [.30, .60] },
+      { count: 14, depth: 34, smax: 2.8, op: [.40, .75] },
+    ];
+    const layerEls = [];
+    layers.forEach(cfg => {
+      const layer = document.createElement('div');
+      layer.className = 'pz-star-layer';
+      for (let i = 0; i < cfg.count; i++) {
+        const s = document.createElement('span');
+        const size = (0.8 + Math.random() * cfg.smax).toFixed(1);
+        const op   = (cfg.op[0] + Math.random() * (cfg.op[1] - cfg.op[0])).toFixed(2);
+        const tw   = (3 + Math.random() * 5).toFixed(1);
+        const twd  = -(Math.random() * 8).toFixed(1);
+        s.className = 'pz-star';
+        s.style.cssText = `left:${(Math.random()*100).toFixed(2)}%;top:${(Math.random()*100).toFixed(2)}%;width:${size}px;height:${size}px;--o:${op};opacity:${op};animation-duration:${tw}s;animation-delay:${twd}s;`;
+        layer.appendChild(s);
+      }
+      wrap.appendChild(layer);
+      layerEls.push({ el: layer, depth: cfg.depth });
+    });
+    document.body.prepend(wrap);
+
+    // Parallaxe au mouvement de souris (throttle via rAF).
+    let tx = 0, ty = 0, queued = false;
+    function apply() {
+      queued = false;
+      layerEls.forEach(l => {
+        l.el.style.transform = `translate(${(tx * l.depth).toFixed(1)}px, ${(ty * l.depth).toFixed(1)}px)`;
+      });
+    }
+    window.addEventListener('mousemove', e => {
+      tx = (e.clientX / window.innerWidth - 0.5) * -2;   // -1..1
+      ty = (e.clientY / window.innerHeight - 0.5) * -2;
+      if (!queued) { queued = true; requestAnimationFrame(apply); }
+    }, { passive: true });
+  }
+
+  // ---- Curseur personnalisé ARCHI ----
+  function _initCursor() {
+    if (!window.matchMedia || !matchMedia('(pointer:fine)').matches) return;
+    if (document.getElementById('pz-cur-dot')) return;
+    const dot  = document.createElement('div'); dot.id  = 'pz-cur-dot';  dot.setAttribute('aria-hidden', 'true');
+    const ring = document.createElement('div'); ring.id = 'pz-cur-ring'; ring.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(dot);
+    document.body.appendChild(ring);
+    document.documentElement.classList.add('pz-cursor');
+
+    const HOT = 'a,button,.btn,.tool,.pcard,label,summary,select,[onclick],[role=button],input[type=checkbox],input[type=radio]';
+    const TEXT = 'input:not([type=checkbox]):not([type=radio]),textarea,[contenteditable]';
+    let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my, down = false;
+
+    window.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.transform = `translate(${mx}px,${my}px) translate(-50%,-50%)`;
+      const t = e.target;
+      const over = t && t.closest ? t.closest(TEXT) : null;
+      dot.classList.toggle('pz-hide', !!over);
+      ring.classList.toggle('pz-hide', !!over);
+      ring.classList.toggle('pz-hot', !!(t && t.closest && t.closest(HOT)));
+    }, { passive: true });
+    document.addEventListener('mouseleave', () => { dot.classList.add('pz-hide'); ring.classList.add('pz-hide'); });
+    document.addEventListener('mouseenter', () => { dot.classList.remove('pz-hide'); ring.classList.remove('pz-hide'); });
+    window.addEventListener('mousedown', () => { down = true; });
+    window.addEventListener('mouseup',   () => { down = false; });
+
+    (function loop() {
+      rx += (mx - rx) * 0.2;
+      ry += (my - ry) * 0.2;
+      const s = down ? 0.8 : 1;
+      ring.style.transform = `translate(${rx.toFixed(1)}px,${ry.toFixed(1)}px) translate(-50%,-50%) scale(${s})`;
+      requestAnimationFrame(loop);
+    })();
+  }
+
+  // ---- Compteurs animés (0 → valeur) ----
+  function _parseCount(text) {
+    if (text == null) return null;
+    const raw = String(text).trim();
+    if (!raw) return null;
+    const nums = raw.match(/\d+/g);
+    if (!nums || nums.length !== 1) return null;           // un seul nombre, sinon on ignore
+    const m = raw.match(/^(\D*)(\d+(?:[.,]\d+)?)(.*)$/);
+    if (!m) return null;
+    const decimals = /[.,]/.test(m[2]) ? m[2].split(/[.,]/)[1].length : 0;
+    return { num: parseFloat(m[2].replace(',', '.')), decimals, prefix: m[1], suffix: m[3], raw };
+  }
+  function _runCount(el, reduce) {
+    const t = el.__pzCount;
+    if (reduce) { el.textContent = t.raw; return; }
+    const dur = 900, start = performance.now();
+    (function frame(now) {
+      const p = Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      const val = t.num * eased;
+      el.textContent = t.prefix + val.toFixed(t.decimals) + t.suffix;
+      if (p < 1) requestAnimationFrame(frame);
+      else el.textContent = t.raw;
+    })(start);
+  }
+  function _initCounters(reduce) {
+    const SEL = '[data-count], .kpi-val, .rp-kpi-val';
+    const seen = new WeakSet();
+    const io = ('IntersectionObserver' in window) ? new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { io.unobserve(e.target); _runCount(e.target, reduce); } });
+    }, { threshold: .6 }) : null;
+    const consider = el => {
+      if (seen.has(el) || el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') return;
+      const parsed = _parseCount(el.getAttribute('data-count') != null ? el.getAttribute('data-count') : el.textContent);
+      if (!parsed) return;
+      seen.add(el);
+      el.__pzCount = parsed;
+      if (io) io.observe(el); else _runCount(el, reduce);
+    };
+    const scan = root => {
+      if (!root || root.nodeType !== 1) return;
+      if (root.matches && root.matches(SEL)) consider(root);
+      if (root.querySelectorAll) root.querySelectorAll(SEL).forEach(consider);
+    };
+    scan(document.body);
+    try { new MutationObserver(muts => muts.forEach(m => m.addedNodes.forEach(scan))).observe(document.body, { childList: true, subtree: true }); } catch (e) {}
+  }
+
   // Init spotlight + command palette après le DOM
   (function() {
-    function _boot() { _initParticles(); _initCmdPalette(); _initEmojiShake(); }
+    const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function _boot() {
+      _initParticles();
+      if (!reduce) { _initStars(); _initCursor(); }
+      _initCounters(reduce);
+      _initCmdPalette();
+      _initEmojiShake();
+    }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _boot, { once: true });
     else _boot();
   })();
