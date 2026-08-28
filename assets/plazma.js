@@ -777,9 +777,32 @@
     });
   }
 
+  // ---- Particules ascendantes ----
+  function _initParticles() {
+    if (document.getElementById('pz-particles')) return;
+    const c = document.createElement('div');
+    c.id = 'pz-particles';
+    c.setAttribute('aria-hidden', 'true');
+    document.body.prepend(c);
+    const colors = ['#22d3ee', '#6366f1', '#22d3ee'];
+    for (let i = 0; i < 35; i++) {
+      const el = document.createElement('span');
+      const size   = (2 + Math.random() * 3).toFixed(1);
+      const left   = (Math.random() * 100).toFixed(1);
+      const drift  = ((Math.random() - .5) * 80).toFixed(0);
+      const dur    = (8 + Math.random() * 12).toFixed(1);
+      const op     = (0.07 + Math.random() * 0.09).toFixed(3);
+      const delay  = -(Math.random() * parseFloat(dur)).toFixed(1);
+      const color  = colors[Math.floor(Math.random() * colors.length)];
+      el.className = 'pz-particle';
+      el.style.cssText = `left:${left}vw;width:${size}px;height:${size}px;background:${color};--op:${op};--drift:${drift}px;animation-duration:${dur}s;animation-delay:${delay}s;`;
+      c.appendChild(el);
+    }
+  }
+
   // Init spotlight + command palette après le DOM
   (function() {
-    function _boot() { _initCmdPalette(); _initEmojiShake(); }
+    function _boot() { _initParticles(); _initCmdPalette(); _initEmojiShake(); }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _boot, { once: true });
     else _boot();
   })();
