@@ -21,7 +21,6 @@
 
   .card{background:var(--surface);border:1px solid var(--border-2);border-radius:16px;
     padding:32px;width:100%;max-width:520px}
-
   .card-title{font-family:var(--font-display);font-size:1.15rem;font-weight:700;margin-bottom:3px}
   .card-sub{font-size:12px;color:var(--muted);margin-bottom:28px}
 
@@ -34,31 +33,26 @@
     outline:none;transition:border-color .15s
   }
   input:focus,select:focus{border-color:var(--accent)}
-  input[type="password"]{letter-spacing:.12em}
   select option{background:var(--surface-2)}
-  .key-note{font-size:11px;color:var(--muted);margin-top:5px}
-
   .row{display:grid;grid-template-columns:1fr 120px;gap:10px}
 
   .btn{
     width:100%;background:var(--accent);color:#04222a;border:none;border-radius:8px;
     padding:12px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;
-    margin-top:6px;transition:filter .15s;display:flex;align-items:center;justify-content:center;gap:8px
+    margin-top:6px;transition:filter .15s;
+    display:flex;align-items:center;justify-content:center;gap:8px
   }
   .btn:hover{filter:brightness(1.1)}
   .btn:disabled{opacity:.5;cursor:not-allowed;filter:none}
 
-  /* Spinner */
   .spin{width:14px;height:14px;border:2px solid rgba(4,34,42,.25);
-    border-top-color:#04222a;border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
-  @keyframes spin{to{transform:rotate(360deg)}}
+    border-top-color:#04222a;border-radius:50%;animation:s .6s linear infinite;flex-shrink:0}
+  @keyframes s{to{transform:rotate(360deg)}}
 
-  /* Error */
   .error{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:8px;
-    padding:12px 14px;color:#f87171;font-size:13px;margin-top:14px;display:none}
+    padding:12px 14px;color:#f87171;font-size:13px;margin-top:14px;display:none;line-height:1.5}
   .error.show{display:block}
 
-  /* Results */
   .result{margin-top:24px;border-top:1px solid var(--border);padding-top:22px;display:none}
   .result.show{display:block}
 
@@ -79,148 +73,155 @@
   .rank-label{font-family:var(--font-display);font-size:1.1rem;font-weight:700}
   .rank-lp{font-size:13px;color:var(--dim);margin-top:3px}
 
-  .stat-tile{
-    background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px
-  }
-  .stat-tile .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);
-    font-weight:600;margin-bottom:6px}
+  .stat-tile{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px}
+  .stat-tile .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.08em;
+    color:var(--muted);font-weight:600;margin-bottom:6px}
   .stat-tile .val{font-family:var(--font-display);font-size:1.5rem;font-weight:700}
-  .ok{color:var(--ok)}.err{color:var(--err)}.acc{color:var(--accent)}.warn{color:var(--warn)}
+  .ok{color:var(--ok)}.er{color:var(--err)}.ac{color:var(--accent)}.wn{color:var(--warn)}
 
-  .unranked{
-    grid-column:1/-1;background:var(--surface-2);border:1px solid var(--border);
-    border-radius:var(--r);padding:16px;color:var(--muted);font-size:14px;text-align:center
-  }
+  .unranked{grid-column:1/-1;background:var(--surface-2);border:1px solid var(--border);
+    border-radius:var(--r);padding:16px;color:var(--muted);font-size:14px;text-align:center}
+
+  .source-note{margin-top:16px;font-size:11px;color:var(--muted);text-align:center}
 </style>
 </head>
 <body>
 <div class="card">
   <div class="card-title">Stats joueur — Prototype</div>
-  <div class="card-sub">Test ARCHI · données Solo/Duo · non déployé en production</div>
-
-  <div class="field">
-    <label>Clé API Riot Developer (dev key, 24h)</label>
-    <input type="password" id="apiKey" placeholder="RGAPI-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" autocomplete="off" spellcheck="false">
-    <div class="key-note">Stockée dans ton navigateur uniquement — jamais envoyée ailleurs que Riot.</div>
-  </div>
+  <div class="card-sub">Sans clé API · données op.gg · branche test</div>
 
   <div class="field">
     <label>Riot ID (Pseudo#TAG)</label>
     <div class="row">
-      <input type="text" id="riotId" placeholder="HaitoDann#EUW" spellcheck="false">
+      <input type="text" id="riotId" placeholder="HaitoDann#EUW" spellcheck="false" autocomplete="off">
       <select id="region">
-        <option value="euw1|europe">EUW</option>
-        <option value="na1|americas">NA</option>
-        <option value="eun1|europe">EUNE</option>
-        <option value="kr|asia">KR</option>
-        <option value="br1|americas">BR</option>
-        <option value="tr1|europe">TR</option>
-        <option value="jp1|asia">JP</option>
-        <option value="oc1|sea">OCE</option>
+        <option value="euw">EUW</option>
+        <option value="na">NA</option>
+        <option value="eune">EUNE</option>
+        <option value="kr">KR</option>
+        <option value="br">BR</option>
+        <option value="tr">TR</option>
+        <option value="jp">JP</option>
+        <option value="oce">OCE</option>
       </select>
     </div>
   </div>
 
-  <button class="btn" id="fetchBtn" onclick="run()">Récupérer les stats</button>
+  <button class="btn" id="fetchBtn" onclick="run()">Rechercher</button>
 
   <div class="error" id="errBox"></div>
 
   <div class="result" id="result">
     <div class="pname" id="pname"></div>
     <div class="stats" id="stats"></div>
+    <div class="source-note">Source : op.gg (données publiques)</div>
   </div>
 </div>
 
 <script>
 'use strict';
 
-// corsproxy.io relaie la requête côté serveur et ajoute les headers CORS manquants.
-// Nécessaire car Riot bloque les appels navigateur directs (pas d'Access-Control-Allow-Origin).
-const PROXY = 'https://corsproxy.io/?';
-
 const TIER_EMOJI = {
   IRON:'⚫', BRONZE:'🟤', SILVER:'🪨', GOLD:'🟡',
   PLATINUM:'🟢', EMERALD:'💎', DIAMOND:'🔷',
   MASTER:'🔴', GRANDMASTER:'🔴', CHALLENGER:'🏆'
 };
+const DIV = {1:'I', 2:'II', 3:'III', 4:'IV'};
+
+// Deux proxies CORS en série — on essaie le second si le premier échoue.
+const PROXIES = [
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+];
 
 const $ = id => document.getElementById(id);
 
-// Restore de la clé sauvegardée
-const saved = localStorage.getItem('riot_dev_key_test');
-if (saved) $('apiKey').value = saved;
+function showErr(msg) { $('errBox').innerHTML = msg; $('errBox').classList.add('show'); }
+function hideErr()    { $('errBox').classList.remove('show'); }
 
-function showErr(msg) { $('errBox').textContent = msg; $('errBox').classList.add('show'); }
-function hideErr() { $('errBox').classList.remove('show'); }
-
-async function get(url) {
-  const res = await fetch(PROXY + encodeURIComponent(url));
-  const body = await res.text();
-  let json;
-  try { json = JSON.parse(body); } catch { throw new Error('Réponse invalide du proxy.'); }
-  if (!res.ok) {
-    const msg = json?.status?.message || json?.message || `HTTP ${res.status}`;
-    throw new Error(`Riot API — ${msg}`);
+async function fetchHtml(url) {
+  let lastErr;
+  for (const proxy of PROXIES) {
+    try {
+      const res = await fetch(proxy(url), { signal: AbortSignal.timeout(12000) });
+      if (res.ok) return await res.text();
+      lastErr = new Error(`Proxy HTTP ${res.status}`);
+    } catch(e) { lastErr = e; }
   }
-  return json;
+  throw lastErr ?? new Error('Proxies inaccessibles.');
+}
+
+function parseNextData(html) {
+  const m = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+  if (!m) throw new Error('Structure op.gg non reconnue — le site a peut-être changé.');
+  return JSON.parse(m[1]);
+}
+
+// Cherche les données de rang dans le JSON (plusieurs chemins selon version op.gg)
+function extractSummoner(nd) {
+  return nd?.props?.pageProps?.data?.summoner
+    ?? nd?.props?.pageProps?.summoner
+    ?? nd?.props?.pageProps?.data
+    ?? null;
+}
+
+function normRank(r) {
+  if (!r) return null;
+  return {
+    tier:   (r.tier ?? r.queue_type ?? '').toUpperCase(),
+    div:    DIV[r.division] ?? r.division ?? '',
+    lp:     r.lp ?? r.league_points ?? 0,
+    wins:   r.win ?? r.wins ?? 0,
+    losses: r.lose ?? r.losses ?? 0,
+  };
 }
 
 async function run() {
   hideErr();
   $('result').classList.remove('show');
 
-  const key = $('apiKey').value.trim();
-  const riotId = $('riotId').value.trim();
-  const [platform, accountRegion] = $('region').value.split('|');
+  const raw = $('riotId').value.trim();
+  const region = $('region').value;
 
-  if (!key) { showErr('Renseigne ta clé API (developer.riotgames.com → Regenerate).'); return; }
-  if (!riotId.includes('#')) { showErr('Format attendu : Pseudo#TAG — ex: HaitoDann#EUW'); return; }
+  if (!raw.includes('#')) {
+    showErr('Format attendu : <b>Pseudo#TAG</b> — exemple : HaitoDann#EUW');
+    return;
+  }
+  const [name, tag] = raw.split('#');
 
-  localStorage.setItem('riot_dev_key_test', key);
-
-  const [name, tag] = riotId.split('#');
   const btn = $('fetchBtn');
   btn.disabled = true;
   btn.innerHTML = '<div class="spin"></div>Récupération…';
 
   try {
-    // 1 — PUUID via Riot Account API (endpoint continental)
-    const account = await get(
-      `https://${accountRegion}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/`
-      + `${encodeURIComponent(name)}/${encodeURIComponent(tag)}?api_key=${key}`
-    );
+    const opggUrl = `https://www.op.gg/summoners/${region}/${encodeURIComponent(name)}-${encodeURIComponent(tag)}`;
+    const html = await fetchHtml(opggUrl);
+    const nd   = parseNextData(html);
+    const smn  = extractSummoner(nd);
 
-    // 2 — summonerId via Summoner API (endpoint régional)
-    const summoner = await get(
-      `https://${platform}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/`
-      + `${account.puuid}?api_key=${key}`
-    );
+    if (!smn) throw new Error('Profil introuvable ou joueur inconnu sur op.gg.');
 
-    // 3 — Ranked entries
-    const entries = await get(
-      `https://${platform}.api.riotgames.com/lol/league/v4/entries/by-summoner/`
-      + `${summoner.id}?api_key=${key}`
-    );
+    const solo = normRank(smn.solo_tier_info ?? smn.tier_info);
+    const displayName = smn.game_name ?? smn.name ?? name;
+    const displayTag  = smn.tag_line  ?? smn.tag  ?? tag;
 
-    const solo = entries.find(e => e.queueType === 'RANKED_SOLO_5x5');
+    $('pname').innerHTML = `${displayName} <span class="tag">#${displayTag}</span>`;
 
-    $('pname').innerHTML = `${account.gameName} <span class="tag">#${account.tagLine}</span>`;
-
-    if (!solo) {
-      $('stats').innerHTML = '<div class="unranked">Aucune partie classée en Solo/Duo cette saison.</div>';
+    if (!solo || !solo.tier) {
+      $('stats').innerHTML = '<div class="unranked">Aucune partie Solo/Duo classée cette saison.</div>';
     } else {
       const total = solo.wins + solo.losses;
-      const wr = Math.round(solo.wins / total * 100);
-      const wrClass = wr >= 55 ? 'ok' : wr >= 45 ? 'acc' : 'warn';
+      const wr    = total > 0 ? Math.round(solo.wins / total * 100) : 0;
+      const wrCls = wr >= 55 ? 'ok' : wr >= 45 ? 'ac' : 'wn';
+      const noDiv = ['MASTER','GRANDMASTER','CHALLENGER'].includes(solo.tier);
       const tierLabel = solo.tier.charAt(0) + solo.tier.slice(1).toLowerCase();
-      const divLabel = ['MASTER','GRANDMASTER','CHALLENGER'].includes(solo.tier) ? '' : ' ' + solo.rank;
 
       $('stats').innerHTML = `
         <div class="rank-tile">
           <div class="rank-ico">${TIER_EMOJI[solo.tier] ?? '🏅'}</div>
           <div>
-            <div class="rank-label">${tierLabel}${divLabel}</div>
-            <div class="rank-lp">${solo.leaguePoints} LP · Solo/Duo</div>
+            <div class="rank-label">${tierLabel}${noDiv ? '' : ' ' + solo.div}</div>
+            <div class="rank-lp">${solo.lp} LP · Solo/Duo</div>
           </div>
         </div>
         <div class="stat-tile">
@@ -229,28 +230,34 @@ async function run() {
         </div>
         <div class="stat-tile">
           <div class="lbl">Défaites</div>
-          <div class="val err">${solo.losses}</div>
+          <div class="val er">${solo.losses}</div>
         </div>
         <div class="stat-tile">
           <div class="lbl">Win Rate</div>
-          <div class="val ${wrClass}">${wr}%</div>
+          <div class="val ${wrCls}">${wr}%</div>
         </div>
         <div class="stat-tile">
           <div class="lbl">Parties jouées</div>
-          <div class="val acc">${total}</div>
+          <div class="val ac">${total}</div>
         </div>`;
     }
 
     $('result').classList.add('show');
   } catch(e) {
-    showErr(e.message ?? 'Erreur inconnue. Vérifie la clé API et le Riot ID.');
+    const msg = e.message ?? 'Erreur inconnue.';
+    // Si ça vient du parsing JSON, on donne un message plus utile
+    if (msg.includes('JSON') || msg.includes('Structure')) {
+      showErr(`op.gg a changé sa structure — parsing impossible.<br><small style="opacity:.7">${msg}</small>`);
+    } else {
+      showErr(msg);
+    }
   } finally {
     btn.disabled = false;
-    btn.innerHTML = 'Récupérer les stats';
+    btn.innerHTML = 'Rechercher';
   }
 }
 
-['riotId','apiKey'].forEach(id => {
+['riotId'].forEach(id => {
   $(id).addEventListener('keydown', e => { if (e.key === 'Enter') run(); });
 });
 </script>
