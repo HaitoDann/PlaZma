@@ -807,7 +807,7 @@
     pathDefs.forEach(({ d, len, node }) => {
       const p = document.createElementNS(NS, 'path');
       p.setAttribute('d', d);
-      p.className = 'pz-cpath';
+      p.setAttribute('class', 'pz-cpath');
       const dur   = (12 + Math.random() * 14).toFixed(1);
       const delay = -(Math.random() * parseFloat(dur)).toFixed(1);
       p.style.animationDuration = dur + 's';
@@ -818,7 +818,7 @@
       c.setAttribute('cx', node[0]);
       c.setAttribute('cy', node[1]);
       c.setAttribute('r', '2.5');
-      c.className = 'pz-cnode';
+      c.setAttribute('class', 'pz-cnode');
       const ndur   = (3 + Math.random() * 4).toFixed(1);
       const ndelay = -(Math.random() * parseFloat(ndur)).toFixed(1);
       c.style.animationDuration = ndur + 's';
