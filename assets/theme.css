@@ -675,6 +675,11 @@ a[href="plazma-team.html"]:hover .tool-ico svg{animation:tool-bounce .7s ease-in
   transform:scale(0);opacity:.7;animation:pz-ripple .55s ease-out forwards}
 @keyframes pz-ripple{to{transform:scale(2.3);opacity:0}}
 
+/* ── Apparition en cascade ── */
+.pz-anim{opacity:0;transform:translateY(14px);
+  transition:opacity .5s ease var(--pz-delay,0ms),transform .55s cubic-bezier(.2,.8,.2,1) var(--pz-delay,0ms)}
+.pz-anim.pz-in{opacity:1;transform:none}
+
 body{isolation:isolate}
 body::before,body::after{content:'';position:fixed;border-radius:50%;pointer-events:none;z-index:-1;filter:blur(110px)}
 body::before{

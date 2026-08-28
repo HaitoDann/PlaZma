@@ -968,12 +968,38 @@
     }, { passive: true });
   }
 
+  // ---- Apparition en cascade (reveal au défilement, décalage entre voisins) ----
+  function _initReveal() {
+    const SEL = '.tool, .pcard, .card, .panel, .kpi, .rp-kpi';
+    const io = ('IntersectionObserver' in window) ? new IntersectionObserver(ents => {
+      ents.forEach(e => { if (e.isIntersecting) { io.unobserve(e.target); e.target.classList.add('pz-in'); } });
+    }, { threshold: .08, rootMargin: '0px 0px -5% 0px' }) : null;
+    const prep = el => {
+      if (el.__pzRev) return;
+      el.__pzRev = 1;
+      const sibs = el.parentNode ? Array.prototype.filter.call(el.parentNode.children, c => c.matches && c.matches(SEL)) : [el];
+      const idx = Math.max(0, sibs.indexOf(el));
+      el.style.setProperty('--pz-delay', Math.min(idx, 8) * 55 + 'ms');
+      el.classList.add('pz-anim');
+      if (io) io.observe(el); else el.classList.add('pz-in');
+      // Sécurité : révélation forcée même si l'observer ne se déclenche pas.
+      setTimeout(() => el.classList.add('pz-in'), 1400);
+    };
+    const scan = root => {
+      if (!root || root.nodeType !== 1) return;
+      if (root.matches && root.matches(SEL)) prep(root);
+      if (root.querySelectorAll) root.querySelectorAll(SEL).forEach(prep);
+    };
+    scan(document.body);
+    try { new MutationObserver(muts => muts.forEach(m => m.addedNodes.forEach(scan))).observe(document.body, { childList: true, subtree: true }); } catch (e) {}
+  }
+
   // Init spotlight + command palette après le DOM
   (function() {
     const reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
     function _boot() {
       _initParticles();
-      if (!reduce) { _initGrid(); _initStars(); _initCursor(); _initRipple(); }
+      if (!reduce) { _initGrid(); _initStars(); _initCursor(); _initRipple(); _initReveal(); }
       _initCounters(reduce);
       _initCmdPalette();
       _initEmojiShake();
