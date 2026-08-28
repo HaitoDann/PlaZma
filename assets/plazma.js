@@ -800,9 +800,24 @@
     }
   }
 
+  // ---- Grille en perspective (sol synthwave) ----
+  function _initGrid() {
+    if (document.getElementById('pz-grid')) return;
+    const g = document.createElement('div');
+    g.id = 'pz-grid';
+    g.setAttribute('aria-hidden', 'true');
+    document.body.prepend(g);
+  }
+
   // Init spotlight + command palette après le DOM
   (function() {
-    function _boot() { _initParticles(); _initCmdPalette(); _initEmojiShake(); }
+    const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function _boot() {
+      _initParticles();
+      if (!reduce) _initGrid();
+      _initCmdPalette();
+      _initEmojiShake();
+    }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _boot, { once: true });
     else _boot();
   })();
