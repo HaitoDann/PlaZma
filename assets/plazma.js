@@ -808,16 +808,14 @@
       [1060,680],[880,520],[200,440],[1240,460],[760,700],[560,340],
     ];
 
+    // Build paths and nodes (no animation yet — need getTotalLength first)
+    const pathEls = [];
     paths.forEach((d, i) => {
       const p = document.createElementNS(NS, 'path');
       p.setAttribute('d', d);
       p.className = 'pz-cpath';
-      // Approximate path length by counting segments (M+L chars * 60px avg)
-      const approxLen = (d.match(/L/g) || []).length * 180 + 100;
-      const dur = (14 + Math.random() * 16).toFixed(1);
-      const delay = -(Math.random() * parseFloat(dur)).toFixed(1);
-      p.style.cssText = `--len:${approxLen};animation-duration:${dur}s;animation-delay:${delay}s;`;
       svg.appendChild(p);
+      pathEls.push(p);
 
       const c = document.createElementNS(NS, 'circle');
       c.setAttribute('cx', nodes[i][0]);
@@ -830,7 +828,20 @@
       svg.appendChild(c);
     });
 
+    // Insert into DOM first so getTotalLength() returns real values
     document.body.prepend(svg);
+
+    // Now measure and wire up the dash animation
+    pathEls.forEach(p => {
+      const len = Math.ceil(p.getTotalLength());
+      const dur = (14 + Math.random() * 16).toFixed(1);
+      const delay = -(Math.random() * parseFloat(dur)).toFixed(1);
+      p.style.setProperty('--len', len);
+      p.style.strokeDasharray = len;
+      p.style.strokeDashoffset = len;
+      p.style.animationDuration = dur + 's';
+      p.style.animationDelay = delay + 's';
+    });
   }
 
   // Init spotlight + command palette après le DOM
