@@ -1,0 +1,9 @@
+{
+  "players": [
+    { "name": "Pseudo1", "tag": "EUW", "platform": "euw1", "routing": "europe", "role": "Top" },
+    { "name": "Pseudo2", "tag": "EUW", "platform": "euw1", "routing": "europe", "role": "Jungle" },
+    { "name": "Pseudo3", "tag": "EUW", "platform": "euw1", "routing": "europe", "role": "Mid" },
+    { "name": "Pseudo4", "tag": "EUW", "platform": "euw1", "routing": "europe", "role": "ADC" },
+    { "name": "Pseudo5", "tag": "EUW", "platform": "euw1", "routing": "europe", "role": "Support" }
+  ]
+}
