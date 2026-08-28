@@ -90,17 +90,42 @@
       gateEl.setAttribute('style',
         'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;' +
         'background:var(--bg,#0d0f14);color:var(--text,#e7e9ee);padding:24px;text-align:center;' +
+        'opacity:1;transition:opacity .35s ease;' +
         "font-family:var(--font,system-ui),sans-serif");
       (document.body || document.documentElement).appendChild(gateEl);
     }
     gateEl.innerHTML = html || '';
+    gateEl.style.opacity = '1';
     gateEl.style.display = 'flex';
   }
-  function ungate() { if (gateEl) gateEl.style.display = 'none'; }
+  function ungate() {
+    if (!gateEl) return;
+    gateEl.style.opacity = '0';
+    setTimeout(() => { if (gateEl) gateEl.style.display = 'none'; }, 350);
+  }
+  // Écran de chargement branded ARCHI (logo + halo + barre de progression).
   const spinnerHtml =
-    '<div><div style="width:34px;height:34px;border:3px solid rgba(128,128,128,.25);border-top-color:var(--accent,#6ea8fe);border-radius:50%;margin:0 auto 14px;animation:pzspin .8s linear infinite"></div>' +
-    '<div style="font-size:13px;color:var(--muted,#8b90a0)">Vérification de l\'accès…</div></div>' +
-    '<style>@keyframes pzspin{to{transform:rotate(360deg)}}</style>';
+    '<div class="pz-loader">' +
+      '<div class="pz-loader-logo"><img src="assets/logo-plazma.png" alt=""></div>' +
+      '<div class="pz-loader-name">ARCHI</div>' +
+      '<div class="pz-loader-bar"><span></span></div>' +
+      '<div class="pz-loader-sub">Vérification de l\'accès…</div>' +
+    '</div>' +
+    '<style>' +
+      '.pz-loader{display:flex;flex-direction:column;align-items:center;gap:15px}' +
+      '.pz-loader-logo{width:84px;height:84px;display:flex;align-items:center;justify-content:center;animation:pz-ld-float 2.4s ease-in-out infinite}' +
+      '.pz-loader-logo img{width:100%;height:auto;animation:pz-ld-pulse 2.4s ease-in-out infinite}' +
+      '.pz-loader-name{font-family:var(--font-display,inherit);font-size:30px;font-weight:800;letter-spacing:.24em;padding-left:.24em;' +
+        'background:linear-gradient(90deg,#e6ebf2 20%,#22d3ee 50%,#e6ebf2 80%);background-size:200% auto;' +
+        '-webkit-background-clip:text;background-clip:text;color:transparent;animation:pz-ld-sheen 2.6s linear infinite}' +
+      '.pz-loader-bar{width:150px;height:3px;border-radius:3px;background:rgba(34,211,238,.14);overflow:hidden}' +
+      '.pz-loader-bar span{display:block;width:38%;height:100%;border-radius:3px;background:linear-gradient(90deg,transparent,#22d3ee,transparent);animation:pz-ld-bar 1.3s ease-in-out infinite}' +
+      '.pz-loader-sub{font-size:12.5px;color:var(--muted,#8b90a0);letter-spacing:.02em}' +
+      '@keyframes pz-ld-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}' +
+      '@keyframes pz-ld-pulse{0%,100%{filter:drop-shadow(0 0 9px rgba(34,211,238,.4))}50%{filter:drop-shadow(0 0 20px rgba(34,211,238,.85))}}' +
+      '@keyframes pz-ld-sheen{to{background-position:200% center}}' +
+      '@keyframes pz-ld-bar{0%{transform:translateX(-150%)}100%{transform:translateX(380%)}}' +
+    '</style>';
   function deniedHtml(msg) {
     return '<div style="max-width:420px"><div style="font-size:40px;margin-bottom:10px">🔒</div>' +
       '<h2 style="font-family:var(--font-display,inherit);margin:0 0 8px">Accès restreint</h2>' +
