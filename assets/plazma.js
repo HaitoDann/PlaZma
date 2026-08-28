@@ -784,16 +784,16 @@
     c.id = 'pz-particles';
     c.setAttribute('aria-hidden', 'true');
     document.body.prepend(c);
-    const colors = ['rgba(34,211,238,OP)', 'rgba(99,102,241,OP)', 'rgba(34,211,238,OP)'];
+    const colors = ['#22d3ee', '#6366f1', '#22d3ee'];
     for (let i = 0; i < 35; i++) {
       const el = document.createElement('span');
       const size   = (2 + Math.random() * 3).toFixed(1);
       const left   = (Math.random() * 100).toFixed(1);
       const drift  = ((Math.random() - .5) * 80).toFixed(0);
       const dur    = (8 + Math.random() * 12).toFixed(1);
-      const op     = (0.04 + Math.random() * 0.07).toFixed(3);
+      const op     = (0.07 + Math.random() * 0.09).toFixed(3);
       const delay  = -(Math.random() * parseFloat(dur)).toFixed(1);
-      const color  = colors[Math.floor(Math.random() * colors.length)].replace('OP', op);
+      const color  = colors[Math.floor(Math.random() * colors.length)];
       el.className = 'pz-particle';
       el.style.cssText = `left:${left}vw;width:${size}px;height:${size}px;background:${color};--op:${op};--drift:${drift}px;animation-duration:${dur}s;animation-delay:${delay}s;`;
       c.appendChild(el);
