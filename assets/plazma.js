@@ -807,12 +807,9 @@
     pathDefs.forEach(({ d, len, node }) => {
       const p = document.createElementNS(NS, 'path');
       p.setAttribute('d', d);
-      p.setAttribute('stroke-dasharray', len);
-      p.setAttribute('stroke-dashoffset', len);
       p.className = 'pz-cpath';
-      const dur   = (14 + Math.random() * 16).toFixed(1);
+      const dur   = (12 + Math.random() * 14).toFixed(1);
       const delay = -(Math.random() * parseFloat(dur)).toFixed(1);
-      p.style.setProperty('--len', len);
       p.style.animationDuration = dur + 's';
       p.style.animationDelay   = delay + 's';
       svg.appendChild(p);
