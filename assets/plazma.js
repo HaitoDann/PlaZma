@@ -948,12 +948,32 @@
     try { new MutationObserver(muts => muts.forEach(m => m.addedNodes.forEach(scan))).observe(document.body, { childList: true, subtree: true }); } catch (e) {}
   }
 
+  // ---- Ondulation au clic (ripple léger) ----
+  function _initRipple() {
+    document.addEventListener('pointerdown', e => {
+      if (e.button != null && e.button !== 0) return;
+      const host = e.target && e.target.closest ? e.target.closest('.btn:not(:disabled)') : null;
+      if (!host) return;
+      const rect = host.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      const r = document.createElement('span');
+      r.className = 'pz-ripple';
+      r.style.width = r.style.height = size + 'px';
+      r.style.left = (e.clientX - rect.left - size / 2) + 'px';
+      r.style.top  = (e.clientY - rect.top  - size / 2) + 'px';
+      if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+      host.classList.add('pz-ripple-host');
+      host.appendChild(r);
+      r.addEventListener('animationend', () => r.remove());
+    }, { passive: true });
+  }
+
   // Init spotlight + command palette après le DOM
   (function() {
     const reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
     function _boot() {
       _initParticles();
-      if (!reduce) { _initGrid(); _initStars(); _initCursor(); }
+      if (!reduce) { _initGrid(); _initStars(); _initCursor(); _initRipple(); }
       _initCounters(reduce);
       _initCmdPalette();
       _initEmojiShake();

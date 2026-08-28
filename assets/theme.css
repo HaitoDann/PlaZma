@@ -668,6 +668,13 @@ a[href="plazma-team.html"]:hover .tool-ico svg{animation:tool-bounce .7s ease-in
 #pz-cur-dot.pz-hot{width:14px;height:14px;box-shadow:0 0 16px rgba(34,211,238,1)}
 #pz-cur-dot.pz-hide{opacity:0}
 
+/* ── Ondulation au clic (ripple) ── */
+.pz-ripple-host{overflow:hidden}
+.pz-ripple{position:absolute;border-radius:50%;pointer-events:none;z-index:0;
+  background:radial-gradient(circle,rgba(255,255,255,.35) 0%,rgba(34,211,238,.18) 45%,transparent 70%);
+  transform:scale(0);opacity:.7;animation:pz-ripple .55s ease-out forwards}
+@keyframes pz-ripple{to{transform:scale(2.3);opacity:0}}
+
 body{isolation:isolate}
 body::before,body::after{content:'';position:fixed;border-radius:50%;pointer-events:none;z-index:-1;filter:blur(110px)}
 body::before{
