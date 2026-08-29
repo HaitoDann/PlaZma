@@ -26,6 +26,13 @@
   .hero-acr{color:var(--muted);font-size:12px;letter-spacing:.06em;margin-top:14px}
   .hero-acr b{color:var(--dim);font-weight:600}
 
+  /* Accès rapide « Comptes & droits » (admin uniquement) */
+  .acct-fab{position:fixed;top:16px;right:16px;z-index:50;width:40px;height:40px;
+    display:inline-flex;align-items:center;justify-content:center;border-radius:11px;
+    background:var(--surface-2);border:1px solid var(--border);color:var(--dim);
+    transition:color .15s,border-color .15s,background .15s,transform .15s}
+  .acct-fab:hover{color:var(--accent);border-color:var(--accent-line);background:var(--surface);transform:rotate(30deg)}
+
   /* Sections */
   .sec{margin-top:44px}
   .sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}
@@ -91,6 +98,9 @@
 </style>
 </head>
 <body>
+<a id="acctBtn" class="acct-fab" href="plazma-admin.html" title="Comptes &amp; droits" aria-label="Comptes et droits" hidden>
+  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+</a>
 <div class="home">
 
   <header class="hero">
@@ -213,6 +223,15 @@
         </div>
       </a>`;
   });
+
+  // Bouton « Comptes & droits » : visible uniquement pour les administrateurs.
+  (function () {
+    function reveal() {
+      try { if (PZ.auth.isAdmin && PZ.auth.isAdmin()) { const b = document.getElementById('acctBtn'); if (b) b.hidden = false; } } catch (e) {}
+    }
+    if (window.PZ && PZ.auth && PZ.auth.onAuth) PZ.auth.onAuth(reveal);
+    else if (window.PZ && PZ.auth && PZ.auth.ready) PZ.auth.ready.then(reveal).catch(() => {});
+  })();
 </script>
 </body>
 </html>

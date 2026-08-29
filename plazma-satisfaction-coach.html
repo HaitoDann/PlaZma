@@ -110,10 +110,13 @@
   font-weight:600;border-radius:9px;cursor:pointer;font-family:var(--font);transition:background .15s;margin-top:6px}
 .btn-new:hover{background:var(--surface-2)}
 
-.admin-toggle-bar{position:fixed;bottom:20px;right:20px;z-index:60}
-.btn-admin-view{background:var(--surface);border:1px solid var(--border-2);color:var(--muted);padding:9px 15px;font-size:12px;
-  font-weight:600;border-radius:9px;cursor:pointer;font-family:var(--font);transition:color .15s,border-color .15s}
-.btn-admin-view:hover,.btn-admin-view.active{color:var(--accent);border-color:var(--accent-line)}
+.admin-toggle-bar{position:fixed;bottom:22px;right:22px;z-index:60;display:none}
+.admin-toggle-bar.show{display:block}
+.btn-admin-view{display:inline-flex;align-items:center;gap:8px;background:var(--accent);border:1px solid var(--accent);color:#04222a;
+  padding:12px 20px;font-size:14px;font-weight:700;border-radius:11px;cursor:pointer;font-family:var(--font);
+  box-shadow:0 4px 18px -4px color-mix(in srgb,var(--accent) 60%,transparent);transition:background .15s,box-shadow .15s,transform .05s}
+.btn-admin-view:hover,.btn-admin-view.active{background:#3fdcf4;box-shadow:0 6px 22px -4px color-mix(in srgb,var(--accent) 70%,transparent)}
+.btn-admin-view:active{transform:translateY(1px)}
 
 .results-panel{position:fixed;inset:0;z-index:200;background:rgba(6,10,14,.95);backdrop-filter:blur(12px);display:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .results-panel.open{display:block}
@@ -161,10 +164,11 @@
 </head>
 <body>
 
+<div id="nav"></div>
 <header class="site-header">
   <a href="index.html" title="Retour à l'accueil" style="display:inline-flex;align-items:center"><img src="assets/logo-plazma.png" width="40" alt="PlaZma — accueil"></a>
   <div style="display:flex;align-items:center;gap:14px">
-    <a class="header-link" href="plazma-satisfaction.html">Questionnaire Joueurs →</a>
+    <a class="header-link" href="plazma-satisfaction.html">← Questionnaire Joueurs</a>
     <div class="header-pill">Satisfaction Head Coach</div>
   </div>
 </header>
@@ -267,8 +271,8 @@
 </div>
 </div></div>
 
-<div class="admin-toggle-bar">
-  <button class="btn-admin-view" id="adminBtn" onclick="toggleAdmin()">👁 Résultats staff</button>
+<div class="admin-toggle-bar" id="adminBar">
+  <button class="btn-admin-view" id="adminBtn" onclick="toggleAdmin()">📊 Voir les résultats</button>
 </div>
 <div class="results-panel" id="resultsPanel">
   <div class="rp-header"><div class="rp-title">📊 Satisfaction Head Coach — Staff uniquement</div><button class="rp-close" onclick="closeAdmin()">✕</button></div>
@@ -562,6 +566,14 @@ function showToast(msg){ const t=document.getElementById('toast'); t.textContent
 setIdentity();
 initAll();
 PZ.onRoster(() => setIdentity());   // mercato : met à jour l'identité du coach
+
+// Barre de navigation ARCHI : uniquement pour le staff connecté.
+if (window.PZ && PZ.auth && PZ.auth.ready) {
+  PZ.auth.ready.then(() => {
+    if (PZ.auth.user) PZ.mountNav('satisfaction-coach', '#nav');
+    if (PZ.auth.can('satisfactionResults')) document.getElementById('adminBar').classList.add('show');
+  }).catch(() => {});
+}
 </script>
 </body>
 </html>
