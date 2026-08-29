@@ -40,6 +40,9 @@
 .pb-emoji{font-size:22px}
 .pb-name{font-family:var(--font-display);font-size:14px;font-weight:600}
 .pb-role{font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.selector-eyebrow{text-align:center;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+.staff-selector{display:flex;justify-content:center;gap:10px;padding:0 32px 16px;flex-wrap:wrap}
+.player-btn.staff-card{text-decoration:none}
 
 .form-wrap{max-width:800px;margin:0 auto;padding:0 20px 80px}
 .form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-2)}
@@ -117,10 +120,13 @@
   font-weight:600;border-radius:9px;cursor:pointer;font-family:var(--font);transition:background .15s;margin-top:6px}
 .btn-new:hover{background:var(--surface-2)}
 
-.admin-toggle-bar{position:fixed;bottom:20px;right:20px;z-index:60}
-.btn-admin-view{background:var(--surface);border:1px solid var(--border-2);color:var(--muted);padding:9px 15px;font-size:12px;
-  font-weight:600;border-radius:9px;cursor:pointer;font-family:var(--font);transition:color .15s,border-color .15s}
-.btn-admin-view:hover,.btn-admin-view.active{color:var(--accent);border-color:var(--accent-line)}
+.admin-toggle-bar{position:fixed;bottom:22px;right:22px;z-index:60;display:none}
+.admin-toggle-bar.show{display:block}
+.btn-admin-view{display:inline-flex;align-items:center;gap:8px;background:var(--accent);border:1px solid var(--accent);color:#04222a;
+  padding:12px 20px;font-size:14px;font-weight:700;border-radius:11px;cursor:pointer;font-family:var(--font);
+  box-shadow:0 4px 18px -4px color-mix(in srgb,var(--accent) 60%,transparent);transition:background .15s,box-shadow .15s,transform .05s}
+.btn-admin-view:hover,.btn-admin-view.active{background:#3fdcf4;box-shadow:0 6px 22px -4px color-mix(in srgb,var(--accent) 70%,transparent)}
+.btn-admin-view:active{transform:translateY(1px)}
 
 .results-panel{position:fixed;inset:0;z-index:200;background:rgba(6,10,14,.95);backdrop-filter:blur(12px);display:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .results-panel.open{display:block}
@@ -174,10 +180,10 @@
 </style>
 </head>
 <body>
+<div id="nav"></div>
 <header class="site-header">
   <a href="index.html" title="Retour à l'accueil" style="display:inline-flex;align-items:center"><img src="assets/logo-plazma.png" width="40" alt="PlaZma — accueil"></a>
   <div style="display:flex;align-items:center;gap:14px">
-    <a href="plazma-satisfaction-coach.html" style="font-size:12px;font-weight:600;color:var(--muted);text-decoration:none">Head Coach →</a>
     <div class="header-pill">Satisfaction Joueur</div>
   </div>
 </header>
@@ -186,7 +192,16 @@
   <div class="hero-title">Questionnaire<br>Satisfaction</div>
   <div class="hero-sub">Dis-nous ce que tu ressens — honnêtement. Chaque réponse aide le staff à prendre les bonnes décisions pour le club.</div>
 </section>
+<div class="selector-eyebrow">Joueurs</div>
 <div class="player-selector" id="playerSelector"></div>
+<div class="selector-eyebrow">Staff</div>
+<div class="staff-selector">
+  <a class="player-btn staff-card" href="plazma-satisfaction-coach.html" style="--role-color:#22d3ee" title="Questionnaire du Head Coach">
+    <div class="pb-emoji">🎙️</div>
+    <div class="pb-name" style="color:#22d3ee">Coach</div>
+    <div class="pb-role" style="color:#22d3ee">Head Coach</div>
+  </a>
+</div>
 <div class="form-wrap" id="formWrap" style="display:none">
 <div class="form-card">
 <div class="form-header" id="formHeader">
@@ -310,8 +325,8 @@
   <div class="submit-note">Tes réponses sont confidentielles — visibles uniquement par le staff PlaZma.</div>
 </div>
 </div></div></div>
-<div class="admin-toggle-bar">
-  <button class="btn-admin-view" id="adminBtn" onclick="toggleAdmin()">👁 Résultats staff</button>
+<div class="admin-toggle-bar" id="adminBar">
+  <button class="btn-admin-view" id="adminBtn" onclick="toggleAdmin()">📊 Voir les résultats</button>
 </div>
 <div class="results-panel" id="resultsPanel">
   <div class="rp-header"><div class="rp-title">📊 Réponses — Staff uniquement</div><button class="rp-close" onclick="closeAdmin()">✕</button></div>
@@ -664,6 +679,15 @@ buildPlayerSelector();
 initAll();
 // Mercato : reconstruit le sélecteur si le roster change
 PZ.onRoster(() => { ROSTER = mapRoster(); buildPlayerSelector(); });
+
+// Barre de navigation ARCHI : uniquement pour le staff connecté
+// (la page reste publique et épurée pour les joueurs qui répondent).
+if (window.PZ && PZ.auth && PZ.auth.ready) {
+  PZ.auth.ready.then(() => {
+    if (PZ.auth.user) PZ.mountNav('satisfaction', '#nav');
+    if (PZ.auth.can('satisfactionResults')) document.getElementById('adminBar').classList.add('show');
+  }).catch(() => {});
+}
 </script>
 </body>
 </html>
