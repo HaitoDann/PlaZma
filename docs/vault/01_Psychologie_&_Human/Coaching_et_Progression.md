@@ -6,6 +6,14 @@
 
 ---
 
+## À retenir
+
+- **Qualité > quantité** : 3 scrims bien débriefés valent mieux que 6 sans analyse.
+- Le **débrief efficace** est court (30-45 min), centré sur des situations reproductibles, formulé en questions plutôt qu'en reproches.
+- L'approche **Constraints-Led** (modifier les contraintes d'entraînement) développe des comportements ciblés mieux que la répétition décontextualisée.
+
+---
+
 ## La réalité du coaching pro LoL
 
 Sabtan et al. (2022) — première étude à interviewer des coachs professionnels LoL internationaux (NA, EU, KR, CN). Résultat unanime : **le coaching esport reste à ses débuts**, sans standards définis.
@@ -102,7 +110,7 @@ Lacunes identifiées par la recherche :
 
 ---
 
-## Lien avec les autres modules
+## Connexions
 
 - [[Performance_et_Entraînement]] — La régularité et la qualité de practice sont les variables clés
 - [[Sécurité_Psychologique]] — Le coach crée ou détruit la sécurité psychologique de l'équipe

@@ -6,6 +6,14 @@
 
 ---
 
+## À retenir
+
+- Le Flow (immersion totale, exécution sans effort) naît de l'**équilibre défi / compétence** : scrimer légèrement au-dessus de son niveau.
+- La concentration est une **ressource qui se dépense** ; sous fatigue, les fonctions se dégradent dans un ordre précis (attention → inhibition → flexibilité → mémoire → régulation émotionnelle).
+- Elle est **entraînable et plastique** : échauffement, objectifs de process, pauses toutes les 60-75 min, environnement sans distraction.
+
+---
+
 ## L'état de Flow
 
 ### Définition
@@ -162,3 +170,14 @@ La concentration est **plastique** — le cerveau peut être entraîné à maint
 ```
 
 → [[Tilt_et_Régulation_Émotionnelle]]
+
+---
+
+## Connexions
+
+- [[Charge_Cognitive]] — une communication polluée brise le Flow en saturant la mémoire de travail
+- [[Warm_Up_et_Outils_Cognitifs]] — le Flow ne s'enclenche pas à froid : l'échauffement crée les conditions
+- [[Cohésion_et_Communication]] — le Flow collectif repose sur des Shared Mental Models solides
+- [[Sécurité_Psychologique]] — un environnement sûr favorise l'entrée en Flow
+- [[Sommeil_et_Récupération]] — la décompression avant le coucher conditionne la récupération
+- [[Tilt_et_Régulation_Émotionnelle]] — le tilt est l'état opposé au Flow

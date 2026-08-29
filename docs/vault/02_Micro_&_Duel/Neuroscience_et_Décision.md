@@ -6,6 +6,14 @@
 
 ---
 
+## À retenir
+
+- Les experts **ne réagissent pas plus vite** : ils **filtrent mieux le bruit** et savent quoi ne pas regarder.
+- 4 capacités clés : **flexibilité cognitive** (meilleur prédicteur du niveau), contrôle inhibiteur, mémoire de travail, anticipation des cooldowns.
+- En Fog of War, ils décident sur les **probabilités de position**, pas l'instinct ; verbaliser les positions probables entraîne cette capacité.
+
+---
+
 ## Ce qui différencie vraiment les experts
 
 *(Ding et al., 2018 — experts MOBA vs amateurs, EEG + tracking d'objets + HRV)*
@@ -65,6 +73,9 @@ La surcharge d'information pendant un teamfight détruit la prise de décision. 
 
 ---
 
-## Lien avec les 8 domaines de performance
+## Connexions
 
-Les capacités mesurées ici correspondent directement aux domaines **Cognition** et **Awareness** du framework de Sharpe et al. → [[Performance_et_Entraînement]]
+- [[Performance_et_Entraînement]] — les capacités mesurées ici correspondent aux domaines **Cognition** et **Awareness** du framework de Sharpe et al.
+- [[Omni_Vision]] — l'anticipation des cooldowns est le socle des 7 niveaux de vision
+- [[Map_Awareness_et_Regard]] — mieux filtrer et mieux regarder sont deux faces de la même compétence
+- [[Charge_Cognitive]] — filtrer le non-pertinent, c'est économiser de la mémoire de travail

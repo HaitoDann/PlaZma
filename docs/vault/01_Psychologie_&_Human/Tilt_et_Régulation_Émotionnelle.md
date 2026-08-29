@@ -6,6 +6,14 @@
 
 ---
 
+## À retenir
+
+- La **colère est le prédicteur n°1** du tilt ; jouer « pour gagner » est un facteur de risque, jouer « pour progresser » un bouclier.
+- Percevoir le stress comme **défi (Challenge)** plutôt que **menace (Threat)** change la physiologie et maintient la performance.
+- Ce qui marche : **distraction active**, recadrage cognitif, objectifs de process, routines pré-game, exposition progressive à la pression.
+
+---
+
 ## Le Tilt : première définition scientifique
 
 *(Cregan et al., 2024 — 1 007 joueurs, MOBA/FPS/RPG/RTS)*
@@ -148,7 +156,7 @@ Scrims contre des équipes plus fortes, tournois internes avec enjeux symbolique
 
 ---
 
-## Connexions dans le vault
+## Connexions
 
 - [[Sécurité_Psychologique]] — Un environnement sûr favorise le Challenge appraisal : "si ça rate, ce n'est pas la fin du monde"
 - [[Cohésion_et_Communication]] — Le Threat appraisal est le mécanisme du tilt collectif

@@ -6,6 +6,14 @@
 
 ---
 
+## À retenir
+
+- **Osu!** est un primer cognitif (attention, timing, coordination 2D) mais **n'entraîne pas la visée 3D** ; Aim Lab/KovaaK's oui.
+- Le geste de tir expert : **initier → accélérer → décélérer avant la cible → tirer**, applicable aux skillshots précis.
+- Un **warm-up cognitif + physique** de 15-20 min avant de jouer améliore les performances ; lancer une ranked à froid est sous-optimal.
+
+---
+
 ## Osu! comme warm-up
 
 *(Hagiwara et al., 2020 — EEG + Trail Making Test sur joueurs esport avant/après session d'Osu!)*
@@ -79,7 +87,7 @@ Pour LoL :
 
 ---
 
-## Lien avec les autres modules
+## Connexions
 
 - [[Neuroscience_et_Décision]] — Les exercices MOT (multi-object tracking) développent la conscience de la map
 - [[Charge_Cognitive]] — L'automatisation des gestes mécaniques libère de la charge cognitive pour la prise de décision

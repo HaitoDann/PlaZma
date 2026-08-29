@@ -6,6 +6,14 @@
 
 ---
 
+## À retenir
+
+- Les experts **balayent un territoire visuel plus large** avec des **fixations plus courtes** → plus d'information par unité de temps.
+- Le **contrôle du regard** est un facteur majeur de performance, pas un détail.
+- Ça s'entraîne : discipline minimap (**toutes les 5-7 s**), objectif de regard en scrim, débrief de regard, sessions de RTS.
+
+---
+
 ## Ce que l'eye-tracking révèle
 
 *(Jeong et al., 2024 — 20 joueurs LoL : 11 experts vs 9 low-skill, eye-tracker en temps réel)*
@@ -66,7 +74,7 @@ Les RTS (StarCraft, Warcraft III, jeux de stratégie simples) demandent exacteme
 
 ---
 
-## Connexions dans le vault
+## Connexions
 
 - [[Omni_Vision]] — Le pattern de regard est la mesure directe des 7 niveaux de vision
 - [[Neuroscience_et_Décision]] — Les experts "filtrent mieux" ET regardent différemment : les deux sont liés — un meilleur pattern de regard réduit la charge de filtrage

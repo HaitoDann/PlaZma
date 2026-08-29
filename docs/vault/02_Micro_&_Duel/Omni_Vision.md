@@ -4,6 +4,14 @@
 
 ---
 
+## À retenir
+
+- L'Omni-Vision = **anticiper et fermer toutes les options** de l'adversaire à chaque instant, pas juste « regarder la minimap ».
+- **7 niveaux de vision de jeu**, du joueur qui ne s'adapte pas (1) à celui qui anticipe tout le kit adverse en teamfight (7).
+- Se construit en trackant **positions connues, timings d'objectifs et cooldowns** ; en équipe, l'info doit être partagée (ping immédiat).
+
+---
+
 ## Définition
 
 L'Omni-Vision est le fait d'**anticiper et fermer le jeu de son adversaire** en tenant compte de tout ce qu'il peut faire à chaque instant.
@@ -62,7 +70,7 @@ Règle : si tu vois quelque chose que les autres ne voient probablement pas → 
 
 ---
 
-## Liens
+## Connexions
 
 - [[Les_duels/INDEX|Les duels]] — le level 6 de la vision appliqué au 1v1
 - [[Psychologie_et_adaptation_comportementale]] — la vision alimente la lecture comportementale

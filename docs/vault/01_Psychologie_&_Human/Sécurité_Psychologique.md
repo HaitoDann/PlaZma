@@ -6,6 +6,14 @@
 
 ---
 
+## À retenir
+
+- Sécurité psychologique = pouvoir prendre des **risques interpersonnels** (oser un call, admettre une erreur) sans craindre l'humiliation — ce n'est **pas** l'absence d'exigence.
+- Sans elle, le shotcaller n'ose plus call et les joueurs **justifient au lieu de corriger** → l'équipe joue « à ne pas perdre ».
+- Elle se construit : **pas de critique à chaud**, normaliser « j'ai merdé », le leader admet ses erreurs en premier, débrief **blameless**.
+
+---
+
 ## Définition
 
 La **sécurité psychologique** est la conviction partagée que les membres d'une équipe peuvent prendre des risques interpersonnels — exprimer une idée, tenter un play osé, admettre une erreur — sans craindre humiliation, moquerie ou dévalorisation.
@@ -60,7 +68,7 @@ Un engage qui rate mais dont la lecture était bonne mérite d'être reconnu : "
 
 ---
 
-## Lien avec les autres modules
+## Connexions
 
 - [[Cohésion_et_Communication]] — La sécurité psychologique permet les séquences gagnantes (Excuse → Encouragement) et empêche les spirales toxiques
 - [[Charge_Cognitive]] — Un environnement psychologiquement sûr réduit la charge cognitive liée à l'anxiété sociale, libérant des ressources pour le jeu

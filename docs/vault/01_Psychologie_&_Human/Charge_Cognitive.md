@@ -6,6 +6,14 @@
 
 ---
 
+## À retenir
+
+- La mémoire de travail gère **4 à 7 infos** ; LoL en demande 12-15 → les experts survivent en **automatisant** des procédures.
+- Réduire la **charge extrinsèque** (communication polluée) libère des ressources pour l'exécution : appels de **3 mots max** en teamfight, le silence est une information.
+- Automatiser les routines et **débriefer** construit des schémas qui allègent la charge.
+
+---
+
 ## Les 3 types de charge
 
 | Type | Définition | Exemple LoL |
@@ -78,7 +86,7 @@ Si un coéquipier arrête de répondre aux calls, fait des erreurs inhabituelles
 
 ---
 
-## Connexions dans le vault
+## Connexions
 
 - [[Cohésion_et_Communication]] — La communication polluante crée de la charge extrinsèque — exactement les séquences de "basse cohésion"
 - [[Sécurité_Psychologique]] — Un environnement psychologiquement sûr réduit la charge liée à l'anxiété sociale

@@ -4,6 +4,14 @@
 
 ---
 
+## À retenir
+
+- Chaque outil couvre une menace précise : **heal** (long terme/poke), **shield** (burst), **résistances** (efficience), **PV** (burst+DPS), **ténacité** (CC), **déplacements** (esquive).
+- Les **résistances** augmentent l'efficience des PV/heal/shields mais sont **dégressives** et inutiles contre les dégâts bruts.
+- **Varier** les types de protection selon la menace (voir le tableau de décision rapide).
+
+---
+
 ## Heal
 
 **Avantages**
@@ -97,8 +105,7 @@
 
 ---
 
-## Liens
+## Connexions
 
 - [[Formules_et_Mécaniques]] — les calculs derrière ces choix
-- [[INDEX]] — retour vue d'ensemble
 - **Règles de sélection du support** — le support choisit ses protections selon ces règles

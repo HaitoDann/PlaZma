@@ -4,6 +4,14 @@
 
 ---
 
+## À retenir
+
+- Une vague part **toutes les 30 s** ; la composition (sbire canon) et les **dégâts de tourelle par type de sbire** déterminent le contrôle.
+- 3 techniques : **slow push** (cumuler l'avantage numérique), **hard push** (pousser vite), **freeze** (bloquer près de sa tour en infériorité contrôlée).
+- Le farm sans erreur rapporte **~350 gold/min** : la wave est autant une ressource d'or qu'un outil de tempo.
+
+---
+
 ## Composition d'une vague
 
 | Timing | Composition |
@@ -95,3 +103,13 @@ Amener les sbires ennemis proches de sa tourelle (sans qu'elle puisse les touche
 | Jungle (petits camps toutes les 2:30, buffs toutes les 5 min) | Variable |
 | Funnel (jungle + mid, nerf : jungle doit représenter >40% du gold) | — |
 | Cheating Funnel (farm lane + prises de camps sans smite) | Complexe |
+
+---
+
+## Connexions
+
+- [[Wave_Sync_&_Tempo]] — synchroniser les vagues pour créer des fenêtres de rotation
+- [[Macro_du_Split_Push]] — le contrôle de vague est le moteur du split push
+- [[Side_Management_Sans_Duelliste]] — gérer les side lanes sans duelliste dédié
+- [[Gestion_des_Objectives_Neutres]] — pousser/geler pour libérer du tempo avant un objectif
+- [[Formules_et_Mécaniques]] — les dégâts de tourelle et le rendement en or

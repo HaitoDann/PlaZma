@@ -6,6 +6,14 @@
 
 ---
 
+## À retenir
+
+- Ce qui prédit la performance n'est pas le **volume de paroles** mais la **nature des enchaînements** (séquences gagnantes vs perdantes).
+- Des **Shared Mental Models** alignés permettent de coordonner sans communication explicite en temps réel.
+- Règles vocales : **absorber** après une erreur, **valider ou contre-proposer**, se **taire** quand on est frustré.
+
+---
+
 ## Shared Mental Models (SMM)
 
 **5 joueurs qui pensent pareil n'ont pas besoin de se parler — ils agissent ensemble.**
@@ -89,3 +97,12 @@ Les SMMs se construisent avec le **temps partagé**. Plus une équipe joue ensem
 Un SMM non-aligné produit des moments où **chacun croit avoir raison** parce que chacun lit la situation différemment. C'est l'origine de la plupart des "mismatch" en jeu d'équipe : un joueur engage, personne ne suit — parce qu'ils n'avaient pas le même modèle de la fenêtre disponible.
 
 La solution n'est jamais de crier après le joueur qui a "mal joué" — c'est de **recalibrer le modèle partagé** en post-game.
+
+---
+
+## Connexions
+
+- [[Charge_Cognitive]] — la communication polluante crée de la charge extrinsèque (séquences de basse cohésion)
+- [[Sécurité_Psychologique]] — elle rend possibles les séquences gagnantes et empêche les spirales toxiques
+- [[Tilt_et_Régulation_Émotionnelle]] — la boucle `Frustration → Frustration` est le marqueur du tilt collectif
+- [[Flow_et_Concentration]] — les SMM solides conditionnent le Flow collectif

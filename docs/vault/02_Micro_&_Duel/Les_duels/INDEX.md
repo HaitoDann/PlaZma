@@ -4,6 +4,14 @@
 
 ---
 
+## À retenir
+
+- Le **neutral** se gagne par la connaissance des matchups et l'**anticipation** ; dès qu'on réagit au lieu de prévoir, on part perdant.
+- Avant chaque sort : la **punition potentielle en vaut-elle la peine ?** Punir le sort adverse dans sa fenêtre de récupération.
+- Toucher ses skillshots (CC, last-hit, mur) et **lire les habitudes** adverses sous pression → connaissance + skill = maîtrise.
+
+---
+
 ## Le Neutral
 
 Le **neutral** est la situation d'égalité d'options entre deux adversaires — les deux ont leur kit complet et cherchent une agression.
@@ -75,7 +83,7 @@ Chaque joueur a des préférences et des habitudes. Sous pression, il retombe su
 
 ---
 
-## Liens
+## Connexions
 
 - [[../Omni_Vision]] — la vision de jeu appliquée aux niveaux 4-6
 - [[../Psychologie_et_adaptation_comportementale]] — la lecture comportementale au niveau équipe

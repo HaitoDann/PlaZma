@@ -6,6 +6,14 @@
 
 ---
 
+## À retenir
+
+- Les joueurs esport **dorment mal** (efficacité ~68 %) à cause de la lumière bleue et de l'activation mentale post-session.
+- Bien jouer sans dormir masque une **dette cognitive cumulative** ; une nuit blanche = **+50 ms** de temps de réaction.
+- Leviers : **heure de coucher fixe**, arrêt 1 h-1 h 30 avant le lit, filtrage lumière bleue, **7-9 h**, sieste de 20-25 min avant un match.
+
+---
+
 ## Le problème de sommeil des joueurs esport
 
 *(Nicholson et al. — étude longitudinale sur 1 243 nuits de sommeil de joueurs esport)*
@@ -84,8 +92,8 @@ Avant une session importante (finals, tournoi) : sieste de 20-25 minutes en déb
 
 ---
 
-## Lien avec les autres modules
+## Connexions
 
 - [[Nutrition_et_Exercice]] — La caféine affecte le sommeil : ne pas consommer après 14h-15h
 - [[Performance_et_Entraînement]] — La régularité d'entraînement inclut la régularité du sommeil
-- [[Neuroscience_et_Décision]] — La fatigue cognitive dégrade directement la prise de décision sous pression → [[Neuroscience_et_Décision]]
+- [[Neuroscience_et_Décision]] — La fatigue cognitive dégrade directement la prise de décision sous pression

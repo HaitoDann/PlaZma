@@ -6,6 +6,14 @@
 
 ---
 
+## À retenir
+
+- La performance est un **système à 8 domaines** ; les stats brutes (KDA, GPM) sont incomplètes et **dépendantes du rôle**.
+- La **synergie d'équipe surpasse presque toujours le talent individuel** (le consensus le plus fort des études).
+- Ce qui distingue les élites, c'est la **régularité** (routine stable, peu de jours sans jouer), pas le volume brut.
+
+---
+
 ## Les 8 Domaines de Performance
 
 *(Sharpe et al., 2025 — revue systématique de 15 études + focus groups avec 15 joueurs compétitifs)*
@@ -80,3 +88,12 @@ La différence entre un Challenger et un Emerald n'est pas uniquement mécanique
 ### Note sur la causalité
 
 Cette étude est exploratoire — elle décrit les comportements mais ne prouve pas encore la causalité. Est-ce que la régularité cause le haut niveau, ou est-ce que les bons joueurs ont naturellement cette régularité parce qu'ils sont motivés ? La recherche sur ce point continue.
+
+---
+
+## Connexions
+
+- [[Coaching_et_Progression]] — la régularité et la qualité de practice sont les variables clés du progrès
+- [[Neuroscience_et_Décision]] — les domaines Cognition et Awareness correspondent aux capacités cognitives mesurées
+- [[Sommeil_et_Récupération]] — la régularité d'entraînement inclut la régularité du sommeil
+- [[Nutrition_et_Exercice]] — récupération et condition physique soutiennent la performance dans la durée

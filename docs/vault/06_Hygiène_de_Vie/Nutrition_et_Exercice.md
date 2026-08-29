@@ -6,6 +6,14 @@
 
 ---
 
+## À retenir
+
+- Le cerveau consomme **~20 % de l'énergie** ; les **légumes** sont le meilleur prédicteur cognitif, devant tout supplément.
+- **Caféine** : 3-6 mg/kg, 30-60 min avant, rien après 14-15 h ; hydratation continue (2 % de déshydratation = baisse cognitive mesurable).
+- **3-4 séances de sport/semaine** réduisent fortement la fatigue cognitive de fin de session ; micro-breaks toutes les 45-60 min.
+
+---
+
 ## Nutrition
 
 *(Goulart et al., 2023 — 119 joueurs esport d'élite, 10 jours de journaux alimentaires + test cognitif NTx)*
@@ -121,7 +129,7 @@ L'objectif n'est pas de faire des athlètes — c'est d'avoir des cerveaux mieux
 
 ---
 
-## Lien avec les autres modules
+## Connexions
 
 - [[Performance_et_Entraînement]] — La régularité et la qualité de récupération influencent la progression
 - [[Neuroscience_et_Décision]] — La fatigue cognitive dégrade directement la prise de décision sous pression

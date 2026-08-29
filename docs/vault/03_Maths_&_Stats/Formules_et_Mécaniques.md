@@ -4,6 +4,14 @@
 
 ---
 
+## À retenir
+
+- Le **PVE** mesure la vraie résistance (PV + armure/RM combinés) : chaque point de résistance = **+1 % de PVE**.
+- Arbitrage PV vs résistances : **PV optimal = 7,5 × résistances + 750** (en dessous → prendre des PV, au-dessus → des résistances).
+- La **létalité** = armure fixe ignorée, monte avec le niveau et est faible contre les tanks (préférer la **pénétration %**).
+
+---
+
 ## Point de Vie Effectif (PVE)
 
 La vraie résistance d'un champion, armure et PV combinés.
@@ -87,8 +95,7 @@ L'Omnivampirisme ne bénéficie pas du Heal Power.
 
 ---
 
-## Liens
+## Connexions
 
-- [[INDEX]] — vue d'ensemble des maths
 - [[Outils_Défensifs]] — application concrète des résistances
 - **Les piliers de la draft** — le damage profile (AD/AP split) change selon ces formules
