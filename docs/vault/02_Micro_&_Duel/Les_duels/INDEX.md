@@ -79,5 +79,5 @@ Chaque joueur a des préférences et des habitudes. Sous pression, il retombe su
 
 - [[../Omni_Vision]] — la vision de jeu appliquée aux niveaux 4-6
 - [[../Psychologie_et_adaptation_comportementale]] — la lecture comportementale au niveau équipe
-- [[../../01_Psychologie_&_Human/Profil_Striker]] — profil qui cherche activement le duel
-- [[../../01_Psychologie_&_Human/Profil_Chirurgien]] — profil qui prépare le duel avant de le jouer
+- **Profil Striker** — profil qui cherche activement le duel
+- **Profil Chirurgien** — profil qui prépare le duel avant de le jouer

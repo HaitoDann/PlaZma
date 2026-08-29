@@ -91,4 +91,4 @@ L'Omnivampirisme ne bénéficie pas du Heal Power.
 
 - [[INDEX]] — vue d'ensemble des maths
 - [[Outils_Défensifs]] — application concrète des résistances
-- [[../05_Draft_&_Comps/Les_Piliers_de_la_Draft]] — le damage profile (AD/AP split) change selon ces formules
+- **Les piliers de la draft** — le damage profile (AD/AP split) change selon ces formules

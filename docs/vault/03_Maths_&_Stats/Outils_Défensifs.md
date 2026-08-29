@@ -101,4 +101,4 @@
 
 - [[Formules_et_Mécaniques]] — les calculs derrière ces choix
 - [[INDEX]] — retour vue d'ensemble
-- [[../05_Draft_&_Comps/Regles_de_Selection_du_Support]] — le support choisit ses protections selon ces règles
+- **Règles de sélection du support** — le support choisit ses protections selon ces règles
