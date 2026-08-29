@@ -263,6 +263,7 @@
     { key: 'scouting',     href: 'plazma-scouting.html',    label: 'Scouting',     section: 'scouting' },
     { key: 'draft',        href: 'plazma-draft.html',       label: 'Draft',        section: 'scouting' },
     { key: 'wiki',         href: 'plazma-wiki.html',        label: 'Wiki' },
+    { key: 'wikiperf',     href: 'plazma-wiki-perf.html',   label: 'Encyclopédie' },
     { key: 'team',         href: 'plazma-team.html',        label: 'Équipe',       section: 'team' },
     { key: 'dashboard',    href: 'plazma-dashboard.html',   label: 'Dashboard',    section: 'dashboard' },
     { key: 'coach',        href: 'plazma-coach.html',       label: 'Coach',        section: 'coach' },
