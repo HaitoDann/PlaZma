@@ -30,8 +30,10 @@
   .acct-fab{position:fixed;top:16px;right:16px;z-index:50;width:40px;height:40px;
     display:inline-flex;align-items:center;justify-content:center;border-radius:11px;
     background:var(--surface-2);border:1px solid var(--border);color:var(--dim);
-    transition:color .15s,border-color .15s,background .15s,transform .15s}
-  .acct-fab:hover{color:var(--accent);border-color:var(--accent-line);background:var(--surface);transform:rotate(30deg)}
+    transition:color .15s,border-color .15s,background .15s}
+  .acct-fab:hover{color:var(--accent);border-color:var(--accent-line);background:var(--surface)}
+  .acct-fab svg{transition:transform .4s cubic-bezier(.34,1.56,.64,1)}
+  .acct-fab:hover svg{transform:rotate(90deg)}
 
   /* Sections */
   .sec{margin-top:44px}
