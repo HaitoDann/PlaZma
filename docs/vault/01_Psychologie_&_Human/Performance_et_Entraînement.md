@@ -85,6 +85,29 @@ La différence entre un Challenger et un Emerald n'est pas uniquement mécanique
 - Se fixer un **nombre minimal de parties par jour** de session active (même 2 vaut mieux que 0)
 - Éviter les **longues pauses non planifiées** (plus de 3 jours sans jouer = perte de feeling significative)
 
+---
+
+## Programme hebdomadaire type — Joueur compétitif amateur
+
+Basé sur les principes de régularité (Bennett et al., 2025) et les recommandations de condition physique pour esportif (→ [[Nutrition_et_Exercice]]). Ce programme intègre le jeu, l'entraînement physique, et la récupération dans une semaine cohérente.
+
+**Principe directeur :** ne pas opposer jeu et sport — les placer en synergie. Le cardio du matin améliore le cerveau de l'après-midi.
+
+| Jour | Sessions de jeu | Physique | Mental / Récupération |
+|---|---|---|---|
+| **Lundi** | 3-4 parties ranked | Cardio modéré 30 min (vélo, marche rapide, course légère) + protocole poignets | Objectif de process défini pour la semaine |
+| **Mardi** | Scrims + review 30 min | Protocole poignets (avant et après) | Débrief post-scrim |
+| **Mercredi** | 2-3 parties ranked | HIIT 20-25 min (30s effort / 30s repos × 8-10) | Analyse replay individuelle |
+| **Jeudi** | Scrims + review 30 min | Renforcement musculaire 30 min (gainage, épaules, avant-bras) + protocole poignets | Débrief collectif |
+| **Vendredi** | 3-4 parties ranked ou scrims | Cardio modéré 30 min + protocole poignets | Bilan de la semaine (5 min par écrit) |
+| **Samedi** | Tournoi ou session intensive | Échauffement physique léger 15 min avant + protocole poignets | Routine pré-compétition |
+| **Dimanche** | Repos actif ou 1-2 parties détente | Mobilité et étirements 20 min (cervicales, dos, poignets) | Pas d'analyse — recharge mentale |
+
+**Adaptations clés :**
+- Si semaine chargée (tournoi ou examen) : couper le HIIT, garder le protocole poignets et le cardio léger.
+- Si douleur au poignet : arrêt du gaming immédiat, consulter. Aucune exception.
+- Le dimanche de repos n'est pas négociable — le cerveau consolide les apprentissages de la semaine hors du jeu.
+
 ### Note sur la causalité
 
 Cette étude est exploratoire — elle décrit les comportements mais ne prouve pas encore la causalité. Est-ce que la régularité cause le haut niveau, ou est-ce que les bons joueurs ont naturellement cette régularité parce qu'ils sont motivés ? La recherche sur ce point continue.

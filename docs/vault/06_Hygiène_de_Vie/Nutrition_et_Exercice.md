@@ -33,6 +33,44 @@ La majorité ne respecte pas les recommandations nutritionnelles de base. Les d�
 
 À l'inverse : trop de graisses saturées et de sodium.
 
+### Les aliments clés du cerveau — Guide pratique
+
+Ce tableau remplace les suppléments : avant de prendre quoi que ce soit en gélule, mange ces aliments. Les effets sont documentés, la biodisponibilité est supérieure, et le coût est nul.
+
+| Aliment | Nutriments clés | Bénéfice direct pour le joueur |
+|---|---|---|
+| **Noix (cerneaux)** | Oméga-3 ALA, vitamine E, magnésium | Mémoire de travail, protection des membranes neuronales, réduction du stress oxydatif |
+| **Myrtilles (fraîches ou surgelées)** | Anthocyanes, antioxydants, vitamine C | Concentration, protection neuronale, réduction de la fatigue cognitive |
+| **Saumon, sardines, maquereau** | DHA/EPA (oméga-3 marins), B12, D | Flexibilité synaptique, anti-inflammatoire cérébral, humeur stable |
+| **Œufs entiers** | Choline, B12, protéines complètes | Précurseur de l'acétylcholine → attention soutenue, vitesse de traitement |
+| **Avocat** | Gras mono-insaturés, B6, potassium | Flux sanguin cérébral, précurseur de dopamine, énergie stable |
+| **Épinards, brocoli, chou kale** | Folate (B9), magnésium, vitamine K | Neurotransmission, prévention de la fatigue cognitive, régulation émotionnelle |
+| **Banane** | Potassium, B6, glucides à IG modéré | Énergie stable sans crash, précurseur de sérotonine (humeur) |
+| **Yaourt grec, kéfir** | Protéines, probiotiques, B12, calcium | Axe microbiote-cerveau (humeur, immunité), récupération musculaire |
+| **Chocolat noir (≥70%)** | Flavonoïdes, magnésium, théobromine | Dopamine légère, endorphines, concentration court terme — 2 carrés max |
+| **Riz, pâtes, patate douce** | Glucides complexes, fibres | Énergie cérébrale stable sur 2-3h sans pic glycémique |
+| **Légumineuses (lentilles, pois chiches)** | Protéines végétales, B9, magnésium, fer | Énergie longue durée, saturation stable, sérotoninergique |
+| **Eau** | H₂O | **2% de déshydratation = −20% de concentration mesurée.** Le nutriment le plus négligé. |
+
+**Ce qu'il faut limiter** (et pourquoi) :
+
+| Aliment | Mécanisme de dégradation |
+|---|---|
+| **Sodas, jus industriels** | Pic glycémique → crash cognitif 30-45 min après → concentration effondrée |
+| **Fast-food gras + ultra-transformé** | Inflammation cérébrale chronique ("brain fog"), fatigue accrue en session |
+| **Alcool** | Réduit la plasticité synaptique, détruit le sommeil réparateur, ↓ mémoire consolidée |
+| **Caféine après 15h** | Demi-vie ~6h → endormissement repoussé → récupération incomplète → spirale |
+| **Grignotage sucré en continu** | Digestion mobilise l'énergie → baisse du flux sanguin cérébral disponible |
+
+**Journée type — Jour de scrim**
+
+- **Matin :** Œufs (2-3) + pain complet ou flocons d'avoine + fruits rouges + eau. Café si habitude (pas à jeun).
+- **Midi (2h avant les scrims) :** Protéines (saumon, poulet, œufs, légumineuses) + glucides complexes (riz, pâtes, patate douce) + légumes verts. Repas complet mais pas lourd.
+- **Pendant les scrims :** Eau en continu. Noix, chocolat noir, banane à disposition. Aucun soda ni chips sur le bureau.
+- **Après les scrims :** Repas complet avec protéines + légumes. Yaourt ou kéfir. Infusion le soir. Plus de caféine.
+
+---
+
 ### Ce qui prédit la performance cognitive
 
 Les corrélations positives significatives entre apports et scores cognitifs pointent vers :
@@ -118,6 +156,58 @@ Nicholson et al. (2024) — 10 semaines, joueurs élite : amélioration de la sa
 ### Les micro-breaks : solution simple et souvent ignorée
 
 5 minutes de marche ou étirements toutes les 45-60 minutes de jeu maintient les performances cognitives mieux que de jouer sans pause. Bénéfice supplémentaire : reset émotionnel entre deux games.
+
+---
+
+## Protocole Poignets — Prévention des pathologies
+
+C'est le point le plus ignoré et le plus critique pour la longévité d'un joueur. Les douleurs de poignet ne disparaissent pas seules — elles s'installent, s'aggravent, et peuvent mettre fin à une carrière amateur à 22 ans.
+
+### Pathologies fréquentes chez le joueur LoL
+
+Le mouvement de souris en LoL repose sur des micro-contractions répétitives des extenseurs et fléchisseurs du poignet, plusieurs milliers de fois par session. Sans entretien, les structures tendineuses et nerveuses s'enflamment progressivement.
+
+| Pathologie | Zone de douleur | Signal d'alerte |
+|---|---|---|
+| **Tendinite des extenseurs** | Dessus du poignet / avant-bras | Douleur diffuse après session, aggravée le lendemain |
+| **Syndrome du canal carpien** | Doigts 1-2-3 (pouce, index, majeur) | Picotements ou engourdissements nocturnes — nerf médian comprimé |
+| **Syndrome de De Quervain** | Base du pouce | Douleur vive au clic prolongé, tests de pinch |
+| **Épicondylite latérale** | Extérieur du coude | Douleur irradiant vers le bas-bras, aggravée par les mouvements de souris rapides |
+
+**Règle absolue :** douleur persistante après 24h → arrêt du gaming, consultation (kinésithérapeute ou médecin du sport). Une tendinite ignorée se chronicise.
+
+### Protocole quotidien — 10 minutes, chaque jour de session
+
+#### Avant de jouer (4 min) — Activation et mobilisation
+
+1. **Rotations de poignets** — 15 cercles dans chaque sens, les deux poignets. Amplitude maximale, mouvement lent.
+2. **Flexion douce** — bras tendu devant soi, paume vers le haut, tirer les doigts vers le sol avec l'autre main. Tenir 20 sec × 2 chaque côté.
+3. **Extension douce** — même position, paume vers le bas, tirer les doigts vers soi. Tenir 20 sec × 2. *(C'est l'étirement le plus important — c'est le mouvement qu'on fait 10 000 fois par session.)*
+4. **Séparation des doigts** — écarter tous les doigts en étoile le plus possible, tenir 3 sec, relâcher. × 10 reps.
+5. **Shake-out** — agiter les mains mollement 15 secondes, comme si on secouait de l'eau.
+
+#### Après la session (6 min) — Décompression et récupération
+
+6. **Prayer stretch** — paumes jointes devant la poitrine, coudes à hauteur des épaules. Abaisser lentement les mains vers le ventre en maintenant les paumes serrées. Sentir l'étirement sous le poignet. 30 sec × 2.
+7. **Reverse prayer** — dos des mains joints, doigts vers le bas, coudes relevés. Étirement de la face dorsale. 30 sec × 2.
+8. **Étirement avant-bras fléchisseurs** — bras tendu, paume vers le haut, tirer doucement les doigts vers le sol. 30 sec chaque côté.
+9. **Massage avant-bras** — pétrir avec le pouce l'avant-bras de bas en haut, 90 secondes par bras. Chercher les zones sensibles et appuyer doucement (sans douleur vive).
+10. **Froid si inflammation** — après une session longue ou si sensation de chaleur dans le poignet : 5 minutes de glaçons dans un linge sur la zone. Jamais de glace directe sur la peau.
+
+#### Renforcement préventif (2×/semaine, hors phase de douleur)
+
+- **Grip trainer ou balle anti-stress** — 3 séries × 15 serrages lents. Renforce les fléchisseurs et protège les tendons.
+- **Extension des doigts contre résistance** — élastique autour des doigts, écarter en force. 3 × 15. Rééquilibre extenseurs/fléchisseurs.
+- **Pronation/supination avec poids léger** — tenir un stylo ou une télécommande, alterner paume vers le haut / vers le bas. Très lent. 3 × 10 chaque côté.
+
+### Prévention posturale
+
+Le protocole est inutile si la posture au bureau annule tous ses effets.
+
+- **Poignet neutre** : le poignet ne doit pas être plié vers le haut ou vers le bas en jouant — le bras, le poignet et la main doivent être dans le prolongement l'un de l'autre.
+- **Repose-poignet** : utile pour la souris, contre-indiqué pendant le mouvement (ne doit servir que pendant les pauses).
+- **Hauteur de bureau** : coudes à 90° — si le bureau est trop haut, les épaules montent et les poignets se tordent.
+- **Souris adaptée** : une souris trop petite force une préhension en pince qui contracte les extenseurs en permanence.
 
 ---
 
