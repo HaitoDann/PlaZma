@@ -220,7 +220,7 @@ Pour les joueurs qui veulent aller plus loin. Ces techniques sont utilisées en 
 
 ## Connexions
 
-- [[Wave_Sync_&_Tempo]] — synchroniser les vagues pour créer des fenêtres de rotation
+- [[Tempo]] — utiliser la priorité de vague pour créer des fenêtres de rotation
 - [[Macro_du_Split_Push]] — le contrôle de vague est le moteur du split push
 - [[Side_Management_Sans_Duelliste]] — gérer les side lanes sans duelliste dédié
 - [[Gestion_des_Objectives_Neutres]] — pousher/geler pour libérer du tempo avant un objectif
