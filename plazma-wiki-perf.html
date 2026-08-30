@@ -85,6 +85,20 @@
   .wk-doc tbody tr:nth-child(even){background:color-mix(in srgb,var(--surface) 55%,transparent)}
   .wk-doc .wl-missing{color:var(--muted);border-bottom:1px dotted var(--border-2);cursor:help}
 
+  /* ---- Cartes de la page d'accueil ---- */
+  .wl-card{display:inline-block;padding:7px 13px;border:1px solid var(--border);border-radius:999px;
+    background:var(--surface);font-size:13px;color:var(--dim);text-decoration:none;
+    transition:color .15s,border-color .15s,background .15s,transform .13s,box-shadow .15s;cursor:pointer}
+  .wl-card:hover{color:var(--accent);border-color:var(--accent-line);background:var(--accent-soft);
+    transform:translateY(-2px);box-shadow:0 4px 14px -5px color-mix(in srgb,var(--accent) 35%,transparent)}
+  .wl-card:active{transform:translateY(0)}
+
+  /* ---- Bouton retour accueil ---- */
+  .wk-back{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--border);
+    color:var(--muted);font-size:12px;font-weight:600;padding:5px 11px;border-radius:7px;cursor:pointer;
+    font-family:var(--font);transition:color .15s,border-color .15s,background .15s;margin-bottom:12px}
+  .wk-back:hover{color:var(--accent);border-color:var(--accent-line);background:var(--accent-soft)}
+
   /* ---- Sommaire (rail droit) ---- */
   .wk-toc{position:sticky;top:74px;align-self:start;padding:28px 20px;width:210px;font-size:12.5px}
   .wk-toc-h{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
@@ -218,7 +232,8 @@ PZ.mountNav('wikiperf', '#nav');
     const a = byId[id];
     if (!a) { renderHome(); return; }
     const cat = W.categories.find(c => c.id === a.cat);
-    let head = `<div class="wk-crumb"><span class="ic">${cat ? cat.icon : ''}</span>${esc(a.catName)}${a.sub ? ' · ' + esc(a.sub) : ''}</div>`;
+    let head = `<button class="wk-back" onclick="location.hash=''">← Accueil</button>`
+      + `<div class="wk-crumb"><span class="ic">${cat ? cat.icon : ''}</span>${esc(a.catName)}${a.sub ? ' · ' + esc(a.sub) : ''}</div>`;
     let meta = `<div class="wk-meta"><span>${a.words} mots</span><span>~${Math.max(1, Math.round(a.words / 200))} min de lecture</span></div>`;
     let banner = a.stub ? '<div class="wk-stub-banner">🚧 Note en cours de rédaction — contenu à compléter.</div>' : '';
     docEl.innerHTML = head + banner + a.html + meta;
@@ -235,7 +250,7 @@ PZ.mountNav('wikiperf', '#nav');
     const cards = W.categories.map(c => {
       const arts = W.articles.filter(a => a.cat === c.id);
       const links = arts.slice(0, 6).map(a =>
-        `<a class="wl" href="#${encodeURIComponent(a.id)}" data-id="${escAttr(a.id)}">${esc(a.title)}</a>`).join('');
+        `<a class="wl wl-card" href="#${encodeURIComponent(a.id)}" data-id="${escAttr(a.id)}">${esc(a.title)}</a>`).join('');
       return `<section style="margin-bottom:26px">
         <h2 style="font-size:1.15rem">${c.icon} ${esc(c.name)} <span style="color:var(--muted);font-size:13px;font-weight:400">· ${arts.length}</span></h2>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">${links}</div>
@@ -251,9 +266,7 @@ PZ.mountNav('wikiperf', '#nav');
     markActive();
     document.title = 'ARCHI — Encyclopédie';
   }
-  function styleCardLink(el) {
-    el.style.cssText = 'display:inline-block;padding:7px 12px;border:1px solid var(--border);border-radius:999px;background:var(--surface);font-size:13px;color:var(--dim);border-bottom:1px solid var(--border)';
-  }
+  function styleCardLink(el) { el.classList.add('wl-card'); }
 
   // Ancres sur les titres pour le sommaire
   function addHeadingIds() {
