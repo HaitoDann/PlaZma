@@ -1,3 +1,8 @@
+---
+date: 2026-08-20
+updated: 2026-08-30
+---
+
 # Nutrition & Exercice Physique
 
 > Le cerveau consomme ~20% de l'énergie corporelle. En session compétitive longue, une alimentation insuffisante et l'absence d'exercice dégradent la prise de décision exactement quand la partie se joue.

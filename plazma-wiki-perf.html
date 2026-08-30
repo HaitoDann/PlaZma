@@ -93,6 +93,17 @@
     transform:translateY(-2px);box-shadow:0 4px 14px -5px color-mix(in srgb,var(--accent) 35%,transparent)}
   .wl-card:active{transform:translateY(0)}
 
+  /* ---- Badges ---- */
+  .wk-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:999px;
+    font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;flex-shrink:0;vertical-align:middle}
+  .wk-badge.new{background:color-mix(in srgb,var(--accent) 14%,transparent);
+    border:1px solid var(--accent-line);color:var(--accent)}
+  .wk-badge.updated{background:color-mix(in srgb,var(--warn) 14%,transparent);
+    border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);color:var(--warn)}
+  .wk-badge-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+  /* date affichée dans le header article */
+  .wk-date{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
+
   /* ---- Bouton retour accueil ---- */
   .wk-back{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--border);
     color:var(--muted);font-size:12px;font-weight:600;padding:5px 11px;border-radius:7px;cursor:pointer;
@@ -209,7 +220,10 @@ PZ.mountNav('wikiperf', '#nav');
         l.className = 'wk-link';
         l.dataset.id = a.id;
         l.href = '#' + encodeURIComponent(a.id);
-        l.innerHTML = esc(a.title) + (a.stub ? '<span class="stub">•</span>' : '');
+        const b = getBadge(a);
+        l.innerHTML = esc(a.title)
+          + (a.stub ? '<span class="stub">•</span>' : '')
+          + (b ? ` <span class="wk-badge ${b.cls}" style="margin-left:4px"><span class="wk-badge-dot"></span>${b.label}</span>` : '');
         links.appendChild(l);
       });
       wrap.appendChild(links);
@@ -232,9 +246,13 @@ PZ.mountNav('wikiperf', '#nav');
     const a = byId[id];
     if (!a) { renderHome(); return; }
     const cat = W.categories.find(c => c.id === a.cat);
+    const b = getBadge(a);
+    const dateLabel = b
+      ? `<span class="wk-date">${badgeHtml(a)}<span>${b.label === 'Mis à jour' ? 'Mis à jour le' : 'Publié le'} ${fmtDate(b.date)}</span></span>`
+      : (a.date ? `<span class="wk-date"><span>Publié le ${fmtDate(a.date)}</span></span>` : '');
     let head = `<button class="wk-back" onclick="location.hash=''">← Accueil</button>`
       + `<div class="wk-crumb"><span class="ic">${cat ? cat.icon : ''}</span>${esc(a.catName)}${a.sub ? ' · ' + esc(a.sub) : ''}</div>`;
-    let meta = `<div class="wk-meta"><span>${a.words} mots</span><span>~${Math.max(1, Math.round(a.words / 200))} min de lecture</span></div>`;
+    let meta = `<div class="wk-meta">${dateLabel}<span>${a.words} mots</span><span>~${Math.max(1, Math.round(a.words / 200))} min de lecture</span></div>`;
     let banner = a.stub ? '<div class="wk-stub-banner">🚧 Note en cours de rédaction — contenu à compléter.</div>' : '';
     docEl.innerHTML = head + banner + a.html + meta;
     addHeadingIds();
@@ -250,7 +268,7 @@ PZ.mountNav('wikiperf', '#nav');
     const cards = W.categories.map(c => {
       const arts = W.articles.filter(a => a.cat === c.id);
       const links = arts.slice(0, 6).map(a =>
-        `<a class="wl wl-card" href="#${encodeURIComponent(a.id)}" data-id="${escAttr(a.id)}">${esc(a.title)}</a>`).join('');
+        `<a class="wl wl-card" href="#${encodeURIComponent(a.id)}" data-id="${escAttr(a.id)}">${esc(a.title)}${badgeHtml(a)}</a>`).join('');
       return `<section style="margin-bottom:26px">
         <h2 style="font-size:1.15rem">${c.icon} ${esc(c.name)} <span style="color:var(--muted);font-size:13px;font-weight:400">· ${arts.length}</span></h2>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">${links}</div>
@@ -349,6 +367,27 @@ PZ.mountNav('wikiperf', '#nav');
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function escAttr(s) { return esc(s).replace(/"/g, '&quot;'); }
   function slug(s) { return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').slice(0, 40); }
+
+  // ---------- Badges ----------
+  const DAY_MS = 86400000;
+  const BADGE_THRESH = 30 * DAY_MS;
+  function getBadge(a) {
+    const now = Date.now();
+    const upd = a.updated ? Date.parse(a.updated) : 0;
+    const cre = a.date    ? Date.parse(a.date)    : 0;
+    if (upd && (now - upd) < BADGE_THRESH) return { label: 'Mis à jour', cls: 'updated', date: a.updated };
+    if (cre && (now - cre) < BADGE_THRESH) return { label: 'Nouveau',    cls: 'new',     date: a.date };
+    return null;
+  }
+  function badgeHtml(a) {
+    const b = getBadge(a); if (!b) return '';
+    return `<span class="wk-badge ${b.cls}"><span class="wk-badge-dot"></span>${b.label}</span>`;
+  }
+  function fmtDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+  }
 
   // ---------- Démarrage ----------
   buildTree('');

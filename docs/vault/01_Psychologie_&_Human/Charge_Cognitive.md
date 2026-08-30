@@ -1,3 +1,7 @@
+---
+date: 2026-08-20
+---
+
 # Charge Cognitive
 
 > Le cerveau humain a une capacité d'attention limitée — chaque info inutile pendant un teamfight vole de la bande passante à l'exécution.

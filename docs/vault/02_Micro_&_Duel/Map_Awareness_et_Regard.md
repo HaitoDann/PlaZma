@@ -1,3 +1,7 @@
+---
+date: 2026-08-20
+---
+
 # Map Awareness & Contrôle du Regard
 
 > Les experts LoL ne regardent pas au même endroit que les joueurs moyens — leur regard couvre un territoire plus large, s'arrête moins longtemps sur chaque point, et traite l'information plus vite.

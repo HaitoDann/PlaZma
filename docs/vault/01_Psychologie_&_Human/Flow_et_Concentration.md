@@ -1,3 +1,7 @@
+---
+date: 2026-08-20
+---
+
 # Flow & Concentration
 
 > L'état de Flow est le pic absolu de la performance : le moment où tout s'enchaîne sans effort, sans pensée parasite, sans conscience du temps. La concentration n'est pas un état fixe — c'est une ressource qui se dépense, se gère, et s'entraîne.

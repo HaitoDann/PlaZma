@@ -59,6 +59,14 @@ function stripHtml(html) {
   return html.replace(/<[^>]+>/g, ' ').replace(/&[a-z]+;/g, ' ')
     .replace(/\s+/g, ' ').trim();
 }
+function parseFrontmatter(raw) {
+  const m = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n/);
+  if (!m) return { date: null, updated: null, body: raw };
+  const block = m[1];
+  const date    = (block.match(/^date:\s*(\S+)/m)    || [])[1] || null;
+  const updated = (block.match(/^updated:\s*(\S+)/m) || [])[1] || null;
+  return { date, updated, body: raw.slice(m[0].length) };
+}
 
 // ---- Découverte des articles ----
 const files = walk(VAULT).sort();
@@ -72,7 +80,8 @@ for (const file of files) {
   const sub = parts.length > 2 ? prettify(parts[parts.length - 2]) : null;
   const fileBase = path.basename(file, '.md');       // "Flow_et_Concentration"
   const raw = fs.readFileSync(file, 'utf8');
-  const h1 = raw.match(/^#\s+(.+)$/m);
+  const { date, updated, body } = parseFrontmatter(raw);
+  const h1 = body.match(/^#\s+(.+)$/m);
   const title = h1 ? h1[1].trim() : prettify(fileBase);
 
   const art = {
@@ -82,7 +91,9 @@ for (const file of files) {
     catName: catLabel(folder),
     catIcon: CAT_ICONS[catOrder(folder)] || '📄',
     sub,
-    raw,
+    raw: body,
+    date,
+    updated,
   };
   articles.push(art);
   byKey[norm(fileBase)] = fileBase;
@@ -130,6 +141,8 @@ const outArticles = articles.map(a => {
     words: plain ? plain.split(' ').length : 0,
     stub: plain.length < 90,
     text: plain.toLowerCase(),
+    date: a.date,
+    updated: a.updated,
   };
 });
 

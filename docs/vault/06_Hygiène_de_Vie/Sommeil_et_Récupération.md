@@ -1,3 +1,7 @@
+---
+date: 2026-08-20
+---
+
 # Sommeil & Récupération
 
 > La privation de sommeil détruit exactement les capacités dont LoL a besoin — et les joueurs esport dorment structurellement moins bien que tout le monde.

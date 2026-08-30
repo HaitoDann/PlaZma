@@ -1,3 +1,7 @@
+---
+date: 2026-08-20
+---
+
 # La Science du Duel
 
 > Le duel se gagne souvent avant d'avoir commencé. Connaissance + skill = maîtrise.

@@ -1,3 +1,7 @@
+---
+date: 2026-08-20
+---
+
 # Cohésion & Communication d'Équipe
 
 > Ce n'est pas combien tu parles qui compte — c'est comment s'enchaînent les échanges.

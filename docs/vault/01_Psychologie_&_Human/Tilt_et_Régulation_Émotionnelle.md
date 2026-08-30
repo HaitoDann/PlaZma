@@ -1,3 +1,7 @@
+---
+date: 2026-08-20
+---
+
 # Tilt & Régulation Émotionnelle
 
 > Le tilt n'est pas une fatalité — c'est une réponse émotionnelle prévisible, avec des facteurs de risque identifiables et des stratégies de protection qui fonctionnent. Ce n'est pas le stress qui dégrade la performance — c'est la façon dont on l'interprète.

@@ -1,3 +1,7 @@
+---
+date: 2026-08-20
+---
+
 # Coaching & Progression
 
 > Un bon coach ne dit pas "joue mieux" — il structure un environnement d'apprentissage qui force la progression.

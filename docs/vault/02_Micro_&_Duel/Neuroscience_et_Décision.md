@@ -1,3 +1,7 @@
+---
+date: 2026-08-20
+---
+
 # Neuroscience & Décision sous Pression
 
 > Les joueurs experts ne réagissent pas plus vite — ils filtrent mieux le bruit et anticipent plus loin.

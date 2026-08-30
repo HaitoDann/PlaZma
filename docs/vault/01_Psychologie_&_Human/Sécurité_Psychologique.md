@@ -1,3 +1,7 @@
+---
+date: 2026-08-20
+---
+
 # Sécurité Psychologique
 
 > On ne prend de vrais risques que quand on sait qu'on ne sera pas détruit si ça rate.

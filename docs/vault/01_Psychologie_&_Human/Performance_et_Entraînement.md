@@ -1,3 +1,8 @@
+---
+date: 2026-08-20
+updated: 2026-08-30
+---
+
 # Performance & Entraînement
 
 > La performance sur LoL ne se réduit pas aux stats — c'est un système à 8 dimensions où la synergie d'équipe dépasse presque toujours le talent individuel.

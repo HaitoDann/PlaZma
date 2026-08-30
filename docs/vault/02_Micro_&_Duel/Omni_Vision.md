@@ -1,3 +1,7 @@
+---
+date: 2026-08-20
+---
+
 # Omni Vision
 
 > Prendre en compte toutes les possibilités que peut avoir son ou ses adversaires.

@@ -1,3 +1,7 @@
+---
+date: 2026-08-20
+---
+
 # Outils Défensifs
 
 > Chaque outil de protection a une utilisation précise. Les mélanger sans logique = PVE gaspillé.

@@ -1,3 +1,7 @@
+---
+date: 2026-08-20
+---
+
 # Warm-Up & Outils Cognitifs Annexes
 
 > Osu! n'entraîne pas l'aim — il entraîne l'attention et la coordination main-œil. C'est utile, mais ce n'est pas la même chose.

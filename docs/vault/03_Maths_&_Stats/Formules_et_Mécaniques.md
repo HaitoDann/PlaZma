@@ -1,3 +1,7 @@
+---
+date: 2026-08-20
+---
+
 # Formules et Mécaniques
 
 > Les calculs derrière les stats. Savoir pourquoi on build ce qu'on build.

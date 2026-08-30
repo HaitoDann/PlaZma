@@ -1,3 +1,7 @@
+---
+date: 2026-08-20
+---
+
 # Wave Management
 
 > L'art de manipuler les sbires pour que ça tourne à notre avantage.
