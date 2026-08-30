@@ -94,15 +94,22 @@
   .wl-card:active{transform:translateY(0)}
 
   /* ---- Badges ---- */
-  .wk-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:999px;
-    font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;flex-shrink:0;vertical-align:middle}
-  .wk-badge.new{background:color-mix(in srgb,var(--accent) 14%,transparent);
+  /* Version complète — header article uniquement */
+  .wk-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:999px;
+    font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;flex-shrink:0;vertical-align:middle}
+  .wk-badge.new{background:color-mix(in srgb,var(--accent) 12%,transparent);
     border:1px solid var(--accent-line);color:var(--accent)}
-  .wk-badge.updated{background:color-mix(in srgb,var(--warn) 14%,transparent);
-    border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);color:var(--warn)}
+  .wk-badge.updated{background:color-mix(in srgb,var(--warn) 12%,transparent);
+    border:1px solid color-mix(in srgb,var(--warn) 35%,transparent);color:var(--warn)}
   .wk-badge-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+  /* Version point — sidebar */
+  .wk-dot{display:inline-block;width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-left:5px;vertical-align:middle}
+  .wk-dot.new{background:var(--accent)}
+  .wk-dot.updated{background:var(--warn)}
+  /* Version minuscule — cartes home */
+  .wl-card .wk-dot{width:5px;height:5px;margin-left:4px;vertical-align:middle}
   /* date affichée dans le header article */
-  .wk-date{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .wk-date{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:7px}
 
   /* ---- Bouton retour accueil ---- */
   .wk-back{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--border);
@@ -223,7 +230,7 @@ PZ.mountNav('wikiperf', '#nav');
         const b = getBadge(a);
         l.innerHTML = esc(a.title)
           + (a.stub ? '<span class="stub">•</span>' : '')
-          + (b ? ` <span class="wk-badge ${b.cls}" style="margin-left:4px"><span class="wk-badge-dot"></span>${b.label}</span>` : '');
+          + dotHtml(a);
         links.appendChild(l);
       });
       wrap.appendChild(links);
@@ -268,7 +275,7 @@ PZ.mountNav('wikiperf', '#nav');
     const cards = W.categories.map(c => {
       const arts = W.articles.filter(a => a.cat === c.id);
       const links = arts.slice(0, 6).map(a =>
-        `<a class="wl wl-card" href="#${encodeURIComponent(a.id)}" data-id="${escAttr(a.id)}">${esc(a.title)}${badgeHtml(a)}</a>`).join('');
+        `<a class="wl wl-card" href="#${encodeURIComponent(a.id)}" data-id="${escAttr(a.id)}">${esc(a.title)}${dotHtml(a)}</a>`).join('');
       return `<section style="margin-bottom:26px">
         <h2 style="font-size:1.15rem">${c.icon} ${esc(c.name)} <span style="color:var(--muted);font-size:13px;font-weight:400">· ${arts.length}</span></h2>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">${links}</div>
@@ -370,7 +377,7 @@ PZ.mountNav('wikiperf', '#nav');
 
   // ---------- Badges ----------
   const DAY_MS = 86400000;
-  const BADGE_THRESH = 30 * DAY_MS;
+  const BADGE_THRESH = 14 * DAY_MS;
   function getBadge(a) {
     const now = Date.now();
     const upd = a.updated ? Date.parse(a.updated) : 0;
@@ -382,6 +389,10 @@ PZ.mountNav('wikiperf', '#nav');
   function badgeHtml(a) {
     const b = getBadge(a); if (!b) return '';
     return `<span class="wk-badge ${b.cls}"><span class="wk-badge-dot"></span>${b.label}</span>`;
+  }
+  function dotHtml(a) {
+    const b = getBadge(a); if (!b) return '';
+    return `<span class="wk-dot ${b.cls}" title="${b.label}"></span>`;
   }
   function fmtDate(iso) {
     if (!iso) return '';
