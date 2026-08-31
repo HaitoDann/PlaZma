@@ -25,6 +25,7 @@ const OUT = path.join(ROOT, 'assets', 'wiki-data.js');
 // Emoji par catégorie (préfixe de dossier NN_)
 const CAT_ICONS = {
   '01': '🧠', '02': '⚔️', '03': '📊', '04': '🗺️', '05': '🧩', '06': '🌙',
+  '07': '🎓',
 };
 
 marked.setOptions({ gfm: true, breaks: false, headerIds: false, mangle: false });
