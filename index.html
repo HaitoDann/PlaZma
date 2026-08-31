@@ -161,13 +161,14 @@
      RIPPLE GOUTTE D'EAU (clic dans le vide)
   ───────────────────────────────────────── */
   @keyframes water-rip{
-    0%  {transform:scale(0);opacity:1}
+    0%  {transform:scale(0);opacity:var(--op,0.6)}
+    15% {opacity:var(--op,0.6)}
     100%{transform:scale(1);opacity:0}
   }
   .wd-ring{
     position:fixed;border-radius:50%;pointer-events:none;z-index:9997;
-    border:1.5px solid rgba(34,211,238,.55);
-    animation:water-rip .75s cubic-bezier(.2,.6,.4,1) forwards;
+    border:1px solid rgba(34,211,238,.6);
+    transform:scale(0);   /* état initial stable — pas de flash */
   }
 
   /* ─────────────────────────────────────────
@@ -583,24 +584,27 @@ PZ.onRoster((roster, coach) => {
 /* ── Ripple goutte d'eau (clic dans le vide) ── */
 (function(){
   const SKIP = 'a,button,input,select,textarea,label,[onclick],[role=button],.btn';
-  const sizes  = [56, 96, 140];
-  const delays = [0, 80, 160];
-  const opas   = [.55, .32, .16];
+  const rings = [
+    { sz: 60,  delay:   0, dur: 750, op: .58 },
+    { sz: 110, delay:  70, dur: 860, op: .34 },
+    { sz: 160, delay: 145, dur: 970, op: .18 },
+  ];
   document.addEventListener('click', e => {
     if (e.target.closest(SKIP)) return;
-    sizes.forEach((sz, i) => {
+    rings.forEach(({sz, delay, dur, op}) => {
       const ring = document.createElement('div');
       ring.className = 'wd-ring';
-      ring.style.cssText = `
-        width:${sz}px;height:${sz}px;
-        left:${e.clientX}px;top:${e.clientY}px;
-        margin:${-sz/2}px 0 0 ${-sz/2}px;
-        border-color:rgba(34,211,238,${opas[i]});
-        animation-delay:${delays[i]}ms;
-        animation-duration:${700 + i*80}ms;
-      `;
+      /* position centrée sans margin (évite le flash) */
+      ring.style.cssText =
+        `width:${sz}px;height:${sz}px;` +
+        `left:${e.clientX - sz/2}px;top:${e.clientY - sz/2}px;` +
+        `--op:${op};`;
       document.body.appendChild(ring);
-      setTimeout(() => ring.remove(), 900 + i * 80);
+      /* forcer un reflow pour que scale(0) soit peint avant l'animation */
+      ring.getBoundingClientRect();
+      ring.style.animation =
+        `water-rip ${dur}ms ${delay}ms cubic-bezier(0,.55,.45,1) both`;
+      setTimeout(() => ring.remove(), delay + dur + 50);
     });
   });
 })();
