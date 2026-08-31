@@ -170,4 +170,4 @@ Questions clés :
 - [[Identite_et_Competences_du_Coach]] — le coach comme évaluateur du profil cognitif et psychologique
 - [[Cohesion_Identite_et_Resilience_Collective]] — la complémentarité des profils comme fondation de la cohésion
 - [[Courbes_de_Progression_et_Developpement_du_Talent]] — le taux d'apprentissage précoce comme indicateur prédictif
-- [[Securite_Psychologique_et_Communication]] — la coachabilité comme indicateur de réceptivité au feedback
+- [[Securite_Psychologique]] — la coachabilité comme indicateur de réceptivité au feedback

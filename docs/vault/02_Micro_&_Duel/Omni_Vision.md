@@ -78,4 +78,4 @@ Règle : si tu vois quelque chose que les autres ne voient probablement pas → 
 
 - [[Les_duels/INDEX|Les duels]] — le level 6 de la vision appliqué au 1v1
 - [[Psychologie_et_adaptation_comportementale]] — la vision alimente la lecture comportementale
-- [[../../04_Macro_&_Side/Gestion_des_Objectives_Neutres]] — niveau 5-7 requis pour les objectifs
+- [[Tempo]] — niveau 5-7 requis pour les objectifs majeurs

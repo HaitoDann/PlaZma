@@ -213,7 +213,7 @@ VODs de coaching professionnel, analyse de débriefs structurés, contenus de co
 ## Connexions
 
 - [[Protocole_de_Recrutement]] — évaluer les candidats en trial, fiche de scoring
-- [[Securite_Psychologique_et_Communication]] — la sécurité psychologique comme responsabilité centrale du coach
+- [[Securite_Psychologique]] — la sécurité psychologique comme responsabilité centrale du coach
 - [[Gestion_du_Slump_et_Contre_Performance]] — le rôle du coach dans la détection et la gestion du slump
 - [[Cohesion_Identite_et_Resilience_Collective]] — construire la résilience collective
 - [[Courbes_de_Progression_et_Developpement_du_Talent]] — le PDI comme outil central du développement individuel

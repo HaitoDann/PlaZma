@@ -127,6 +127,6 @@ Actions : questionnaire anonyme sur la cohésion, reconnaissance individuelle de
 ## Connexions
 
 - [[Gestion_du_Slump_et_Contre_Performance]] — quand la cohésion s'effondre sous une série de défaites
-- [[Securite_Psychologique_et_Communication]] — la sécurité psychologique comme fondation de la cohésion
+- [[Securite_Psychologique]] — la sécurité psychologique comme fondation de la cohésion
 - [[Protocole_de_Recrutement]] — la complémentarité des profils comme critère de recrutement
 - [[Identite_et_Competences_du_Coach]] — le rôle du coach dans la construction de la cohésion

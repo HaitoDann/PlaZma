@@ -168,6 +168,5 @@ Séquence de 2 minutes à 16 min de jeu, configuration 1-3-1, 1 minute avant le 
 ## Connexions
 
 - [[Wave_Management]] — gestion des vagues comme moteur de la tempo
-- [[Gestion_des_Objectives_Neutres]] — la règle des 45 secondes en pratique
 - [[Macro_du_Split_Push]] — utiliser la tempo de side pour créer du crossmap
-- [[Formations_1-4_et_1-3-1]] — impact de la composition sur la tempo
+- [[Draft_et_Compos]] — impact de la composition sur la tempo (split, poke)

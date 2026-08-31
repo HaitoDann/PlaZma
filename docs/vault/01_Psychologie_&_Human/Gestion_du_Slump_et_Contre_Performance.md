@@ -144,6 +144,6 @@ Le coach choisit explicitement entre deux approches :
 ## Connexions
 
 - [[Cohesion_Identite_et_Resilience_Collective]] — la résilience collective se construit avant la crise
-- [[Securite_Psychologique_et_Communication]] — la sécurité psychologique s'effondre en premier dans un slump
-- [[Gestion_du_Tilt]] — le tilt individuel, cas particulier de dégradation émotionnelle
+- [[Securite_Psychologique]] — la sécurité psychologique s'effondre en premier dans un slump
+- [[Tilt_et_Régulation_Émotionnelle]] — le tilt individuel, cas particulier de dégradation émotionnelle
 - [[Identite_et_Competences_du_Coach]] — le rôle du coach dans la détection et la gestion du slump
