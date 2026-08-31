@@ -43,9 +43,13 @@ En LoL : lire la map avant qu'il se passe quelque chose, exécuter les combos av
 
 ### La neurologie du Flow
 
-**Hypothèse de l'Hypofrontalité Transitoire (Dietrich, 2004)** : en état de Flow, le cortex préfrontal dorsolatéral (DLPFC) — zone de la pensée analytique, de l'autocritique, du doute — voit son activité temporairement réduite. Moins de voix intérieure critique, moins d'autocensure, les automatismes prennent le dessus. Ce n'est pas une métaphore : "jouer sans penser" est de la neurologie.
+**Hypothèse de l'Hypofrontalité Transitoire (Dietrich, 2004)** : en état de Flow, le cortex préfrontal dorsolatéral (DLPFC) — zone de la pensée analytique, de l'autocritique, du doute — verrait son activité temporairement réduite. Moins de voix intérieure critique, moins d'autocensure, les automatismes prennent le dessus.
 
-**Dopamine & Flow** : les individus naturellement enclins au Flow ont une plus grande disponibilité de récepteurs D2 à la dopamine dans le striatum. La dopamine libérée pendant le Flow le rend auto-entretenu — il se renforce lui-même.
+> ⚠️ **Statut scientifique :** Il s'agit d'une **hypothèse influente**, pas d'un fait établi. Les études EEG et fMRI sur le sujet donnent des résultats mixtes — certaines confirment une réduction de l'activité préfrontale, d'autres pas. Le modèle reste le plus utilisé en psychologie du sport pour expliquer le Flow, mais il ne fait pas consensus en neurosciences. L'idée de "jouer sans penser" est une description phénoménologique juste — son mécanisme neurologique exact reste débattu.
+
+**Dopamine & Flow** : une étude de de Manzano et al. (2013) sur des musiciens professionnels montre que les individus qui expérimentent fréquemment le Flow ont une plus grande disponibilité de récepteurs D2 à la dopamine dans le striatum. La dopamine libérée pendant le Flow contribuerait à le rendre auto-entretenu — il se renforcerait lui-même.
+
+> ⚠️ **Limite d'extrapolation :** Cette étude portait sur des musiciens, pas sur des joueurs esport. Le transfert au contexte gaming est une inférence raisonnable — la structure de la tâche (maîtrise, défi, feedback immédiat) est similaire — mais elle n'a pas encore été répliquée directement sur des joueurs compétitifs.
 
 ### Le Canal du Flow
 
@@ -101,6 +105,8 @@ Les deux sont distincts et entraînables.
 | 4e | **Mémoire de travail** | Cooldowns oubliés, positions perdues |
 | 5e | **Régulation émotionnelle** | Tilt plus rapide et plus fort |
 
+> ⚠️ **Nuance :** Cet ordre est une **approximation pédagogique** utile, pas une séquence neurologique fixe. En pratique, l'ordre varie selon le type de fatigue (physique vs cognitive vs émotionnelle), le profil individuel du joueur et la nature de la tâche. Certains joueurs perdront d'abord la régulation émotionnelle sous stress compétitif, d'autres la mémoire de travail sous fatigue prolongée. Le tableau donne la tendance centrale — pas une règle universelle.
+
 → La game 5 d'un BO5 se joue souvent dans cet ordre de dégradation. L'équipe qui gère le mieux sa fatigue cognitive gagne.
 
 ### Entraîner la concentration (Lachowicz et al., 2024)
@@ -141,6 +147,11 @@ La concentration est **plastique** — le cerveau peut être entraîné à maint
 - Communication réduite au minimum nécessaire
 - Routine pré-game commune — un rituel partagé ancre tout le monde dans le même état mental
 - Sécurité psychologique → [[Sécurité_Psychologique]]
+
+**Ce qui distingue le Flow collectif du Flow individuel :**
+Le Flow collectif a une fragilité propre : **un seul joueur en tilt peut le casser pour les quatre autres**. Quand un coéquipier émet une séquence de communication négative (Critique → Justification, Frustration → Frustration — cf. [[Cohésion_et_Communication]]), il réactive la conscience de soi des autres joueurs (dimension 7), qui sortent de leur immersion pour gérer la tension. Le Flow collectif ne s'effondre pas de façon linéaire — il s'effondre par contagion émotionnelle, souvent en quelques secondes.
+
+C'est pourquoi la règle "pas de critique à chaud en jeu" n'est pas seulement une règle de bienveillance — c'est une règle de protection du Flow collectif.
 
 ---
 
