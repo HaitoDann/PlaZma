@@ -153,6 +153,152 @@ La concentration est **plastique** — le cerveau peut être entraîné à maint
 
 ---
 
+## Exercices pour entraîner la concentration
+
+Ces exercices s'adressent aux joueurs qui ont des difficultés à maintenir le focus — attention qui décroche, minimap oubliée, pensées parasites pendant le jeu. La concentration se travaille comme un muscle : petites doses, régularité, surcharge progressive.
+
+---
+
+### Exercice 1 — La Grille de Concentration
+
+**Origine :** Classique de la psychologie du sport. Utilisé en athlétisme, tennis, arts martiaux.
+
+**Matériel :** Une grille 10×10 de chiffres placés aléatoirement (de 00 à 99). À imprimer ou à générer en ligne ("concentration grid").
+
+**Protocole :**
+1. Poser la grille devant soi. Timer à 1 minute.
+2. Trouver et barrer les chiffres dans l'ordre croissant (00, 01, 02…) aussi vite que possible.
+3. Compter combien de chiffres trouvés à la fin du timer.
+
+**Fréquence :** 3 fois par semaine, pendant 4 semaines. Progression possible : passer à 90 secondes, puis 2 minutes.
+
+**Ce que ça entraîne :** Attention sélective et balayage visuel rapide — exactement ce qui est mobilisé lors du scan de la minimap.
+
+**Signal de progression :** +5 chiffres trouvés par rapport à la semaine 1 après 4 semaines.
+
+---
+
+### Exercice 2 — Le Parking (vider la tête avant de jouer)
+
+**Origine :** Sian Beilock, *Choke* (2010). Validé pour réduire le "cluttering" — les pensées parasites qui consomment de la mémoire de travail pendant l'exécution.
+
+**Protocole (5 minutes avant la session) :**
+1. Prendre une feuille ou un carnet. Timer à 3 minutes.
+2. Écrire sans filtre tout ce qui occupe l'esprit : tâches non terminées, inquiétudes, conversations à avoir. Tout.
+3. Fermer le carnet. Ces préoccupations sont "garées" — elles ne sont pas perdues, elles attendent.
+4. Commencer la session.
+
+**Pourquoi ça marche :** La mémoire de travail utilise une partie de sa bande passante à "ne pas oublier" les choses non résolues. Les écrire libère cette ressource pour le jeu.
+
+**Usage recommandé :** Systématique avant chaque scrim importante ou session solo longue.
+
+---
+
+### Exercice 3 — Le Mot d'Ancrage (cue word)
+
+**Origine :** Protocole standard en psychologie du sport (utilisé en tennis, golf, tir sportif).
+
+**Principe :** Choisir un mot court (1-2 syllabes) qui rappelle l'état de concentration souhaité. Répété intérieurement au moment où l'attention décroche, il fonctionne comme un interrupteur.
+
+**Exemples :** "Maintenant." / "Ici." / "Focus." / "Map." / "Calme." — le mot est personnel, pas le mot qui compte.
+
+**Protocole de mise en place :**
+1. Choisir son mot (une seule fois, ne pas en changer).
+2. Pendant une semaine, le répéter intentionnellement chaque fois qu'on remarque une pensée parasite pendant le jeu.
+3. Après 2-3 semaines, le réflexe s'automatise — le mot déclenche le retour d'attention sans effort conscient.
+
+**Erreur fréquente :** Vouloir que ça fonctionne immédiatement. Le cue word est un automatisme à construire, pas un bouton magique. Il faut 2-3 semaines de pratique régulière.
+
+---
+
+### Exercice 4 — La Scrim à Objectif Unique
+
+**Principe :** Pendant une game entière (scrim ou soloQ), se fixer un seul objectif d'attention — et ne suivre que ça.
+
+**Exemples d'objectifs :**
+- "Je check la minimap toutes les 5 secondes — seulement ça."
+- "Je trace la position du jungler adverse à chaque information disponible."
+- "Je note mentalement chaque cooldown adverse utilisé."
+
+**Pourquoi une seule chose :** L'attention sélective se développe par la pratique mono-tâche. Vouloir tout améliorer en même temps n'améliore rien.
+
+**Débrief post-game (obligatoire) :**
+- Combien de fois ai-je réussi à faire ce que je m'étais fixé ?
+- À quel moment ai-je décroché, et pourquoi ?
+
+**Progression :** Sur 4 semaines, alterner les objectifs. Semaine 5 : combiner deux objectifs.
+
+---
+
+### Exercice 5 — La Charge Progressive (Pomodoro d'attention)
+
+Pour les joueurs dont la concentration décroche après 15-20 minutes — signe d'une capacité d'attention soutenue faible mais entraînable.
+
+**Protocole :**
+
+| Semaine | Session focalisée | Pause |
+|---|---|---|
+| 1 | 20 min focus total | 5 min pause active |
+| 2 | 30 min focus total | 7 min pause active |
+| 3 | 45 min focus total | 10 min pause active |
+| 4 | 60 min focus total | 10 min pause active |
+
+**Focus total = notifications off, 0 interruption volontaire.** Pas de vérification de téléphone, pas de musique avec des paroles, pas de switch d'onglet.
+
+**Pause active = debout.** Marcher, s'étirer, respirer. Pas du scroll Instagram — c'est une charge cognitive différente, pas une récupération.
+
+**Règle de progression :** Ne passer à la semaine suivante que si la semaine en cours est tenue 4 jours sur 5.
+
+---
+
+### Exercice 6 — La Respiration Box (ancrage pré-game)
+
+**Durée :** 3-4 minutes. À faire assis, avant d'ouvrir le client.
+
+**Protocole (4-4-4-4) :**
+1. Inspirer par le nez → 4 secondes
+2. Retenir → 4 secondes
+3. Expirer par la bouche → 4 secondes
+4. Retenir poumons vides → 4 secondes
+5. Répéter 4-5 cycles
+
+**Mécanisme :** Active le système nerveux parasympathique (frein). Réduit le cortisol et les pensées intrusives. Prépare un état calme-alerte — ni somnolent, ni anxieux — optimal pour entrer en concentration.
+
+**Usage :** En remplacement ou en complément du mot d'ancrage. Particulièrement utile avant les compétitions importantes ou après une défaite frustrante.
+
+---
+
+### Atelier collectif — Le Débrief d'Attention (15 min post-scrim)
+
+À faire en équipe, une fois par semaine.
+
+**Format :**
+1. Chaque joueur répond à 3 questions (à l'écrit, 3 min) :
+   - À quel moment de la game mon attention a décroché ?
+   - Qu'est-ce qui l'a fait décrocher (tilt, fatigue, coéquipier, extérieur) ?
+   - Qu'est-ce que j'aurais pu faire pour revenir plus vite ?
+
+2. Tour de table : chaque joueur partage une réponse à la question 3 seulement (les deux premières sont privées).
+
+3. Le coach identifie les patterns récurrents : si 3 joueurs sur 5 décrochent sur le même type de moment (dragon, engage raté, pause de communication), c'est un axe collectif à travailler.
+
+**Ce que ça construit :** La métacognition attentionnelle — la capacité à remarquer quand on n'est plus concentré. C'est la précondition de tout retour d'attention volontaire.
+
+---
+
+### Programme sur 4 semaines pour un joueur avec problèmes de concentration
+
+| Semaine | Exercice principal | Fréquence | Objectif |
+|---|---|---|---|
+| **1** | Parking + Mot d'ancrage | Chaque session | Installer les réflexes de base |
+| **2** | Grille de concentration | 3x/semaine (hors jeu) | Entraîner l'attention sélective |
+| **3** | Scrim à objectif unique | Toutes les scrims | Appliquer le focus en jeu |
+| **4** | Charge progressive 45 min | Chaque session solo | Augmenter la durée de focus |
+
+Le débrief d'attention collectif s'ajoute dès la semaine 1, une fois par semaine.
+
+---
+
 ## La hiérarchie des états mentaux en compétition
 
 ```
