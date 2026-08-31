@@ -606,6 +606,26 @@ a[href="plazma-dashboard.html"]:hover .tool-ico svg{animation:tool-bars .8s ease
 a[href="plazma-satisfaction.html"]:hover .tool-ico svg{animation:tool-ping .7s ease-in-out infinite}
 a[href="plazma-schedule.html"]:hover .tool-ico svg{animation:tool-flip .9s ease-in-out infinite}
 a[href="plazma-team.html"]:hover .tool-ico svg{animation:tool-bounce .7s ease-in-out infinite}
+@keyframes tool-write{
+  0%,100%{transform:scale(1.12)rotate(0)translate(0,0)}
+  20%{transform:scale(1.12)rotate(-5deg)translate(-2px,2px)}
+  50%{transform:scale(1.12)rotate(4deg)translate(2px,-1px)}
+  80%{transform:scale(1.12)rotate(-2deg)translate(-1px,1px)}
+}
+@keyframes tool-pages{
+  0%,100%{transform:scale(1.12)rotateY(0)scaleX(1)}
+  30%{transform:scale(1.12)rotateY(14deg)scaleX(.92)}
+  60%{transform:scale(1.12)rotateY(-8deg)scaleX(1.04)}
+}
+@keyframes tool-read{
+  0%,100%{transform:scale(1.12)translateY(0)}
+  25%{transform:scale(1.12)translateY(-4px)rotate(1deg)}
+  55%{transform:scale(1.12)translateY(1px)rotate(-1deg)}
+  75%{transform:scale(1.12)translateY(-2px)}
+}
+a[href="plazma-scrim.html"]:hover .tool-ico svg{animation:tool-write .75s ease-in-out infinite}
+a[href="plazma-wiki.html"]:hover .tool-ico svg{animation:tool-pages .85s ease-in-out infinite}
+a[href="plazma-wiki-perf.html"]:hover .tool-ico svg{animation:tool-read .8s ease-in-out infinite}
 
 /* ── Halos de fond — deux blobs qui respirent très lentement ── */
 @keyframes halo-a{
