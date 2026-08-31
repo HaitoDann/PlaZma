@@ -171,7 +171,17 @@ const payload = {
 const banner = '/* Généré par scripts/build-wiki.js — NE PAS ÉDITER À LA MAIN. */\n';
 fs.writeFileSync(OUT, banner + 'window.PZ_WIKI = ' + JSON.stringify(payload) + ';\n');
 
-console.log(`✓ ${outArticles.length} articles, ${categories.length} catégories → ${path.relative(ROOT, OUT)}`);
+// Mise à jour automatique du cache-buster dans plazma-wiki-perf.html
+const now = new Date();
+const buster = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+const HTML_OUT = path.join(ROOT, 'plazma-wiki-perf.html');
+if (fs.existsSync(HTML_OUT)) {
+  const html = fs.readFileSync(HTML_OUT, 'utf8');
+  const updated = html.replace(/wiki-data\.js\?v=[^"']*/g, `wiki-data.js?v=${buster}`);
+  if (updated !== html) fs.writeFileSync(HTML_OUT, updated);
+}
+
+console.log(`✓ ${outArticles.length} articles, ${categories.length} catégories → ${path.relative(ROOT, OUT)} (v=${buster})`);
 const missing = new Set();
 articles.forEach(a => (a.raw.match(/\[\[([^\]]+)\]\]/g) || []).forEach(w => {
   const inner = w.slice(2, -2);
