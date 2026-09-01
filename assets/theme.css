@@ -682,7 +682,7 @@ a[href="plazma-wiki-perf.html"]:hover .tool-ico svg{animation:tool-read .8s ease
 #pz-cur-dot{
   position:fixed;top:0;left:0;width:8px;height:8px;border-radius:50%;
   background:#22d3ee;box-shadow:0 0 10px rgba(34,211,238,.9);
-  pointer-events:none;z-index:100000;transform:translate(-50%,-50%);
+  pointer-events:none;z-index:2147483647;transform:translate(-50%,-50%);
   mix-blend-mode:screen;transition:width .15s,height .15s,box-shadow .15s,opacity .2s;
 }
 #pz-cur-dot.pz-hot{width:14px;height:14px;box-shadow:0 0 16px rgba(34,211,238,1)}
