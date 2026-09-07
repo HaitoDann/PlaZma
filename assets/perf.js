@@ -64,6 +64,7 @@
         <div class="score-track"><div class="score-fill" id="scoreFill" style="background:${P.roleVar}"></div></div>
         <div class="cat-pills" id="catPills"></div>
       </div>
+      <div class="radar-wrap" id="radarWrap"></div>
     </div>
 
     <div class="perf-body">
@@ -159,6 +160,78 @@
     sn.textContent = g > 0 ? (Math.round(g * 10) / 10).toFixed(1) : '—';
     sn.style.color = col; sq.textContent = QUAL[Math.round(g)] || '—'; sq.style.color = col;
     sf.style.width = (g / 10 * 100) + '%'; sf.style.background = col;
+    drawRadar();
+  }
+
+  // ---- Radar chart (diagramme en étoile par catégorie) ----
+  function drawRadar() {
+    const wrap = document.getElementById('radarWrap');
+    if (!wrap) return;
+    const N = P.cats.length;
+    if (N < 3) { wrap.style.display = 'none'; return; }
+
+    const S = 230, cx = S / 2, cy = S / 2, R = 84;
+    const ang = i => -Math.PI / 2 + (2 * Math.PI * i / N);
+    const px = (i, v) => cx + (v / 10) * R * Math.cos(ang(i));
+    const py = (i, v) => cy + (v / 10) * R * Math.sin(ang(i));
+
+    // Moyennes par catégorie (sur tous les items, 0 si non noté)
+    const data = P.cats.map(cat => {
+      const vals = cat.items.map(i => jV[i.id] || 0);
+      const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+      // Nom court : retire l'emoji de début
+      const label = cat.label.replace(/^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}️ ]+/u, '').trim();
+      return { label, color: cat.color, avg };
+    });
+
+    let svg = `<svg viewBox="-10 -10 ${S + 20} ${S + 30}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">`;
+
+    // Anneaux de grille
+    [2, 4, 6, 8, 10].forEach(ring => {
+      const pts = data.map((_, i) => `${px(i, ring)},${py(i, ring)}`).join(' ');
+      const isMax = ring === 10;
+      svg += `<polygon points="${pts}" fill="none" stroke="#232b36" stroke-width="${isMax ? 1 : 0.7}"/>`;
+      // Label de valeur sur l'axe vertical (axe 0, vers le haut)
+      if (ring < 10) {
+        svg += `<text x="${cx}" y="${cy - (ring / 10) * R - 3}" text-anchor="middle" font-size="7" fill="#64748b">${ring}</text>`;
+      }
+    });
+
+    // Lignes d'axes
+    data.forEach((d, i) => {
+      svg += `<line x1="${cx}" y1="${cy}" x2="${px(i, 10)}" y2="${py(i, 10)}" stroke="#2f3945" stroke-width="1"/>`;
+    });
+
+    // Polygone des données
+    const hasData = data.some(d => d.avg > 0);
+    const polyPts = data.map((d, i) => `${px(i, d.avg)},${py(i, d.avg)}`).join(' ');
+    if (hasData) {
+      svg += `<polygon points="${polyPts}" style="fill:var(--role,#22d3ee);fill-opacity:.18;stroke:var(--role,#22d3ee);stroke-width:1.8;stroke-linejoin:round"/>`;
+      // Points sur chaque axe
+      data.forEach((d, i) => {
+        if (d.avg > 0) {
+          svg += `<circle cx="${px(i, d.avg)}" cy="${py(i, d.avg)}" r="3.5" fill="${d.color}" stroke="var(--bg)" stroke-width="1.2"/>`;
+          // Valeur affichée près du point
+          const lx = px(i, d.avg) + 8 * Math.cos(ang(i));
+          const ly = py(i, d.avg) + 8 * Math.sin(ang(i));
+          svg += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="7.5" font-weight="700" fill="${d.color}">${d.avg.toFixed(1)}</text>`;
+        }
+      });
+    }
+
+    // Labels d'axes (à l'extérieur)
+    data.forEach((d, i) => {
+      const dist = 10.8;
+      const lx = px(i, dist), ly = py(i, dist);
+      const cosA = Math.cos(ang(i));
+      const anchor = cosA > 0.2 ? 'start' : cosA < -0.2 ? 'end' : 'middle';
+      // Tronque si trop long
+      const lbl = d.label.length > 14 ? d.label.slice(0, 13) + '…' : d.label;
+      svg += `<text x="${lx}" y="${ly}" text-anchor="${anchor}" dominant-baseline="middle" font-size="8.5" font-weight="600" fill="${d.color}">${lbl}</text>`;
+    });
+
+    svg += '</svg>';
+    wrap.innerHTML = svg;
   }
 
   // ---- État ----

@@ -867,7 +867,7 @@
     const HOT  = 'a,button,.btn,.tool,.pcard,label,summary,select,[onclick],[role=button],input[type=checkbox],input[type=radio]';
     const TEXT = 'input:not([type=checkbox]):not([type=radio]),textarea,[contenteditable]';
     window.addEventListener('mousemove', e => {
-      dot.style.transform = `translate(${e.clientX}px,${e.clientY}px)`;
+      dot.style.transform = `translate(${e.clientX}px,${e.clientY}px) translate(-50%,-50%)`;
       const t = e.target;
       dot.classList.toggle('pz-hide', !!(t && t.closest && t.closest(TEXT)));
       dot.classList.toggle('pz-hot',  !!(t && t.closest && t.closest(HOT)));
