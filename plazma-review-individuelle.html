@@ -458,13 +458,14 @@ function subscribe(docId){
   const syncTime = document.getElementById('syncTime');
   _unsub = db.collection(COL).doc(docId).onSnapshot(snap=>{
     const data = snap.data();
-    if(!data){ syncDot.className='sync-dot offline'; syncText.textContent='Nouveau'; return; }
+    if(!data){ syncDot.className='sync-dot offline'; syncText.textContent='Nouveau'; PZ.loadingDone(); return; }
     const incoming = sig(data);
-    if(Date.now()<suppressUntil && incoming===lastSavedSig){ syncDot.className='sync-dot saved'; syncText.textContent='Sauvegardé'; return; }
+    if(Date.now()<suppressUntil && incoming===lastSavedSig){ syncDot.className='sync-dot saved'; syncText.textContent='Sauvegardé'; PZ.loadingDone(); return; }
     syncDot.className='sync-dot saved'; syncText.textContent='Synchronisé';
     syncTime.textContent = data._savedAt ? new Date(data._savedAt.toDate()).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '';
     applyState(data);
-  }, ()=>{ syncDot.className='sync-dot offline'; syncText.textContent='Hors ligne'; });
+    PZ.loadingDone();
+  }, ()=>{ syncDot.className='sync-dot offline'; syncText.textContent='Hors ligne'; PZ.loadingDone(); });
 }
 
 function save(){
@@ -559,7 +560,7 @@ loadHistory().then ? null : null;
 db.collection(COL).orderBy('_savedAt','desc').limit(1).get().then(snap=>{
   if(snap.empty) newSession();
   else subscribe(snap.docs[0].id);
-}).catch(()=>newSession());
+}).catch(()=>{ newSession(); PZ.loadingDone(); });
 
 // Inputs qui déclenchent la sauvegarde
 document.addEventListener('input', e=>{
