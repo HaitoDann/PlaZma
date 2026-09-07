@@ -56,7 +56,7 @@
   // La protection RÉELLE vient des règles de sécurité Firestore (firestore.rules).
   // Ce module gère la connexion, le profil de l'utilisateur et l'affichage
   // (redirection login, masquage des modules non autorisés).
-  const SECTION_KEYS = ['planning', 'scrim', 'scouting', 'team', 'dashboard', 'coach', 'satisfaction', 'satisfactionResults', 'perf'];
+  const SECTION_KEYS = ['planning', 'scrim', 'review', 'scouting', 'team', 'dashboard', 'coach', 'satisfaction', 'satisfactionResults', 'perf'];
   let authUser = null;   // { uid, email }
   let profile = null;    // { name, role, sections:{}, disabled }
   let authResolved = false;
@@ -259,7 +259,8 @@
   const NAV = [
     { key: 'home',         href: 'index.html',              label: 'Accueil' },
     { key: 'schedule',     href: 'plazma-schedule.html',    label: 'Planning',     section: 'planning' },
-    { key: 'scrim',        href: 'plazma-scrim.html',       label: 'Scrim',        section: 'scrim' },
+    { key: 'scrim',        href: 'plazma-scrim.html',       label: 'CR Match',     section: 'scrim' },
+    { key: 'review',       href: 'plazma-review-individuelle.html', label: 'Review', section: 'scrim' },
     { key: 'scouting',     href: 'plazma-scouting.html',    label: 'Scouting',     section: 'scouting' },
     { key: 'draft',        href: 'plazma-draft.html',       label: 'Draft',        section: 'scouting' },
     { key: 'wiki',         href: 'plazma-wiki.html',        label: 'Wiki' },
