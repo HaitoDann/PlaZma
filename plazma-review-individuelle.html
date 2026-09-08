@@ -555,7 +555,7 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
 // ── Init ──
 buildPlayerSelect();
 buildGames();
-loadHistory().then ? null : null;
+loadHistory();
 // Charger la review la plus récente ou en créer une nouvelle
 db.collection(COL).orderBy('_savedAt','desc').limit(1).get().then(snap=>{
   if(snap.empty) newSession();
