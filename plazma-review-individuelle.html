@@ -312,15 +312,13 @@ function buildChampPicker(gk){
       el.addEventListener('mousedown',e=>{e.preventDefault();selectChamp(gk,el.dataset.id,el.dataset.name);});
     });
   }
-  function selectChamp(gkey,id,name){
+  function selectChamp(gkey,id,name,silent){
     champKeys[gkey]=id; inp.value=name;
     if(id){ ico.src=champImg(id); ico.classList.add('vis'); }
     else { ico.classList.remove('vis'); }
     drop.classList.remove('open'); drop.innerHTML='';
-    queueSave();
+    if(!silent) queueSave();
   }
-  // Expose for state restore
-  wrap._selectChamp = (id,name) => selectChamp(gk,id,name);
 
   inp.addEventListener('input',()=>renderDrop(inp.value));
   inp.addEventListener('focus',()=>renderDrop(inp.value));
@@ -525,7 +523,7 @@ function applyState(s){
     const gk='g'+g;
     const cid = (s.champKeys && s.champKeys[gk]) || '';
     const cname = s[`g${g}_champ`] || '';
-    if(champPickers[gk]) champPickers[gk](cid, cname);
+    if(champPickers[gk]) champPickers[gk](cid, cname, true);
     champKeys[gk] = cid;
   }
   errors={g1:[],g2:[],g3:[],g4:[],g5:[]};
@@ -585,7 +583,7 @@ function newSession(){
   errors={g1:[],g2:[],g3:[],g4:[],g5:[]};
   strengths={g1:[],g2:[],g3:[],g4:[],g5:[]};
   champKeys={g1:'',g2:'',g3:'',g4:'',g5:''};
-  for(let g=1;g<=5;g++){ const gk='g'+g; if(champPickers[gk]) champPickers[gk]('',''); }
+  for(let g=1;g<=5;g++){ const gk='g'+g; if(champPickers[gk]) champPickers[gk]('','',true); }
   updatePlayerHeader(); updateTitle();
   save();
 }
