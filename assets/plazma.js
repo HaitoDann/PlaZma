@@ -277,15 +277,48 @@
   }
   /** Re-rend la nav quand le profil d'accès change (appelé après résolution auth). */
   function refreshNav() { if (_navActive !== null || _navMount !== undefined) renderNav(); }
+  // ---- Thème light / dark ----
+  const THEME_KEY = 'pz-theme';
+  function _applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    const icon = t === 'light' ? '🌙' : '☀️';
+    const label = t === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair';
+    // Boutons toggle dans la nav (pages internes)
+    document.querySelectorAll('.pz-theme-btn').forEach(btn => {
+      btn.textContent = icon;
+      btn.title = label;
+      btn.setAttribute('aria-label', label);
+    });
+    // FAB thème sur l'accueil
+    const fab = document.getElementById('themeFab');
+    if (fab) { fab.textContent = icon; fab.title = label; fab.setAttribute('aria-label', label); }
+  }
+  function toggleTheme() {
+    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    try { localStorage.setItem(THEME_KEY, next); } catch(e) {}
+    _applyTheme(next);
+  }
+  // Lire la préférence sauvegardée (ou système) le plus tôt possible
+  (function initTheme() {
+    let saved = null;
+    try { saved = localStorage.getItem(THEME_KEY); } catch(e) {}
+    const preferred = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    _applyTheme(preferred);
+  })();
+
   function renderNav() {
     const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     let links = NAV.filter(n => !n.section || can(n.section))
       .map(n => `<a href="${n.href}"${n.key === _navActive ? ' class="active"' : ''}>${n.label}</a>`).join('');
     if (isAdmin()) links += `<a href="plazma-admin.html"${_navActive === 'admin' ? ' class="active"' : ''}>Comptes</a>`;
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const themeIcon = currentTheme === 'light' ? '🌙' : '☀️';
+    const themeTitle = currentTheme === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair';
+    const themeBtn = `<button class="pz-theme-btn" type="button" onclick="PZ.toggleTheme()" title="${themeTitle}" aria-label="${themeTitle}">${themeIcon}</button>`;
     const who = profile
-      ? `<div class="pz-nav-right"><button class="pz-nav-user" type="button" onclick="PZ.changePassword()" title="Changer mon mot de passe">${esc(profile.name || profile.username || '')}</button>` +
+      ? `<div class="pz-nav-right">${themeBtn}<button class="pz-nav-user" type="button" onclick="PZ.changePassword()" title="Changer mon mot de passe">${esc(profile.name || profile.username || '')}</button>` +
         `<button class="pz-logout" type="button" onclick="PZ.logout()" title="Se déconnecter">⏻</button></div>`
-      : '';
+      : `<div class="pz-nav-right">${themeBtn}</div>`;
     const html =
       `<div class="pz-topbar"><div class="pz-topbar-inner">
         <a class="pz-brand" href="index.html">
@@ -648,6 +681,7 @@
     db, COLLECTION, NAV, FIREBASE_CONFIG,
     mountNav, sync, status, nowTime, relTime, loadingDone,
     exportPNG, backup, importFile, logout, changePassword,
+    toggleTheme,
     USER_DOMAIN, discord,
     // Roster central
     getRoster, getCoach, player, onRoster, setPlayer, saveRoster,
