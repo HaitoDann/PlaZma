@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/png" href="assets/logo-plazma.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ARCHI — Compte rendu scrim</title>
+<title>ARCHI — Compte rendu match</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -153,7 +153,7 @@
       </div>
 
       <div>
-        <div class="sec-title"><span class="d" style="background:var(--top)"></span>Analyse post-scrim</div>
+        <div class="sec-title"><span class="d" style="background:var(--top)"></span>Analyse post-match</div>
         <div class="ana-grid">
           <div class="ana" style="--ac:var(--ok)"><div class="t">✦ Ce qui a bien fonctionné</div>
             <textarea id="t_bien" placeholder="Phases réussies, mécaniques propres, objectifs bien gérés…"></textarea></div>
@@ -367,7 +367,7 @@ function applyState(s){
   for(let g=1;g<=5;g++){ set(`g${g}_result`,s[`g${g}_result`]); const sel=document.getElementById(`g${g}_result`); if(sel)styleResult(sel); }
   ROSTER.forEach(p=>set('rem_'+p.id,s['rem_'+p.id]));
   document.getElementById('advLabel').textContent = s.m_adv || 'Adversaire';
-  document.getElementById('advTitle').textContent = s.m_adv ? 'Scrim vs ' + s.m_adv : 'Scrim';
+  document.getElementById('advTitle').textContent = s.m_adv ? 'Match vs ' + s.m_adv : 'Match';
   errors={g1:[],g2:[],g3:[],g4:[],g5:[]};
   if(s.errors) Object.keys(s.errors).forEach(gk=>{ if(s.errors[gk]) errors[gk]=[...s.errors[gk]]; });
   strengths={g1:[],g2:[],g3:[],g4:[],g5:[]};

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="assets/logo-plazma.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARCHI — Review individuelle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css?v=20260821f">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+  .content{max-width:960px;margin:0 auto;padding:22px var(--gut) 80px}
+  .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-bottom:8px}
+  .session-chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);
+    border-radius:999px;padding:5px 12px;font-size:12px;color:var(--dim);margin-bottom:14px}
+
+  /* En-tête */
+  .rev-head{border-top:3px solid var(--accent);padding:20px 22px;border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .rev-player-block{display:flex;align-items:center;gap:14px}
+  .rev-emo{font-size:32px}
+  .rev-player-name{font-family:var(--font-display);font-size:1.6rem;font-weight:700;line-height:1.1;color:var(--accent)}
+  .rev-role-badge{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+
+  /* Méta */
+  .meta{display:grid;grid-template-columns:180px 1fr 160px 170px;gap:12px;padding:14px 22px;border-bottom:1px solid var(--border)}
+
+  /* Champion picker */
+  .champ-pick{position:relative;display:flex;align-items:center;gap:6px}
+  .champ-ico{width:30px;height:30px;border-radius:5px;object-fit:cover;flex-shrink:0;display:none}
+  .champ-ico.vis{display:block}
+  .champ-search{flex:1;max-width:155px}
+  .champ-drop{
+    position:absolute;top:calc(100% + 4px);left:0;min-width:210px;
+    background:var(--surface);border:1px solid var(--border-2);border-radius:10px;
+    box-shadow:var(--shadow-3);z-index:120;max-height:230px;overflow-y:auto;
+    display:none;padding:4px;
+  }
+  .champ-drop.open{display:block}
+  .champ-opt{display:flex;align-items:center;gap:8px;padding:5px 8px;cursor:pointer;border-radius:6px;transition:background .1s}
+  .champ-opt:hover,.champ-opt.hi{background:var(--surface-2)}
+  .champ-opt img{width:26px;height:26px;border-radius:4px;object-fit:cover;flex-shrink:0}
+  .champ-opt-name{font-size:12.5px;color:var(--dim)}
+
+  /* Sélecteur joueur */
+  .player-sel{padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .player-sel label{white-space:nowrap;margin:0}
+  .player-sel select{max-width:240px}
+
+  /* Corps */
+  .body{padding:22px;display:flex;flex-direction:column;gap:26px}
+  .sec-title{font-family:var(--font-display);font-size:14px;font-weight:600;padding-bottom:10px;
+    border-bottom:1px solid var(--border);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .sec-title .d{width:7px;height:7px;border-radius:50%}
+
+  /* Games */
+  .game{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:9px}
+  .game-top{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+  .game-num{font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--muted);min-width:30px}
+  .game-top select{max-width:140px}
+  .game-top input[type=text].champ-input{max-width:160px}
+  .kda-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .kda-row label{font-size:11px;color:var(--muted);margin:0}
+  .kda-input{width:52px;text-align:center;font-family:var(--font-display);font-weight:700;font-size:1rem;
+    background:var(--surface);border:1px solid var(--border-2);border-radius:7px;padding:5px 8px}
+  .kda-sep{font-family:var(--font-display);color:var(--muted);font-size:1.1rem}
+  .stat-input{width:72px;padding:5px 8px;font-size:13px}
+  .game-stats{display:flex;align-items:center;gap:14px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+  .stat-block{display:flex;flex-direction:column;gap:3px}
+  .stat-block label{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:0}
+  .errs{padding:12px 14px}
+  .errs-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .errs-head .lbl{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .err-row{display:grid;grid-template-columns:70px 130px 1fr 30px 30px;gap:8px;align-items:center;margin-bottom:6px}
+  .err-row input,.err-row select{padding:7px 9px;font-size:13px}
+  .err-del{background:none;border:1px solid var(--border);border-radius:7px;height:34px;color:var(--muted);cursor:pointer}
+  .err-del:hover{color:var(--err);border-color:rgba(239,68,68,.4)}
+  .err-flag{background:none;border:1px solid var(--border);border-radius:7px;height:34px;color:var(--border-2);cursor:pointer;font-size:14px;line-height:1;transition:color .12s,border-color .12s}
+  .err-flag:hover{color:#fbbf24;border-color:rgba(251,191,36,.4)}
+  .err-flag.active{color:#fbbf24;border-color:rgba(251,191,36,.5)}
+  .no-err{font-size:12px;color:var(--muted);font-style:italic}
+  .note-btns{display:flex;gap:6px}
+  .btn-ok{background:transparent;border-color:var(--border);color:var(--muted)}
+  .btn-ok:hover{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.4);color:var(--ok)}
+  #games .err-row{padding:6px 8px;border-radius:9px;border-left:3px solid transparent;transition:background .12s,border-left-color .12s}
+  .err-row.note-err{background:rgba(239,68,68,.06);border-left-color:rgba(239,68,68,.55)}
+  .err-row.note-str{background:rgba(34,197,94,.06);border-left-color:rgba(34,197,94,.55)}
+  .err-row.note-main{background:rgba(251,191,36,.08)!important;border-left-color:rgba(251,191,36,.7)!important}
+
+  /* Analyse */
+  .ana-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .ana{background:var(--surface-2);border:1px solid var(--border);border-left:3px solid var(--ac,var(--border));border-radius:8px;padding:14px}
+  .ana .t{font-size:12px;font-weight:600;margin-bottom:8px;color:var(--ac,var(--dim))}
+  .ana textarea{background:transparent;border:none;padding:0;min-height:96px;font-size:13px;color:var(--dim)}
+  .ana textarea:focus{box-shadow:none}
+
+  /* Objectifs */
+  .obj-row{display:flex;align-items:center;gap:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;margin-bottom:7px}
+  .obj-n{font-family:var(--font-mono);font-size:1.1rem;font-weight:700;color:var(--muted);min-width:26px}
+  .obj-row input{background:transparent;border:none;padding:6px 0;border-bottom:1px solid transparent}
+  .obj-row input:focus{box-shadow:none;border-bottom-color:var(--accent)}
+
+  /* Note globale */
+  .note-band{display:flex;align-items:center;gap:22px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:18px 22px;flex-wrap:wrap}
+  .note-num{display:flex;align-items:baseline;gap:6px}
+  .note-num input{width:78px;text-align:center;font-family:var(--font-display);font-size:2.6rem;font-weight:700;color:var(--accent);
+    background:transparent;border:none;border-bottom:2px solid var(--border-2);border-radius:0;padding:0}
+  .note-num input:focus{box-shadow:none;border-bottom-color:var(--accent)}
+  .note-denom{font-family:var(--font-display);font-size:1.3rem;color:var(--muted)}
+  .note-right{flex:1;min-width:240px}
+
+  /* Footer */
+  .foot{border-top:1px solid var(--border);padding:12px 22px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .foot .brand{font-size:12px;color:var(--muted)}
+  .sigs{display:flex;gap:26px}
+  .sig{display:flex;flex-direction:column;gap:6px;align-items:center}
+  .sig-line{width:110px;height:1px;background:var(--border-2)}
+  .sig-lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+  /* Drawer historique */
+  .drawer-ov{position:fixed;inset:0;background:rgba(6,10,14,.6);backdrop-filter:blur(4px);z-index:180;opacity:0;pointer-events:none;transition:opacity .2s}
+  .drawer-ov.open{opacity:1;pointer-events:auto}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:94vw;background:var(--surface);border-left:1px solid var(--border-2);
+    z-index:181;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
+  .drawer.open{transform:none}
+  .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)}
+  .drawer-list{flex:1;min-height:0;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
+  .sess{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:border-color .15s}
+  .sess:hover{border-color:var(--border-2)}
+  .sess.active{border-color:var(--accent)}
+  .sess-main{display:flex;gap:11px;padding:12px 13px}
+  .sess-date{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 10px;text-align:center;min-width:46px}
+  .sess-date .d{font-family:var(--font-display);font-size:1.3rem;font-weight:700;line-height:1}
+  .sess-date .m{font-size:9px;text-transform:uppercase;color:var(--muted)}
+  .sess-info{flex:1}
+  .sess-player{font-family:var(--font-display);font-weight:600}
+  .sess-meta{font-size:11px;color:var(--muted);margin-top:2px}
+  .sess-actions{display:flex;border-top:1px solid var(--border)}
+  .sess-actions button{flex:1;background:none;border:none;padding:8px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:var(--font)}
+  .sess-actions button+button{border-left:1px solid var(--border)}
+  .sess-actions button:hover{color:var(--text)}
+  .drawer-empty{text-align:center;color:var(--muted);font-size:13px;padding:40px 20px}
+
+  @media(max-width:760px){
+    .meta{grid-template-columns:1fr 1fr}
+    .ana-grid{grid-template-columns:1fr}
+    .err-row{grid-template-columns:60px 110px 1fr 28px 28px}
+  }
+</style>
+</head>
+<body>
+
+<div class="loader"><div class="loader-inner"><div class="loader-ring-wrap"><div class="loader-arc1"></div><div class="loader-arc2"></div><img class="loader-logo" src="assets/logo-plazma.png" alt=""></div><div class="loader-mark">ARCHI</div></div></div>
+<div id="nav"></div>
+
+<div class="content">
+  <div class="toolbar" data-noexport>
+    <span class="sync-pill"><span class="sync-dot offline" id="syncDot"></span><span id="syncText">En attente…</span><span class="sync-time" id="syncTime"></span></span>
+    <button class="btn btn-sm" onclick="newSession()" data-edit>＋ Nouveau</button>
+    <button class="btn btn-sm" onclick="openHistory()">Historique <span id="histCount" class="muted"></span></button>
+    <button class="btn btn-sm" id="exportBtn">⬇ PNG</button>
+    <button class="btn btn-sm btn-danger" onclick="resetCurrentSession()" data-edit>Vider</button>
+  </div>
+  <div style="text-align:center"><span class="session-chip" id="sessionChip">Chargement…</span></div>
+
+  <div class="card" id="capture">
+    <!-- En-tête joueur -->
+    <div class="rev-head">
+      <div>
+        <div class="eyebrow">PlaZma Esport · Review individuelle</div>
+        <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:600" id="revMatchTitle">—</div>
+      </div>
+      <div class="rev-player-block" id="revPlayerBlock">
+        <div class="rev-emo" id="revEmoji">—</div>
+        <div>
+          <div class="rev-player-name" id="revPlayerName">Joueur</div>
+          <div class="rev-role-badge" id="revRoleBadge">Rôle</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sélecteur joueur -->
+    <div class="player-sel" data-noexport>
+      <label>Joueur</label>
+      <select id="sel_player" onchange="onPlayerChange()"></select>
+    </div>
+
+    <!-- Méta match -->
+    <div class="meta">
+      <div><label>Date</label><input id="m_date" type="date"></div>
+      <div><label>Équipe adverse</label><input id="m_adv" type="text" placeholder="Nom de l'équipe"></div>
+      <div><label>Type</label>
+        <select id="m_type">
+          <option value="Scrim">Scrim</option>
+          <option value="Officiel">Match officiel</option>
+          <option value="Tournoi">Tournoi</option>
+        </select>
+      </div>
+      <div><label>Évaluateur</label><input id="m_eval" type="text" placeholder="Coach / Manager"></div>
+    </div>
+
+    <!-- Games -->
+    <div class="body">
+      <div>
+        <div class="sec-title"><span class="d" style="background:var(--mid)"></span>Games — stats &amp; notes</div>
+        <div id="games"></div>
+      </div>
+
+      <!-- Analyse qualitative -->
+      <div>
+        <div class="sec-title"><span class="d" style="background:var(--top)"></span>Analyse qualitative</div>
+        <div class="ana-grid">
+          <div class="ana" style="--ac:var(--ok)"><div class="t">✦ Points forts</div>
+            <textarea id="t_forces" placeholder="Phases réussies, mécaniques propres, prises de décision correctes…"></textarea></div>
+          <div class="ana" style="--ac:var(--err)"><div class="t">✦ À améliorer</div>
+            <textarea id="t_corriger" placeholder="Patterns d'erreurs, habitudes à corriger, points de vigilance…"></textarea></div>
+        </div>
+        <div class="ana" style="--ac:var(--accent)"><div class="t">✦ Observations générales</div>
+          <textarea id="t_obs" placeholder="Comportement, communication, régularité, attitude dans les moments difficiles…"></textarea></div>
+      </div>
+
+      <!-- Objectifs -->
+      <div>
+        <div class="sec-title"><span class="d" style="background:var(--warn)"></span>Objectifs pour la prochaine session</div>
+        <div class="obj-row"><span class="obj-n">01</span><input id="o1" type="text" placeholder="Objectif 1"></div>
+        <div class="obj-row"><span class="obj-n">02</span><input id="o2" type="text" placeholder="Objectif 2"></div>
+        <div class="obj-row"><span class="obj-n">03</span><input id="o3" type="text" placeholder="Objectif 3"></div>
+      </div>
+
+      <!-- Note globale -->
+      <div>
+        <div class="sec-title"><span class="d" style="background:var(--accent)"></span>Note globale</div>
+        <div class="note-band">
+          <div class="note-num"><input id="f_note" type="text" value="—" maxlength="2"><span class="note-denom">/ 10</span></div>
+          <div class="note-right"><label>Appréciation générale de la session</label>
+            <input id="f_comment" type="text" placeholder="Performance globale, progression notée, niveau affiché…"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <div class="brand">PlaZma Esport · ARCHI · plazma-esport.fr</div>
+      <div class="sigs">
+        <div class="sig"><div class="sig-line"></div><div class="sig-lbl">Coach</div></div>
+        <div class="sig"><div class="sig-line"></div><div class="sig-lbl">Joueur</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Drawer historique -->
+<div class="drawer-ov" id="drawerOv" onclick="closeHistory()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head"><h2 style="font-size:1.1rem">Historique</h2><button class="btn btn-icon btn-ghost" onclick="closeHistory()">✕</button></div>
+  <div style="padding:14px 14px 0"><button class="btn btn-primary" style="width:100%" onclick="newSession();closeHistory()">＋ Nouvelle review</button></div>
+  <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
+</div>
+
+<script src="assets/plazma.js?v=20260821f" data-section="scrim"></script>
+<script>
+'use strict';
+PZ.mountNav('review', '#nav');
+const db = PZ.db;
+const COL = 'plazma-reviews';
+
+let ROSTER = PZ.getRoster();
+const ERR_CATS = ['Positionnement','Objectif manqué','Rotation','Communication','Mécanique','Teamfight','Vision','Décision','Autre'];
+const STR_CATS = ['Positionnement','Objectif sécurisé','Rotation','Communication','Mécanique','Teamfight','Vision','Décision','Autre'];
+
+let errors   = {g1:[],g2:[],g3:[],g4:[],g5:[]};
+let strengths = {g1:[],g2:[],g3:[],g4:[],g5:[]};
+let champKeys = {g1:'',g2:'',g3:'',g4:'',g5:''};
+let _errId = 0, _strId = 0, currentDocId = null, _unsub = null, _saveT = null;
+
+// ── DDragon champion data ──
+let DD_VER = '14.24.1';
+let CHAMPIONS = []; // [{id, name}]
+(async () => {
+  try {
+    const vRes = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
+    const vers = await vRes.json();
+    DD_VER = vers[0];
+    const cRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${DD_VER}/data/fr_FR/champion.json`);
+    const cData = await cRes.json();
+    CHAMPIONS = Object.values(cData.data).map(c=>({id:c.id,name:c.name})).sort((a,b)=>a.name.localeCompare(b.name,'fr'));
+  } catch(e){ console.warn('DDragon indisponible',e); }
+})();
+
+function champImg(id){ return id ? `https://ddragon.leagueoflegends.com/cdn/${DD_VER}/img/champion/${id}.png` : ''; }
+
+function buildChampPicker(gk){
+  const wrap = document.createElement('div'); wrap.className='champ-pick';
+  const ico = document.createElement('img'); ico.className='champ-ico'; ico.id='champ_ico_'+gk; ico.alt='';
+  const inp = document.createElement('input'); inp.className='champ-search'; inp.id='g'+gk.slice(1)+'_champ';
+  inp.type='text'; inp.placeholder='Champion…'; inp.autocomplete='off';
+  const drop = document.createElement('div'); drop.className='champ-drop'; drop.id='champ_drop_'+gk;
+  wrap.appendChild(ico); wrap.appendChild(inp); wrap.appendChild(drop);
+
+  let hiIdx = -1;
+  function filtered(q){ const lq=q.toLowerCase(); return CHAMPIONS.filter(c=>c.name.toLowerCase().includes(lq)||c.id.toLowerCase().includes(lq)).slice(0,40); }
+  function renderDrop(q){
+    const list = filtered(q); hiIdx=-1;
+    if(!list.length||!q){ drop.classList.remove('open'); drop.innerHTML=''; return; }
+    drop.innerHTML = list.map((c,i)=>`<div class="champ-opt" data-id="${c.id}" data-name="${esc(c.name)}"><img src="${champImg(c.id)}" alt="" onerror="this.style.display='none'"><span class="champ-opt-name">${esc(c.name)}</span></div>`).join('');
+    drop.classList.add('open');
+    drop.querySelectorAll('.champ-opt').forEach(el=>{
+      el.addEventListener('mousedown',e=>{e.preventDefault();selectChamp(gk,el.dataset.id,el.dataset.name);});
+    });
+  }
+  function selectChamp(gkey,id,name){
+    champKeys[gkey]=id; inp.value=name;
+    if(id){ ico.src=champImg(id); ico.classList.add('vis'); }
+    else { ico.classList.remove('vis'); }
+    drop.classList.remove('open'); drop.innerHTML='';
+    queueSave();
+  }
+  // Expose for state restore
+  wrap._selectChamp = (id,name) => selectChamp(gk,id,name);
+
+  inp.addEventListener('input',()=>renderDrop(inp.value));
+  inp.addEventListener('focus',()=>renderDrop(inp.value));
+  inp.addEventListener('blur',()=>setTimeout(()=>drop.classList.remove('open'),150));
+  inp.addEventListener('keydown',e=>{
+    const opts=[...drop.querySelectorAll('.champ-opt')];
+    if(e.key==='ArrowDown'){e.preventDefault();hiIdx=Math.min(hiIdx+1,opts.length-1);opts.forEach((o,i)=>o.classList.toggle('hi',i===hiIdx));}
+    else if(e.key==='ArrowUp'){e.preventDefault();hiIdx=Math.max(hiIdx-1,0);opts.forEach((o,i)=>o.classList.toggle('hi',i===hiIdx));}
+    else if(e.key==='Enter'&&hiIdx>=0&&opts[hiIdx]){e.preventDefault();const o=opts[hiIdx];selectChamp(gk,o.dataset.id,o.dataset.name);}
+    else if(e.key==='Escape'){drop.classList.remove('open');}
+  });
+  inp.addEventListener('input',queueSave);
+  return {wrap,selectChamp};
+}
+
+// Store picker refs keyed by gk
+const champPickers = {};
+let lastSavedSig = null, suppressUntil = 0;
+const uid = () => 'e' + (++_errId);
+const sid = () => 's' + (++_strId);
+
+function sig(o){
+  const norm = v => {
+    if(Array.isArray(v)) return v.map(norm);
+    if(v && typeof v==='object'){ const r={}; Object.keys(v).sort().forEach(k=>{ if(k!=='_savedAt') r[k]=norm(v[k]); }); return r; }
+    return v;
+  };
+  return JSON.stringify(norm(o));
+}
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const val = id => { const e=document.getElementById(id); return e?e.value:''; };
+const set = (id,v) => { const e=document.getElementById(id); if(e) e.value=v||''; };
+
+// ── Sélecteur joueur ──
+function buildPlayerSelect(){
+  const sel = document.getElementById('sel_player');
+  const prev = sel.value;
+  sel.innerHTML = ROSTER.map(p => `<option value="${p.id}">${p.emoji} ${esc(p.name)} · ${p.role}</option>`).join('');
+  if(prev && ROSTER.find(p=>p.id===prev)) sel.value = prev;
+  updatePlayerHeader();
+}
+function onPlayerChange(){ updatePlayerHeader(); queueSave(); }
+function updatePlayerHeader(){
+  const pid = val('sel_player');
+  const p = ROSTER.find(r=>r.id===pid) || ROSTER[0];
+  if(!p) return;
+  document.getElementById('revEmoji').textContent = p.emoji;
+  document.getElementById('revPlayerName').textContent = p.name;
+  document.getElementById('revPlayerName').style.color = p.color;
+  document.getElementById('revRoleBadge').textContent = p.role;
+}
+PZ.onRoster(r => { ROSTER = r; buildPlayerSelect(); });
+
+// ── Titre dynamique ──
+function updateTitle(){
+  const p = ROSTER.find(r=>r.id===val('sel_player')) || ROSTER[0];
+  const adv = val('m_adv');
+  const type = val('m_type') || 'Match';
+  document.getElementById('revMatchTitle').textContent =
+    (p ? p.name + ' · ' : '') + type + (adv ? ' vs ' + adv : '');
+}
+document.addEventListener('input', e => {
+  if(['m_adv','m_type'].includes(e.target.id)) updateTitle();
+});
+
+// ── Games ──
+function buildGames(){
+  const host = document.getElementById('games'); host.innerHTML='';
+  for(let g=1;g<=5;g++){
+    const gk='g'+g;
+    const b = document.createElement('div'); b.className='game';
+
+    const top = document.createElement('div'); top.className='game-top';
+    const numEl = document.createElement('span'); numEl.className='game-num'; numEl.textContent='G'+g;
+    const selRes = document.createElement('select'); selRes.id='g'+g+'_result';
+    selRes.innerHTML='<option value="">Résultat —</option><option value="V">Victoire</option><option value="D">Défaite</option>';
+    selRes.addEventListener('change',function(){ styleResult(this); queueSave(); });
+    const {wrap:champWrap, selectChamp} = buildChampPicker(gk);
+    champPickers[gk] = selectChamp;
+    top.appendChild(numEl); top.appendChild(selRes); top.appendChild(champWrap);
+    b.appendChild(top);
+
+    const rest = document.createElement('div');
+    rest.innerHTML = `<div class="game-stats">
+        <div class="stat-block"><label>K / D / A</label>
+          <div class="kda-row">
+            <input class="kda-input" id="g${g}_k" type="text" value="0" maxlength="2" oninput="queueSave()">
+            <span class="kda-sep">/</span>
+            <input class="kda-input" id="g${g}_d" type="text" value="0" maxlength="2" oninput="queueSave()" style="color:var(--err)">
+            <span class="kda-sep">/</span>
+            <input class="kda-input" id="g${g}_a" type="text" value="0" maxlength="2" oninput="queueSave()">
+          </div></div>
+        <div class="stat-block"><label>CS total</label><input class="stat-input" id="g${g}_cs" type="text" placeholder="—" oninput="queueSave()"></div>
+        <div class="stat-block"><label>Vision Score</label><input class="stat-input" id="g${g}_vs" type="text" placeholder="—" oninput="queueSave()"></div>
+        <div class="stat-block"><label>Gold diff @15</label><input class="stat-input" id="g${g}_gd" type="text" placeholder="—" oninput="queueSave()"></div>
+      </div>
+      <div class="errs">
+        <div class="errs-head"><span class="lbl">Notes — Game ${g}</span>
+          <div class="note-btns" data-noexport>
+            <button class="btn btn-sm btn-danger" onclick="addError('g${g}')">+ Erreur</button>
+            <button class="btn btn-sm btn-ok" onclick="addStrength('g${g}')">+ Point fort</button>
+          </div></div>
+        <div id="notelist_g${g}"><div class="no-err" id="noteEmpty_g${g}">Aucune note pour l'instant.</div></div>
+      </div>`;
+    while(rest.firstChild) b.appendChild(rest.firstChild);
+    host.appendChild(b);
+  }
+}
+function styleResult(sel){ sel.style.color = sel.value==='V'?'var(--ok)':sel.value==='D'?'var(--err)':'var(--muted)'; }
+
+let _noteSeq = 0;
+const nextOrder = () => ++_noteSeq;
+function noteEmptyState(gk){
+  const empty=document.getElementById('noteEmpty_'+gk);
+  if(empty) empty.style.display=(errors[gk].length||strengths[gk].length)?'none':'';
+}
+
+function addError(gk, data){
+  const list=document.getElementById('notelist_'+gk);
+  const err = data || {id:uid(),timer:'',cat:ERR_CATS[0],desc:'',order:nextOrder(),main:false};
+  if(!data) errors[gk].push(err);
+  const row=document.createElement('div'); row.className='err-row note-err'+(err.main?' note-main':''); row.id='errrow_'+err.id;
+  row.innerHTML=`
+    <input id="errt_${err.id}" type="text" value="${esc(err.timer)}" placeholder="00:00" oninput="updErr('${gk}','${err.id}','timer',this.value)">
+    <select id="errc_${err.id}" onchange="updErr('${gk}','${err.id}','cat',this.value)">${ERR_CATS.map(c=>`<option${c===err.cat?' selected':''}>${c}</option>`).join('')}</select>
+    <input id="errd_${err.id}" type="text" value="${esc(err.desc)}" placeholder="Décris l'erreur…" oninput="updErr('${gk}','${err.id}','desc',this.value)">
+    <button class="err-del" data-noexport onclick="removeError('${gk}','${err.id}')">✕</button>
+    <button class="err-flag${err.main?' active':''}" id="errflag_${err.id}" data-noexport onclick="toggleMain('${gk}','${err.id}')" title="Erreur principale">★</button>`;
+  list.appendChild(row); noteEmptyState(gk);
+}
+function updErr(gk,id,f,v){ const e=errors[gk].find(x=>x.id===id); if(e){ e[f]=v; queueSave(); } }
+function removeError(gk,id){
+  errors[gk]=errors[gk].filter(e=>e.id!==id);
+  document.getElementById('errrow_'+id)?.remove();
+  noteEmptyState(gk); queueSave();
+}
+function toggleMain(gk,id){
+  const e=errors[gk].find(x=>x.id===id); if(!e) return;
+  e.main=!e.main;
+  document.getElementById('errrow_'+id)?.classList.toggle('note-main',e.main);
+  document.getElementById('errflag_'+id)?.classList.toggle('active',e.main);
+  queueSave();
+}
+function addStrength(gk, data){
+  const list=document.getElementById('notelist_'+gk);
+  const st = data || {id:sid(),timer:'',cat:STR_CATS[0],desc:'',order:nextOrder()};
+  if(!data) strengths[gk].push(st);
+  const row=document.createElement('div'); row.className='err-row note-str'; row.id='strrow_'+st.id;
+  row.innerHTML=`
+    <input id="strt_${st.id}" type="text" value="${esc(st.timer)}" placeholder="00:00" oninput="updStr('${gk}','${st.id}','timer',this.value)">
+    <select id="strc_${st.id}" onchange="updStr('${gk}','${st.id}','cat',this.value)">${STR_CATS.map(c=>`<option${c===st.cat?' selected':''}>${c}</option>`).join('')}</select>
+    <input id="strd_${st.id}" type="text" value="${esc(st.desc)}" placeholder="Décris le point fort…" oninput="updStr('${gk}','${st.id}','desc',this.value)">
+    <button class="err-del" data-noexport onclick="removeStrength('${gk}','${st.id}')">✕</button>
+    <span></span>`;
+  list.appendChild(row); noteEmptyState(gk);
+}
+function updStr(gk,id,f,v){ const e=strengths[gk].find(x=>x.id===id); if(e){ e[f]=v; queueSave(); } }
+function removeStrength(gk,id){
+  strengths[gk]=strengths[gk].filter(e=>e.id!==id);
+  document.getElementById('strrow_'+id)?.remove();
+  noteEmptyState(gk); queueSave();
+}
+
+function renderNotes(){
+  _noteSeq=0;
+  for(let g=1;g<=5;g++){ const gk='g'+g;
+    [...(errors[gk]||[]),...(strengths[gk]||[])].forEach(x=>{ if(typeof x.order==='number' && x.order>_noteSeq) _noteSeq=x.order; }); }
+  for(let g=1;g<=5;g++){ const gk='g'+g;
+    [...(errors[gk]||[]),...(strengths[gk]||[])].forEach(x=>{ if(typeof x.order!=='number') x.order=++_noteSeq; }); }
+  for(let g=1;g<=5;g++){ const gk='g'+g;
+    document.querySelectorAll('#notelist_'+gk+' .err-row').forEach(r=>r.remove());
+    const items=[...(errors[gk]||[]).map(d=>({kind:'err',d})),...(strengths[gk]||[]).map(d=>({kind:'str',d}))];
+    if(items.some(i=>typeof i.d.order==='number')) items.sort((a,b)=>(a.d.order??1e9)-(b.d.order??1e9));
+    items.forEach(i=> i.kind==='err'?addError(gk,i.d):addStrength(gk,i.d));
+    noteEmptyState(gk);
+  }
+}
+
+// ── State ──
+const GAME_STATS = ['result','champ','k','d','a','cs','vs','gd'];
+function getState(){
+  const s={
+    sel_player:val('sel_player'), m_date:val('m_date'), m_adv:val('m_adv'),
+    m_type:val('m_type'), m_eval:val('m_eval'),
+    t_forces:val('t_forces'), t_corriger:val('t_corriger'), t_obs:val('t_obs'),
+    o1:val('o1'), o2:val('o2'), o3:val('o3'),
+    f_note:val('f_note'), f_comment:val('f_comment'),
+    errors:JSON.parse(JSON.stringify(errors)),
+    strengths:JSON.parse(JSON.stringify(strengths)),
+    champKeys:{...champKeys}
+  };
+  for(let g=1;g<=5;g++) GAME_STATS.forEach(f=>{ s[`g${g}_${f}`]=val(`g${g}_${f}`); });
+  return s;
+}
+function applyState(s){
+  if(!s) return;
+  ['sel_player','m_date','m_adv','m_type','m_eval','t_forces','t_corriger','t_obs','o1','o2','o3','f_note','f_comment'].forEach(k=>set(k,s[k]));
+  for(let g=1;g<=5;g++){
+    GAME_STATS.forEach(f=>{ if(f!=='champ') set(`g${g}_${f}`,s[`g${g}_${f}`]); });
+    const sel=document.getElementById(`g${g}_result`); if(sel)styleResult(sel);
+    // Restore champion picker
+    const gk='g'+g;
+    const cid = (s.champKeys && s.champKeys[gk]) || '';
+    const cname = s[`g${g}_champ`] || '';
+    if(champPickers[gk]) champPickers[gk](cid, cname);
+    champKeys[gk] = cid;
+  }
+  errors={g1:[],g2:[],g3:[],g4:[],g5:[]};
+  if(s.errors) Object.keys(s.errors).forEach(gk=>{ if(s.errors[gk]) errors[gk]=[...s.errors[gk]]; });
+  strengths={g1:[],g2:[],g3:[],g4:[],g5:[]};
+  if(s.strengths) Object.keys(s.strengths).forEach(gk=>{ if(s.strengths[gk]) strengths[gk]=[...s.strengths[gk]]; });
+  renderNotes();
+  updatePlayerHeader();
+  updateTitle();
+}
+
+// ── Firestore (multi-doc + historique) ──
+const newDocId = () => 'review-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6);
+
+function subscribe(docId){
+  if(_unsub){ _unsub(); _unsub=null; }
+  currentDocId = docId;
+  document.getElementById('sessionChip').textContent = 'Review #' + docId.slice(-6);
+  const syncDot = document.getElementById('syncDot');
+  const syncText = document.getElementById('syncText');
+  const syncTime = document.getElementById('syncTime');
+  _unsub = db.collection(COL).doc(docId).onSnapshot(snap=>{
+    const data = snap.data();
+    if(!data){ syncDot.className='sync-dot offline'; syncText.textContent='Nouveau'; PZ.loadingDone(); return; }
+    const incoming = sig(data);
+    if(Date.now()<suppressUntil && incoming===lastSavedSig){ syncDot.className='sync-dot saved'; syncText.textContent='Sauvegardé'; PZ.loadingDone(); return; }
+    syncDot.className='sync-dot saved'; syncText.textContent='Synchronisé';
+    syncTime.textContent = data._savedAt ? new Date(data._savedAt.toDate()).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '';
+    applyState(data);
+    PZ.loadingDone();
+  }, ()=>{ syncDot.className='sync-dot offline'; syncText.textContent='Hors ligne'; PZ.loadingDone(); });
+}
+
+function save(){
+  if(!currentDocId) return;
+  const s = getState(); s._savedAt = firebase.firestore.FieldValue.serverTimestamp();
+  lastSavedSig = sig(s); suppressUntil = Date.now() + 6000;
+  const syncDot=document.getElementById('syncDot'); const syncText=document.getElementById('syncText');
+  syncDot.className='sync-dot saving'; syncText.textContent='Sauvegarde…';
+  db.collection(COL).doc(currentDocId).set(s).then(()=>{
+    syncDot.className='sync-dot saved'; syncText.textContent='Sauvegardé';
+    loadHistory();
+  }).catch(()=>{ syncDot.className='sync-dot offline'; syncText.textContent='Erreur'; });
+}
+function queueSave(){ clearTimeout(_saveT); _saveT=setTimeout(save, 800); }
+
+function newSession(){
+  const docId = newDocId();
+  subscribe(docId);
+  // Reset fields
+  ['m_date','m_adv','m_type','m_eval','t_forces','t_corriger','t_obs','o1','o2','o3','f_comment'].forEach(k=>set(k,''));
+  set('f_note','—');
+  set('m_type','Scrim');
+  for(let g=1;g<=5;g++) GAME_STATS.forEach(f=>set(`g${g}_${f}`,f==='result'||f==='champ'?'':f==='k'||f==='d'||f==='a'?'0':''));
+  document.querySelectorAll('#games .err-row').forEach(r=>r.remove());
+  document.querySelectorAll('.no-err').forEach(r=>r.style.display='');
+  errors={g1:[],g2:[],g3:[],g4:[],g5:[]};
+  strengths={g1:[],g2:[],g3:[],g4:[],g5:[]};
+  champKeys={g1:'',g2:'',g3:'',g4:'',g5:''};
+  for(let g=1;g<=5;g++){ const gk='g'+g; if(champPickers[gk]) champPickers[gk]('',''); }
+  updatePlayerHeader(); updateTitle();
+  save();
+}
+
+function resetCurrentSession(){
+  if(!confirm('Vider cette review ?')) return;
+  newSession();
+}
+
+// ── Historique ──
+let _histDocs = [];
+function loadHistory(){
+  db.collection(COL).orderBy('_savedAt','desc').limit(60).get().then(snap=>{
+    _histDocs = snap.docs;
+    document.getElementById('histCount').textContent = snap.size ? '(' + snap.size + ')' : '';
+    renderHistory();
+  }).catch(()=>{});
+}
+function renderHistory(){
+  const list=document.getElementById('drawerList');
+  if(!_histDocs.length){ list.innerHTML='<div class="drawer-empty">Aucune review enregistrée.</div>'; return; }
+  const MONTHS=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  list.innerHTML = _histDocs.map(doc=>{
+    const d=doc.data(); const isActive=doc.id===currentDocId;
+    const dt=d.m_date?new Date(d.m_date):null;
+    const p=ROSTER.find(r=>r.id===d.sel_player);
+    return `<div class="sess${isActive?' active':''}" data-id="${doc.id}">
+      <div class="sess-main">
+        <div class="sess-date">${dt?`<div class="d">${String(dt.getUTCDate()).padStart(2,'0')}</div><div class="m">${MONTHS[dt.getUTCMonth()]}</div>`:`<div class="d">—</div>`}</div>
+        <div class="sess-info">
+          <div class="sess-player" style="color:${p?p.color:'var(--accent)'}">${p?p.emoji+' '+esc(p.name):'—'}</div>
+          <div class="sess-meta">${esc(d.m_type||'Match')}${d.m_adv?' vs '+esc(d.m_adv):''} · ${d.f_note||'—'}/10</div>
+        </div>
+      </div>
+      <div class="sess-actions">
+        <button onclick="loadSession('${doc.id}');closeHistory()">Ouvrir</button>
+        <button onclick="deleteSession('${doc.id}')" style="color:var(--err)">Supprimer</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function loadSession(docId){ subscribe(docId); }
+function deleteSession(docId){
+  if(!confirm('Supprimer cette review ?')) return;
+  db.collection(COL).doc(docId).delete().then(()=>{
+    _histDocs=_histDocs.filter(d=>d.id!==docId);
+    renderHistory();
+    if(docId===currentDocId) newSession();
+  });
+}
+function openHistory(){ document.getElementById('drawerOv').classList.add('open'); document.getElementById('drawer').classList.add('open'); }
+function closeHistory(){ document.getElementById('drawerOv').classList.remove('open'); document.getElementById('drawer').classList.remove('open'); }
+
+// ── Export PNG ──
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const p = ROSTER.find(r=>r.id===val('sel_player'));
+  PZ.exportPNG(document.getElementById('capture'), 'review-' + (p?p.name.toLowerCase():'joueur') + '-' + (val('m_date')||'match'));
+});
+
+// ── Init ──
+buildPlayerSelect();
+buildGames();
+loadHistory();
+// Charger la review la plus récente ou en créer une nouvelle
+db.collection(COL).orderBy('_savedAt','desc').limit(1).get().then(snap=>{
+  if(snap.empty) newSession();
+  else subscribe(snap.docs[0].id);
+}).catch(()=>{ newSession(); PZ.loadingDone(); });
+
+// Inputs qui déclenchent la sauvegarde
+document.addEventListener('input', e=>{
+  if(e.target.closest('#capture') && !e.target.closest('[data-noexport]')) queueSave();
+});
+</script>
+</body>
+</html>
