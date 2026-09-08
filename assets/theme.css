@@ -670,6 +670,7 @@ a[href="plazma-wiki-perf.html"]:hover .tool-ico svg{animation:tool-read .8s ease
 #pz-stars{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:-1}
 .pz-star-layer{position:absolute;inset:-60px;will-change:transform;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
 .pz-star{position:absolute;border-radius:50%;background:#cfe9f5;animation:pz-twinkle ease-in-out infinite}
+[data-theme="light"] .pz-star{background:#64748b}
 @keyframes pz-twinkle{0%,100%{opacity:var(--o,.5)}50%{opacity:calc(var(--o,.5) * .3)}}
 
 /* ── Curseur personnalisé ARCHI (point précis) ── */
@@ -700,3 +701,69 @@ body::after{
   background:radial-gradient(circle,rgba(99,102,241,.03) 0%,transparent 65%);
   animation:halo-b 30s ease-in-out infinite;
 }
+
+/* ════════════════════════════════════════════════════════
+   LIGHT MODE — [data-theme="light"] sur <html>
+   ════════════════════════════════════════════════════════ */
+[data-theme="light"]{
+  /* Surfaces */
+  --bg:        #f0f4f8;
+  --surface:   #ffffff;
+  --surface-2: #f4f7fb;
+  --elevated:  #e8edf4;
+  --border:    #dde3ec;
+  --border-2:  #cdd5e0;
+
+  /* Texte */
+  --text:  #0f1923;
+  --dim:   #4a5a6e;
+  --muted: #7a8fa6;
+
+  /* Accent (conservé, légèrement assombri pour le contraste) */
+  --accent:      #0891b2;
+  --accent-2:    #0e7490;
+  --accent-soft: rgba(8,145,178,.10);
+  --accent-line: rgba(8,145,178,.28);
+
+  /* Ombres */
+  --shadow-1: 0 1px 2px rgba(0,0,0,.08);
+  --shadow-2: 0 4px 16px rgba(0,0,0,.10);
+  --shadow-3: 0 16px 40px rgba(0,0,0,.14);
+}
+[data-theme="light"] body{
+  background-image:
+    radial-gradient(circle at 14% 14%, rgba(0,150,200,.06) 0%, transparent 42%),
+    radial-gradient(circle at 85% 86%, rgba(120,0,220,.04) 0%, transparent 42%);
+}
+[data-theme="light"] .pz-topbar{
+  background:rgba(240,244,248,.88);
+}
+[data-theme="light"] .card{
+  background:rgba(255,255,255,.80);
+}
+[data-theme="light"] body::before{
+  background:radial-gradient(circle,rgba(8,145,178,.04) 0%,transparent 65%);
+}
+[data-theme="light"] body::after{
+  background:radial-gradient(circle,rgba(99,102,241,.025) 0%,transparent 65%);
+}
+[data-theme="light"] #pz-grid::before{
+  background-image:
+    linear-gradient(rgba(8,145,178,.14) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(8,145,178,.14) 1px,transparent 1px);
+}
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea{
+  color-scheme:light;
+}
+
+/* ── Bouton theme toggle dans la nav ── */
+.pz-theme-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--dim);font-size:15px;line-height:1;
+  transition:color .15s,background .15s,transform .25s;
+  flex-shrink:0;
+}
+.pz-theme-btn:hover{color:var(--accent);background:var(--elevated);transform:rotate(18deg)}
