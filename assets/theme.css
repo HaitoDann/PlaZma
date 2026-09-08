@@ -688,6 +688,11 @@ a[href="plazma-wiki-perf.html"]:hover .tool-ico svg{animation:tool-read .8s ease
 }
 #pz-cur-dot.pz-hot{width:14px;height:14px;box-shadow:0 0 16px rgba(34,211,238,1)}
 #pz-cur-dot.pz-hide{opacity:0}
+/* Curseur en mode clair : couleur sombre + blend normal (screen le rendrait invisible sur fond clair) */
+[data-theme="light"] #pz-cur-dot{
+  background:#0e7490;box-shadow:0 0 8px rgba(14,116,144,.5);mix-blend-mode:normal;
+}
+[data-theme="light"] #pz-cur-dot.pz-hot{box-shadow:0 0 14px rgba(14,116,144,.7)}
 
 body{isolation:isolate}
 body::before,body::after{content:'';position:fixed;border-radius:50%;pointer-events:none;z-index:-1;filter:blur(110px)}
