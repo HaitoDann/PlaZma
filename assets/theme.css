@@ -670,6 +670,7 @@ a[href="plazma-wiki-perf.html"]:hover .tool-ico svg{animation:tool-read .8s ease
 #pz-stars{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:-1}
 .pz-star-layer{position:absolute;inset:-60px;will-change:transform;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
 .pz-star{position:absolute;border-radius:50%;background:#cfe9f5;animation:pz-twinkle ease-in-out infinite}
+[data-theme="light"] .pz-star{background:#64748b}
 @keyframes pz-twinkle{0%,100%{opacity:var(--o,.5)}50%{opacity:calc(var(--o,.5) * .3)}}
 
 /* ── Curseur personnalisé ARCHI (point précis) ── */
