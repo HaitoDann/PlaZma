@@ -30,6 +30,23 @@
   /* Méta */
   .meta{display:grid;grid-template-columns:180px 1fr 160px 170px;gap:12px;padding:14px 22px;border-bottom:1px solid var(--border)}
 
+  /* Champion picker */
+  .champ-pick{position:relative;display:flex;align-items:center;gap:6px}
+  .champ-ico{width:30px;height:30px;border-radius:5px;object-fit:cover;flex-shrink:0;display:none}
+  .champ-ico.vis{display:block}
+  .champ-search{flex:1;max-width:155px}
+  .champ-drop{
+    position:absolute;top:calc(100% + 4px);left:0;min-width:210px;
+    background:var(--surface);border:1px solid var(--border-2);border-radius:10px;
+    box-shadow:var(--shadow-3);z-index:120;max-height:230px;overflow-y:auto;
+    display:none;padding:4px;
+  }
+  .champ-drop.open{display:block}
+  .champ-opt{display:flex;align-items:center;gap:8px;padding:5px 8px;cursor:pointer;border-radius:6px;transition:background .1s}
+  .champ-opt:hover,.champ-opt.hi{background:var(--surface-2)}
+  .champ-opt img{width:26px;height:26px;border-radius:4px;object-fit:cover;flex-shrink:0}
+  .champ-opt-name{font-size:12.5px;color:var(--dim)}
+
   /* Sélecteur joueur */
   .player-sel{padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
   .player-sel label{white-space:nowrap;margin:0}
@@ -257,7 +274,70 @@ const STR_CATS = ['Positionnement','Objectif sécurisé','Rotation','Communicati
 
 let errors   = {g1:[],g2:[],g3:[],g4:[],g5:[]};
 let strengths = {g1:[],g2:[],g3:[],g4:[],g5:[]};
+let champKeys = {g1:'',g2:'',g3:'',g4:'',g5:''};
 let _errId = 0, _strId = 0, currentDocId = null, _unsub = null, _saveT = null;
+
+// ── DDragon champion data ──
+let DD_VER = '14.24.1';
+let CHAMPIONS = []; // [{id, name}]
+(async () => {
+  try {
+    const vRes = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
+    const vers = await vRes.json();
+    DD_VER = vers[0];
+    const cRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${DD_VER}/data/fr_FR/champion.json`);
+    const cData = await cRes.json();
+    CHAMPIONS = Object.values(cData.data).map(c=>({id:c.id,name:c.name})).sort((a,b)=>a.name.localeCompare(b.name,'fr'));
+  } catch(e){ console.warn('DDragon indisponible',e); }
+})();
+
+function champImg(id){ return id ? `https://ddragon.leagueoflegends.com/cdn/${DD_VER}/img/champion/${id}.png` : ''; }
+
+function buildChampPicker(gk){
+  const wrap = document.createElement('div'); wrap.className='champ-pick';
+  const ico = document.createElement('img'); ico.className='champ-ico'; ico.id='champ_ico_'+gk; ico.alt='';
+  const inp = document.createElement('input'); inp.className='champ-search'; inp.id='g'+gk.slice(1)+'_champ';
+  inp.type='text'; inp.placeholder='Champion…'; inp.autocomplete='off';
+  const drop = document.createElement('div'); drop.className='champ-drop'; drop.id='champ_drop_'+gk;
+  wrap.appendChild(ico); wrap.appendChild(inp); wrap.appendChild(drop);
+
+  let hiIdx = -1;
+  function filtered(q){ const lq=q.toLowerCase(); return CHAMPIONS.filter(c=>c.name.toLowerCase().includes(lq)||c.id.toLowerCase().includes(lq)).slice(0,40); }
+  function renderDrop(q){
+    const list = filtered(q); hiIdx=-1;
+    if(!list.length||!q){ drop.classList.remove('open'); drop.innerHTML=''; return; }
+    drop.innerHTML = list.map((c,i)=>`<div class="champ-opt" data-id="${c.id}" data-name="${esc(c.name)}"><img src="${champImg(c.id)}" alt="" onerror="this.style.display='none'"><span class="champ-opt-name">${esc(c.name)}</span></div>`).join('');
+    drop.classList.add('open');
+    drop.querySelectorAll('.champ-opt').forEach(el=>{
+      el.addEventListener('mousedown',e=>{e.preventDefault();selectChamp(gk,el.dataset.id,el.dataset.name);});
+    });
+  }
+  function selectChamp(gkey,id,name){
+    champKeys[gkey]=id; inp.value=name;
+    if(id){ ico.src=champImg(id); ico.classList.add('vis'); }
+    else { ico.classList.remove('vis'); }
+    drop.classList.remove('open'); drop.innerHTML='';
+    queueSave();
+  }
+  // Expose for state restore
+  wrap._selectChamp = (id,name) => selectChamp(gk,id,name);
+
+  inp.addEventListener('input',()=>renderDrop(inp.value));
+  inp.addEventListener('focus',()=>renderDrop(inp.value));
+  inp.addEventListener('blur',()=>setTimeout(()=>drop.classList.remove('open'),150));
+  inp.addEventListener('keydown',e=>{
+    const opts=[...drop.querySelectorAll('.champ-opt')];
+    if(e.key==='ArrowDown'){e.preventDefault();hiIdx=Math.min(hiIdx+1,opts.length-1);opts.forEach((o,i)=>o.classList.toggle('hi',i===hiIdx));}
+    else if(e.key==='ArrowUp'){e.preventDefault();hiIdx=Math.max(hiIdx-1,0);opts.forEach((o,i)=>o.classList.toggle('hi',i===hiIdx));}
+    else if(e.key==='Enter'&&hiIdx>=0&&opts[hiIdx]){e.preventDefault();const o=opts[hiIdx];selectChamp(gk,o.dataset.id,o.dataset.name);}
+    else if(e.key==='Escape'){drop.classList.remove('open');}
+  });
+  inp.addEventListener('input',queueSave);
+  return {wrap,selectChamp};
+}
+
+// Store picker refs keyed by gk
+const champPickers = {};
 let lastSavedSig = null, suppressUntil = 0;
 const uid = () => 'e' + (++_errId);
 const sid = () => 's' + (++_strId);
@@ -310,26 +390,29 @@ document.addEventListener('input', e => {
 function buildGames(){
   const host = document.getElementById('games'); host.innerHTML='';
   for(let g=1;g<=5;g++){
+    const gk='g'+g;
     const b = document.createElement('div'); b.className='game';
-    b.innerHTML = `
-      <div class="game-top">
-        <span class="game-num">G${g}</span>
-        <select id="g${g}_result" onchange="styleResult(this);queueSave()">
-          <option value="">Résultat —</option><option value="V">Victoire</option><option value="D">Défaite</option>
-        </select>
-        <input class="champ-input" id="g${g}_champ" type="text" placeholder="Champion…" oninput="queueSave()">
-      </div>
-      <div class="game-stats">
-        <div class="stat-block">
-          <label>K / D / A</label>
+
+    const top = document.createElement('div'); top.className='game-top';
+    const numEl = document.createElement('span'); numEl.className='game-num'; numEl.textContent='G'+g;
+    const selRes = document.createElement('select'); selRes.id='g'+g+'_result';
+    selRes.innerHTML='<option value="">Résultat —</option><option value="V">Victoire</option><option value="D">Défaite</option>';
+    selRes.addEventListener('change',function(){ styleResult(this); queueSave(); });
+    const {wrap:champWrap, selectChamp} = buildChampPicker(gk);
+    champPickers[gk] = selectChamp;
+    top.appendChild(numEl); top.appendChild(selRes); top.appendChild(champWrap);
+    b.appendChild(top);
+
+    const rest = document.createElement('div');
+    rest.innerHTML = `<div class="game-stats">
+        <div class="stat-block"><label>K / D / A</label>
           <div class="kda-row">
             <input class="kda-input" id="g${g}_k" type="text" value="0" maxlength="2" oninput="queueSave()">
             <span class="kda-sep">/</span>
             <input class="kda-input" id="g${g}_d" type="text" value="0" maxlength="2" oninput="queueSave()" style="color:var(--err)">
             <span class="kda-sep">/</span>
             <input class="kda-input" id="g${g}_a" type="text" value="0" maxlength="2" oninput="queueSave()">
-          </div>
-        </div>
+          </div></div>
         <div class="stat-block"><label>CS total</label><input class="stat-input" id="g${g}_cs" type="text" placeholder="—" oninput="queueSave()"></div>
         <div class="stat-block"><label>Vision Score</label><input class="stat-input" id="g${g}_vs" type="text" placeholder="—" oninput="queueSave()"></div>
         <div class="stat-block"><label>Gold diff @15</label><input class="stat-input" id="g${g}_gd" type="text" placeholder="—" oninput="queueSave()"></div>
@@ -342,6 +425,7 @@ function buildGames(){
           </div></div>
         <div id="notelist_g${g}"><div class="no-err" id="noteEmpty_g${g}">Aucune note pour l'instant.</div></div>
       </div>`;
+    while(rest.firstChild) b.appendChild(rest.firstChild);
     host.appendChild(b);
   }
 }
@@ -425,7 +509,8 @@ function getState(){
     o1:val('o1'), o2:val('o2'), o3:val('o3'),
     f_note:val('f_note'), f_comment:val('f_comment'),
     errors:JSON.parse(JSON.stringify(errors)),
-    strengths:JSON.parse(JSON.stringify(strengths))
+    strengths:JSON.parse(JSON.stringify(strengths)),
+    champKeys:{...champKeys}
   };
   for(let g=1;g<=5;g++) GAME_STATS.forEach(f=>{ s[`g${g}_${f}`]=val(`g${g}_${f}`); });
   return s;
@@ -434,8 +519,14 @@ function applyState(s){
   if(!s) return;
   ['sel_player','m_date','m_adv','m_type','m_eval','t_forces','t_corriger','t_obs','o1','o2','o3','f_note','f_comment'].forEach(k=>set(k,s[k]));
   for(let g=1;g<=5;g++){
-    GAME_STATS.forEach(f=>set(`g${g}_${f}`,s[`g${g}_${f}`]));
+    GAME_STATS.forEach(f=>{ if(f!=='champ') set(`g${g}_${f}`,s[`g${g}_${f}`]); });
     const sel=document.getElementById(`g${g}_result`); if(sel)styleResult(sel);
+    // Restore champion picker
+    const gk='g'+g;
+    const cid = (s.champKeys && s.champKeys[gk]) || '';
+    const cname = s[`g${g}_champ`] || '';
+    if(champPickers[gk]) champPickers[gk](cid, cname);
+    champKeys[gk] = cid;
   }
   errors={g1:[],g2:[],g3:[],g4:[],g5:[]};
   if(s.errors) Object.keys(s.errors).forEach(gk=>{ if(s.errors[gk]) errors[gk]=[...s.errors[gk]]; });
@@ -493,6 +584,8 @@ function newSession(){
   document.querySelectorAll('.no-err').forEach(r=>r.style.display='');
   errors={g1:[],g2:[],g3:[],g4:[],g5:[]};
   strengths={g1:[],g2:[],g3:[],g4:[],g5:[]};
+  champKeys={g1:'',g2:'',g3:'',g4:'',g5:''};
+  for(let g=1;g<=5;g++){ const gk='g'+g; if(champPickers[gk]) champPickers[gk]('',''); }
   updatePlayerHeader(); updateTitle();
   save();
 }
