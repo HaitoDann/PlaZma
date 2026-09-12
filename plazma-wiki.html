@@ -617,22 +617,43 @@ const VAR_LINK={
   spellblock:'RM', attackspeed:"vit. att.", '@special.abilitypower':'AP'
 };
 function spellRankBlock(s){
-  // Data Dragon ne labellise pas les valeurs brutes (un « 0.3 » peut être 30% PV
-  // ou 0.3 AD) : on n'affiche donc que les ratios, qui eux sont fiables et étiquetés.
+  // Data Dragon fournit `leveltip` : les LABELS localisés (Dégâts, Soin, Bouclier…)
+  // associés aux valeurs par rang (via effectBurn). C'est ce qu'affiche le client.
+  const eff=s.effectBurn||[];
+  const vmap={}; (s.vars||[]).forEach(v=>vmap[v.key]=v);
+  const asPct=x=>(typeof x==='number'&&x>0&&x<=3)?Math.round(x*100)+'%':x;
+  const resolve=str=> String(str||'')
+    .replace(/\{\{\s*e(\d+)\s*\}\}/gi,(m,n)=>(eff[+n]!=null&&eff[+n]!=='')?eff[+n]:m)
+    .replace(/\{\{\s*([a-z]+\d+)\s*\}\}/gi,(m,k)=>{const v=vmap[k];if(!v)return m;return Array.isArray(v.coeff)?v.coeff.map(asPct).join('/'):String(asPct(v.coeff));});
+  const rows=[];
+  const lt=s.leveltip;
+  if(lt&&Array.isArray(lt.label)&&Array.isArray(lt.effect)){
+    for(let i=0;i<lt.label.length;i++){
+      let label=String(lt.label[i]||'').replace(/<[^>]+>/g,'').trim();
+      if(!label) continue;
+      // On ignore récup./coût/portée (déjà affichés dans la méta)
+      if(/récup|recharge|cooldown|coût|\bcost\b|mana|énergie|energy|portée|\brange\b/i.test(label)) continue;
+      let val=resolve(lt.effect[i]).split(/->|→/)[0].trim();
+      val=val.replace(/<[^>]+>/g,'').trim();
+      if(!val||/\{\{/.test(val)) continue;        // non résolu → on saute
+      rows.push({label,val});
+    }
+  }
+  // Ratios (vars) en complément — utile quand ils ne sont pas dans le leveltip
   const seen=new Set();
   const ratios=(s.vars||[]).map(v=>{
     let c=Array.isArray(v.coeff)?v.coeff[0]:v.coeff;
     if(c==null||c===0) return '';
     const pct=(c>0&&c<=3)?Math.round(c*100)+'%':String(Math.round(c*100)/100);
-    const lbl=VAR_LINK[v.link]|| (v.link&&!v.link.startsWith('@')?v.link:'');
-    const out='+'+pct+(lbl?' '+lbl:'');
-    if(seen.has(out)) return ''; seen.add(out);
-    return out;
+    const lbl=VAR_LINK[v.link]||(v.link&&!v.link.startsWith('@')?v.link:'');
+    const out='+'+pct+(lbl?' '+lbl:''); if(seen.has(out))return''; seen.add(out); return out;
   }).filter(Boolean);
-  if(!ratios.length) return '';
-  return `<div class="rankblk"><span class="rb-k">Ratios</span>`
-    + ratios.map(r=>`<span class="rb-chip">${esc(r)}</span>`).join('')
-    + `</div>`;
+  if(!rows.length && !ratios.length) return '';
+  let h='<div class="dmgblk">';
+  h+=rows.map(r=>`<div class="dmg-row"><span class="dmg-k">${esc(r.label)}</span><span class="dmg-v">${esc(r.val)}</span></div>`).join('');
+  if(ratios.length) h+=`<div class="dmg-row"><span class="dmg-k">Ratios</span><span class="dmg-v">${ratios.map(esc).join('&nbsp;&nbsp;')}</span></div>`;
+  h+='</div>';
+  return h;
 }
 
 // ── Stats de base recalculées à un niveau (formule de croissance LoL) ──
@@ -715,9 +736,8 @@ async function openChamp(id){
     <div class="stats" id="statGrid"></div>
     ${tips}`;
   renderStatTiles(1);
-  // Enrichissements non-bloquants : montants par rang (CommunityDragon, fiable)
-  // puis Meraki Analytics en secours si disponible.
-  enrichCDragon(id);
+  // Les montants par rang labellisés viennent de spell.leveltip (Data Dragon),
+  // rendus directement dans la fiche. Meraki reste un secours si un jour dispo.
   enrichMeraki(id);
 }
 
