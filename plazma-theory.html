@@ -76,8 +76,35 @@
 
   .runes-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
   @media(max-width:520px){.runes-grid{grid-template-columns:1fr}}
-  .runes-grid select{font-size:12px}
+  .runes-grid select{font-size:12px;width:100%}
+  .shard-lbl{display:flex;flex-direction:column;gap:3px;font-size:9.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:700}
   .adapt-row{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:var(--dim)}
+  /* Bouton runes (résumé) */
+  .rune-open{display:flex;align-items:center;gap:9px;width:100%;text-align:left;cursor:pointer;
+    background:var(--surface-2);border:1px solid var(--border-2);border-radius:9px;padding:7px 11px;color:var(--dim);transition:border-color .15s;font-family:var(--font)}
+  .rune-open:hover{border-color:var(--accent)}
+  .rune-open img{width:30px;height:30px;flex-shrink:0}
+  .rune-open .rk-name{font-weight:700;color:var(--text);font-size:13px}
+  .rune-open .rk-sec{font-size:11px;color:var(--muted)}
+  .rune-open .rk-empty{color:var(--muted);font-style:italic}
+  /* Modale runes */
+  .rmodal{width:720px}
+  .rmodal-body{overflow-y:auto;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:640px){.rmodal-body{grid-template-columns:1fr}}
+  .rcol-t{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700;margin-bottom:8px}
+  .rtree-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .rtree{display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:5px 9px;cursor:pointer;color:var(--muted);font-size:11.5px;font-weight:600;font-family:var(--font)}
+  .rtree img{width:20px;height:20px}
+  .rtree.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+  .rrow{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+  .rrow.keyrow{padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:12px}
+  .rrune{width:42px;height:42px;border-radius:50%;border:2px solid transparent;background:var(--surface-2);cursor:pointer;padding:2px;opacity:.5;transition:opacity .12s,border-color .12s}
+  .rrow.keyrow .rrune{width:48px;height:48px}
+  .rrune img{width:100%;height:100%}
+  .rrune:hover{opacity:.85}
+  .rrune.on{opacity:1;border-color:var(--accent)}
+  .rhint{font-size:11px;color:var(--muted);font-style:italic;margin-top:4px}
+  .rmodal-foot{padding:11px 14px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);line-height:1.5}
   .seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:2px}
   .seg button{border:0;background:transparent;color:var(--muted);font-weight:600;font-size:11.5px;padding:4px 10px;border-radius:6px;cursor:pointer}
   .seg button.on{background:var(--elevated);color:var(--text)}
@@ -263,6 +290,15 @@
   </div>
 </div>
 
+<!-- Modale runes -->
+<div class="imodal-ov" id="rmodalOv">
+  <div class="imodal rmodal">
+    <div class="imodal-head"><span id="rmodalTitle" style="font-family:var(--font-display);font-weight:700;align-self:center;flex:1">Runes</span><button class="imodal-close" id="rmodalClose">✕</button></div>
+    <div class="rmodal-body" id="rmodalBody"></div>
+    <div class="rmodal-foot">Les fragments (ci-dessous la carte) alimentent le calcul de stats. Les runes d'arbre sont surtout conditionnelles (procs) : enregistrées pour ta page, elles ne sont pas ajoutées aux stats de base.</div>
+  </div>
+</div>
+
 <script src="assets/plazma.js?v=20260821f"></script>
 <script src="assets/champions.js?v=20260821f"></script>
 <script>
@@ -280,10 +316,19 @@ const $=id=>document.getElementById(id);
 
 // ── État ──
 const LS='pz_theory_v2';
-function freshBuild(){return{champId:'',level:11,items:[],shards:{r1:'adapt',r2:'armor',r3:'hp'},adaptive:'ad',leth:0,arpen:0,mpen:0,mpenpct:0};}
+// Fragments officiels par slot (cf. wiki LoL)
+const SLOT_OPTS={
+  r1:[{v:'adapt',t:'◆ Adaptatif · 5,4 AD / 9 AP'},{v:'as',t:'⚔ Vit. attaque +10%'},{v:'haste',t:'⏳ Accélération +8'}],
+  r2:[{v:'adapt',t:'◆ Adaptatif · 5,4 AD / 9 AP'},{v:'ms',t:'» Vitesse +2%'},{v:'hpscale',t:'♥ Santé +10→180 (niv.)'}],
+  r3:[{v:'hp',t:'♥ Santé +65'},{v:'tenacity',t:'⛨ Ténacité + résist. ralent. 10%'},{v:'hpscale',t:'♥ Santé +10→180 (niv.)'}]
+};
+const SLOT_LBL={r1:'Offense',r2:'Flex',r3:'Défense'};
+function freshBuild(){return{champId:'',level:11,items:[],shards:{r1:'adapt',r2:'adapt',r3:'hp'},adaptive:'ad',leth:0,arpen:0,mpen:0,mpenpct:0,runes:{primary:'',keystone:'',minors:[],secondary:'',secMinors:[]}};}
 const state={mode:'duo',A:freshBuild(),B:freshBuild(),tgt:{hp:2000,ar:80,mr:50},critMult:1.75,attacker:'A',balBuild:'A',balType:'ar',g_hp:2.67,g_ar:20,g_mr:18,
   brstType:'phys',brstRaw:600};
 try{const s=JSON.parse(localStorage.getItem(LS)||'null');if(s){Object.assign(state,s);['A','B'].forEach(k=>state[k]=Object.assign(freshBuild(),s[k]||{}));}}catch(e){}
+// Migration : les anciens fragments (armure/RM) n'existent plus → on remet le défaut du slot
+['A','B'].forEach(k=>{const sh=state[k].shards||{};['r1','r2','r3'].forEach(r=>{ if(!SLOT_OPTS[r].some(o=>o.v===sh[r])) sh[r]=SLOT_OPTS[r][0].v; });state[k].shards=sh; if(!state[k].runes)state[k].runes={primary:'',keystone:'',minors:[],secondary:'',secMinors:[]};});
 let _pT=null;function persist(){clearTimeout(_pT);_pT=setTimeout(()=>{try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}},350);}
 
 // ── Data Dragon : champions + objets ──
@@ -305,6 +350,17 @@ async function loadItems(){
 const champIcon=id=> window.Champions?Champions.iconUrl(id):'';
 const itemIcon=it=> it&&it.image?`${DD}/cdn/${VER}/img/item/${it.image.full}`:'';
 
+// ── Runes (arbres complets) ──
+let RUNE_TREES=null, RUNE_BY_ID={}, RUNE_TREE_BY_ID={};
+async function loadRunes(){
+  try{const d=await fetch(`${DD}/cdn/${VER}/data/${LANG}/runesReforged.json`).then(r=>r.ok?r.json():null);
+    if(!Array.isArray(d))return;
+    RUNE_TREES=d;
+    d.forEach(tree=>{ RUNE_TREE_BY_ID[tree.id]=tree; (tree.slots||[]).forEach(sl=>(sl.runes||[]).forEach(r=>RUNE_BY_ID[r.id]={...r,tree:tree.id})); });
+  }catch(e){}
+}
+const runeIcon=icon=> icon?`${DD}/cdn/img/${icon}`:'';
+
 // ── Calcul des stats d'un build ──
 function computeBuild(b){
   const st=CHAMP_STATS&&CHAMP_STATS[b.champId], L=b.level;
@@ -324,8 +380,15 @@ function computeBuild(b){
     gold+=(it.gold&&it.gold.total)||0;
   });
   let runeASpct=0;
-  const shard=v=>{ if(v==='adapt'){b.adaptive==='ap'?ap+=5.4:ad+=9;} else if(v==='as')runeASpct+=10;
-    else if(v==='armor')ar+=6; else if(v==='mr')mr+=8; else if(v==='hp')hp+=65; };
+  // Fragments officiels : adaptatif = 5.4 AD OU 9 AP ; santé scaling = 10→180 (= 10×niveau)
+  const shard=v=>{
+    if(v==='adapt'){ b.adaptive==='ap'?ap+=9:ad+=5.4; }
+    else if(v==='as') runeASpct+=10;
+    else if(v==='ms') itemMSpct+=2;
+    else if(v==='hp') hp+=65;
+    else if(v==='hpscale') hp+=10*L;
+    // 'haste' (accélération) et 'tenacity' n'affectent pas les stats calculées ici
+  };
   shard(b.shards.r1);shard(b.shards.r2);shard(b.shards.r3);
   let as=baseAS*(1+(growthASpct+itemASpct+runeASpct)/100); if(as>2.5)as=2.5;
   return {hp,ar,mr,ad,ap,as,crit:Math.min(100,crit),ms:ms*(1+itemMSpct/100),gold};
@@ -333,13 +396,10 @@ function computeBuild(b){
 
 // ── Rendu carte build ──
 const BC={A:'#22d3ee',B:'#f59e0b'};
-const SHARD_OPTS=[
-  {v:'',t:'— aucun'},{v:'adapt',t:'Force adaptative +9'},{v:'as',t:"Vit. attaque +10%"},
-  {v:'haste',t:'Accélération +8'},{v:'armor',t:'Armure +6'},{v:'mr',t:'Résist. mag. +8'},{v:'hp',t:'Santé +65'}
-];
 function shardSelect(build,row){
-  const cur=state[build].shards[row];
-  return `<select data-build="${build}" data-shard="${row}">`+SHARD_OPTS.map(o=>`<option value="${o.v}"${o.v===cur?' selected':''}>${o.t}</option>`).join('')+`</select>`;
+  const cur=state[build].shards[row], opts=SLOT_OPTS[row];
+  return `<label class="shard-lbl">${SLOT_LBL[row]}<select data-build="${build}" data-shard="${row}">`
+    +opts.map(o=>`<option value="${o.v}"${o.v===cur?' selected':''}>${o.t}</option>`).join('')+`</select></label>`;
 }
 function statlineHtml(s){
   return `<div class="sb"><div class="k">PV</div><div class="v">${fmt(s.hp)}</div></div>`
@@ -371,6 +431,10 @@ function renderBuildCard(build){
         <div class="items-row">${items}</div>
       </div>
       <div>
+        <div class="section-lbl">Runes — arbres</div>
+        <button class="rune-open" data-runes="${build}">${runeSummary(build)}</button>
+      </div>
+      <div>
         <div class="section-lbl">Runes — fragments</div>
         <div class="runes-grid">${shardSelect(build,'r1')}${shardSelect(build,'r2')}${shardSelect(build,'r3')}</div>
         <div class="adapt-row">Force adaptative →
@@ -394,6 +458,45 @@ function renderBuildCard(build){
   </div>`;
 }
 function renderBuilds(){ $('buildCards').innerHTML= state.mode==='solo'? renderBuildCard('A') : renderBuildCard('A')+renderBuildCard('B'); }
+
+// ── Runes : résumé + modale (arbre complet) ──
+function runeSummary(build){
+  const rn=state[build].runes||{};
+  if(rn.keystone && RUNE_BY_ID[rn.keystone]){
+    const k=RUNE_BY_ID[rn.keystone], sec=rn.secondary&&RUNE_TREE_BY_ID[rn.secondary];
+    return `<img src="${runeIcon(k.icon)}" alt=""><span class="rk-name">${esc(k.name)}</span>${sec?`<span class="rk-sec">+ ${esc(sec.name)}</span>`:''}`;
+  }
+  return `<span class="rk-empty">＋ Choisir les runes</span>`;
+}
+function secSlotOf(treeId,runeId){
+  const t=RUNE_TREE_BY_ID[treeId]; if(!t)return -1;
+  for(let i=1;i<t.slots.length;i++){ if(t.slots[i].runes.some(r=>r.id===runeId)) return i; }
+  return -1;
+}
+let runeModalBuild=null;
+function openRuneModal(build){ runeModalBuild=build; renderRuneModal(build); $('rmodalOv').classList.add('open'); }
+function closeRuneModal(){ $('rmodalOv').classList.remove('open'); runeModalBuild=null; }
+function renderRuneModal(build){
+  const rn=state[build].runes, body=$('rmodalBody');
+  $('rmodalTitle').textContent='Runes — Build '+build;
+  if(!RUNE_TREES){ body.innerHTML='<div class="imodal-empty">Runes indisponibles (Data Dragon injoignable).</div>'; return; }
+  const treeTab=(t,active,attr)=>`<button class="rtree ${active?'on':''}" ${attr}="${t.id}"><img src="${runeIcon(t.icon)}" alt=""><span>${esc(t.name)}</span></button>`;
+  let h='<div class="rcol"><div class="rcol-t">Arbre primaire</div><div class="rtree-row">'+RUNE_TREES.map(t=>treeTab(t,rn.primary===t.id,'data-ptree')).join('')+'</div>';
+  const pt=rn.primary&&RUNE_TREE_BY_ID[rn.primary];
+  if(pt) pt.slots.forEach((sl,i)=>{
+    const sel=i===0?rn.keystone:(rn.minors&&rn.minors[i-1])||'';
+    h+='<div class="rrow'+(i===0?' keyrow':'')+'">'+sl.runes.map(r=>`<button class="rrune ${sel===r.id?'on':''}" data-pslot="${i}" data-rid="${r.id}" title="${esc(r.name)}"><img src="${runeIcon(r.icon)}" alt=""></button>`).join('')+'</div>';
+  });
+  h+='</div><div class="rcol"><div class="rcol-t">Arbre secondaire</div><div class="rtree-row">'+RUNE_TREES.filter(t=>t.id!==rn.primary).map(t=>treeTab(t,rn.secondary===t.id,'data-stree')).join('')+'</div>';
+  const st=rn.secondary&&RUNE_TREE_BY_ID[rn.secondary];
+  if(st){ st.slots.forEach((sl,i)=>{ if(i===0)return;
+      h+='<div class="rrow">'+sl.runes.map(r=>`<button class="rrune ${(rn.secMinors||[]).includes(r.id)?'on':''}" data-srune="${r.id}" data-sslot="${i}" title="${esc(r.name)}"><img src="${runeIcon(r.icon)}" alt=""></button>`).join('')+'</div>';
+    });
+    h+='<div class="rhint">2 runes secondaires, dans des slots différents.</div>';
+  }
+  h+='</div>';
+  body.innerHTML=h;
+}
 
 // ── Table comparaison ──
 function renderCmp(){
@@ -575,6 +678,27 @@ $('buildCards').addEventListener('click',e=>{
   if(slot){ openItemModal(slot.dataset.build,+slot.dataset.slot); return; }
   const adapt=e.target.closest('[data-adapt] button');
   if(adapt){ const k=adapt.closest('[data-adapt]').dataset.adapt; state[k].adaptive=adapt.dataset.a; rerenderAll(); return; }
+  const ro=e.target.closest('[data-runes]');
+  if(ro){ openRuneModal(ro.dataset.runes); return; }
+});
+// Modale runes
+$('rmodalClose').addEventListener('click',closeRuneModal);
+$('rmodalOv').addEventListener('click',e=>{ if(e.target===$('rmodalOv'))closeRuneModal(); });
+$('rmodalBody').addEventListener('click',e=>{
+  const b=runeModalBuild; if(!b)return; const rn=state[b].runes;
+  const updRune=()=>{ renderRuneModal(b); renderBuilds(); recompute(); persist(); };
+  const pt=e.target.closest('[data-ptree]');
+  if(pt){ const id=pt.dataset.ptree; if(rn.primary!==id){ rn.primary=id; rn.keystone=''; rn.minors=[]; if(rn.secondary===id){rn.secondary='';rn.secMinors=[];} updRune(); } return; }
+  const pr=e.target.closest('[data-pslot]');
+  if(pr){ const slot=+pr.dataset.pslot, rid=pr.dataset.rid; if(slot===0)rn.keystone=rid; else{rn.minors=rn.minors||[];rn.minors[slot-1]=rid;} updRune(); return; }
+  const st=e.target.closest('[data-stree]');
+  if(st){ rn.secondary=st.dataset.stree; rn.secMinors=[]; updRune(); return; }
+  const sr=e.target.closest('[data-srune]');
+  if(sr){ const rid=sr.dataset.srune, slot=+sr.dataset.sslot; rn.secMinors=rn.secMinors||[];
+    const idx=rn.secMinors.indexOf(rid);
+    if(idx>=0) rn.secMinors.splice(idx,1);
+    else { rn.secMinors=rn.secMinors.filter(id=>secSlotOf(rn.secondary,id)!==slot); if(rn.secMinors.length>=2) rn.secMinors.shift(); rn.secMinors.push(rid); }
+    updRune(); return; }
 });
 $('buildCards').addEventListener('input',e=>{
   const lvl=e.target.closest('[data-lvl]');
@@ -640,7 +764,7 @@ $('imodalGrid').addEventListener('click',e=>{
   PZ.loadingDone();
   if(window.Champions&&Champions.ready) Champions.ready.then(()=>rerenderAll());
   await ddVer();
-  await Promise.all([loadChampStats(),loadItems()]);
+  await Promise.all([loadChampStats(),loadItems(),loadRunes()]);
   rerenderAll();
 })();
 </script>
