@@ -105,6 +105,18 @@
   .lv-a{color:var(--muted);white-space:nowrap}
   .lv-v{color:#e6ebf2;font-weight:600}
   .mk-note{font-size:11px;color:var(--muted);margin:-4px 0 10px}
+  /* Valeurs par rang (Data Dragon, brut) */
+  .rankblk{margin-top:9px;border-top:1px dashed var(--border);padding-top:8px;display:flex;flex-direction:column;gap:5px}
+  .rb-row{display:flex;gap:10px;font-size:12px;font-family:var(--font-mono);align-items:baseline}
+  .rb-k{color:var(--muted);min-width:78px;flex-shrink:0;text-transform:uppercase;letter-spacing:.03em;font-size:10.5px;padding-top:1px}
+  .rb-v{color:var(--dim);font-weight:600}
+  .rb-v .rt{color:var(--accent)}
+
+  /* Barre de niveau sur les stats de base */
+  .stat-lvlbar{display:flex;align-items:center;gap:12px;margin:20px 0 12px;padding-bottom:9px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+  .stat-lvlbar .ttl{font-family:var(--font-display);font-size:13px;font-weight:600}
+  .stat-lvlbar input[type=range]{flex:1;min-width:150px;max-width:280px;accent-color:var(--accent)}
+  .stat-lvlbar .lv{font-family:var(--font-display);font-weight:700;color:var(--accent);min-width:56px;text-align:right;font-size:13px}
 
   .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:9px}
   .stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 13px}
@@ -301,7 +313,7 @@ async function enrichMeraki(id){
     const bodyEl=el.querySelector('.spell-body');
     if(!bodyEl || bodyEl.querySelector('.lvtable')) return;
     const html=mkBlock(a);
-    if(html){ bodyEl.insertAdjacentHTML('beforeend', html); added.push(slot); }
+    if(html){ bodyEl.querySelector('.rankblk')?.remove(); bodyEl.insertAdjacentHTML('beforeend', html); added.push(slot); }
   });
   const head=document.querySelector('#wdBody .wd-sec-t');        // "Compétences"
   const after=head&&head.nextElementSibling;
@@ -507,6 +519,65 @@ document.getElementById('wikiTableWrap').addEventListener('click', e=>{
 function showList(){ document.getElementById('listView').style.display=''; document.getElementById('wdetail').style.display='none'; if(location.hash) history.replaceState(null,'','#'); }
 document.getElementById('wback').addEventListener('click', showList);
 
+// ── Valeurs par rang depuis Data Dragon (données Riot brutes, donc exactes) ──
+// Montre les progressions par rang (effectBurn qui varient) + les ratios (vars).
+const VAR_LINK={
+  spelldamage:'AP', abilitypower:'AP', '@dynamic.abilitypower':'AP',
+  attackdamage:'AD', '@dynamic.attackdamage':'AD', bonusattackdamage:'AD bonus',
+  armor:'armure', bonusarmor:'armure bonus', health:'PV', bonushealth:'PV bonus',
+  spellblock:'RM', attackspeed:"vit. att.", '@special.abilitypower':'AP'
+};
+function spellRankBlock(s){
+  const eb=s.effectBurn||[];
+  const bases=[];
+  for(let i=1;i<eb.length && bases.length<3;i++){
+    const b=eb[i]; if(!b||b==='0') continue;
+    const arr=String(b).split('/').map(x=>parseFloat(x));
+    if(arr.length<2) continue;                       // pas une progression par rang
+    if(arr.some(x=>!isFinite(x))) continue;
+    if(arr.every(x=>x===arr[0])) continue;           // constante → pas du scaling
+    if(!arr.every((x,j)=>j===0||x>=arr[j-1])) continue; // garde les progressions croissantes
+    bases.push(String(b));
+  }
+  const ratios=(s.vars||[]).map(v=>{
+    let c=Array.isArray(v.coeff)?v.coeff[0]:v.coeff;
+    if(c==null||c===0) return '';
+    const pct=(c>0&&c<=3)?Math.round(c*100)+'%':String(Math.round(c*100)/100);
+    const lbl=VAR_LINK[v.link]|| (v.link&&!v.link.startsWith('@')?v.link:'');
+    return '+'+pct+(lbl?' '+lbl:'');
+  }).filter(Boolean);
+  if(!bases.length && !ratios.length) return '';
+  let h='<div class="rankblk">';
+  if(bases.length) h+=`<div class="rb-row"><span class="rb-k">Base / rang</span><span class="rb-v">${bases.map(esc).join('&nbsp;&nbsp;·&nbsp;&nbsp;')}</span></div>`;
+  if(ratios.length) h+=`<div class="rb-row"><span class="rb-k">Ratios</span><span class="rb-v"><span class="rt">${ratios.map(esc).join('&nbsp;&nbsp;')}</span></span></div>`;
+  h+='</div>';
+  return h;
+}
+
+// ── Stats de base recalculées à un niveau (formule de croissance LoL) ──
+let curStats=null, curLevel=1;
+const STAT_DEC={attackspeed:3,armor:1,spellblock:1,attackdamage:1,hpregen:1,mpregen:1};
+function statAtLevel(k,pl,st,L){
+  if(st[k]==null) return null;
+  if(k==='attackspeed'){ const per=st.attackspeedperlevel||0; return st[k]*(1+(per/100)*(L-1)*(0.7025+0.0175*(L-1))); }
+  if(pl && st[pl]!=null) return st[k]+st[pl]*(L-1)*(0.7025+0.0175*(L-1));
+  return st[k];
+}
+function renderStatTiles(L){
+  const grid=document.getElementById('statGrid'); if(!grid||!curStats) return;
+  const st=curStats;
+  grid.innerHTML=STAT_LABELS.map(([k,l,pl])=>{
+    const v=statAtLevel(k,pl,st,L); if(v==null) return '';
+    const dec=STAT_DEC[k]!=null?STAT_DEC[k]:0, f=Math.pow(10,dec);
+    const vr=Math.round(v*f)/f;
+    const perHint=pl&&st[pl]?`<div class="pl">+${Math.round(st[pl]*100)/100}/niv</div>`:'';
+    return `<div class="stat"><div class="k">${l}</div><div class="v">${vr}</div>${perHint}</div>`;
+  }).filter(Boolean).join('');
+}
+document.getElementById('wdBody').addEventListener('input',e=>{
+  if(e.target.id==='statLvl'){ curLevel=+e.target.value; const b=document.getElementById('statLvlVal'); if(b)b.textContent='niv. '+curLevel; renderStatTiles(curLevel); }
+});
+
 async function openChamp(id){
   const body=document.getElementById('wdBody');
   document.getElementById('listView').style.display='none';
@@ -527,6 +598,7 @@ async function openChamp(id){
           ${s.rangeBurn&&s.rangeBurn!=='0'&&s.rangeBurn!=='self'?`<span><b>Portée</b> ${esc(s.rangeBurn)}</span>`:''}
         </div>
         <div class="spell-desc">${safeHtml(resolveTooltip(s))}</div>
+        ${spellRankBlock(s)}
       </div>
     </div>`).join('');
   const passive=c.passive?`
@@ -535,12 +607,7 @@ async function openChamp(id){
       <div class="spell-body"><div class="spell-name">${esc(c.passive.name)}</div><div class="spell-desc">${safeHtml(c.passive.description)}</div></div>
     </div>`:'';
   const st=c.stats||{};
-  const round=n=>Math.round((+n||0)*100)/100;
-  const statTiles=STAT_LABELS.map(([k,l,pl])=>{
-    if(st[k]==null) return '';
-    let v=round(st[k]); if(k==='attackspeed') v=round(st[k]);
-    return `<div class="stat"><div class="k">${l}</div><div class="v">${v}</div>${pl&&st[pl]?`<div class="pl">+${round(st[pl])}/niv</div>`:''}</div>`;
-  }).filter(Boolean).join('');
+  curStats=st; curLevel=1;
   const tipBox=(title,arr,color)=> (arr&&arr.length)?`<div class="tipbox"><div class="t" style="color:${color}">${title}</div><ul>${arr.slice(0,5).map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`:'';
   const tips=(c.allytips&&c.allytips.length)||(c.enemytips&&c.enemytips.length)
     ? `<div class="wd-sec-t">Conseils</div><div class="tips">${tipBox('Jouer avec',c.allytips,'var(--ok)')}${tipBox('Jouer contre',c.enemytips,'var(--err)')}</div>` : '';
@@ -559,9 +626,14 @@ async function openChamp(id){
     </div>
     <div class="wd-sec-t">Compétences</div>
     ${passive}${spells}
-    <div class="wd-sec-t">Statistiques de base</div>
-    <div class="stats">${statTiles}</div>
+    <div class="stat-lvlbar">
+      <span class="ttl">Statistiques de base</span>
+      <input type="range" min="1" max="18" value="1" step="1" id="statLvl">
+      <span class="lv" id="statLvlVal">niv. 1</span>
+    </div>
+    <div class="stats" id="statGrid"></div>
     ${tips}`;
+  renderStatTiles(1);
   // Enrichissement non-bloquant : chiffres précis par rang via Meraki Analytics.
   enrichMeraki(id);
 }
