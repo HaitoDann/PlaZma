@@ -169,9 +169,8 @@
 
   <div class="tabs" id="tabs">
     <button class="tab on" data-tab="builds">Builds &amp; comparaison</button>
-    <button class="tab" data-tab="def">Défense (eHP)</button>
     <button class="tab" data-tab="combat">Combat &amp; DPS</button>
-    <button class="tab" data-tab="bal">Équilibre PV/résist.</button>
+    <button class="tab" data-tab="bal">Défense &amp; équilibre</button>
   </div>
 
   <!-- ONGLET BUILDS -->
@@ -183,12 +182,6 @@
         <div style="overflow-x:auto"><table class="cmp" id="cmpTable"></table></div>
       </div>
     </div>
-  </div>
-
-  <!-- ONGLET DEFENSE -->
-  <div class="panel" data-panel="def">
-    <div class="grid-2" id="defGrid"></div>
-    <div class="hint">eHP = PV × (1 + Résistance / 100) : la quantité de dégâts <b>bruts</b> de ce type nécessaire pour tuer le champion.</div>
   </div>
 
   <!-- ONGLET COMBAT -->
@@ -236,9 +229,14 @@
     </div></div>
   </div>
 
-  <!-- ONGLET EQUILIBRE -->
+  <!-- ONGLET DEFENSE & EQUILIBRE -->
   <div class="panel" data-panel="bal">
+    <div class="card-sec" style="padding:0 0 4px"><h3><span class="d" style="background:var(--jungle)"></span>PV effectifs (eHP)</h3></div>
+    <div class="grid-2" id="defGrid"></div>
+    <div class="hint" style="margin-bottom:18px">eHP = PV × (1 + Résistance / 100) : la quantité de dégâts <b>bruts</b> de ce type nécessaire pour tuer le champion.</div>
+
     <div class="card"><div class="card-sec">
+      <h3 style="margin-bottom:12px"><span class="d" style="background:var(--mid)"></span>Équilibre PV / résistance — où placer l'or</h3>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px">
         <div class="seg" id="balBuild"><button data-b="A" class="on">Build A</button><button data-b="B">Build B</button></div>
         <div class="seg" id="balType"><button data-t="ar" class="on">Armure</button><button data-t="mr">Résist. magique</button></div>
@@ -636,7 +634,7 @@ $('imodalGrid').addEventListener('click',e=>{
 // ── Init ──
 (async function init(){
   // Onglet mémorisé
-  try{const t=localStorage.getItem('pz_theory_tab');if(t){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.dataset.tab===t));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.dataset.panel===t));}}catch(e){}
+  try{let t=localStorage.getItem('pz_theory_tab');if(t==='def')t='bal';if(t){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.dataset.tab===t));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.dataset.panel===t));}}catch(e){}
   applyMode();
   renderBuilds(); recompute();
   PZ.loadingDone();
