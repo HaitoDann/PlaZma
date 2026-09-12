@@ -14,9 +14,18 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
   .content{max-width:1160px;margin:0 auto;padding:20px var(--gut) 90px}
-  .th-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+  .th-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:4px}
   .th-h h1{font-size:1.5rem}
   .th-h .sub{color:var(--muted);font-size:12.5px}
+  .mode-seg button{padding:6px 16px;font-size:13px}
+  /* Cible manuelle (mode solo) */
+  .tgt-manual{display:none;align-items:flex-end;gap:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
+  .tgt-manual .r{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700;align-self:center}
+  .tgt-manual .field input{width:74px}
+  body.solo .tgt-manual{display:flex}
+  body.solo #whoB,body.solo #swapBtn{display:none}
+  body.solo .builds{grid-template-columns:1fr;max-width:600px}
+  body.solo #balBuild [data-b="B"]{display:none}
 
   /* Onglets */
   .tabs{display:flex;gap:4px;flex-wrap:wrap;margin:16px 0 18px;border-bottom:1px solid var(--border);padding-bottom:0}
@@ -152,7 +161,11 @@
 <div id="nav"></div>
 
 <div class="content">
-  <div class="th-h"><h1>Theorycrafting</h1><span class="sub">Deux builds comparés · objets · runes · dégâts &amp; time-to-kill</span></div>
+  <div class="th-h">
+    <h1>Theorycrafting</h1>
+    <div class="seg mode-seg" id="modeSeg"><button data-m="solo">Solo</button><button data-m="duo" class="on">Duo</button></div>
+    <span class="sub" id="modeSub">Deux builds comparés · objets · runes · time-to-kill</span>
+  </div>
 
   <div class="tabs" id="tabs">
     <button class="tab on" data-tab="builds">Builds &amp; comparaison</button>
@@ -164,7 +177,7 @@
   <!-- ONGLET BUILDS -->
   <div class="panel on" data-panel="builds">
     <div class="builds" id="buildCards"></div>
-    <div class="card" style="margin-top:16px">
+    <div class="card" style="margin-top:16px" id="cmpCard">
       <div class="card-sec">
         <h3><span class="d" style="background:var(--accent)"></span>Comparaison des stats</h3>
         <div style="overflow-x:auto"><table class="cmp" id="cmpTable"></table></div>
@@ -184,6 +197,12 @@
       <div class="who" id="whoA"></div>
       <button class="swap" id="swapBtn" title="Inverser attaquant / cible">⇄</button>
       <div class="who" id="whoB"></div>
+      <div class="tgt-manual" id="tgtManual">
+        <span class="r">Cible manuelle</span>
+        <div class="field"><label>PV</label><input id="tgt_hp" type="text" inputmode="decimal" value="2000"></div>
+        <div class="field"><label>Armure</label><input id="tgt_ar" type="text" inputmode="decimal" value="80"></div>
+        <div class="field"><label>RM</label><input id="tgt_mr" type="text" inputmode="decimal" value="50"></div>
+      </div>
       <div class="field" style="margin-left:auto"><label>Multiplicateur crit</label><input id="critMult" type="text" inputmode="decimal" value="1.75" style="width:90px"></div>
     </div>
     <div class="grid-2">
@@ -264,7 +283,7 @@ const $=id=>document.getElementById(id);
 // ── État ──
 const LS='pz_theory_v2';
 function freshBuild(){return{champId:'',level:11,items:[],shards:{r1:'adapt',r2:'armor',r3:'hp'},adaptive:'ad',leth:0,arpen:0,mpen:0,mpenpct:0};}
-const state={A:freshBuild(),B:freshBuild(),critMult:1.75,attacker:'A',balBuild:'A',balType:'ar',g_hp:2.67,g_ar:20,g_mr:18,
+const state={mode:'duo',A:freshBuild(),B:freshBuild(),tgt:{hp:2000,ar:80,mr:50},critMult:1.75,attacker:'A',balBuild:'A',balType:'ar',g_hp:2.67,g_ar:20,g_mr:18,
   brstType:'phys',brstRaw:600};
 try{const s=JSON.parse(localStorage.getItem(LS)||'null');if(s){Object.assign(state,s);['A','B'].forEach(k=>state[k]=Object.assign(freshBuild(),s[k]||{}));}}catch(e){}
 let _pT=null;function persist(){clearTimeout(_pT);_pT=setTimeout(()=>{try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}},350);}
@@ -376,7 +395,7 @@ function renderBuildCard(build){
     </div>
   </div>`;
 }
-function renderBuilds(){ $('buildCards').innerHTML=renderBuildCard('A')+renderBuildCard('B'); }
+function renderBuilds(){ $('buildCards').innerHTML= state.mode==='solo'? renderBuildCard('A') : renderBuildCard('A')+renderBuildCard('B'); }
 
 // ── Table comparaison ──
 function renderCmp(){
@@ -397,7 +416,7 @@ function renderCmp(){
 // ── Défense ──
 function renderDef(){
   const g=$('defGrid');
-  g.innerHTML=['A','B'].map(k=>{
+  g.innerHTML=(state.mode==='solo'?['A']:['A','B']).map(k=>{
     const has=!!state[k].champId, s=computeBuild(state[k]);
     const eP=s.hp*(1+s.ar/100),eM=s.hp*(1+s.mr/100);
     const nm=has?esc(Champions.nameOf(state[k].champId)):'non configuré';
@@ -414,18 +433,26 @@ function renderDef(){
 
 // ── Combat / DPS / TTK ──
 function renderCombat(){
-  const atkK=state.attacker, defK=atkK==='A'?'B':'A';
-  const A=computeBuild(state[atkK]), B=computeBuild(state[defK]);
-  const penB=state[atkK];
+  const solo=state.mode==='solo';
+  const atkK=solo?'A':state.attacker, defK=atkK==='A'?'B':'A';
+  const A=computeBuild(state[atkK]);
+  const pen=state[atkK];
   const nmA=state[atkK].champId?esc(Champions.nameOf(state[atkK].champId)):'Build '+atkK;
-  const nmB=state[defK].champId?esc(Champions.nameOf(state[defK].champId)):'Build '+defK;
-  $('whoA').innerHTML=`${state[atkK].champId?`<img src="${champIcon(state[atkK].champId)}" onerror="Champions.imgFallback&&Champions.imgFallback(this,'${state[atkK].champId}')">`:''}<div><div class="r" style="color:${BC[atkK]}">Attaquant · ${atkK}</div><div class="n">${nmA}</div></div>`;
-  $('whoB').innerHTML=`${state[defK].champId?`<img src="${champIcon(state[defK].champId)}" onerror="Champions.imgFallback&&Champions.imgFallback(this,'${state[defK].champId}')">`:''}<div><div class="r" style="color:${BC[defK]}">Cible · ${defK}</div><div class="n">${nmB}</div></div>`;
+  $('whoA').innerHTML=`${state[atkK].champId?`<img src="${champIcon(state[atkK].champId)}" onerror="Champions.imgFallback&&Champions.imgFallback(this,'${state[atkK].champId}')">`:''}<div><div class="r" style="color:${BC[atkK]}">Attaquant${solo?'':' · '+atkK}</div><div class="n">${nmA}</div></div>`;
 
-  if(!state[atkK].champId || !state[defK].champId){
+  // Cible : build B (duo) ou cible manuelle (solo)
+  let B, nmB, tgtOk;
+  if(solo){ B={hp:num($('tgt_hp').value),ar:num($('tgt_ar').value),mr:num($('tgt_mr').value)}; nmB='cible'; tgtOk=true; }
+  else {
+    B=computeBuild(state[defK]); nmB=state[defK].champId?esc(Champions.nameOf(state[defK].champId)):'Build '+defK; tgtOk=!!state[defK].champId;
+    $('whoB').innerHTML=`${state[defK].champId?`<img src="${champIcon(state[defK].champId)}" onerror="Champions.imgFallback&&Champions.imgFallback(this,'${state[defK].champId}')">`:''}<div><div class="r" style="color:${BC[defK]}">Cible · ${defK}</div><div class="n">${nmB}</div></div>`;
+  }
+
+  if(!state[atkK].champId || !tgtOk){
     ['perHit','dpsRaw','dpsEff','effArmor','dmgMultV','tgtEhp','ttkHits','ttkTime'].forEach(id=>$(id).textContent='—');
     $('brstOut').value='—';
-    $('combatReco').innerHTML=`Choisis un champion pour <b>A</b> et <b>B</b> pour le calcul. Attaquant : <b>${atkK}</b>, cible : <b>${defK}</b> (⇄ pour inverser).`;
+    $('combatReco').innerHTML=solo?`Choisis un champion pour l'attaquant (onglet Builds) et renseigne la cible manuelle ci-dessus.`
+      :`Choisis un champion pour <b>A</b> et <b>B</b>. Attaquant : <b>${atkK}</b>, cible : <b>${defK}</b> (⇄ pour inverser).`;
     $('dpsChart').innerHTML='';
     return;
   }
@@ -433,40 +460,36 @@ function renderCombat(){
   const cm=state.critMult;
   const perHit=A.ad*(1+A.crit/100*(cm-1));
   const rawDPS=perHit*A.as;
-  const effAr=effResist(B.ar,penB.arpen,penB.leth);
+  const effAr=effResist(B.ar,pen.arpen,pen.leth);
   const mult=dmgMult(effAr);
   const effDPS=perHit*mult*A.as;
   $('perHit').textContent=fmt(perHit,1);
   $('dpsRaw').textContent=fmt(rawDPS,1);
   $('dpsEff').textContent=fmt(effDPS,1);
   $('dpsEffSub').textContent='armure '+fmt(effAr,0);
-  $('effArmor').textContent=fmt(effAr,1)+(penB.leth||penB.arpen?` (base ${fmt(B.ar,0)})`:'');
+  $('effArmor').textContent=fmt(effAr,1)+(pen.leth||pen.arpen?` (base ${fmt(B.ar,0)})`:'');
   $('dmgMultV').textContent='×'+fmt(mult,3)+' ('+fmt(mult*100,1)+'%)';
-  const tgtEhp=B.hp*(1+effAr/100);
-  $('tgtEhp').textContent=fmt(tgtEhp);
+  $('tgtEhp').textContent=fmt(B.hp*(1+effAr/100));
   const hits=perHit*mult>0?Math.ceil(B.hp/(perHit*mult)):0;
   const time=effDPS>0?B.hp/effDPS:0;
   $('ttkHits').textContent=hits?hits+' autos':'—';
   $('ttkTime').textContent=time?fmt(time,2)+' s':'—';
-  $('combatReco').innerHTML= (!state[atkK].champId||!state[defK].champId)
-    ? `Choisis un champion pour A et B pour un calcul complet. L'attaquant est <b>${atkK}</b>, la cible <b>${defK}</b> (bouton ⇄ pour inverser).`
-    : `<b>${nmA}</b> tue <b>${nmB}</b> en <b>${hits} autos</b> (~${fmt(time,2)} s) en auto-attaque seule, cible à ${fmt(B.ar,0)} armure (${fmt(effAr,0)} après pénétration).`;
+  $('combatReco').innerHTML=`<b>${nmA}</b> tue ${solo?'la cible':('<b>'+nmB+'</b>')} en <b>${hits} autos</b> (~${fmt(time,2)} s) en auto-attaque seule, cible à ${fmt(B.ar,0)} armure (${fmt(effAr,0)} après pénétration).`;
 
   // Burst manuel
   const braw=num($('brstRaw').value);
   let bm;
   if(state.brstType==='phys') bm=dmgMult(effAr);
-  else if(state.brstType==='mag') bm=dmgMult(effResist(B.mr,penB.mpenpct,penB.mpen));
+  else if(state.brstType==='mag') bm=dmgMult(effResist(B.mr,pen.mpenpct,pen.mpen));
   else bm=1;
   $('brstOut').value=fmt(braw*bm,1);
 
-  drawDps(perHit,A.as,penB);
+  drawDps(perHit,A.as,pen,B.ar);
 }
-function drawDps(perHit,as,pen){
+function drawDps(perHit,as,pen,curAr){
   const f=ar=>perHit*dmgMult(effResist(ar,pen.arpen,pen.leth))*as;
   const pts=[];for(let a=0;a<=300;a+=5)pts.push([a,f(a)]);
-  const cur=computeBuild(state[state.attacker==='A'?'B':'A']).ar;
-  lineChart('dpsChart','dpsTip',pts,{xMax:300,color:'var(--top)',xLabel:'Armure',yLabel:'DPS',marker:[cur,f(cur)],fmtX:v=>fmt(v,0),fmtY:v=>fmt(v,0)});
+  lineChart('dpsChart','dpsTip',pts,{xMax:300,color:'var(--top)',xLabel:'Armure',yLabel:'DPS',marker:[curAr,f(curAr)],fmtX:v=>fmt(v,0),fmtY:v=>fmt(v,0)});
 }
 
 // ── Équilibre ──
@@ -488,8 +511,18 @@ function renderBal(){
     reco.innerHTML=`À <b>${fmt(HP)} PV</b>, l'or est optimal vers <b>${fmt(optRes,0)} ${label}</b> (tu es à ${fmt(curRes,0)}). Prochain gain d'eHP/or : <b>${dir}</b>.`; }
 }
 
+// ── Mode solo / duo ──
+function applyMode(){
+  const solo=state.mode==='solo';
+  document.body.classList.toggle('solo',solo);
+  document.getElementById('modeSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.m===state.mode));
+  $('cmpCard').style.display=solo?'none':'';
+  $('modeSub').textContent=solo?'Un seul champion · objets · runes · DPS & TTK sur cible manuelle':'Deux builds comparés · objets · runes · time-to-kill';
+  if(solo){ state.balBuild='A'; $('balBuild').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.b==='A')); }
+}
+
 // ── Recompute global ──
-function recompute(){ renderCmp(); renderDef(); renderCombat(); renderBal(); persist(); }
+function recompute(){ if(state.mode!=='solo')renderCmp(); renderDef(); renderCombat(); renderBal(); persist(); }
 function rerenderAll(){ renderBuilds(); recompute(); }
 
 // ── Chart générique ──
@@ -558,6 +591,11 @@ $('buildCards').addEventListener('change',e=>{
   const sh=e.target.closest('[data-shard]');
   if(sh){ const k=sh.dataset.build; state[k].shards[sh.dataset.shard]=sh.value; rerenderAll(); }
 });
+// Mode solo / duo
+$('modeSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;state.mode=b.dataset.m;applyMode();rerenderAll();});
+// Cible manuelle (solo)
+$('tgt_hp').value=state.tgt.hp; $('tgt_ar').value=state.tgt.ar; $('tgt_mr').value=state.tgt.mr;
+['hp','ar','mr'].forEach(k=>$('tgt_'+k).addEventListener('input',()=>{state.tgt[k]=num($('tgt_'+k).value);renderCombat();persist();}));
 // Combat controls
 $('swapBtn').addEventListener('click',()=>{state.attacker=state.attacker==='A'?'B':'A';renderCombat();persist();});
 $('critMult').value=state.critMult;
@@ -599,6 +637,7 @@ $('imodalGrid').addEventListener('click',e=>{
 (async function init(){
   // Onglet mémorisé
   try{const t=localStorage.getItem('pz_theory_tab');if(t){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.dataset.tab===t));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.dataset.panel===t));}}catch(e){}
+  applyMode();
   renderBuilds(); recompute();
   PZ.loadingDone();
   if(window.Champions&&Champions.ready) Champions.ready.then(()=>rerenderAll());
