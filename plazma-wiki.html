@@ -24,6 +24,33 @@
   .wf{font-size:12px;font-weight:600;padding:6px 11px;border-radius:20px;border:1px solid var(--border);
     background:var(--surface-2);color:var(--muted);cursor:pointer}
   .wf.on{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent)}
+  /* Bascule Grille / Tableau */
+  .wiki-view{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:20px;padding:3px;gap:2px;flex-shrink:0}
+  .wiki-view button{border:0;background:transparent;color:var(--muted);font-family:var(--font);font-weight:600;font-size:12px;
+    padding:6px 13px;border-radius:16px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:background .15s,color .15s}
+  .wiki-view button.on{background:var(--accent-soft);color:var(--accent)}
+  .wiki-view svg{width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none}
+
+  /* Tableau des stats de base */
+  .wtable-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r-lg);background:var(--surface)}
+  table.wtable{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}
+  table.wtable thead th{position:sticky;top:0;background:var(--surface-2);z-index:2;text-align:right;
+    padding:10px 12px;font-size:11px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);font-weight:700;
+    cursor:pointer;white-space:nowrap;border-bottom:1px solid var(--border);user-select:none}
+  table.wtable thead th:first-child{text-align:left}
+  table.wtable thead th:hover{color:var(--dim)}
+  table.wtable thead th.sorted{color:var(--accent)}
+  table.wtable thead th .ar{font-size:9px;margin-left:3px}
+  table.wtable tbody td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--border);
+    font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--dim)}
+  table.wtable tbody td:first-child{text-align:left;font-family:var(--font)}
+  table.wtable tbody tr{cursor:pointer;transition:background .1s}
+  table.wtable tbody tr:hover{background:var(--surface-2)}
+  .wt-champ{display:flex;align-items:center;gap:9px}
+  .wt-champ img{width:30px;height:30px;border-radius:7px;flex-shrink:0}
+  .wt-champ .n{font-weight:600;color:var(--text);white-space:nowrap}
+  .wt-per{color:var(--muted);font-size:11px;font-weight:400}
+  .wtable-msg{padding:34px 20px;text-align:center;color:var(--muted);font-size:13px}
 
   .wiki-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
   .wtile{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;cursor:pointer;
@@ -101,15 +128,20 @@
 
 <div class="content">
   <div class="wiki-head"><h1>Wiki champions</h1><span class="pver" id="patchVer">—</span></div>
-  <div class="wiki-sub">Sorts, cooldowns, ratios et statistiques de chaque champion. Données officielles Riot (Data Dragon), à jour au dernier patch.</div>
+  <div class="wiki-sub">Sorts, cooldowns, ratios et statistiques de chaque champion. Vue grille ou tableau comparatif des stats de base (triable). Données officielles Riot (Data Dragon), à jour au dernier patch.</div>
 
   <!-- Vue liste -->
   <div id="listView">
     <div class="wiki-bar">
       <input class="wiki-search" id="wikiSearch" type="text" placeholder="Rechercher un champion…" autocomplete="off" spellcheck="false">
+      <div class="wiki-view" id="wikiView">
+        <button data-v="grid" class="on"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Grille</button>
+        <button data-v="table"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>Tableau</button>
+      </div>
       <div class="wiki-filters" id="wikiFilters"></div>
     </div>
     <div class="wiki-grid" id="wikiGrid"><div class="wiki-empty">Chargement des champions…</div></div>
+    <div class="wtable-wrap" id="wikiTableWrap" style="display:none"><div class="wtable-msg">Chargement du tableau…</div></div>
   </div>
 
   <!-- Vue détail -->
@@ -380,9 +412,96 @@ function renderGrid(){
     <span class="rl">${(c.tags||[]).map(t=>TAG_FR[t]||t).join(' · ')}</span>
   </button>`).join('');
 }
-document.getElementById('wikiSearch').addEventListener('input', renderGrid);
-document.getElementById('wikiFilters').addEventListener('click', e=>{ const el=e.target.closest('.wf'); if(!el)return; activeTag=el.dataset.tag; renderFilters(); renderGrid(); });
+document.getElementById('wikiSearch').addEventListener('input', renderActive);
+document.getElementById('wikiFilters').addEventListener('click', e=>{ const el=e.target.closest('.wf'); if(!el)return; activeTag=el.dataset.tag; renderFilters(); renderActive(); });
 document.getElementById('wikiGrid').addEventListener('click', e=>{ const el=e.target.closest('.wtile'); if(el) openChamp(el.dataset.id); });
+
+// ── Vue tableau des stats de base ──
+let VIEW='grid', STATS_BY_ID=null, sortKey='name', sortDir=1;
+try{ VIEW = localStorage.getItem('pz_wiki_view')||'grid'; }catch(e){}
+const WT_COLS=[
+  { key:'name',        label:'Champion',  type:'s' },
+  { key:'hp',          label:'PV',        per:'hpperlevel' },
+  { key:'armor',       label:'Armure',    per:'armorperlevel' },
+  { key:'spellblock',  label:'RM',        per:'spellblockperlevel' },
+  { key:'attackdamage',label:'AD',        per:'attackdamageperlevel' },
+  { key:'attackspeed', label:'AS',        dec:3 },
+  { key:'movespeed',   label:'Vitesse' },
+  { key:'attackrange', label:'Portée' }
+];
+const wtRound=(n,d=0)=>{ const f=Math.pow(10,d); return Math.round((+n||0)*f)/f; };
+
+async function ensureStats(){
+  if(STATS_BY_ID) return STATS_BY_ID;
+  try{ await getVersion(); }catch(e){}
+  if(!VER) throw new Error('no version');
+  const ck='pz_wiki_stats_'+VER;
+  try{ const c=JSON.parse(localStorage.getItem(ck)||'null'); if(c){ STATS_BY_ID=c; return c; } }catch(e){}
+  const data=await fetchJSON(`${DD}/cdn/${VER}/data/${LANG}/champion.json`);
+  const map={}; Object.values(data.data).forEach(c=>{ map[c.id]=c.stats; });
+  STATS_BY_ID=map;
+  try{ localStorage.setItem(ck,JSON.stringify(map)); }catch(e){}
+  return map;
+}
+
+function tableRows(){
+  const q=(document.getElementById('wikiSearch').value||'').trim().toLowerCase();
+  let items=LIST.filter(c=>
+    (!activeTag || c.tags.includes(activeTag)) &&
+    (!q || c.name.toLowerCase().includes(q) || c.id.toLowerCase().includes(q))
+  ).map(c=>({ c, s:(STATS_BY_ID&&STATS_BY_ID[c.id])||null }));
+  const col=WT_COLS.find(x=>x.key===sortKey)||WT_COLS[0];
+  items.sort((A,B)=>{
+    if(col.type==='s'){ return sortDir*A.c.name.localeCompare(B.c.name,'fr'); }
+    const av=A.s?(+A.s[col.key]||0):-Infinity, bv=B.s?(+B.s[col.key]||0):-Infinity;
+    return sortDir*(av-bv);
+  });
+  return items;
+}
+function renderTable(){
+  const wrap=document.getElementById('wikiTableWrap');
+  if(!STATS_BY_ID){ wrap.innerHTML='<div class="wtable-msg">Chargement des statistiques…</div>'; return; }
+  const items=tableRows();
+  if(!items.length){ wrap.innerHTML='<div class="wtable-msg">Aucun champion trouvé.</div>'; return; }
+  const head=WT_COLS.map(col=>{
+    const on=col.key===sortKey;
+    const ar=on?(sortDir>0?'▲':'▼'):'';
+    return `<th data-k="${col.key}" class="${on?'sorted':''}">${col.label}<span class="ar">${ar}</span></th>`;
+  }).join('');
+  const body=items.map(({c,s})=>{
+    const cells=WT_COLS.map(col=>{
+      if(col.type==='s'){
+        return `<td><span class="wt-champ"><img src="${champIcon(c.id)}" alt="" loading="lazy" onerror="wChampImg(this,'${c.id}')"><span class="n">${esc(c.name)}</span></span></td>`;
+      }
+      if(!s || s[col.key]==null) return '<td>—</td>';
+      const v=wtRound(s[col.key], col.dec||0);
+      const per=col.per&&s[col.per]?` <span class="wt-per">+${wtRound(s[col.per],2)}</span>`:'';
+      return `<td>${v}${per}</td>`;
+    }).join('');
+    return `<tr data-id="${c.id}">${cells}</tr>`;
+  }).join('');
+  wrap.innerHTML=`<table class="wtable"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+}
+function renderActive(){ if(VIEW==='table') renderTable(); else renderGrid(); }
+function applyView(){
+  document.getElementById('wikiGrid').style.display = VIEW==='table'?'none':'';
+  document.getElementById('wikiTableWrap').style.display = VIEW==='table'?'':'none';
+  document.querySelectorAll('#wikiView button').forEach(b=>b.classList.toggle('on', b.dataset.v===VIEW));
+  if(VIEW==='table' && !STATS_BY_ID){
+    ensureStats().then(renderTable).catch(()=>{
+      document.getElementById('wikiTableWrap').innerHTML='<div class="wtable-msg">Statistiques indisponibles (Data Dragon injoignable). Réessaie plus tard.</div>';
+    });
+  } else renderActive();
+}
+document.getElementById('wikiView').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  VIEW=b.dataset.v; try{ localStorage.setItem('pz_wiki_view',VIEW); }catch(e){}
+  applyView();
+});
+document.getElementById('wikiTableWrap').addEventListener('click', e=>{
+  const th=e.target.closest('th'); if(th){ const k=th.dataset.k; if(k===sortKey) sortDir=-sortDir; else { sortKey=k; sortDir=(k==='name'?1:-1); } renderTable(); return; }
+  const tr=e.target.closest('tr[data-id]'); if(tr) openChamp(tr.dataset.id);
+});
 
 // ── Détail ──
 function showList(){ document.getElementById('listView').style.display=''; document.getElementById('wdetail').style.display='none'; if(location.hash) history.replaceState(null,'','#'); }
@@ -452,7 +571,7 @@ async function openChamp(id){
   try{
     LIST=await getList();
     document.getElementById('patchVer').textContent=VER?('Patch '+VER):'Miroir communautaire';
-    renderFilters(); renderGrid();
+    renderFilters(); applyView();
     const h=(location.hash||'').replace(/^#/,'').trim();
     if(h && LIST.some(c=>c.id===h)) openChamp(h);
   }catch(e){
