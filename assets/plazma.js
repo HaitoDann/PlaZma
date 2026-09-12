@@ -263,6 +263,7 @@
     { key: 'review',       href: 'plazma-review-individuelle.html', label: 'Review', section: 'scrim' },
     { key: 'scouting',     href: 'plazma-scouting.html',    label: 'Scouting',     section: 'scouting' },
     { key: 'draft',        href: 'plazma-draft.html',       label: 'Draft',        section: 'scouting' },
+    { key: 'theory',       href: 'plazma-theory.html',      label: 'Theorycraft' },
     { key: 'wiki',         href: 'plazma-wiki.html',        label: 'Wiki' },
     { key: 'wikiperf',     href: 'plazma-wiki-perf.html',   label: 'Encyclopédie' },
     { key: 'team',         href: 'plazma-team.html',        label: 'Équipe',       section: 'team' },

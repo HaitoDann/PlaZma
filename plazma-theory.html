@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="assets/logo-plazma.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARCHI — Theorycrafting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css?v=20260821f">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+  .content{max-width:1120px;margin:0 auto;padding:22px var(--gut) 90px}
+  .th-intro{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+  .th-intro h1{font-size:1.5rem}
+  .th-intro p{color:var(--dim);font-size:13px;max-width:640px;margin-top:4px}
+
+  /* Grille de modules */
+  .modules{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:900px){.modules{grid-template-columns:1fr}}
+  .mod{padding:0;overflow:hidden}
+  .mod-head{display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--border)}
+  .mod-head .ic{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    background:color-mix(in srgb,var(--mc,var(--accent)) 15%,transparent);color:var(--mc,var(--accent))}
+  .mod-head .ic svg{width:17px;height:17px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .mod-head h2{font-size:1.02rem}
+  .mod-head .sub{font-size:11px;color:var(--muted)}
+  .mod-body{padding:18px}
+
+  /* Champs de saisie compacts */
+  .field{display:flex;flex-direction:column;gap:4px;margin-bottom:0}
+  .field label{font-size:11px;letter-spacing:.03em;color:var(--muted);text-transform:uppercase;font-weight:600}
+  .field .unit{color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0}
+  .field input,.field select{width:100%}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  @media(max-width:520px){.grid3{grid-template-columns:1fr 1fr}}
+
+  /* Panneau cible */
+  .target-top{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .champ-slot{display:inline-flex;align-items:center;gap:10px;cursor:pointer;
+    background:var(--surface-2);border:1px solid var(--border-2);border-radius:10px;
+    padding:8px 14px 8px 10px;min-width:190px;transition:border-color .15s}
+  .champ-slot:hover{border-color:var(--accent)}
+  .champ-slot img{width:42px;height:42px;border-radius:8px;object-fit:cover;flex-shrink:0}
+  .champ-slot .nm{font-family:var(--font-display);font-weight:700;font-size:1.05rem}
+  .champ-slot.empty .nm{color:var(--muted);font-style:italic;font-weight:500}
+  .champ-slot .hint{font-size:10.5px;color:var(--muted)}
+  .lvl-wrap{flex:1;min-width:220px}
+  .lvl-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px}
+  .lvl-head b{font-family:var(--font-display);font-size:1.15rem;color:var(--accent)}
+  input[type=range].lvl{width:100%;accent-color:var(--accent)}
+  .stat-note{font-size:11px;color:var(--muted);margin-top:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .stat-note .dot-src{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+  .stat-note.on .dot-src{background:var(--ok)}
+  .btn-auto{margin-left:auto}
+
+  /* Résultats — stat tiles */
+  .tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px}
+  @media(max-width:520px){.tiles{grid-template-columns:1fr}}
+  .tile{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;
+    border-left:3px solid var(--tc,var(--accent))}
+  .tile .tl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600;display:flex;align-items:center;gap:5px}
+  .tile .tv{font-family:var(--font-display);font-size:1.55rem;font-weight:700;line-height:1.1;margin-top:3px;color:var(--tc,var(--text));font-variant-numeric:tabular-nums}
+  .tile .ts{font-size:11px;color:var(--dim);margin-top:2px}
+
+  /* Ligne résultat clé */
+  .kv{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--dim)}
+  .kv .v{font-family:var(--font-display);font-weight:700;font-variant-numeric:tabular-nums}
+  .kv .v.big{font-size:1.25rem;color:var(--accent)}
+
+  /* Pipeline pénétration */
+  .pipe{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:12px 0 4px;font-size:12px}
+  .pipe .step{background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:5px 9px;font-variant-numeric:tabular-nums}
+  .pipe .arrow{color:var(--muted)}
+  .pipe .step b{color:var(--text);font-family:var(--font-display)}
+
+  /* Toggle segmenté */
+  .seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:3px;gap:2px}
+  .seg button{border:0;background:transparent;color:var(--muted);font-family:var(--font);font-weight:600;font-size:12px;
+    padding:6px 13px;border-radius:6px;cursor:pointer;transition:background .15s,color .15s}
+  .seg button.on{background:var(--elevated);color:var(--text)}
+
+  /* Charts */
+  .chart-wrap{margin-top:14px}
+  .chart-wrap svg{width:100%;height:auto;display:block;overflow:visible}
+  .chart-title{font-size:12px;color:var(--dim);font-weight:600;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .chart-legend{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+  .chart-legend i{width:14px;height:3px;border-radius:2px;display:inline-block;vertical-align:middle;margin-right:5px}
+  .ch-tip{position:absolute;pointer-events:none;background:var(--elevated);border:1px solid var(--border-2);border-radius:8px;
+    padding:6px 9px;font-size:11.5px;box-shadow:var(--shadow-2);opacity:0;transition:opacity .1s;white-space:nowrap;z-index:20;font-variant-numeric:tabular-nums}
+  .reco{background:color-mix(in srgb,var(--accent) 8%,transparent);border:1px solid var(--accent-line);border-radius:10px;
+    padding:12px 14px;font-size:13px;color:var(--dim);margin-top:14px;line-height:1.5}
+  .reco b{color:var(--accent);font-family:var(--font-display)}
+  .hint-row{font-size:11px;color:var(--muted);margin-top:8px}
+</style>
+</head>
+<body>
+
+<div class="loader"><div class="loader-inner"><div class="loader-ring-wrap"><div class="loader-arc1"></div><div class="loader-arc2"></div><img class="loader-logo" src="assets/logo-plazma.png" alt=""></div><div class="loader-mark">ARCHI</div></div></div>
+<div id="nav"></div>
+
+<div class="content">
+  <div class="th-intro">
+    <div>
+      <h1>Theorycrafting</h1>
+      <p>Calcule les PV effectifs, l'impact de la pénétration, le DPS et l'équilibre PV / résistances.
+         Choisis un champion et un niveau pour pré-remplir les stats, ou saisis tes propres valeurs.</p>
+    </div>
+  </div>
+
+  <!-- Panneau cible / champion -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="mod-body">
+      <div class="target-top">
+        <div class="champ-slot empty" id="champSlot">
+          <div><div class="nm" id="champName">Choisir un champion</div><div class="hint">Clique pour rechercher</div></div>
+        </div>
+        <div class="lvl-wrap">
+          <div class="lvl-head"><span class="field" style="gap:0"><label>Niveau</label></span><b id="lvlVal">11</b></div>
+          <input type="range" min="1" max="18" value="11" step="1" class="lvl" id="lvl">
+        </div>
+        <button class="btn btn-sm btn-auto" id="btnRefill">↻ Re-remplir stats</button>
+      </div>
+      <div class="grid3" style="margin-top:16px">
+        <div class="field"><label>PV <span class="unit">max</span></label><input id="s_hp" type="text" inputmode="decimal" value="2000"></div>
+        <div class="field"><label>Armure</label><input id="s_ar" type="text" inputmode="decimal" value="80"></div>
+        <div class="field"><label>Résist. magique</label><input id="s_mr" type="text" inputmode="decimal" value="50"></div>
+      </div>
+      <div class="stat-note" id="srcNote"><span class="dot-src"></span><span id="srcTxt">Stats saisies manuellement</span></div>
+    </div>
+  </div>
+
+  <div class="modules">
+
+    <!-- Module 1 : PV effectifs -->
+    <div class="card mod" style="--mc:var(--jungle)">
+      <div class="mod-head">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.35-9.5-9C1 9 2.5 5 6 5c2 0 3.2 1.2 4 2.5C10.8 6.2 12 5 14 5c3.5 0 5 4 3.5 7-2.5 4.65-9.5 9-9.5 9z"/></svg></span>
+        <div><h2>PV Effectifs</h2><div class="sub">Combien de dégâts bruts tu encaisses réellement</div></div>
+      </div>
+      <div class="mod-body">
+        <div class="tiles">
+          <div class="tile" style="--tc:var(--top)"><div class="tl">Vs Physique</div><div class="tv" id="ehpPhys">—</div><div class="ts" id="ehpPhysSub">réduction —</div></div>
+          <div class="tile" style="--tc:var(--support)"><div class="tl">Vs Magique</div><div class="tv" id="ehpMag">—</div><div class="ts" id="ehpMagSub">réduction —</div></div>
+          <div class="tile" style="--tc:var(--muted)"><div class="tl">Vs Vrais dgts</div><div class="tv" id="ehpTrue">—</div><div class="ts">aucune réduction</div></div>
+        </div>
+        <div class="hint-row">eHP = PV × (1 + Résistance / 100). C'est la quantité de dégâts <b>bruts</b> de ce type nécessaire pour te tuer.</div>
+      </div>
+    </div>
+
+    <!-- Module 2 : Pénétration & dégâts -->
+    <div class="card mod" style="--mc:var(--adc)">
+      <div class="mod-head">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M12 2v6M12 22v-6M4.9 4.9l4.2 4.2M19.1 19.1l-4.2-4.2M2 12h6M22 12h-6M4.9 19.1l4.2-4.2M19.1 4.9l-4.2 4.2"/></svg></span>
+        <div><h2>Pénétration &amp; dégâts</h2><div class="sub">Dégâts réels selon la létalité / pénétration</div></div>
+      </div>
+      <div class="mod-body">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+          <span class="field" style="gap:0"><label>Type de dégâts</label></span>
+          <div class="seg" id="dmgType">
+            <button data-t="phys" class="on">Physique</button>
+            <button data-t="mag">Magique</button>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label>Dégâts bruts <span class="unit">/ instance</span></label><input id="p_raw" type="text" inputmode="decimal" value="500"></div>
+          <div class="field" id="f_flatpen"><label id="l_flatpen">Létalité</label><input id="p_flat" type="text" inputmode="decimal" value="0"></div>
+          <div class="field"><label id="l_pctpen">Pénétration armure <span class="unit">%</span></label><input id="p_pct" type="text" inputmode="decimal" value="0"></div>
+          <div class="field"><label>Résist. cible <span class="unit" id="l_res">armure</span></label><input id="p_res" type="text" inputmode="decimal" value="80" disabled></div>
+        </div>
+        <div class="pipe" id="penPipe"></div>
+        <div class="kv"><span class="k">Résistance effective</span><span class="v" id="effRes">—</span></div>
+        <div class="kv"><span class="k">Dégâts subis (multiplicateur)</span><span class="v" id="dmgMult">—</span></div>
+        <div class="kv"><span class="k">Dégâts réellement infligés</span><span class="v big" id="dmgDealt">—</span></div>
+        <div class="hint-row">La résistance cible est reprise du panneau ci-dessus. La létalité = pénétration d'armure <b>plate</b> (appliquée après la pénétration en %).</div>
+      </div>
+    </div>
+
+    <!-- Module 3 : DPS -->
+    <div class="card mod" style="--mc:var(--top)">
+      <div class="mod-head">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg></span>
+        <div><h2>DPS</h2><div class="sub">Dégâts par seconde en auto-attaque</div></div>
+      </div>
+      <div class="mod-body">
+        <div class="grid3">
+          <div class="field"><label>AD total</label><input id="d_ad" type="text" inputmode="decimal" value="250"></div>
+          <div class="field"><label>Vit. d'attaque <span class="unit">AS</span></label><input id="d_as" type="text" inputmode="decimal" value="1.2"></div>
+          <div class="field"><label>Crit <span class="unit">%</span></label><input id="d_crit" type="text" inputmode="decimal" value="0"></div>
+          <div class="field"><label>Multiplicateur crit</label><input id="d_critmult" type="text" inputmode="decimal" value="1.75"></div>
+          <div class="field"><label>On-hit <span class="unit">/ auto</span></label><input id="d_onhit" type="text" inputmode="decimal" value="0"></div>
+          <div class="field"><label>On-hit — type</label>
+            <select id="d_onhittype"><option value="phys">Physique</option><option value="mag">Magique</option><option value="true">Vrais</option></select>
+          </div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12.5px;color:var(--dim);cursor:pointer">
+          <input type="checkbox" id="d_applypen" checked style="width:auto"> Appliquer l'armure cible &amp; la pénétration ci-dessus
+        </label>
+        <div class="tiles" style="margin-top:14px">
+          <div class="tile" style="--tc:var(--muted)"><div class="tl">Dégât / auto</div><div class="tv" id="perHit">—</div><div class="ts" id="perHitSub">moy. avec crit</div></div>
+          <div class="tile" style="--tc:var(--dim)"><div class="tl">DPS brut</div><div class="tv" id="dpsRaw">—</div><div class="ts">sans mitigation</div></div>
+          <div class="tile" style="--tc:var(--top)"><div class="tl">DPS effectif</div><div class="tv" id="dpsEff">—</div><div class="ts" id="dpsEffSub">sur la cible</div></div>
+        </div>
+        <div class="chart-wrap" style="position:relative">
+          <div class="chart-title"><span>DPS effectif selon l'armure de la cible</span></div>
+          <div id="dpsChart"></div>
+          <div class="ch-tip" id="dpsTip"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Module 4 : Courbe d'équilibre -->
+    <div class="card mod" style="--mc:var(--mid)">
+      <div class="mod-head">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-5 3 3 5-7"/></svg></span>
+        <div><h2>Équilibre PV / Résistance</h2><div class="sub">Où placer l'or entre défense et vie</div></div>
+      </div>
+      <div class="mod-body">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+          <div class="seg" id="balType">
+            <button data-t="ar" class="on">Armure</button>
+            <button data-t="mr">Résist. magique</button>
+          </div>
+          <span class="hint-row" style="margin:0">Courbe eHP à PV fixe · point or-optimal</span>
+        </div>
+        <div class="grid3">
+          <div class="field"><label>Or / PV</label><input id="g_hp" type="text" inputmode="decimal" value="2.67"></div>
+          <div class="field"><label>Or / armure</label><input id="g_ar" type="text" inputmode="decimal" value="20"></div>
+          <div class="field"><label>Or / RM</label><input id="g_mr" type="text" inputmode="decimal" value="18"></div>
+        </div>
+        <div class="chart-wrap" style="position:relative">
+          <div class="chart-title"><span id="balTitle">eHP physique selon l'armure</span></div>
+          <div id="balChart"></div>
+          <div class="ch-tip" id="balTip"></div>
+        </div>
+        <div class="reco" id="balReco">—</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="assets/plazma.js?v=20260821f"></script>
+<script src="assets/champions.js?v=20260821f"></script>
+<script>
+'use strict';
+PZ.mountNav('theory', '#nav');
+
+// ══════════════════════════════════════════════════
+//  Formules LoL
+// ══════════════════════════════════════════════════
+const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : 0; };
+// Croissance par niveau (non linéaire) : base + growth*(L-1)*(0.7025 + 0.0175*(L-1))
+const atLevel = (base, per, L) => base + per * (L - 1) * (0.7025 + 0.0175 * (L - 1));
+const asAtLevel = (baseAS, perPct, L) => baseAS * (1 + (perPct / 100) * (L - 1) * (0.7025 + 0.0175 * (L - 1)));
+// Multiplicateur de dégâts subis selon une résistance R
+function dmgMult(R) { return R >= 0 ? 100 / (100 + R) : 2 - 100 / (100 - R); }
+// Résistance effective après pénétration (% puis plate ; la pén ne descend jamais sous 0)
+function effResist(R, pctPen, flatPen) {
+  let r = R * (1 - pctPen / 100);
+  if (r > 0) r = Math.max(0, r - flatPen);
+  return r;
+}
+const fmt = (n, d = 0) => (isFinite(n) ? n : 0).toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+// ══════════════════════════════════════════════════
+//  État
+// ══════════════════════════════════════════════════
+const LS = 'pz_theory_v1';
+const state = {
+  champId: '', level: 11,
+  s_hp: 2000, s_ar: 80, s_mr: 50, autoStats: false,
+  dmgType: 'phys', p_raw: 500, p_flat: 0, p_pct: 0,
+  d_ad: 250, d_as: 1.2, d_crit: 0, d_critmult: 1.75, d_onhit: 0, d_onhittype: 'phys', d_applypen: true,
+  balType: 'ar', g_hp: 2.67, g_ar: 20, g_mr: 18
+};
+try { Object.assign(state, JSON.parse(localStorage.getItem(LS) || '{}')); } catch (e) {}
+function persist() { try { localStorage.setItem(LS, JSON.stringify(state)); } catch (e) {} }
+
+// ══════════════════════════════════════════════════
+//  Data Dragon — stats de base des champions
+// ══════════════════════════════════════════════════
+let CHAMP_STATS = null; // { id: statsObj }
+async function loadStats() {
+  const ver = (window.Champions && Champions.version) || '15.1.1';
+  const urls = [
+    `https://ddragon.leagueoflegends.com/cdn/${ver}/data/fr_FR/champion.json`,
+    `https://ddragon.leagueoflegends.com/cdn/${ver}/data/en_US/champion.json`
+  ];
+  for (const u of urls) {
+    try {
+      const d = await fetch(u).then(r => r.ok ? r.json() : null);
+      if (d && d.data) { CHAMP_STATS = {}; Object.values(d.data).forEach(c => CHAMP_STATS[c.id] = c.stats); return; }
+    } catch (e) {}
+  }
+  console.warn('Stats DDragon indisponibles — saisie manuelle.');
+}
+function fillFromChampion() {
+  if (!state.champId || !CHAMP_STATS || !CHAMP_STATS[state.champId]) { state.autoStats = false; renderSrc(); return; }
+  const st = CHAMP_STATS[state.champId], L = state.level;
+  state.s_hp = Math.round(atLevel(st.hp, st.hpperlevel, L));
+  state.s_ar = Math.round(atLevel(st.armor, st.armorperlevel, L) * 10) / 10;
+  state.s_mr = Math.round(atLevel(st.spellblock, st.spellblockperlevel, L) * 10) / 10;
+  state.d_ad = Math.round(atLevel(st.attackdamage, st.attackdamageperlevel, L));
+  state.d_as = Math.round(asAtLevel(st.attackspeed, st.attackspeedperlevel, L) * 1000) / 1000;
+  state.autoStats = true;
+  setVal('s_hp', state.s_hp); setVal('s_ar', state.s_ar); setVal('s_mr', state.s_mr);
+  setVal('d_ad', state.d_ad); setVal('d_as', state.d_as);
+  setVal('p_res', state.dmgType === 'phys' ? state.s_ar : state.s_mr);
+  renderSrc();
+}
+function renderSrc() {
+  const note = document.getElementById('srcNote'), txt = document.getElementById('srcTxt');
+  if (state.autoStats && state.champId) {
+    note.classList.add('on');
+    txt.innerHTML = `Stats auto : <b>${Champions.nameOf(state.champId)}</b> niv. ${state.level} · Data Dragon (éditables)`;
+  } else {
+    note.classList.remove('on');
+    txt.textContent = 'Stats saisies manuellement';
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  Champion picker
+// ══════════════════════════════════════════════════
+function renderChampSlot() {
+  const slot = document.getElementById('champSlot');
+  if (state.champId) {
+    const u = window.Champions ? Champions.iconUrl(state.champId) : '';
+    slot.className = 'champ-slot';
+    slot.innerHTML = (u ? `<img src="${u}" alt="" onerror="Champions.imgFallback&&Champions.imgFallback(this,'${state.champId}')">` : '')
+      + `<div><div class="nm">${Champions.nameOf(state.champId)}</div><div class="hint">Niveau ${state.level} · changer</div></div>`;
+  } else {
+    slot.className = 'champ-slot empty';
+    slot.innerHTML = `<div><div class="nm">Choisir un champion</div><div class="hint">Clique pour rechercher</div></div>`;
+  }
+}
+document.getElementById('champSlot').addEventListener('click', () => {
+  if (!window.Champions) return;
+  Champions.open(id => {
+    if (!id) return;
+    state.champId = id; renderChampSlot(); fillFromChampion(); persist(); recompute();
+  });
+});
+document.getElementById('btnRefill').addEventListener('click', () => { fillFromChampion(); persist(); recompute(); });
+
+// ══════════════════════════════════════════════════
+//  Bindings
+// ══════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+const setVal = (id, v) => { const e = $(id); if (e) e.value = v; };
+function bindNum(id) {
+  const e = $(id); if (!e) return;
+  e.value = state[id];
+  e.addEventListener('input', () => {
+    state[id] = num(e.value);
+    if (['s_hp', 's_ar', 's_mr', 'd_ad', 'd_as'].includes(id)) { state.autoStats = false; renderSrc(); }
+    if (id === 's_ar' && state.dmgType === 'phys') setVal('p_res', state.s_ar);
+    if (id === 's_mr' && state.dmgType === 'mag') setVal('p_res', state.s_mr);
+    persist(); recompute();
+  });
+}
+['s_hp','s_ar','s_mr','p_raw','p_flat','p_pct','d_ad','d_as','d_crit','d_critmult','d_onhit','g_hp','g_ar','g_mr'].forEach(bindNum);
+
+$('d_onhittype').value = state.d_onhittype;
+$('d_onhittype').addEventListener('change', e => { state.d_onhittype = e.target.value; persist(); recompute(); });
+$('d_applypen').checked = state.d_applypen;
+$('d_applypen').addEventListener('change', e => { state.d_applypen = e.target.checked; persist(); recompute(); });
+
+const lvl = $('lvl'); lvl.value = state.level; $('lvlVal').textContent = state.level;
+lvl.addEventListener('input', () => {
+  state.level = +lvl.value; $('lvlVal').textContent = state.level;
+  if (state.autoStats) fillFromChampion();
+  renderChampSlot(); persist(); recompute();
+});
+
+// Segments type de dégâts
+$('dmgType').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  state.dmgType = b.dataset.t;
+  $('dmgType').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+  $('l_flatpen').textContent = state.dmgType === 'phys' ? 'Létalité' : 'Pénétration magique plate';
+  $('l_pctpen').firstChild.textContent = state.dmgType === 'phys' ? 'Pénétration armure ' : 'Pénétration magique ';
+  $('l_res').textContent = state.dmgType === 'phys' ? 'armure' : 'RM';
+  setVal('p_res', state.dmgType === 'phys' ? state.s_ar : state.s_mr);
+  persist(); recompute();
+});
+// Segments courbe d'équilibre
+$('balType').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  state.balType = b.dataset.t;
+  $('balType').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+  persist(); recompute();
+});
+
+// ══════════════════════════════════════════════════
+//  Calculs + rendu
+// ══════════════════════════════════════════════════
+function recompute() {
+  const HP = state.s_hp, AR = state.s_ar, MR = state.s_mr;
+
+  // ---- Module 1 : eHP ----
+  const ehpP = HP * (1 + AR / 100), ehpM = HP * (1 + MR / 100);
+  $('ehpPhys').textContent = fmt(ehpP);
+  $('ehpMag').textContent = fmt(ehpM);
+  $('ehpTrue').textContent = fmt(HP);
+  $('ehpPhysSub').textContent = 'réduction ' + fmt((1 - dmgMult(AR)) * 100, 1) + ' %';
+  $('ehpMagSub').textContent = 'réduction ' + fmt((1 - dmgMult(MR)) * 100, 1) + ' %';
+
+  // ---- Module 2 : pénétration ----
+  const isPhys = state.dmgType === 'phys';
+  const baseRes = isPhys ? AR : MR;
+  const eR = effResist(baseRes, state.p_pct, state.p_flat);
+  const mult = dmgMult(eR);
+  const afterPct = baseRes * (1 - state.p_pct / 100);
+  $('penPipe').innerHTML =
+    `<span class="step">Résist. <b>${fmt(baseRes,1)}</b></span><span class="arrow">→</span>` +
+    `<span class="step">−${fmt(state.p_pct,0)}% <b>${fmt(afterPct,1)}</b></span><span class="arrow">→</span>` +
+    `<span class="step">−${fmt(state.p_flat,0)} plate <b>${fmt(eR,1)}</b></span>`;
+  $('effRes').textContent = fmt(eR, 1);
+  $('dmgMult').textContent = '×' + fmt(mult, 3) + '  (' + fmt(mult * 100, 1) + ' %)';
+  $('dmgDealt').textContent = fmt(state.p_raw * mult, 1);
+
+  // ---- Module 3 : DPS ----
+  const critMultEff = 1 + (state.d_crit / 100) * (state.d_critmult - 1);
+  const perHit = state.d_ad * critMultEff;
+  $('perHit').textContent = fmt(perHit, 1);
+  const rawDPS = (perHit + state.d_onhit) * state.d_as;
+  $('dpsRaw').textContent = fmt(rawDPS, 1);
+  // effectif
+  const targetAR = state.d_applypen ? effResist(AR, state.p_pct, isPhys ? state.p_flat : 0) : AR;
+  const adPart = perHit * dmgMult(targetAR);
+  let onhitPart = state.d_onhit;
+  if (state.d_onhittype === 'phys') onhitPart *= dmgMult(targetAR);
+  else if (state.d_onhittype === 'mag') onhitPart *= dmgMult(state.d_applypen ? effResist(MR, isPhys ? 0 : state.p_pct, isPhys ? 0 : state.p_flat) : MR);
+  const effDPS = (adPart + onhitPart) * state.d_as;
+  $('dpsEff').textContent = fmt(effDPS, 1);
+  $('dpsEffSub').textContent = 'armure ' + fmt(targetAR, 0);
+
+  drawDpsChart(perHit, state.d_onhit, state.d_as, targetAR);
+  drawBalChart();
+  persistDebounced();
+}
+
+// ---- Courbe DPS vs armure ----
+function drawDpsChart(perHit, onhit, as, curAR) {
+  const maxAR = 300;
+  const f = ar => {
+    let oh = onhit;
+    if (state.d_onhittype === 'phys') oh = onhit * dmgMult(ar);
+    else if (state.d_onhittype === 'mag') oh = onhit * dmgMult(state.s_mr);
+    return (perHit * dmgMult(ar) + oh) * as;
+  };
+  const pts = []; for (let a = 0; a <= maxAR; a += 5) pts.push([a, f(a)]);
+  lineChart('dpsChart', 'dpsTip', pts, { xMax: maxAR, color: 'var(--top)', xLabel: 'Armure', yLabel: 'DPS',
+    marker: [curAR, f(curAR)], fmtX: v => fmt(v, 0), fmtY: v => fmt(v, 0) });
+}
+
+// ---- Courbe d'équilibre eHP vs résistance ----
+function drawBalChart() {
+  const HP = state.s_hp, isAr = state.balType === 'ar';
+  const gRes = isAr ? state.g_ar : state.g_mr;
+  const curRes = isAr ? state.s_ar : state.s_mr;
+  const label = isAr ? 'armure' : 'RM';
+  $('balTitle').textContent = 'eHP ' + (isAr ? 'physique selon l\'armure' : 'magique selon la RM');
+  const maxRes = Math.max(300, Math.ceil((curRes + 40) / 50) * 50);
+  const f = r => HP * (1 + r / 100);
+  const pts = []; for (let r = 0; r <= maxRes; r += 5) pts.push([r, f(r)]);
+  // Résistance or-optimale : R* = HP * (gHP / gRes) − 100
+  const optRes = HP * (state.g_hp / gRes) - 100;
+  const optClamped = Math.max(0, Math.min(maxRes, optRes));
+  lineChart('balChart', 'balTip', pts, { xMax: maxRes, color: 'var(--mid)', xLabel: label === 'armure' ? 'Armure' : 'RM', yLabel: 'eHP',
+    marker: [curRes, f(curRes)], marker2: optRes >= 0 && optRes <= maxRes ? [optClamped, f(optClamped)] : null,
+    fmtX: v => fmt(v, 0), fmtY: v => fmt(v, 0) });
+  // Reco
+  const reco = $('balReco');
+  if (optRes < 0) {
+    reco.innerHTML = `À <b>${fmt(HP)} PV</b>, chaque point de ${label} coûte trop cher : mieux vaut privilégier les <b>PV</b> tant que tu n'as presque pas de ${label}.`;
+  } else {
+    const dir = curRes < optRes ? 'ajouter de la ' + label : (curRes > optRes ? 'ajouter des PV' : 'ton équilibre est proche de l\'optimum');
+    reco.innerHTML = `À <b>${fmt(HP)} PV</b>, l'or est optimal vers <b>${fmt(optRes,0)} ${label}</b> `
+      + `(tu es à ${fmt(curRes,0)}). Pour progresser en eHP par or : <b>${dir}</b>.`;
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  Line chart SVG générique + hover
+// ══════════════════════════════════════════════════
+function lineChart(hostId, tipId, pts, o) {
+  const host = $(hostId); if (!host) return;
+  const W = 520, H = 200, mL = 46, mR = 12, mT = 10, mB = 28;
+  const xMax = o.xMax, yMax = Math.max.apply(null, pts.map(p => p[1])) * 1.08 || 1;
+  const X = v => mL + (v / xMax) * (W - mL - mR);
+  const Y = v => H - mB - (v / yMax) * (H - mT - mB);
+  const path = pts.map((p, i) => (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ' ' + Y(p[1]).toFixed(1)).join(' ');
+  const area = `M${X(0)} ${Y(0)} ` + pts.map(p => 'L' + X(p[0]).toFixed(1) + ' ' + Y(p[1]).toFixed(1)).join(' ') + ` L${X(xMax)} ${Y(0)} Z`;
+  const gid = 'g_' + hostId;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img">`;
+  svg += `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="${o.color}" stop-opacity=".22"/><stop offset="1" stop-color="${o.color}" stop-opacity="0"/></linearGradient></defs>`;
+  // Grille Y (4 lignes)
+  for (let i = 0; i <= 4; i++) {
+    const gy = mT + (i / 4) * (H - mT - mB), val = yMax * (1 - i / 4);
+    svg += `<line x1="${mL}" y1="${gy.toFixed(1)}" x2="${W - mR}" y2="${gy.toFixed(1)}" stroke="var(--border)" stroke-width="1"/>`;
+    svg += `<text x="${mL - 6}" y="${gy + 3}" text-anchor="end" font-size="9" fill="var(--muted)">${o.fmtY(val)}</text>`;
+  }
+  // Ticks X
+  for (let i = 0; i <= 5; i++) {
+    const xv = xMax * i / 5;
+    svg += `<text x="${X(xv)}" y="${H - 8}" text-anchor="middle" font-size="9" fill="var(--muted)">${o.fmtX(xv)}</text>`;
+  }
+  svg += `<path d="${area}" fill="url(#${gid})"/>`;
+  svg += `<path d="${path}" fill="none" stroke="${o.color}" stroke-width="2" stroke-linejoin="round"/>`;
+  // Marqueur optimum (or)
+  if (o.marker2) {
+    svg += `<line x1="${X(o.marker2[0])}" y1="${mT}" x2="${X(o.marker2[0])}" y2="${H - mB}" stroke="var(--ok)" stroke-width="1.2" stroke-dasharray="4 3"/>`;
+    svg += `<circle cx="${X(o.marker2[0])}" cy="${Y(o.marker2[1])}" r="4" fill="var(--ok)" stroke="var(--bg)" stroke-width="1.5"/>`;
+  }
+  // Marqueur point courant
+  if (o.marker) {
+    svg += `<circle cx="${X(o.marker[0])}" cy="${Y(o.marker[1])}" r="4.5" fill="${o.color}" stroke="var(--bg)" stroke-width="1.5"/>`;
+  }
+  // Overlay hover
+  svg += `<line class="cross" x1="0" y1="${mT}" x2="0" y2="${H - mB}" stroke="var(--dim)" stroke-width="1" opacity="0"/>`;
+  svg += `<circle class="crossdot" r="4" fill="${o.color}" stroke="var(--bg)" stroke-width="1.5" opacity="0"/>`;
+  svg += `<rect x="${mL}" y="${mT}" width="${W - mL - mR}" height="${H - mT - mB}" fill="transparent" class="hit"/>`;
+  svg += `</svg>`;
+  host.innerHTML = svg;
+
+  // Hover
+  const el = host.querySelector('svg'), tip = $(tipId);
+  const cross = el.querySelector('.cross'), cdot = el.querySelector('.crossdot'), hit = el.querySelector('.hit');
+  const geom = { W, H, mL, mR, mT, mB, xMax, yMax, X, Y };
+  function onMove(ev) {
+    const r = el.getBoundingClientRect();
+    const px = (ev.clientX - r.left) / r.width * W;
+    let xv = (px - mL) / (W - mL - mR) * xMax;
+    xv = Math.max(0, Math.min(xMax, xv));
+    // valeur interpolée depuis pts
+    const yv = interp(pts, xv);
+    const sx = X(xv), sy = Y(yv);
+    cross.setAttribute('x1', sx); cross.setAttribute('x2', sx); cross.setAttribute('opacity', '.5');
+    cdot.setAttribute('cx', sx); cdot.setAttribute('cy', sy); cdot.setAttribute('opacity', '1');
+    tip.style.opacity = '1';
+    tip.innerHTML = `${o.xLabel} <b>${o.fmtX(xv)}</b> · ${o.yLabel} <b>${o.fmtY(yv)}</b>`;
+    const hostRect = host.getBoundingClientRect();
+    let tx = (sx / W) * hostRect.width + 10, ty = (sy / H) * hostRect.height - 10;
+    if (tx > hostRect.width - 120) tx -= 130;
+    tip.style.left = tx + 'px'; tip.style.top = Math.max(0, ty) + 'px';
+  }
+  hit.addEventListener('mousemove', onMove);
+  hit.addEventListener('mouseleave', () => { cross.setAttribute('opacity', '0'); cdot.setAttribute('opacity', '0'); tip.style.opacity = '0'; });
+}
+function interp(pts, x) {
+  for (let i = 1; i < pts.length; i++) {
+    if (x <= pts[i][0]) {
+      const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+      const t = (x - x0) / (x1 - x0 || 1);
+      return y0 + t * (y1 - y0);
+    }
+  }
+  return pts[pts.length - 1][1];
+}
+
+let _pT = null;
+function persistDebounced() { clearTimeout(_pT); _pT = setTimeout(persist, 400); }
+
+// ══════════════════════════════════════════════════
+//  Init
+// ══════════════════════════════════════════════════
+(function init() {
+  // Applique l'état sauvegardé aux segments/labels
+  $('dmgType').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.t === state.dmgType));
+  $('balType').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.t === state.balType));
+  $('l_flatpen').textContent = state.dmgType === 'phys' ? 'Létalité' : 'Pénétration magique plate';
+  $('l_res').textContent = state.dmgType === 'phys' ? 'armure' : 'RM';
+  setVal('p_res', state.dmgType === 'phys' ? state.s_ar : state.s_mr);
+  renderChampSlot();
+  recompute();
+  PZ.loadingDone();
+  // Charge les icônes + stats en tâche de fond
+  if (window.Champions && Champions.ready) Champions.ready.then(() => { renderChampSlot(); renderSrc(); });
+  loadStats().then(() => { if (state.autoStats && state.champId) { fillFromChampion(); recompute(); } });
+})();
+</script>
+</body>
+</html>
