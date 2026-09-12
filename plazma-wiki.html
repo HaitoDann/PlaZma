@@ -105,12 +105,11 @@
   .lv-a{color:var(--muted);white-space:nowrap}
   .lv-v{color:#e6ebf2;font-weight:600}
   .mk-note{font-size:11px;color:var(--muted);margin:-4px 0 10px}
-  /* Valeurs par rang (Data Dragon, brut) */
-  .rankblk{margin-top:9px;border-top:1px dashed var(--border);padding-top:8px;display:flex;flex-direction:column;gap:5px}
-  .rb-row{display:flex;gap:10px;font-size:12px;font-family:var(--font-mono);align-items:baseline}
-  .rb-k{color:var(--muted);min-width:78px;flex-shrink:0;text-transform:uppercase;letter-spacing:.03em;font-size:10.5px;padding-top:1px}
-  .rb-v{color:var(--dim);font-weight:600}
-  .rb-v .rt{color:var(--accent)}
+  /* Ratios (Data Dragon vars — fiables et labellisés) */
+  .rankblk{margin-top:9px;border-top:1px dashed var(--border);padding-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .rb-k{color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-size:10.5px;font-weight:700}
+  .rb-chip{font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--accent);
+    background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:6px;padding:2px 8px}
 
   /* Barre de niveau sur les stats de base */
   .stat-lvlbar{display:flex;align-items:center;gap:12px;margin:20px 0 12px;padding-bottom:9px;border-bottom:1px solid var(--border);flex-wrap:wrap}
@@ -528,30 +527,22 @@ const VAR_LINK={
   spellblock:'RM', attackspeed:"vit. att.", '@special.abilitypower':'AP'
 };
 function spellRankBlock(s){
-  const eb=s.effectBurn||[];
-  const bases=[];
-  for(let i=1;i<eb.length && bases.length<3;i++){
-    const b=eb[i]; if(!b||b==='0') continue;
-    const arr=String(b).split('/').map(x=>parseFloat(x));
-    if(arr.length<2) continue;                       // pas une progression par rang
-    if(arr.some(x=>!isFinite(x))) continue;
-    if(arr.every(x=>x===arr[0])) continue;           // constante → pas du scaling
-    if(!arr.every((x,j)=>j===0||x>=arr[j-1])) continue; // garde les progressions croissantes
-    bases.push(String(b));
-  }
+  // Data Dragon ne labellise pas les valeurs brutes (un « 0.3 » peut être 30% PV
+  // ou 0.3 AD) : on n'affiche donc que les ratios, qui eux sont fiables et étiquetés.
+  const seen=new Set();
   const ratios=(s.vars||[]).map(v=>{
     let c=Array.isArray(v.coeff)?v.coeff[0]:v.coeff;
     if(c==null||c===0) return '';
     const pct=(c>0&&c<=3)?Math.round(c*100)+'%':String(Math.round(c*100)/100);
     const lbl=VAR_LINK[v.link]|| (v.link&&!v.link.startsWith('@')?v.link:'');
-    return '+'+pct+(lbl?' '+lbl:'');
+    const out='+'+pct+(lbl?' '+lbl:'');
+    if(seen.has(out)) return ''; seen.add(out);
+    return out;
   }).filter(Boolean);
-  if(!bases.length && !ratios.length) return '';
-  let h='<div class="rankblk">';
-  if(bases.length) h+=`<div class="rb-row"><span class="rb-k">Base / rang</span><span class="rb-v">${bases.map(esc).join('&nbsp;&nbsp;·&nbsp;&nbsp;')}</span></div>`;
-  if(ratios.length) h+=`<div class="rb-row"><span class="rb-k">Ratios</span><span class="rb-v"><span class="rt">${ratios.map(esc).join('&nbsp;&nbsp;')}</span></span></div>`;
-  h+='</div>';
-  return h;
+  if(!ratios.length) return '';
+  return `<div class="rankblk"><span class="rb-k">Ratios</span>`
+    + ratios.map(r=>`<span class="rb-chip">${esc(r)}</span>`).join('')
+    + `</div>`;
 }
 
 // ── Stats de base recalculées à un niveau (formule de croissance LoL) ──
