@@ -105,8 +105,14 @@
   .lv-a{color:var(--muted);white-space:nowrap}
   .lv-v{color:#e6ebf2;font-weight:600}
   .mk-note{font-size:11px;color:var(--muted);margin:-4px 0 10px}
+  /* Montants par rang (source CommunityDragon — nom = étiquette) */
+  .dmgblk{margin-top:9px;border-top:1px dashed var(--border);padding-top:8px;display:flex;flex-direction:column;gap:5px}
+  .dmg-row{display:flex;gap:12px;font-size:12.5px;font-family:var(--font-mono);align-items:baseline}
+  .dmg-k{color:var(--muted);min-width:128px;flex-shrink:0;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;padding-top:1px}
+  .dmg-v{color:var(--text);font-weight:700}
   /* Ratios (Data Dragon vars — fiables et labellisés) */
   .rankblk{margin-top:9px;border-top:1px dashed var(--border);padding-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .dmgblk + .rankblk{border-top:0;margin-top:5px;padding-top:0}
   .rb-k{color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-size:10.5px;font-weight:700}
   .rb-chip{font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--accent);
     background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:6px;padding:2px 8px}
@@ -318,6 +324,90 @@ async function enrichMeraki(id){
   const after=head&&head.nextElementSibling;
   if(added.length && head && !(after&&after.classList.contains('mk-note'))){
     head.insertAdjacentHTML('afterend','<div class="mk-note">Chiffres précis par rang — source Meraki Analytics (libellés en anglais, parfois 1 patch de retard).</div>');
+  }
+}
+
+// ── Montants par rang via CommunityDragon ────────────────────────────────
+// Les mDataValues sont des paires {name, values[]} : le NOM sert d'étiquette,
+// les VALEURS sont les vrais montants par rang. On ne garde que dégâts/soin/
+// bouclier (nom) → aucun enum à deviner, aucune étiquette inventée.
+const CD_CHAMP=key=>`https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champions/${key}.json`;
+function cdLabel(name){
+  const n=String(name||''), low=n.toLowerCase();
+  const dmg=/dmg|damage|degat|dégât/.test(low);
+  if(dmg){
+    if(/magic/.test(low)) return 'Dégâts magiques';
+    if(/phys/.test(low))  return 'Dégâts physiques';
+    if(/true/.test(low))  return 'Dégâts bruts';
+    if(/persecond|dps/.test(low)) return 'Dégâts / s';
+    if(/tick|persec|dot/.test(low)) return 'Dégâts / intervalle';
+    if(/total/.test(low)) return 'Dégâts totaux';
+    if(/bonus/.test(low)) return 'Dégâts bonus';
+    if(/\bmin/.test(low)) return 'Dégâts min.';
+    if(/\bmax/.test(low)) return 'Dégâts max.';
+    return 'Dégâts';
+  }
+  if(/heal|soin/.test(low))   return 'Soin';
+  if(/shield|bouclier/.test(low)) return 'Bouclier';
+  return null;
+}
+function cdCollect(node,out,depth){
+  if(!node||typeof node!=='object'||depth>6) return;
+  if(Array.isArray(node)){ node.forEach(x=>cdCollect(x,out,depth+1)); return; }
+  if(typeof node.name==='string' && Array.isArray(node.values)){
+    let vals=node.values.filter(v=>typeof v==='number');
+    if(vals.length>=3 && vals.length<=7){
+      const lbl=cdLabel(node.name);
+      if(lbl){
+        if(vals.length>=6 && vals[0]===0) vals=vals.slice(1);   // rang 0 non utilisé
+        if(vals.some(v=>v>0)) out.push({label:lbl,values:vals});
+      }
+    }
+  }
+  for(const k in node){ const v=node[k]; if(v&&typeof v==='object') cdCollect(v,out,depth+1); }
+}
+function cdSlim(data){
+  const bySlot={};
+  const spells=Array.isArray(data&&data.spells)?data.spells:[];
+  spells.forEach(sp=>{
+    const key=String((sp&&sp.spellKey)||'').toUpperCase();
+    if(!/^[QWER]$/.test(key)) return;
+    const raw=[]; cdCollect(sp,raw,0);
+    const seen=new Set(), uniq=[];
+    raw.forEach(o=>{ const s=o.label+'|'+o.values.join('/'); if(!seen.has(s)){ seen.add(s); uniq.push(o); } });
+    if(uniq.length) bySlot[key]=uniq.slice(0,4);
+  });
+  return bySlot;
+}
+async function getCDragon(id){
+  const key=KEY_BY_ID[id]; if(!key) throw new Error('no key');
+  const ck='pz_wiki_cd_'+id;
+  try{ const c=JSON.parse(localStorage.getItem(ck)||'null'); if(c&&c.t&&Date.now()-c.t<24*3600*1000) return c.d; }catch(e){}
+  const data=await fetchJSON(CD_CHAMP(key));
+  const slim=cdSlim(data);
+  try{ localStorage.setItem(ck,JSON.stringify({t:Date.now(),d:slim})); }catch(e){}
+  return slim;
+}
+async function enrichCDragon(id){
+  let m; try{ m=await getCDragon(id); }catch(e){ return; }            // silencieux si indispo
+  if(!m || (location.hash||'').replace(/^#/,'')!==id) return;         // fiche changée
+  let added=false;
+  document.querySelectorAll('#wdBody .spell[data-slot]').forEach(el=>{
+    const rows=m[el.dataset.slot]; if(!rows||!rows.length) return;
+    const bodyEl=el.querySelector('.spell-body');
+    if(!bodyEl || bodyEl.querySelector('.dmgblk')) return;
+    const html='<div class="dmgblk">'+rows.map(r=>
+      `<div class="dmg-row"><span class="dmg-k">${esc(r.label)}</span><span class="dmg-v">${r.values.map(v=>Math.round(v*100)/100).join(' / ')}</span></div>`
+    ).join('')+'</div>';
+    const rk=bodyEl.querySelector('.rankblk');
+    if(rk) rk.insertAdjacentHTML('beforebegin',html); else bodyEl.insertAdjacentHTML('beforeend',html);
+    added=true;
+  });
+  if(added){
+    const head=document.querySelector('#wdBody .wd-sec-t');
+    const after=head&&head.nextElementSibling;
+    if(head && !(after&&after.classList.contains('mk-note')))
+      head.insertAdjacentHTML('afterend','<div class="mk-note">Montants par rang — source CommunityDragon. Signale tout écart pour ajustement.</div>');
   }
 }
 
@@ -625,7 +715,9 @@ async function openChamp(id){
     <div class="stats" id="statGrid"></div>
     ${tips}`;
   renderStatTiles(1);
-  // Enrichissement non-bloquant : chiffres précis par rang via Meraki Analytics.
+  // Enrichissements non-bloquants : montants par rang (CommunityDragon, fiable)
+  // puis Meraki Analytics en secours si disponible.
+  enrichCDragon(id);
   enrichMeraki(id);
 }
 
