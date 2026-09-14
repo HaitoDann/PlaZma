@@ -26,6 +26,7 @@ import urllib.request
 
 DD = 'https://ddragon.leagueoflegends.com'
 CD = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champions'
+MK = 'https://cdn.merakianalytics.com/riot/lol/resources/latest/en/champions'
 LANG = 'fr_FR'
 OUT = 'assets/spells.json'
 UA = {'User-Agent': 'ARCHI-spell-sync (github-actions)'}
@@ -129,6 +130,107 @@ def cd_ratios(cd_spell, color):
     return out
 
 
+MK_ATTR = {
+    'magic damage': 'Dégâts magiques', 'physical damage': 'Dégâts physiques',
+    'true damage': 'Dégâts bruts', 'total damage': 'Dégâts',
+    'damage': 'Dégâts', 'bonus damage': 'Dégâts bonus',
+    'heal': 'Soin', 'healing': 'Soin', 'health restored': 'Soin',
+    'shield': 'Bouclier', 'shield strength': 'Bouclier',
+    'damage per second': 'Dégâts / s', 'minimum damage': 'Dégâts min',
+    'maximum damage': 'Dégâts max', 'monster damage': 'Dégâts (monstres)',
+    'slow': 'Ralentissement', 'movement speed': 'Vitesse de déplacement',
+    'attack speed': "Vitesse d'attaque", 'bonus attack speed': "Vitesse d'attaque bonus",
+    'stun duration': "Durée d'étourdissement", 'duration': 'Durée',
+    'range': 'Portée', 'cooldown': 'Récup', 'mana restored': 'Mana rendu',
+}
+MK_COLOR = [
+    ('magic', 'magic'), ('physical', 'physical'), ('true', 'true'),
+    ('heal', 'heal'), ('soin', 'heal'), ('shield', 'shield'), ('bouclier', 'shield'),
+]
+
+
+def mk_label(attr):
+    a = (attr or '').strip()
+    return MK_ATTR.get(a.lower(), a)
+
+
+def mk_color(attr):
+    low = (attr or '').lower()
+    for kw, col in MK_COLOR:
+        if kw in low:
+            return col
+    return 'magic'
+
+
+def mk_stat(unit):
+    u = (unit or '').lower()
+    if 'ability power' in u or re.search(r'\bap\b', u):
+        return 'AP'
+    if 'bonus ad' in u or 'bonus attack damage' in u:
+        return 'AD bonus'
+    if 'attack damage' in u or re.search(r'\bad\b', u):
+        return 'AD'
+    if 'max' in u and 'health' in u:
+        return 'PV max'
+    if 'bonus health' in u:
+        return 'PV bonus'
+    if 'health' in u:
+        return 'PV'
+    if 'armor' in u:
+        return 'armure'
+    if 'magic resist' in u:
+        return 'RM'
+    return u.replace('%', '').strip()
+
+
+def mk_is_ratio(units):
+    for u in units:
+        if u and (('%' in u) or re.search(r'[a-zA-Z]', u)):
+            return True
+    return False
+
+
+def mk_rows(mk_ability):
+    """Sort Meraki (déjà résolu) → lignes {label,value,color} + ratios."""
+    if not mk_ability:
+        return [], []
+    ab = mk_ability[0] if isinstance(mk_ability, list) else mk_ability
+    if not isinstance(ab, dict):
+        return [], []
+    rows, ratios, seen = [], [], set()
+    for eff in (ab.get('effects') or []):
+        for lv in (eff.get('leveling') or []):
+            attr = lv.get('attribute') or ''
+            if SKIP_LABEL.search(attr):
+                continue
+            base_row = None
+            for mod in (lv.get('modifiers') or []):
+                vals = mod.get('values') or []
+                units = mod.get('units') or []
+                nums = [v for v in vals if isinstance(v, (int, float))]
+                if not nums:
+                    continue
+                if mk_is_ratio(units):
+                    u = next((x for x in units if x), '')
+                    stat = mk_stat(u)
+                    v0 = nums[0]
+                    pct = round(v0) if '%' in u else (round(v0 * 100) if abs(v0) <= 3 else round(v0))
+                    out = '+%d%%%s' % (pct, (' ' + stat) if stat else '')
+                    if pct and out not in seen:
+                        seen.add(out)
+                        ratios.append(out)
+                elif base_row is None and any(n != 0 for n in nums):
+                    if all(n == nums[0] for n in nums):
+                        val = num_str(nums[0])
+                    else:
+                        val = '/'.join(num_str(n) for n in nums)
+                    base_row = {'label': mk_label(attr), 'value': val,
+                                'color': row_color(mk_label(attr), mk_color(attr))}
+            if base_row:
+                rows.append(base_row)
+    return rows, ratios
+
+
 def resolve_effect(text, effburn, vmap):
     if not text:
         return None
@@ -155,7 +257,7 @@ def resolve_effect(text, effburn, vmap):
     return s
 
 
-def build_rows(dd_spell, cd_spell):
+def build_rows(dd_spell, cd_spell, mk_ability=None):
     eff = dd_spell.get('effectBurn') or []
     vmap = {v['key']: v for v in (dd_spell.get('vars') or []) if v.get('key')}
     color = spell_color(dd_spell.get('tooltip'))
@@ -207,6 +309,18 @@ def build_rows(dd_spell, cd_spell):
             seen.add(r)
             ratios.append(r)
 
+    # Recours Meraki (déjà résolu) : comble les sorts retravaillés dont les
+    # montants/ratios ne vivent que dans le bin de jeu (Ahri, Jinx, Garen…).
+    if not rows or not ratios:
+        mk_r, mk_ratios = mk_rows(mk_ability)
+        if not rows and mk_r:
+            rows = mk_r
+        if not ratios:
+            for r in mk_ratios:
+                if r not in seen:
+                    seen.add(r)
+                    ratios.append(r)
+
     return rows, ratios
 
 
@@ -237,11 +351,21 @@ def main():
         except Exception as e:
             print('  ~ CD %s : %s' % (cid, e), file=sys.stderr)
 
+        # Meraki (facultatif) : valeurs déjà résolues, indexées par id de champion
+        mk_ab = {}
+        try:
+            mk = fetch_json('%s/%s.json' % (MK, cid))
+            if isinstance(mk, dict):
+                mk_ab = mk.get('abilities') or {}
+        except Exception as e:
+            print('  ~ MK %s : %s' % (cid, e), file=sys.stderr)
+
         keys = ['Q', 'W', 'E', 'R']
         spells = []
         for i, sp in enumerate(dd.get('spells') or []):
             cd_sp = cd_spells[i] if i < len(cd_spells) else None
-            rows, ratios = build_rows(sp, cd_sp)
+            mk_sp = mk_ab.get(keys[i]) if i < len(keys) else None
+            rows, ratios = build_rows(sp, cd_sp, mk_sp)
             spells.append({
                 'key': keys[i] if i < len(keys) else '',
                 'name': sp.get('name', ''),
