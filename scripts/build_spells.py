@@ -219,6 +219,7 @@ def main():
 
     champions = {}
     ok = 0
+    cd_ok = 0
     for cid in ids:
         try:
             dd = fetch_json('%s/cdn/%s/data/%s/champion/%s.json' % (DD, version, LANG, cid))['data'][cid]
@@ -236,6 +237,12 @@ def main():
                     cd_spells = []
         except Exception as e:
             print('  ~ CD %s : %s' % (cid, e), file=sys.stderr)
+        if cd_spells:
+            cd_ok += 1
+        if cid == 'Orianna':
+            print('DEBUG Orianna key=%r cd_spells=%d' % (key_by_id.get(cid), len(cd_spells)), file=sys.stderr)
+            if cd_spells:
+                print('DEBUG Orianna Q coeffs=%r' % (cd_spells[0].get('coefficients'),), file=sys.stderr)
 
         keys = ['Q', 'W', 'E', 'R']
         spells = []
@@ -262,7 +269,7 @@ def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, 'w', encoding='utf-8') as f:
         json.dump(out, f, ensure_ascii=False, separators=(',', ':'))
-    print('spells.json : %d champions (patch %s)' % (ok, version))
+    print('spells.json : %d champions (patch %s) | CDragon OK: %d' % (ok, version, cd_ok))
 
 
 if __name__ == '__main__':
