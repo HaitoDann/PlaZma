@@ -1,0 +1,41 @@
+name: Synchro données de sorts
+
+# Génère assets/spells.json (montants/ratios de tous les sorts et passifs, déjà
+# résolus) depuis Data Dragon, une fois par jour. Le site charge ce fichier local.
+
+on:
+  schedule:
+    - cron: '32 4 * * *'        # tous les jours ~04:32 UTC
+  workflow_dispatch:            # déclenchement manuel (bouton "Run workflow")
+  push:
+    paths:
+      - 'scripts/build_spells.py'
+      - '.github/workflows/spell-data.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: spell-data
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Générer spells.json
+        run: python3 scripts/build_spells.py
+
+      - name: Commit si changement
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/spells.json
+          if git diff --cached --quiet; then
+            echo "Aucune mise à jour des sorts."
+          else
+            git commit -m "Données de sorts : synchro Data Dragon [skip ci]"
+            git push
+          fi

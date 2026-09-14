@@ -110,6 +110,13 @@
   .dmg-row{display:flex;gap:12px;font-size:12.5px;font-family:var(--font-mono);align-items:baseline}
   .dmg-k{color:var(--muted);min-width:128px;flex-shrink:0;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;padding-top:1px}
   .dmg-v{color:var(--text);font-weight:700}
+  /* Coloration syntaxique des valeurs par type */
+  .dmg-v.dv-magic{color:#5cc8ff}
+  .dmg-v.dv-physical{color:#f9a03c}
+  .dmg-v.dv-true{color:#f0f0f0}
+  .dmg-v.dv-heal{color:#5fd38a}
+  .dmg-v.dv-shield{color:#c3ccdb}
+  .dmg-v.dv-ratio{color:var(--accent)}
   /* Ratios (Data Dragon vars — fiables et labellisés) */
   .rankblk{margin-top:9px;border-top:1px dashed var(--border);padding-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .dmgblk + .rankblk{border-top:0;margin-top:5px;padding-top:0}
@@ -411,7 +418,11 @@ async function enrichCDragon(id){
   }
 }
 
-let VER='', VER_ALT='', LIST=[], activeTag='';
+let VER='', VER_ALT='', LIST=[], activeTag='', SPELLS=null;
+// Montants/ratios de sorts pré-résolus (généré par une GitHub Action, hors-ligne).
+async function loadSpells(){
+  try{ const d=await fetch('assets/spells.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null); if(d&&d.champions)SPELLS=d; }catch(e){}
+}
 
 // Secours d'image : Data Dragon publie parfois un patch avant que ses images ne
 // soient sur le CDN → on réessaie avec le patch précédent, puis on masque.
@@ -616,6 +627,20 @@ const VAR_LINK={
   armor:'armure', bonusarmor:'armure bonus', health:'PV', bonushealth:'PV bonus',
   spellblock:'RM', attackspeed:"vit. att.", '@special.abilitypower':'AP'
 };
+// Rend les montants/ratios d'un sort : d'abord depuis assets/spells.json
+// (pré-résolu, fiable), sinon repli sur la résolution à la volée.
+function spellRowsHtml(id,i,s){
+  const cd=SPELLS&&SPELLS.champions&&SPELLS.champions[id];
+  const pre=cd&&cd.spells&&cd.spells[i];
+  if(pre&&((pre.rows&&pre.rows.length)||(pre.ratios&&pre.ratios.length))){
+    let h='<div class="dmgblk">';
+    h+=(pre.rows||[]).map(r=>`<div class="dmg-row"><span class="dmg-k">${esc(r.label)}</span><span class="dmg-v dv-${esc(r.color||'magic')}">${esc(r.value)}</span></div>`).join('');
+    if(pre.ratios&&pre.ratios.length) h+=`<div class="dmg-row"><span class="dmg-k">Ratios</span><span class="dmg-v dv-ratio">${pre.ratios.map(esc).join('&nbsp;&nbsp;')}</span></div>`;
+    h+='</div>';
+    return h;
+  }
+  return spellRankBlock(s);
+}
 function spellRankBlock(s){
   // Data Dragon : `leveltip.label` donne les étiquettes localisées (Dégâts, Soin,
   // Bouclier…). Les valeurs sont dans effectBurn. Le leveltip utilise souvent des
@@ -715,7 +740,7 @@ async function openChamp(id){
           ${s.rangeBurn&&s.rangeBurn!=='0'&&s.rangeBurn!=='self'?`<span><b>Portée</b> ${esc(s.rangeBurn)}</span>`:''}
         </div>
         <div class="spell-desc">${safeHtml(resolveTooltip(s))}</div>
-        ${spellRankBlock(s)}
+        ${spellRowsHtml(id,i,s)}
       </div>
     </div>`).join('');
   const passive=c.passive?`
@@ -759,6 +784,7 @@ async function openChamp(id){
 // ── Init ──
 (async()=>{
   try{
+    await loadSpells();          // montants pré-résolus (assets/spells.json)
     LIST=await getList();
     document.getElementById('patchVer').textContent=VER?('Patch '+VER):'Miroir communautaire';
     renderFilters(); applyView();
