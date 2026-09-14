@@ -148,10 +148,36 @@ MK_COLOR = [
     ('heal', 'heal'), ('soin', 'heal'), ('shield', 'shield'), ('bouclier', 'shield'),
 ]
 
+# Traduction par sous-chaînes (du plus long au plus court) pour couvrir les
+# intitulés composés de Meraki (« Initial Flame Magic Damage », « Damage Per Spin »).
+LABEL_SUBS = [
+    ('magic damage', 'dégâts magiques'), ('physical damage', 'dégâts physiques'),
+    ('true damage', 'dégâts bruts'), ('per second', '/ s'), ('per pass', '/ passage'),
+    ('per spin', '/ tour'), ('per tick', '/ tick'), ('per bolt', '/ trait'),
+    ('per stack', '/ charge'), ('over time', 'sur la durée'),
+    ('movement speed', 'vitesse de déplacement'), ('attack speed', "vitesse d'attaque"),
+    ('single-target', 'monocible'), ('single target', 'monocible'),
+    ('damage', 'dégâts'), ('healing', 'soin'), ('heal', 'soin'),
+    ('shield', 'bouclier'), ('minimum', 'min'), ('maximum', 'max'),
+    ('bonus', 'bonus'), ('initial', 'initial'), ('subsequent', 'suivant'),
+    ('increased', 'accru'), ('reduced', 'réduit'), ('empowered', 'amélioré'),
+    ('duration', 'durée'), ('slow', 'ralentissement'), ('minion', 'sbire'),
+    ('minions', 'sbires'), ('monster', 'monstre'), ('monsters', 'monstres'),
+    ('champion', 'champion'), ('flame', 'flamme'), ('total', 'total'),
+    ('secondary', 'secondaire'), ('resistance', 'résistance'), ('missing', 'manquants'),
+    ('health', 'PV'), ('mana', 'mana'), ('range', 'portée'),
+]
+
 
 def mk_label(attr):
     a = (attr or '').strip()
-    return MK_ATTR.get(a.lower(), a)
+    if a.lower() in MK_ATTR:
+        return MK_ATTR[a.lower()]
+    out = a.lower()
+    for en, fr in LABEL_SUBS:
+        out = out.replace(en, fr)
+    out = re.sub(r'\s+', ' ', out).strip()
+    return (out[:1].upper() + out[1:]) if out else a
 
 
 def mk_color(attr):
@@ -181,6 +207,9 @@ def mk_stat(unit):
     if 'magic resist' in u:
         return 'RM'
     return u.replace('%', '').strip()
+
+
+MK_KNOWN_STATS = {'AP', 'AD', 'AD bonus', 'PV', 'PV max', 'PV bonus', 'armure', 'RM'}
 
 
 def mk_is_ratio(units):
@@ -213,6 +242,11 @@ def mk_rows(mk_ability):
                 if mk_is_ratio(units):
                     u = next((x for x in units if x), '')
                     stat = mk_stat(u)
+                    # On ne garde que les ratios vers une stat connue (ou un
+                    # pourcentage nu) : les unités « seconds », « range »… ne
+                    # sont pas des ratios de dégâts et polluent l'affichage.
+                    if stat and stat not in MK_KNOWN_STATS:
+                        continue
                     v0 = nums[0]
                     pct = round(v0) if '%' in u else (round(v0 * 100) if abs(v0) <= 3 else round(v0))
                     out = '+%d%%%s' % (pct, (' ' + stat) if stat else '')
