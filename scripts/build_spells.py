@@ -26,7 +26,7 @@ import urllib.request
 
 DD = 'https://ddragon.leagueoflegends.com'
 CD = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champions'
-MK = 'https://cdn.merakianalytics.com/riot/lol/resources/latest/en/champions'
+MK = 'https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/champions.json'
 LANG = 'fr_FR'
 OUT = 'assets/spells.json'
 UA = {'User-Agent': 'ARCHI-spell-sync (github-actions)'}
@@ -331,6 +331,19 @@ def main():
     key_by_id = {cid: c.get('key') for cid, c in champ_list.items()}
     ids = sorted(champ_list.keys())
 
+    # Meraki (facultatif) : un seul fichier agrégé, valeurs déjà résolues.
+    # Indexé par clé numérique de champion pour un appariement robuste.
+    mk_by_key = {}
+    try:
+        mk_all = fetch_json(MK)
+        if isinstance(mk_all, dict):
+            for entry in mk_all.values():
+                if isinstance(entry, dict) and entry.get('id') is not None:
+                    mk_by_key[str(entry['id'])] = entry.get('abilities') or {}
+        print('Meraki : %d champions' % len(mk_by_key))
+    except Exception as e:
+        print('  ~ Meraki (agrégat) indisponible : %s' % e, file=sys.stderr)
+
     champions = {}
     ok = 0
     for cid in ids:
@@ -351,14 +364,8 @@ def main():
         except Exception as e:
             print('  ~ CD %s : %s' % (cid, e), file=sys.stderr)
 
-        # Meraki (facultatif) : valeurs déjà résolues, indexées par id de champion
-        mk_ab = {}
-        try:
-            mk = fetch_json('%s/%s.json' % (MK, cid))
-            if isinstance(mk, dict):
-                mk_ab = mk.get('abilities') or {}
-        except Exception as e:
-            print('  ~ MK %s : %s' % (cid, e), file=sys.stderr)
+        # Meraki (facultatif) : abilities déjà résolues, via l'agrégat indexé
+        mk_ab = mk_by_key.get(str(key_by_id.get(cid))) or {}
 
         keys = ['Q', 'W', 'E', 'R']
         spells = []
