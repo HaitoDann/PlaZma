@@ -32,20 +32,20 @@
     position:absolute;border-radius:50%;
     filter:blur(.4px);
     background:
-      radial-gradient(circle at 32% 28%, rgba(255,255,255,.55), rgba(103,232,249,.9) 16%, #22d3ee 42%, #0e7490 74%, #063847 100%);
+      radial-gradient(circle at 32% 28%, rgba(207,247,255,.85), rgba(103,232,249,.92) 18%, #22d3ee 44%, #0e7490 76%, #063847 100%);
     box-shadow:
       inset -14px -18px 40px rgba(2,20,28,.65),
-      inset 10px 12px 30px rgba(224,255,255,.35),
+      inset 10px 12px 30px rgba(186,238,250,.35),
       0 40px 90px rgba(6,58,71,.55),
       0 0 70px rgba(34,211,238,.30);
     animation:float 14s ease-in-out infinite;
   }
   .orb.teal{
     background:
-      radial-gradient(circle at 34% 30%, rgba(255,255,255,.5), rgba(94,234,212,.85) 18%, #14b8a6 46%, #0f766e 76%, #053a38 100%);
+      radial-gradient(circle at 34% 30%, rgba(198,250,244,.82), rgba(94,234,212,.9) 20%, #14b8a6 48%, #0f766e 78%, #053a38 100%);
     box-shadow:
       inset -12px -16px 38px rgba(2,26,24,.6),
-      inset 8px 10px 26px rgba(220,255,250,.32),
+      inset 8px 10px 26px rgba(190,248,240,.32),
       0 36px 80px rgba(5,58,56,.5),
       0 0 60px rgba(45,212,191,.26);
   }
@@ -67,44 +67,40 @@
     background:radial-gradient(760px 620px at 50% 50%, rgba(6,10,16,.28), transparent 70%);
   }
 
-  /* ---- Carte glassmorphism ---- */
-  .login{width:400px;max-width:100%;position:relative;z-index:1}
+  /* ---- Socle rond glassmorphism ---- */
+  .login{width:560px;max-width:100%;position:relative;z-index:1}
   .login .glass{
-    padding:40px 34px 34px;border-radius:26px;
-    background:linear-gradient(155deg, rgba(24,34,46,.62), rgba(12,18,26,.5));
+    aspect-ratio:1;border-radius:50%;padding:0 92px;
+    display:flex;flex-direction:column;justify-content:center;
+    background:linear-gradient(155deg, rgba(24,34,46,.6), rgba(12,18,26,.48));
     backdrop-filter:blur(22px) saturate(150%);
     -webkit-backdrop-filter:blur(22px) saturate(150%);
     border:1px solid rgba(255,255,255,.10);
     box-shadow:
-      0 30px 70px rgba(0,0,0,.5),
+      0 30px 80px rgba(0,0,0,.5),
       0 0 0 1px rgba(34,211,238,.06),
       inset 0 1px 0 rgba(255,255,255,.14),
-      inset 0 -30px 60px rgba(6,58,71,.14);
+      inset 0 -40px 80px rgba(6,58,71,.14);
     position:relative;overflow:hidden;
   }
-  /* Filet lumineux cyan sur le bord haut */
+  /* Léger éclat cyan en haut du socle */
   .login .glass::before{
-    content:"";position:absolute;top:0;left:22%;right:22%;height:1px;
-    background:linear-gradient(90deg, transparent, rgba(103,232,249,.75), transparent);
+    content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
+    background:radial-gradient(120% 70% at 50% -6%, rgba(103,232,249,.16), transparent 46%);
   }
 
-  .login-brand{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:26px}
-  .login-mark{
-    width:80px;height:80px;display:flex;align-items:center;justify-content:center;
-    border-radius:22px;
-    background:radial-gradient(circle at 50% 35%, rgba(34,211,238,.18), rgba(34,211,238,.04) 60%, transparent 72%);
-    box-shadow:0 0 40px rgba(34,211,238,.22), inset 0 0 0 1px rgba(255,255,255,.06);
-  }
-  .login-mark img{width:60%;height:60%;object-fit:contain;filter:drop-shadow(0 4px 16px rgba(34,211,238,.35))}
+  .login-brand{display:flex;flex-direction:column;align-items:center;gap:7px;margin-bottom:16px}
+  .login-mark{width:62px;height:62px;display:flex;align-items:center;justify-content:center}
+  .login-mark img{width:100%;height:100%;object-fit:contain}
   .login h1{
-    font-size:2.1rem;letter-spacing:.14em;font-weight:800;
+    font-size:2rem;letter-spacing:.14em;font-weight:800;
     background:linear-gradient(180deg,#ffffff, #b9e9f4 90%);
     -webkit-background-clip:text;background-clip:text;color:transparent;
     text-shadow:0 0 30px rgba(34,211,238,.2);
   }
   .login-sub{font-size:11.5px;color:var(--dim);letter-spacing:.16em;text-transform:uppercase}
 
-  .login label{display:block;margin:16px 0 7px;font-size:12px;color:var(--dim);font-weight:600;letter-spacing:.02em}
+  .login label{display:block;margin:12px 0 6px;font-size:12px;color:var(--dim);font-weight:600;letter-spacing:.02em}
 
   /* Champs sur mesure pour l'effet verre */
   .login .field{position:relative}
@@ -113,7 +109,7 @@
     width:17px;height:17px;color:var(--muted);pointer-events:none;transition:color .2s;
   }
   .login input{
-    width:100%;padding:13px 15px 13px 42px;
+    width:100%;padding:12px 15px 12px 42px;
     background:rgba(9,14,20,.55);
     border:1px solid rgba(255,255,255,.10);
     border-radius:14px;color:var(--text);font-size:14px;font-family:var(--font);
@@ -127,13 +123,13 @@
   }
   .login .field:focus-within svg{color:var(--accent)}
 
-  .err{min-height:18px;text-align:center;font-size:12.5px;color:var(--err);margin-top:14px;opacity:0;transition:opacity .2s}
+  .err{min-height:16px;text-align:center;font-size:12.5px;color:var(--err);margin-top:10px;opacity:0;transition:opacity .2s}
   .err.show{opacity:1}
-  .msg{min-height:18px;text-align:center;font-size:12.5px;color:var(--ok,#4ade80);margin-top:8px;opacity:0;transition:opacity .2s}
+  .msg{min-height:14px;text-align:center;font-size:12.5px;color:var(--ok,#4ade80);margin-top:6px;opacity:0;transition:opacity .2s}
   .msg.show{opacity:1}
 
   .login .btn{
-    width:100%;margin-top:22px;padding:14px;border:0;cursor:pointer;
+    width:100%;margin-top:16px;padding:13px;border:0;cursor:pointer;
     border-radius:14px;font-family:var(--font-display);font-weight:700;font-size:15px;letter-spacing:.02em;
     color:#04252d;
     background:linear-gradient(180deg, #7ce9f6, #22d3ee 55%, #0aa9c9);
@@ -144,10 +140,14 @@
   .login .btn:active:not(:disabled){transform:translateY(0)}
   .login .btn:disabled{opacity:.7;cursor:default}
 
-  .forgot{display:block;text-align:center;margin-top:16px;font-size:12px;color:var(--muted);background:none;border:0;width:100%}
+  .forgot{display:block;text-align:center;margin-top:12px;font-size:11.5px;color:var(--muted);background:none;border:0;width:100%}
 
-  @media (max-width:440px){
-    .login .glass{padding:32px 24px 28px;border-radius:22px}
+  @media (max-width:600px){
+    .login{width:100%}
+    /* Sur petit écran : on relâche le cercle en carte arrondie pour ne rien rogner */
+    .login .glass{aspect-ratio:auto;border-radius:34px;padding:36px 28px 30px}
+    .login .glass::before{border-radius:34px}
+    .login h1{font-size:1.8rem}
     .o1,.o5{width:150px;height:150px}
   }
   @media (prefers-reduced-motion:reduce){
