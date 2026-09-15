@@ -10,69 +10,116 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/theme.css?v=20260929g">
 <style>
-  .wrap{max-width:1100px;margin:0 auto;padding:26px var(--gut) 60px}
-  .pagehead{margin:8px 0 22px}
+  .wrap{max-width:960px;margin:0 auto;padding:26px var(--gut) 60px}
+  .pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:8px 0 20px}
   .pagehead h1{font-size:1.8rem;font-family:var(--font-display)}
-  .pagehead p{color:var(--muted);font-size:13.5px;margin-top:4px}
-  .cols{display:grid;grid-template-columns:1fr;gap:18px}
-  @media(min-width:900px){.cols{grid-template-columns:360px 1fr}}
-  .field{margin-bottom:12px}
+  .pagehead p{color:var(--muted);font-size:13.5px;margin-top:4px;max-width:46ch}
+
+  /* Barre d'outils : recherche + compteur */
+  .toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .search{position:relative;flex:1;min-width:200px}
+  .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted);pointer-events:none}
+  .search input{width:100%;padding-left:36px}
+  .count{font-size:12.5px;color:var(--muted);white-space:nowrap}
+
+  /* Liste des comptes */
+  .ulist{display:flex;flex-direction:column;gap:10px}
+  .urow{display:flex;align-items:center;gap:14px;border:1px solid var(--border);border-radius:14px;
+    padding:13px 16px;background:var(--surface);transition:border-color .15s,background .15s}
+  .urow:hover{border-color:var(--border-2);background:var(--surface-2)}
+  .urow.dis{opacity:.6}
+  .avatar{flex-shrink:0;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
+    font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--accent);
+    background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 25%,transparent)}
+  .avatar.admin{color:#04222a;background:var(--accent);border-color:var(--accent)}
+  .uinfo{flex:1;min-width:0}
+  .uinfo-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .uname{font-weight:700;font-size:15px}
+  .uemail{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .uaccess{font-size:12px;color:var(--dim);margin-top:3px}
+  .badge{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:20px;line-height:1}
+  .badge.admin{background:var(--accent-soft);color:var(--accent)}
+  .badge.staff{background:var(--surface-2);color:var(--dim);border:1px solid var(--border)}
+  .badge.off{background:rgba(220,80,80,.16);color:#f38b8b}
+  .badge.me{background:transparent;color:var(--muted);border:1px solid var(--border)}
+
+  /* Menu d'actions (kebab) */
+  .uactions{position:relative;flex-shrink:0}
+  .kebab{width:34px;height:34px;border-radius:9px;border:1px solid var(--border);background:transparent;
+    color:var(--muted);cursor:pointer;display:grid;place-items:center;transition:.15s}
+  .kebab:hover{background:var(--surface-2);color:var(--text);border-color:var(--border-2)}
+  .menu{position:absolute;right:0;top:calc(100% + 6px);z-index:30;min-width:190px;
+    background:var(--elevated);border:1px solid var(--border-2);border-radius:12px;
+    box-shadow:var(--shadow-3,0 16px 40px rgba(0,0,0,.45));padding:6px;display:none}
+  .menu.open{display:block}
+  .menu button{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:0;
+    color:var(--text);font-family:var(--font);font-size:13px;padding:9px 11px;border-radius:8px;cursor:pointer}
+  .menu button:hover{background:var(--surface-2)}
+  .menu button.danger{color:var(--err)}
+  .menu-sep{height:1px;background:var(--border);margin:5px 2px}
+
+  .empty{color:var(--muted);font-size:13px;text-align:center;padding:40px 20px;
+    border:1px dashed var(--border);border-radius:14px}
+  .note{font-size:12.5px;color:var(--muted);line-height:1.55;
+    background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;margin-top:16px}
+
+  /* Formulaire (dans les modales) */
+  .field{margin-bottom:13px}
   .field label{display:block;font-size:12px;color:var(--dim);font-weight:600;margin-bottom:5px}
   .field input,.field select{width:100%}
+  .field .hint{font-size:11px;color:var(--muted);margin-top:4px}
   .secgrid{display:flex;flex-direction:column;gap:6px;margin-top:6px}
-  .secgrid.dim{opacity:.5;pointer-events:none}
-  .secrow{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--text)}
+  .secgrid.dim{opacity:.45;pointer-events:none}
+  .secrow{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--text);
+    padding:7px 0;border-bottom:1px solid var(--border)}
+  .secrow:last-child{border-bottom:0}
   .secname{flex:1;min-width:0}
-  .seg-ctl{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:2px;flex-shrink:0}
+  .seg-ctl{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:2px;flex-shrink:0}
   .seg{background:none;border:0;color:var(--muted);font-family:var(--font);font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:6px;cursor:pointer}
   .seg.on{background:var(--accent-soft);color:var(--accent)}
   .seg[data-v="view"].on{background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
-  .presets{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 2px}
-  .presets button{font-size:11.5px;padding:4px 9px;border-radius:20px;border:1px solid var(--line);
-    background:var(--surface-2);color:var(--dim);cursor:pointer}
+  .presets{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+  .presets button{font-size:11.5px;padding:5px 11px;border-radius:20px;border:1px solid var(--border);
+    background:var(--surface-2);color:var(--dim);cursor:pointer;transition:.15s}
   .presets button:hover{color:var(--text);border-color:var(--accent)}
-  .ulist{display:flex;flex-direction:column;gap:10px}
-  .urow{border:1px solid var(--line);border-radius:12px;padding:13px 15px;background:var(--card)}
-  .urow.dis{opacity:.55}
-  .urow-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .uname{font-weight:700;font-size:14.5px}
-  .uemail{font-size:12px;color:var(--muted)}
-  .badge{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
-    padding:3px 8px;border-radius:20px}
-  .badge.admin{background:var(--accent-soft);color:var(--accent)}
-  .badge.staff{background:var(--surface-2);color:var(--dim)}
-  .badge.off{background:rgba(220,80,80,.16);color:#f38b8b}
-  .usecs{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
-  .pill{font-size:11px;padding:3px 9px;border-radius:20px;background:var(--surface-2);color:var(--dim)}
-  .pill.on{background:var(--accent-soft);color:var(--accent)}
-  .urow-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
-  .spacer{flex:1}
-  .empty{color:var(--muted);font-size:13px;text-align:center;padding:30px}
-  .note{font-size:12px;color:var(--muted);line-height:1.5;margin-top:10px;
-    background:var(--surface-2);border-radius:9px;padding:10px 12px}
-  .cred{font-family:var(--font-mono,monospace);background:var(--surface-2);border-radius:8px;
-    padding:8px 10px;font-size:12.5px;margin-top:8px;word-break:break-all}
-  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:1000;
-    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 18px;
-    font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;transition:opacity .2s,transform .2s}
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+  .cred{font-family:var(--font-mono,monospace);background:var(--surface-2);border:1px solid var(--border);border-radius:8px;
+    padding:10px 12px;font-size:12.5px;margin-top:12px;word-break:break-all;line-height:1.6}
+  .modal.lg{width:560px}
+  .modal-scroll{max-height:56vh;overflow:auto;margin:0 -4px;padding:0 4px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="pagehead">
-    <h1>Comptes &amp; accès</h1>
-    <p>Crée les comptes du staff et choisis, pour chacun, les modules d'ARCHI accessibles.</p>
+    <div>
+      <h1>Comptes &amp; accès</h1>
+      <p>Crée les comptes du staff et choisis, pour chacun, les modules d'ARCHI accessibles.</p>
+    </div>
+    <button class="btn btn-primary" onclick="openCreate()">+ Nouveau compte</button>
   </div>
 
-  <div class="cols">
-    <!-- Création -->
-    <div class="card" style="padding:18px 18px 20px">
-      <h3 style="font-family:var(--font-display);margin-bottom:12px">Nouveau compte</h3>
+  <div class="toolbar">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+      <input id="q" placeholder="Rechercher un nom ou un identifiant…" autocomplete="off" oninput="renderList()">
+    </div>
+    <span class="count" id="count"></span>
+  </div>
+
+  <div class="ulist" id="ulist"><div class="empty">Chargement…</div></div>
+
+  <div class="note">Chaque membre change son propre mot de passe une fois connecté (clic sur son nom, en haut à droite). Pour un membre qui a oublié le sien et ne peut plus se connecter, voir <b>SECURITE.md</b> (suppression puis recréation du compte).</div>
+</div>
+
+<!-- Modale : création -->
+<div class="overlay" id="createOverlay">
+  <div class="modal lg" role="dialog" aria-modal="true">
+    <div class="modal-title">Nouveau compte</div>
+    <div class="modal-scroll">
       <div class="field"><label>Nom affiché</label><input id="n_name" placeholder="ex : Coach Martin"></div>
       <div class="field"><label>Nom d'utilisateur (pour se connecter)</label>
         <input id="n_user" placeholder="ex : coach" autocomplete="off" autocapitalize="none" spellcheck="false">
-        <div style="font-size:11px;color:var(--muted);margin-top:4px">Lettres, chiffres, . _ - (sans espace ni accent).</div>
+        <div class="hint">Lettres, chiffres, . _ - (sans espace ni accent).</div>
       </div>
       <div class="field"><label>Mot de passe provisoire</label>
         <input id="n_pw" placeholder="min. 6 caractères">
@@ -88,20 +135,29 @@
         <div class="presets" id="n_presets"></div>
         <div class="secgrid" id="n_sections"></div>
       </div>
-      <button class="btn btn-primary" id="createBtn" style="width:100%;margin-top:8px" onclick="createUser()">Créer le compte</button>
       <div id="createOut"></div>
-      <div class="note">Transmets le <b>nom d'utilisateur</b> et le <b>mot de passe provisoire</b> à la personne. Une fois connectée, elle peut changer son mot de passe elle-même (clic sur son nom en haut à droite).</div>
     </div>
-
-    <!-- Liste -->
-    <div>
-      <div class="note" style="margin:0 0 12px">Chaque membre change son propre mot de passe une fois connecté (clic sur son nom, en haut à droite). Pour un membre qui a oublié le sien et ne peut plus se connecter, voir <b>SECURITE.md</b> (suppression puis recréation du compte).</div>
-      <div class="ulist" id="ulist"><div class="empty">Chargement…</div></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeCreate()">Annuler</button>
+      <button class="btn btn-primary" id="createBtn" onclick="createUser()">Créer le compte</button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- Modale : édition des accès -->
+<div class="overlay" id="editOverlay">
+  <div class="modal lg" role="dialog" aria-modal="true">
+    <div class="modal-title" id="editTitle">Accès</div>
+    <div class="modal-scroll">
+      <div class="presets" id="e_presets"></div>
+      <div class="secgrid" id="e_sections"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeEdit()">Annuler</button>
+      <button class="btn btn-primary" id="saveBtn" onclick="saveAccess()">Enregistrer</button>
+    </div>
+  </div>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -122,21 +178,21 @@ const PRESETS = {
   'Aucun':         []
 };
 const $ = id => document.getElementById(id);
-let db, meUid;
+let db, meUid, ALL=[], editUid=null;
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-function toast(t){ if(window.PZ&&PZ.toast){ PZ.toast(t); return; } const el=$('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2600); }
+function toast(t){ if(window.PZ&&PZ.toast){ PZ.toast(t); return; } alert(t); }
+function initials(name){ const p=String(name||'?').trim().split(/\s+/); return ((p[0]||'?')[0]+(p[1]||'')[0]||'').toUpperCase()||'?'; }
 
-// Grille de cases à cocher pour la création
-// Contrôle 3 états par module : Aucun / Voir / Modifier.
+// Grille de segments : Aucun / Voir / Modifier par module.
 const SEG=[['','Aucun'],['view','Voir'],['edit','Modifier']];
 function segRows(levels){
   return SECTIONS.map(([k,l])=>`<div class="secrow"><span class="secname">${l}</span><div class="seg-ctl" data-sec="${k}">${
     SEG.map(([v,lab])=>`<button type="button" class="seg${(levels[k]||'')===v?' on':''}" data-v="${v}">${lab}</button>`).join('')}</div></div>`).join('');
 }
 function levelsFromSections(s){ const o={}; SECTIONS.forEach(([k])=>{ const v=s&&s[k]; o[k]=(v===true||v==='edit')?'edit':(v==='view'?'view':''); }); return o; }
-function setLevels(scope, editSet){
-  document.querySelectorAll(scope+' .seg-ctl').forEach(g=>{ const v=editSet.has(g.dataset.sec)?'edit':'';
+function setLevels(scope, levels){
+  document.querySelectorAll(scope+' .seg-ctl').forEach(g=>{ const v=levels[g.dataset.sec]||'';
     g.querySelectorAll('.seg').forEach(b=>b.classList.toggle('on', b.dataset.v===v)); });
 }
 function readSections(scope){
@@ -147,18 +203,25 @@ function readSections(scope){
 // Un clic sur un segment sélectionne ce niveau dans son groupe.
 document.addEventListener('click', e=>{ const b=e.target.closest('.seg'); if(!b)return; const g=b.closest('.seg-ctl'); if(!g)return;
   g.querySelectorAll('.seg').forEach(x=>x.classList.remove('on')); b.classList.add('on'); });
+// Ferme les menus kebab au clic extérieur.
+document.addEventListener('click', e=>{ if(!e.target.closest('.uactions')) document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open')); });
 
-function buildSectionGrid(){
-  $('n_sections').innerHTML = segRows({});
-  $('n_presets').innerHTML = Object.keys(PRESETS).map(name=>
-    `<button type="button" onclick="applyPreset('${name}')">${name}</button>`).join('');
-  const role = $('n_role');
-  role.addEventListener('change', ()=> $('n_sections').classList.toggle('dim', role.value==='admin'));
-}
-function applyPreset(name){ setLevels('#n_sections', new Set(PRESETS[name]||[])); }
-
-const USER_DOMAIN = PZ.USER_DOMAIN || 'archi.local';
+const USER_DOMAIN = (window.PZ&&PZ.USER_DOMAIN) || 'archi.local';
 const normUser = u => u.trim().toLowerCase().replace(/[^a-z0-9._-]/g,'');
+
+/* ---------- Création ---------- */
+function openCreate(){
+  $('n_name').value=''; $('n_user').value=''; $('n_pw').value=''; $('n_role').value='staff';
+  $('createOut').innerHTML='';
+  $('n_sections').classList.remove('dim');
+  $('n_sections').innerHTML = segRows({});
+  $('n_presets').innerHTML = Object.keys(PRESETS).map(name=>`<button type="button" onclick="applyPreset('${name}')">${name}</button>`).join('');
+  $('createOverlay').classList.add('open');
+  setTimeout(()=>$('n_name').focus(),60);
+}
+function closeCreate(){ $('createOverlay').classList.remove('open'); }
+$('n_role').addEventListener('change',function(){ $('n_sections').classList.toggle('dim', this.value==='admin'); });
+function applyPreset(name){ setLevels('#n_sections', levelsFromSections(Object.fromEntries((PRESETS[name]||[]).map(k=>[k,'edit'])))); }
 
 async function createUser(){
   const name=$('n_name').value.trim(), username=normUser($('n_user').value), pw=$('n_pw').value;
@@ -190,87 +253,126 @@ async function createUser(){
   }finally{ btn.disabled=false; btn.textContent='Créer le compte'; }
 }
 
+/* ---------- Liste ---------- */
 async function loadUsers(){
-  const host=$('ulist');
   try{
-    const snap=await db.collection('users').orderBy('name').get();
-    const rows=[]; snap.forEach(d=>rows.push({uid:d.id,...d.data()}));
-    if(!rows.length){ host.innerHTML='<div class="empty">Aucun compte pour le moment.</div>'; return; }
-    host.innerHTML = rows.map(renderUser).join('');
-  }catch(e){
-    // orderBy peut échouer si des docs n'ont pas de champ name
-    try{
-      const snap=await db.collection('users').get();
-      const rows=[]; snap.forEach(d=>rows.push({uid:d.id,...d.data()}));
-      host.innerHTML = rows.length ? rows.map(renderUser).join('') : '<div class="empty">Aucun compte.</div>';
-    }catch(e2){ console.error(e2); host.innerHTML='<div class="empty">Lecture impossible (vérifie les règles Firestore).</div>'; }
-  }
+    let snap;
+    try{ snap=await db.collection('users').orderBy('name').get(); }
+    catch(_){ snap=await db.collection('users').get(); }
+    ALL=[]; snap.forEach(d=>ALL.push({uid:d.id,...d.data()}));
+    ALL.sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'fr'));
+    renderList();
+  }catch(e){ console.error(e); $('ulist').innerHTML='<div class="empty">Lecture impossible (vérifie les règles Firestore).</div>'; }
+}
+
+function accessSummary(u){
+  if(u.role==='admin') return 'Accès total';
+  const s=u.sections||{}; let edit=0, view=0;
+  SECTIONS.forEach(([k])=>{ const v=s[k]; if(v===true||v==='edit')edit++; else if(v==='view')view++; });
+  if(!edit&&!view) return 'Aucun module';
+  const parts=[]; if(edit)parts.push(edit+' en édition'); if(view)parts.push(view+' en lecture');
+  return parts.join(' · ');
+}
+
+function renderList(){
+  const q=($('q').value||'').trim().toLowerCase();
+  const rows=ALL.filter(u=>!q || String(u.name||'').toLowerCase().includes(q) || String(u.username||u.email||'').toLowerCase().includes(q));
+  $('count').textContent = ALL.length ? `${rows.length}/${ALL.length} compte${ALL.length>1?'s':''}` : '';
+  const host=$('ulist');
+  if(!ALL.length){ host.innerHTML='<div class="empty">Aucun compte pour le moment.<br>Clique sur « + Nouveau compte » pour commencer.</div>'; return; }
+  if(!rows.length){ host.innerHTML='<div class="empty">Aucun résultat pour « '+esc(q)+' ».</div>'; return; }
+  host.innerHTML = rows.map(renderUser).join('');
 }
 
 function renderUser(u){
   const isMe = u.uid===meUid;
   const admin = u.role==='admin';
-  const lvlOf=k=>{ if(admin)return 'edit'; const v=u.sections&&u.sections[k]; return (v===true||v==='edit')?'edit':(v==='view'?'view':''); };
-  const secs = SECTIONS.map(([k,l])=>{ const v=lvlOf(k); return `<span class="pill${v?' on':''}">${l}${v==='view'?' 👁':v?' ✎':''}</span>`; }).join('');
   const roleBadge = admin?'<span class="badge admin">Admin</span>':'<span class="badge staff">Membre</span>';
   const offBadge = u.disabled?'<span class="badge off">Désactivé</span>':'';
+  const meBadge = isMe?'<span class="badge me">toi</span>':'';
   return `<div class="urow${u.disabled?' dis':''}" data-uid="${u.uid}">
-    <div class="urow-top">
-      <span class="uname">${esc(u.name||'—')}</span> ${roleBadge} ${offBadge}
-      ${isMe?'<span class="badge staff">toi</span>':''}
-      <span class="spacer"></span>
-      <span class="uemail">@${esc(u.username||u.email||'')}</span>
+    <div class="avatar${admin?' admin':''}">${esc(initials(u.name))}</div>
+    <div class="uinfo">
+      <div class="uinfo-top"><span class="uname">${esc(u.name||'—')}</span> ${roleBadge} ${offBadge} ${meBadge}</div>
+      <div class="uemail">@${esc(u.username||u.email||'')}</div>
+      <div class="uaccess">${esc(accessSummary(u))}</div>
     </div>
-    <div class="usecs">${admin?'<span class="pill on">Accès total</span>':secs}</div>
-    <div class="urow-actions">
-      ${admin?'':`<button class="btn btn-sm" onclick="editAccess('${u.uid}')">Modifier les accès</button>`}
-      <button class="btn btn-sm btn-ghost" onclick="toggleRole('${u.uid}','${admin?'staff':'admin'}')">${admin?'Retirer admin':'Passer admin'}</button>
-      ${isMe?'':`<button class="btn btn-sm btn-ghost" onclick="toggleDisabled('${u.uid}',${u.disabled?'false':'true'})">${u.disabled?'Réactiver':'Désactiver'}</button>`}
-      ${isMe?'':`<button class="btn btn-sm btn-ghost" style="color:var(--err)" onclick="removeUser('${u.uid}','${esc(u.name||u.email)}')">Retirer l'accès</button>`}
+    <div class="uactions">
+      <button class="kebab" onclick="toggleMenu(event,'${u.uid}')" aria-label="Actions">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>
+      </button>
+      <div class="menu" id="menu_${u.uid}">
+        ${admin?'':`<button onclick="openEdit('${u.uid}')">✎ Modifier les accès</button>`}
+        <button onclick="toggleRole('${u.uid}','${admin?'staff':'admin'}')">${admin?'↓ Retirer admin':'↑ Passer admin'}</button>
+        ${isMe?'':`<button onclick="toggleDisabled('${u.uid}',${u.disabled?'false':'true'})">${u.disabled?'✓ Réactiver':'⏸ Désactiver'}</button>`}
+        ${isMe?'':'<div class="menu-sep"></div>'}
+        ${isMe?'':`<button class="danger" onclick="removeUser('${u.uid}','${esc(u.name||u.email)}')">🗑 Retirer l'accès</button>`}
+      </div>
     </div>
-    <div class="editbox" id="edit_${u.uid}"></div>
   </div>`;
 }
 
-function editAccess(uid){
-  const box=$('edit_'+uid);
-  if(box.dataset.open==='1'){ box.innerHTML=''; box.dataset.open='0'; return; }
+function toggleMenu(e,uid){
+  e.stopPropagation();
+  const m=$('menu_'+uid); const open=m.classList.contains('open');
+  document.querySelectorAll('.menu.open').forEach(x=>x.classList.remove('open'));
+  if(!open) m.classList.add('open');
+}
+
+/* ---------- Édition des accès (modale) ---------- */
+function openEdit(uid){
+  document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open'));
+  const u=ALL.find(x=>x.uid===uid)||{};
+  editUid=uid;
+  $('editTitle').textContent='Accès — '+(u.name||'');
+  $('e_presets').innerHTML = Object.keys(PRESETS).map(n=>`<button type="button" onclick="editPreset('${n}')">${n}</button>`).join('');
   db.collection('users').doc(uid).get().then(d=>{
-    const u=d.data()||{}; const s=u.sections||{};
-    box.dataset.open='1';
-    box.innerHTML = `<div style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
-      <div class="presets">${Object.keys(PRESETS).map(n=>`<button type="button" onclick="editPreset('${uid}','${n}')">${n}</button>`).join('')}</div>
-      <div class="secgrid" id="secs_${uid}">${segRows(levelsFromSections(s))}</div>
-      <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="saveAccess('${uid}')">Enregistrer</button>
-    </div>`;
+    const s=(d.data()||{}).sections||{};
+    $('e_sections').innerHTML = segRows(levelsFromSections(s));
   });
+  $('editOverlay').classList.add('open');
 }
-function editPreset(uid,name){ setLevels('#secs_'+uid, new Set(PRESETS[name]||[])); }
-async function saveAccess(uid){
-  const sections=readSections('#secs_'+uid);
-  try{ await db.collection('users').doc(uid).update({sections}); toast('Accès mis à jour.'); loadUsers(); }
+function closeEdit(){ $('editOverlay').classList.remove('open'); editUid=null; }
+function editPreset(name){ setLevels('#e_sections', levelsFromSections(Object.fromEntries((PRESETS[name]||[]).map(k=>[k,'edit'])))); }
+async function saveAccess(){
+  if(!editUid) return;
+  const sections=readSections('#e_sections');
+  const btn=$('saveBtn'); btn.disabled=true;
+  try{ await db.collection('users').doc(editUid).update({sections}); toast('Accès mis à jour.'); closeEdit(); loadUsers(); }
   catch(e){ console.error(e); toast('Erreur : '+(e.message||e.code)); }
+  finally{ btn.disabled=false; }
 }
+
+/* ---------- Actions ---------- */
 async function toggleRole(uid,role){
+  document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open'));
   if(role==='admin' && !confirm('Donner un accès administrateur complet (y compris la gestion des comptes) ?')) return;
   try{ await db.collection('users').doc(uid).update({role}); toast('Rôle mis à jour.'); loadUsers(); }
   catch(e){ console.error(e); toast('Erreur : '+(e.message||e.code)); }
 }
 async function toggleDisabled(uid,val){
+  document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open'));
   try{ await db.collection('users').doc(uid).update({disabled:val}); toast(val?'Compte désactivé.':'Compte réactivé.'); loadUsers(); }
   catch(e){ console.error(e); toast('Erreur : '+(e.message||e.code)); }
 }
 async function removeUser(uid,label){
+  document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open'));
   if(!confirm('Retirer l\'accès de « '+label+' » à ARCHI ?\n\nLe compte de connexion existe encore côté Firebase (à supprimer dans la console si besoin), mais il n\'aura plus aucun accès.')) return;
   try{ await db.collection('users').doc(uid).delete(); toast('Accès retiré.'); loadUsers(); }
   catch(e){ console.error(e); toast('Erreur : '+(e.message||e.code)); }
 }
-// Init : attend la résolution de l'accès (plazma.js bloque déjà les non-admins).
+
+// Ferme les modales sur clic du fond ou Échap.
+[['createOverlay',closeCreate],['editOverlay',closeEdit]].forEach(([id,fn])=>{
+  $(id).addEventListener('click',e=>{ if(e.target===$(id)) fn(); });
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeCreate(); closeEdit(); } });
+
+// Init : plazma.js bloque déjà les non-admins.
 PZ.mountNav('admin');
 PZ.auth.ready.then(res=>{
   if(!res.user || !PZ.auth.isAdmin()) return; // l'overlay d'accès s'affiche déjà
   db = PZ.db; meUid = res.user.uid;
-  buildSectionGrid();
   loadUsers();
 });
 </script>
