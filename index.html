@@ -14,7 +14,9 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
   /* ── Layout ── */
-  body{display:flex;flex-direction:column;align-items:center;padding-bottom:64px}
+  body{display:flex;flex-direction:column;align-items:center;padding-bottom:64px;
+    animation:pz-enter .55s ease both}
+  @keyframes pz-enter{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
   .home{width:100%;max-width:var(--page-max);padding:0 var(--gut)}
 
   /* ── #26 Scroll progress bar ── */
