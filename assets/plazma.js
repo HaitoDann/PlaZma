@@ -283,17 +283,13 @@
   const THEME_KEY = 'pz-theme';
   function _applyTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
-    const icon = t === 'light' ? '🌙' : '☀️';
     const label = t === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair';
-    // Boutons toggle dans la nav (pages internes)
-    document.querySelectorAll('.pz-theme-btn').forEach(btn => {
-      btn.textContent = icon;
+    // Toggles jour/nuit (nav + FAB accueil) : le visuel est piloté par [data-theme]
+    // en CSS, on ne met à jour que le libellé (ne pas écraser le contenu du toggle).
+    document.querySelectorAll('.pz-daynight').forEach(btn => {
       btn.title = label;
       btn.setAttribute('aria-label', label);
     });
-    // FAB thème sur l'accueil
-    const fab = document.getElementById('themeFab');
-    if (fab) { fab.textContent = icon; fab.title = label; fab.setAttribute('aria-label', label); }
   }
   function toggleTheme() {
     const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
@@ -314,9 +310,8 @@
       .map(n => `<a href="${n.href}"${n.key === _navActive ? ' class="active"' : ''}>${n.label}</a>`).join('');
     if (isAdmin()) links += `<a href="plazma-admin.html"${_navActive === 'admin' ? ' class="active"' : ''}>Comptes</a>`;
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-    const themeIcon = currentTheme === 'light' ? '🌙' : '☀️';
     const themeTitle = currentTheme === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair';
-    const themeBtn = `<button class="pz-theme-btn" type="button" onclick="PZ.toggleTheme()" title="${themeTitle}" aria-label="${themeTitle}">${themeIcon}</button>`;
+    const themeBtn = `<button class="pz-daynight" type="button" onclick="PZ.toggleTheme()" title="${themeTitle}" aria-label="${themeTitle}"><span class="dn-stars"></span><span class="dn-clouds"></span><span class="dn-knob"></span></button>`;
     const who = profile
       ? `<div class="pz-nav-right">${themeBtn}<button class="pz-nav-user" type="button" onclick="PZ.changePassword()" title="Changer mon mot de passe">${esc(profile.name || profile.username || '')}</button>` +
         `<button class="pz-logout" type="button" onclick="PZ.logout()" title="Se déconnecter">⏻</button></div>`

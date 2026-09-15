@@ -243,16 +243,6 @@
     .login .glass::before{border-radius:34px}
     .login h1{font-size:1.8rem}
   }
-  /* Bouton bascule thème */
-  #themeFab{
-    position:fixed;top:16px;right:16px;z-index:5;width:40px;height:40px;
-    display:inline-flex;align-items:center;justify-content:center;border-radius:12px;
-    background:var(--surface-2);border:1px solid var(--border);color:var(--dim);
-    font-size:17px;line-height:1;cursor:pointer;
-    transition:color .15s,border-color .15s,background .15s,transform .25s;
-  }
-  #themeFab:hover{color:var(--accent);border-color:var(--accent-line);background:var(--surface);transform:rotate(18deg)}
-
   @media (prefers-reduced-motion:reduce){
     .arc,.bubble,.login,.login-mark,.login .glass::after,.st{animation:none}
     .bubbles{display:none}
@@ -271,11 +261,13 @@
     var cur=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';
     try{ localStorage.setItem('pz-theme', cur); }catch(e){}
     document.documentElement.setAttribute('data-theme', cur);
-    var fab=document.getElementById('themeFab');
-    if(fab) fab.textContent = cur==='light'?'🌙':'☀️';
   }
 </script>
-<button id="themeFab" type="button" aria-label="Basculer le thème" onclick="toggleTheme()">☀️</button>
+<button class="pz-daynight pz-daynight--fab" type="button" aria-label="Basculer le thème" onclick="toggleTheme()">
+  <span class="dn-stars"></span>
+  <span class="dn-clouds"></span>
+  <span class="dn-knob"></span>
+</button>
 <div class="scene" aria-hidden="true">
   <div class="stars" id="stars"></div>
   <div class="grid-bg"></div>
@@ -370,12 +362,6 @@ function login(){
 (function(){
 const $ = id => document.getElementById(id);
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-// Synchronise l'icône du bouton thème avec l'état courant
-(function(){
-  const fab = $('themeFab');
-  if (fab) fab.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? '🌙' : '☀️';
-})();
 
 // Étoiles en fond (3 couches, parallaxe légère)
 (function stars(){
