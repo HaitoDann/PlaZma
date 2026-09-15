@@ -12,9 +12,38 @@
 <style>
   /* ============================================================
      ARCHI — Connexion
-     Fond animé (sphères 3D + glow cyan) + carte glassmorphism.
-     Identité PlaZma conservée : accent cyan, ambiance sombre.
+     Socle rond glassmorphism + ambiance aquarium (étoiles, bulles,
+     anneaux du loader, caustique). Light/dark adapté.
+     Identité PlaZma conservée : accent cyan.
      ============================================================ */
+
+  /* Variables locales — valeurs sombres par défaut, surchargées en clair */
+  :root{
+    --lg-glass-bg:linear-gradient(155deg, rgba(24,34,46,.6), rgba(12,18,26,.48));
+    --lg-glass-border:rgba(255,255,255,.10);
+    --lg-glass-sheen:rgba(255,255,255,.14);
+    --lg-field-bg:rgba(9,14,20,.55);
+    --lg-field-bg-focus:rgba(9,14,20,.7);
+    --lg-field-border:rgba(255,255,255,.10);
+    --lg-grid-dot:rgba(159,176,192,.08);
+    --lg-h1:linear-gradient(180deg,#ffffff,#b9e9f4 90%);
+    --lg-star:#cfe9f5;
+    --lg-bubble:radial-gradient(circle at 34% 30%, rgba(200,244,252,.5), rgba(34,211,238,.13) 58%, transparent 72%);
+    --lg-ring:rgba(34,211,238,1);
+  }
+  [data-theme="light"]{
+    --lg-glass-bg:linear-gradient(155deg, rgba(255,255,255,.74), rgba(233,240,248,.62));
+    --lg-glass-border:rgba(15,25,35,.12);
+    --lg-glass-sheen:rgba(255,255,255,.7);
+    --lg-field-bg:rgba(255,255,255,.72);
+    --lg-field-bg-focus:rgba(255,255,255,.92);
+    --lg-field-border:rgba(15,25,35,.14);
+    --lg-grid-dot:rgba(30,41,59,.16);
+    --lg-h1:linear-gradient(180deg,#0f1923,#0e7490 96%);
+    --lg-star:#1e293b;
+    --lg-bubble:radial-gradient(circle at 34% 30%, rgba(8,145,178,.30), rgba(8,145,178,.10) 58%, transparent 72%);
+    --lg-ring:rgba(8,145,178,1);
+  }
 
   html,body{height:100%}
   body{
@@ -25,6 +54,12 @@
       radial-gradient(900px 640px at 12% 112%, rgba(8,145,178,.20), transparent 62%),
       linear-gradient(160deg, #060a10 0%, #0a1017 46%, #070c12 100%);
   }
+  [data-theme="light"] body{
+    background:
+      radial-gradient(1100px 700px at 78% -10%, rgba(8,145,178,.12), transparent 60%),
+      radial-gradient(900px 640px at 12% 112%, rgba(14,116,144,.10), transparent 62%),
+      linear-gradient(160deg, #eef3f8 0%, #e1e9f2 48%, #eaf1f7 100%);
+  }
 
   /* ---- Décor : grille technique + anneaux (motif loader Archi) ---- */
   .scene{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
@@ -32,7 +67,7 @@
   /* Grille de points discrète, estompée vers les bords */
   .grid-bg{
     position:absolute;inset:0;
-    background-image:radial-gradient(circle at 1px 1px, rgba(159,176,192,.08) 1px, transparent 1.6px);
+    background-image:radial-gradient(circle at 1px 1px, var(--lg-grid-dot) 1px, transparent 1.6px);
     background-size:30px 30px;
     -webkit-mask:radial-gradient(closest-side at 50% 46%, #000 22%, transparent 82%);
     mask:radial-gradient(closest-side at 50% 46%, #000 22%, transparent 82%);
@@ -61,11 +96,27 @@
     background:radial-gradient(circle, rgba(34,211,238,.10), transparent 62%);
   }
 
+  /* Étoiles en fond (légère parallaxe à la souris) */
+  .stars{position:absolute;inset:0;overflow:hidden}
+  .star-layer{position:absolute;inset:-40px;will-change:transform;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+  .st{position:absolute;border-radius:50%;background:var(--lg-star);animation:twinkle ease-in-out infinite}
+  @keyframes twinkle{0%,100%{opacity:var(--o,.5)}50%{opacity:calc(var(--o,.5) * .32)}}
+  /* En clair : étoiles sombres, plus marquées */
+  [data-theme="light"] .st{animation-name:twinkle-light}
+  @keyframes twinkle-light{0%,100%{opacity:var(--o,.6)}50%{opacity:calc(var(--o,.6) * .6)}}
+
+  /* Anneaux plus discrets en clair */
+  [data-theme="light"] .r1{border-color:rgba(8,145,178,.16)}
+  [data-theme="light"] .r2{border-color:rgba(8,145,178,.11)}
+  [data-theme="light"] .r3{border-color:rgba(8,145,178,.06)}
+  [data-theme="light"] .a1{border-top-color:rgba(8,145,178,.34);border-right-color:rgba(8,145,178,.10)}
+  [data-theme="light"] .a2{border-top-color:rgba(13,148,136,.24);border-left-color:rgba(8,145,178,.07)}
+
   /* Bulles d'aquarium qui remontent doucement */
   .bubbles{position:absolute;inset:0;overflow:hidden}
   .bubble{
     position:absolute;bottom:-60px;border-radius:50%;pointer-events:none;
-    background:radial-gradient(circle at 34% 30%, rgba(200,244,252,.5), rgba(34,211,238,.13) 58%, transparent 72%);
+    background:var(--lg-bubble);
     box-shadow:0 0 8px rgba(34,211,238,.14);
     opacity:0;will-change:transform,opacity;
     animation:bubble-rise linear infinite;
@@ -94,14 +145,14 @@
   .login .glass{
     aspect-ratio:1;border-radius:50%;padding:0 114px;
     display:flex;flex-direction:column;justify-content:center;
-    background:linear-gradient(155deg, rgba(24,34,46,.6), rgba(12,18,26,.48));
+    background:var(--lg-glass-bg);
     backdrop-filter:blur(22px) saturate(150%);
     -webkit-backdrop-filter:blur(22px) saturate(150%);
-    border:1px solid rgba(255,255,255,.10);
+    border:1px solid var(--lg-glass-border);
     box-shadow:
       0 30px 80px rgba(0,0,0,.5),
       0 0 0 1px rgba(34,211,238,.06),
-      inset 0 1px 0 rgba(255,255,255,.14),
+      inset 0 1px 0 var(--lg-glass-sheen),
       inset 0 -40px 80px rgba(6,58,71,.14);
     position:relative;overflow:hidden;
   }
@@ -137,7 +188,7 @@
   @keyframes logo-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
   .login h1{
     font-size:2rem;letter-spacing:.14em;font-weight:800;
-    background:linear-gradient(180deg,#ffffff, #b9e9f4 90%);
+    background:var(--lg-h1);
     -webkit-background-clip:text;background-clip:text;color:transparent;
     text-shadow:0 0 30px rgba(34,211,238,.2);
   }
@@ -153,14 +204,14 @@
   }
   .login input{
     width:100%;padding:12px 15px 12px 42px;
-    background:rgba(9,14,20,.55);
-    border:1px solid rgba(255,255,255,.10);
+    background:var(--lg-field-bg);
+    border:1px solid var(--lg-field-border);
     border-radius:14px;color:var(--text);font-size:14px;font-family:var(--font);
     transition:border-color .2s, box-shadow .2s, background .2s;
   }
   .login input::placeholder{color:var(--muted)}
   .login input:focus{
-    outline:none;background:rgba(9,14,20,.7);
+    outline:none;background:var(--lg-field-bg-focus);
     border-color:rgba(34,211,238,.55);
     box-shadow:0 0 0 4px rgba(34,211,238,.12), 0 0 24px rgba(34,211,238,.14);
   }
@@ -192,14 +243,41 @@
     .login .glass::before{border-radius:34px}
     .login h1{font-size:1.8rem}
   }
+  /* Bouton bascule thème */
+  #themeFab{
+    position:fixed;top:16px;right:16px;z-index:5;width:40px;height:40px;
+    display:inline-flex;align-items:center;justify-content:center;border-radius:12px;
+    background:var(--surface-2);border:1px solid var(--border);color:var(--dim);
+    font-size:17px;line-height:1;cursor:pointer;
+    transition:color .15s,border-color .15s,background .15s,transform .25s;
+  }
+  #themeFab:hover{color:var(--accent);border-color:var(--accent-line);background:var(--surface);transform:rotate(18deg)}
+
   @media (prefers-reduced-motion:reduce){
-    .arc,.bubble,.login,.login-mark,.login .glass::after{animation:none}
+    .arc,.bubble,.login,.login-mark,.login .glass::after,.st{animation:none}
     .bubbles{display:none}
   }
 </style>
 </head>
 <body>
+<script>
+  // Thème appliqué au plus tôt (clé partagée avec l'app : 'pz-theme')
+  (function(){
+    var t=null; try{ t=localStorage.getItem('pz-theme'); }catch(e){}
+    if(!t) t=(window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+  function toggleTheme(){
+    var cur=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';
+    try{ localStorage.setItem('pz-theme', cur); }catch(e){}
+    document.documentElement.setAttribute('data-theme', cur);
+    var fab=document.getElementById('themeFab');
+    if(fab) fab.textContent = cur==='light'?'🌙':'☀️';
+  }
+</script>
+<button id="themeFab" type="button" aria-label="Basculer le thème" onclick="toggleTheme()">☀️</button>
 <div class="scene" aria-hidden="true">
+  <div class="stars" id="stars"></div>
   <div class="grid-bg"></div>
   <div class="rings">
     <span class="r3"></span>
@@ -283,11 +361,61 @@ function login(){
     .then(() => { redirecting = true; location.replace('index.html'); })
     .catch(e => { showErr(frError(e)); btn.disabled = false; btn.textContent = 'Se connecter'; $('pw').value=''; $('pw').focus(); });
 }
+</script>
 
-/* ── Ambiance aquarium ─────────────────────────────────────
+<script>
+/* ── Ambiance aquarium (script indépendant : tourne même si Firebase échoue)
    Respecte prefers-reduced-motion : aucun effet si l'utilisateur
    a demandé à réduire les animations. */
+(function(){
+const $ = id => document.getElementById(id);
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Synchronise l'icône du bouton thème avec l'état courant
+(function(){
+  const fab = $('themeFab');
+  if (fab) fab.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? '🌙' : '☀️';
+})();
+
+// Étoiles en fond (3 couches, parallaxe légère)
+(function stars(){
+  const host = $('stars');
+  if (!host) return;
+  const rnd = (a,b) => a + Math.random() * (b - a);
+  const layers = [
+    { count: 34, depth: 6,  smax: 1.3, op:[.20,.45] },
+    { count: 22, depth: 14, smax: 1.9, op:[.30,.6] },
+    { count: 12, depth: 26, smax: 2.6, op:[.4,.75] },
+  ];
+  const els = [];
+  layers.forEach(cfg => {
+    const layer = document.createElement('div');
+    layer.className = 'star-layer';
+    for (let i = 0; i < cfg.count; i++){
+      const s = document.createElement('span');
+      s.className = 'st';
+      const size = (0.8 + Math.random() * cfg.smax).toFixed(1);
+      const op = rnd(cfg.op[0], cfg.op[1]).toFixed(2);
+      s.style.cssText =
+        `left:${rnd(0,100).toFixed(2)}%;top:${rnd(0,100).toFixed(2)}%;` +
+        `width:${size}px;height:${size}px;--o:${op};` +
+        `animation-duration:${rnd(3,8).toFixed(1)}s;animation-delay:${(-rnd(0,8)).toFixed(1)}s;`;
+      layer.appendChild(s);
+    }
+    host.appendChild(layer);
+    els.push({ el: layer, depth: cfg.depth });
+  });
+  if (!reduceMotion){
+    let tx = 0, ty = 0, queued = false;
+    const apply = () => { queued = false; els.forEach(l => { l.el.style.transform = `translate(${(tx*l.depth).toFixed(1)}px,${(ty*l.depth).toFixed(1)}px)`; }); };
+    window.addEventListener('mousemove', e => {
+      tx = (e.clientX / window.innerWidth - 0.5) * -2;
+      ty = (e.clientY / window.innerHeight - 0.5) * -2;
+      if (!queued){ queued = true; requestAnimationFrame(apply); }
+    }, { passive: true });
+  }
+})();
+
 if (!reduceMotion) {
   // Bulles qui remontent doucement
   (function bubbles(){
@@ -331,6 +459,7 @@ if (!reduceMotion) {
     });
   })();
 }
+})();
 </script>
 </body>
 </html>

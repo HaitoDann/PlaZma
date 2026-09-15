@@ -831,18 +831,9 @@
       const delay  = -(Math.random() * parseFloat(dur)).toFixed(1);
       const color  = colors[Math.floor(Math.random() * colors.length)];
       el.className = 'pz-particle';
-      el.style.cssText = `left:${left}vw;width:${size}px;height:${size}px;background:${color};--op:${op};--drift:${drift}px;animation-duration:${dur}s;animation-delay:${delay}s;`;
+      el.style.cssText = `left:${left}vw;width:${size}px;height:${size}px;background:${color};color:${color};--op:${op};--drift:${drift}px;animation-duration:${dur}s;animation-delay:${delay}s;`;
       c.appendChild(el);
     }
-  }
-
-  // ---- Grille en perspective (sol synthwave) ----
-  function _initGrid() {
-    if (document.getElementById('pz-grid')) return;
-    const g = document.createElement('div');
-    g.id = 'pz-grid';
-    g.setAttribute('aria-hidden', 'true');
-    document.body.prepend(g);
   }
 
   // ---- Poussière d'étoiles avec parallaxe ----
@@ -964,7 +955,7 @@
     const reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
     function _boot() {
       _initParticles();
-      if (!reduce) { _initGrid(); _initStars(); _initCursor(); }
+      if (!reduce) { _initStars(); _initCursor(); }
       _initCounters(reduce);
       _initCmdPalette();
       _initEmojiShake();
