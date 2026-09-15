@@ -17,6 +17,11 @@ bas de la fenêtre **Paramètres**.
 
 ## 2.x — Refonte visuelle & administration
 
+### 2.7.1 — Fluidité des animations
+- Barre de progression du scroll et soulignement de nav animés en
+  `transform: scaleX` (au lieu de `width`) : rendu GPU, plus fluide (règle
+  « transform only »).
+
 ### 2.7.0 — Planning, idées & épuration
 - **Drag & drop** dans le planning : glisse un créneau d'un jour à l'autre.
 - **Boîte à idées** enrichie : catégories, compteur de caractères et onglet
