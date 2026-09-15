@@ -182,40 +182,58 @@
   }
 
   .login-brand{display:flex;flex-direction:column;align-items:center;gap:7px;margin-bottom:16px}
-  .login-mark{width:64px;height:62px;position:relative;
-    animation:logo-float 7s ease-in-out infinite 1.1s}
+  .login-mark{width:64px;height:62px;position:relative;perspective:620px;
+    animation:logo-float 7s ease-in-out infinite 1.5s}
   @keyframes logo-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 
-  /* Formation du logo : deux lames (moitiés du logo) qui s'assemblent */
+  /* ── Formation « forge énergétique » du logo ──
+     Deux lames arrivent de loin en 3D, se percutent au centre (léger
+     dépassement) → flash + onde de choc + éclat balayé. */
   .lf-half{
     position:absolute;top:0;bottom:0;width:50%;
     background-image:url(assets/logo-plazma.png);
     background-repeat:no-repeat;background-size:64px auto;background-position-y:center;
-    opacity:0;will-change:transform,opacity;
-    animation:none;
+    opacity:0;will-change:transform,opacity,filter;
   }
   .lf-left{left:0;background-position-x:left;
-    animation:lf-left .85s cubic-bezier(.16,1,.3,1) both .15s}
+    animation:lf-left 1s cubic-bezier(.2,.8,.2,1.25) both .2s}
   .lf-right{left:50%;background-position-x:right;
-    animation:lf-right .85s cubic-bezier(.16,1,.3,1) both .22s}
+    animation:lf-right 1s cubic-bezier(.2,.8,.2,1.25) both .28s}
   @keyframes lf-left{
-    0%{transform:translateX(-34px) translateY(6px) rotate(-14deg);opacity:0}
-    60%{opacity:1}
-    100%{transform:none;opacity:1}
+    0%{transform:translate3d(-150px,-46px,-140px) rotateY(88deg) rotateZ(-24deg) scale(1.7);opacity:0;filter:blur(7px)}
+    45%{opacity:1;filter:blur(1px)}
+    70%{transform:translate3d(7px,0,0) rotateY(-10deg) scale(1.04);filter:blur(0)}   /* dépassement */
+    100%{transform:none;opacity:1;filter:blur(0)}
   }
   @keyframes lf-right{
-    0%{transform:translateX(34px) translateY(6px) rotate(14deg);opacity:0}
-    60%{opacity:1}
-    100%{transform:none;opacity:1}
+    0%{transform:translate3d(150px,-46px,-140px) rotateY(-88deg) rotateZ(24deg) scale(1.7);opacity:0;filter:blur(7px)}
+    45%{opacity:1;filter:blur(1px)}
+    70%{transform:translate3d(-7px,0,0) rotateY(10deg) scale(1.04);filter:blur(0)}
+    100%{transform:none;opacity:1;filter:blur(0)}
   }
-  /* Éclat qui balaie le logo une fois assemblé */
-  .login-mark::after{
-    content:"";position:absolute;inset:0;pointer-events:none;
-    background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.85) 50%,transparent 60%);
+  /* Onde de choc à l'impact */
+  .lf-wave{
+    position:absolute;left:50%;top:52%;width:64px;height:64px;z-index:-1;pointer-events:none;
+    transform:translate(-50%,-50%) scale(.15);border-radius:50%;
+    border:2px solid rgba(34,211,238,.75);opacity:0;
+    animation:lf-wave .7s cubic-bezier(.16,1,.3,1) both .92s;
+  }
+  @keyframes lf-wave{0%{opacity:0;transform:translate(-50%,-50%) scale(.15)}22%{opacity:.9}100%{opacity:0;transform:translate(-50%,-50%) scale(2.6)}}
+  /* Flash lumineux du logo à l'impact */
+  .lf-flash{
+    position:absolute;inset:0;pointer-events:none;opacity:0;background:#eafcff;mix-blend-mode:screen;
     -webkit-mask:url(assets/logo-plazma.png) center/64px auto no-repeat;
     mask:url(assets/logo-plazma.png) center/64px auto no-repeat;
-    opacity:0;transform:translateX(-120%);
-    animation:lf-glint 1s ease-out 1.05s;
+    animation:lf-flash .55s ease .9s both;
+  }
+  @keyframes lf-flash{0%{opacity:0}20%{opacity:.95}100%{opacity:0}}
+  /* Éclat qui balaie le logo assemblé */
+  .lf-glint{
+    position:absolute;inset:0;pointer-events:none;opacity:0;transform:translateX(-120%);
+    background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.9) 50%,transparent 58%);
+    -webkit-mask:url(assets/logo-plazma.png) center/64px auto no-repeat;
+    mask:url(assets/logo-plazma.png) center/64px auto no-repeat;
+    animation:lf-glint 1s ease-out 1.25s;
   }
   @keyframes lf-glint{0%{opacity:0;transform:translateX(-120%)}30%{opacity:1}100%{opacity:0;transform:translateX(120%)}}
   .login h1{
@@ -317,9 +335,9 @@
     .login h1{font-size:1.8rem}
   }
   @media (prefers-reduced-motion:reduce){
-    .arc,.bubble,.login,.login-mark,.login .glass::after,.st,.lf-half,.login-mark::after{animation:none}
-    .lf-half{opacity:1;transform:none}
-    .login-mark::after{display:none}
+    .arc,.bubble,.login,.login-mark,.login .glass::after,.st,.lf-half,.lf-wave,.lf-flash,.lf-glint{animation:none}
+    .lf-half{opacity:1;transform:none;filter:none}
+    .lf-wave,.lf-flash,.lf-glint{display:none}
     .bubbles{display:none}
   }
 </style>
@@ -358,7 +376,7 @@
 <div class="login">
   <div class="glass">
     <div class="login-brand">
-      <div class="login-mark" role="img" aria-label="Logo ARCHI"><span class="lf-half lf-left"></span><span class="lf-half lf-right"></span></div>
+      <div class="login-mark" role="img" aria-label="Logo ARCHI"><span class="lf-wave"></span><span class="lf-half lf-left"></span><span class="lf-half lf-right"></span><span class="lf-flash"></span><span class="lf-glint"></span></div>
       <h1>ARCHI</h1>
       <div class="login-sub">Espace staff · PlaZma Esport</div>
     </div>
