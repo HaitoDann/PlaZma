@@ -162,31 +162,24 @@
   .tool:hover::before{opacity:1;width:4px}
 
   /* #14 Glow coloré au hover */
-  .tool{--mx:50%;--my:50%}
   .tool:hover{
-    transform:translateY(-4px) scale(1.012);
-    border-color:color-mix(in srgb,var(--tc,var(--accent)) 42%,var(--border));
+    transform:translateY(-3px);
+    border-color:color-mix(in srgb,var(--tc,var(--accent)) 35%,var(--border));
     background:var(--surface-2);
-    box-shadow:0 12px 34px color-mix(in srgb,var(--tc,var(--accent)) 20%,transparent);
+    box-shadow:0 8px 30px color-mix(in srgb,var(--tc,var(--accent)) 16%,transparent);
   }
-  /* Projecteur qui suit le curseur */
-  .tool::after{
-    content:'';position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0;
-    transition:opacity .3s ease;
-    background:radial-gradient(200px circle at var(--mx) var(--my),
-      color-mix(in srgb,var(--tc,var(--accent)) 22%,transparent), transparent 60%);
-  }
-  .tool:hover::after{opacity:1}
-  .tool > *{position:relative;z-index:1}
   .tool-ico{margin-bottom:6px;display:flex}
   .tool-ico svg{width:26px;height:26px;stroke:var(--tc,var(--accent));stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none;flex-shrink:0;
-    transition:transform .28s cubic-bezier(.34,1.56,.64,1),filter .28s ease}
-  .tool:hover .tool-ico svg{transform:scale(1.18) rotate(-7deg);
-    filter:drop-shadow(0 0 7px color-mix(in srgb,var(--tc,var(--accent)) 65%,transparent))}
-  .tool-name{transition:transform .28s cubic-bezier(.16,1,.3,1)}
-  .tool:hover .tool-name{transform:translateX(3px)}
+    transition:transform .3s cubic-bezier(.34,1.56,.64,1),filter .3s ease}
+  /* Anim évoluée : l'icône se redessine (tracé uniforme via pathLength=100) */
+  .tool-ico svg *{stroke-dasharray:100}
+  .tool:hover .tool-ico svg{transform:scale(1.12);filter:drop-shadow(0 0 6px color-mix(in srgb,var(--tc,var(--accent)) 55%,transparent))}
+  .tool:hover .tool-ico svg *{animation:ico-draw .8s cubic-bezier(.65,0,.35,1)}
+  @keyframes ico-draw{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+  @media (prefers-reduced-motion:reduce){
+    .tool:hover .tool-ico svg *{animation:none}
+  }
   .tool-name{font-family:var(--font-display);font-size:17px;font-weight:600}
-  .tool-desc{font-size:12.5px;color:var(--muted);line-height:1.5}
 
   /* #16 Ripple clic (vide seulement — voir JS) */
   @keyframes water-rip{
@@ -307,52 +300,42 @@
       <a class="tool" href="plazma-schedule.html" style="--tc:#3b82f6">
         <span class="tool-ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
         <span class="tool-name">Planning</span>
-        <span class="tool-desc">Programme d'entraînement hebdomadaire</span>
       </a>
       <a class="tool" href="plazma-scrim.html" style="--tc:#22c55e">
         <span class="tool-ico"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span>
         <span class="tool-name">CR Match</span>
-        <span class="tool-desc">Débriefs et analyses de matchs</span>
       </a>
       <a class="tool" href="plazma-review-individuelle.html" style="--tc:#6366f1">
         <span class="tool-ico"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="12" y1="11" x2="12" y2="21"/><line x1="8" y1="16" x2="16" y2="16"/></svg></span>
         <span class="tool-name">Review individuelle</span>
-        <span class="tool-desc">Analyse par joueur sur un match</span>
       </a>
       <a class="tool" href="plazma-scouting.html" style="--tc:#f97316">
         <span class="tool-ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
         <span class="tool-name">Scouting</span>
-        <span class="tool-desc">Analyse des équipes adverses</span>
       </a>
       <a class="tool" href="plazma-theory.html" style="--tc:#14b8a6">
         <span class="tool-ico"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg></span>
         <span class="tool-name">Theorycrafting</span>
-        <span class="tool-desc">Builds comparés, objets, runes, DPS &amp; time-to-kill</span>
       </a>
       <a class="tool" href="plazma-team.html" style="--tc:#22d3ee">
         <span class="tool-ico"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
         <span class="tool-name">Équipe</span>
-        <span class="tool-desc">Identité de jeu, tier list, style</span>
       </a>
       <a class="tool" href="plazma-dashboard.html" style="--tc:#a855f7">
         <span class="tool-ico"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
         <span class="tool-name">Dashboard</span>
-        <span class="tool-desc">Vue d'ensemble · stats · agenda</span>
       </a>
       <a class="tool" href="plazma-satisfaction.html" style="--tc:#ec4899">
         <span class="tool-ico"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
         <span class="tool-name">Satisfaction</span>
-        <span class="tool-desc">Ressenti et bien-être des joueurs</span>
       </a>
       <a class="tool" href="plazma-wiki.html" style="--tc:#8b5cf6">
         <span class="tool-ico"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 0 3-3h7z"/></svg></span>
         <span class="tool-name">Wiki</span>
-        <span class="tool-desc">Sorts, stats et cooldowns des champions</span>
       </a>
       <a class="tool" href="plazma-wiki-perf.html" style="--tc:#eab308">
         <span class="tool-ico"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
         <span class="tool-name">Encyclopédie</span>
-        <span class="tool-desc">Psycho, micro, macro, hygiène de vie</span>
       </a>
     </div>
   </section>
@@ -401,6 +384,9 @@
 <script src="assets/plazma.js?v=20260929c"></script>
 <script src="assets/champions.js?v=20260929c"></script>
 <script>
+  /* Normalise la longueur des tracés d'icônes → tracé uniforme au survol */
+  document.querySelectorAll('.tool-ico svg *').forEach(el => el.setAttribute('pathLength', '100'));
+
   /* #26 Scroll progress */
   window.addEventListener('scroll', () => {
     const max = document.body.scrollHeight - innerHeight;
@@ -419,23 +405,6 @@
     });
   }, {threshold: 0.08});
   document.querySelectorAll('.sec').forEach(s => revealObs.observe(s));
-
-  /* Projecteur des cartes : suit le curseur (désactivé si mouvement réduit) */
-  (function(){
-    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    let raf = 0, tool = null, mx = 0, my = 0;
-    const apply = () => { raf = 0; if (!tool) return;
-      const r = tool.getBoundingClientRect();
-      tool.style.setProperty('--mx', ((mx - r.left) / r.width * 100).toFixed(1) + '%');
-      tool.style.setProperty('--my', ((my - r.top) / r.height * 100).toFixed(1) + '%');
-    };
-    document.addEventListener('pointermove', e => {
-      const t = e.target.closest && e.target.closest('.tool');
-      if (!t) { tool = null; return; }
-      tool = t; mx = e.clientX; my = e.clientY;
-      if (!raf) raf = requestAnimationFrame(apply);
-    }, { passive: true });
-  })();
 
   /* #16 Ripple goutte d'eau — uniquement sur le vide (pas les cartes) */
   (function(){
