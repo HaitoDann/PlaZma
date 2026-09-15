@@ -93,6 +93,16 @@ service cloud.firestore {
       allow update: if false;
     }
 
+    // ---- Disponibilités (créneau 21h) ----
+    // Chaque membre actif gère UNIQUEMENT son propre document (uid == auth.uid).
+    // Lecture par toute personne ayant accès au Planning ; présence réelle
+    // (staff) reste dans le doc planning (schedule-*).
+    match /plazma-availability/{id} {
+      allow read:   if canRead('planning');
+      allow create, update: if active() && request.resource.data.uid == request.auth.uid;
+      allow delete: if canWrite('planning') || (active() && resource.data.uid == request.auth.uid);
+    }
+
     // ---- Satisfaction Head Coach ----
     match /plazma-satisfaction-coach/{id} {
       allow create: if true;

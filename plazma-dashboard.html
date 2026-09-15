@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929l">
+<link rel="stylesheet" href="assets/theme.css?v=20260929m">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -16,6 +16,28 @@
   .content{max-width:1180px;margin:0 auto;padding:22px var(--gut) 80px;display:flex;flex-direction:column;gap:20px}
   .dash-top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
   .dash-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+  /* ── Panneau « Aujourd'hui » (cockpit décisionnel) ── */
+  /* Règles : un seul accent, hiérarchie (1 primaire + secondaires), le chiffre
+     est le héros, ombre uniquement sur ce panneau qui « flotte ». */
+  .today{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--border-2);
+    border-radius:var(--r-lg);box-shadow:0 18px 48px -26px rgba(0,0,0,.55);padding:20px 22px;
+    display:grid;grid-template-columns:minmax(220px,1.1fr) 2fr;gap:20px;align-items:stretch}
+  .today::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+  .today-hero{display:flex;flex-direction:column;justify-content:center;gap:7px}
+  .today-eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .today-main{font-family:var(--font-display);font-size:1.65rem;font-weight:700;line-height:1.1;letter-spacing:-.01em}
+  .today-sub{font-size:13px;color:var(--muted)}
+  .today-sub b{color:var(--dim);font-weight:600}
+  .today-tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .ttile{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:13px 15px}
+  .ttile-lbl{display:flex;align-items:center;gap:7px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+  .ttile-lbl i{width:8px;height:8px;border-radius:50%;background:var(--tc,var(--accent));flex-shrink:0}
+  .ttile-val{font-family:var(--font-display);font-size:1.45rem;font-weight:700;line-height:1;letter-spacing:-.01em}
+  .ttile-val.sm{font-size:1.05rem}
+  .ttile-sub{font-size:11.5px;color:var(--muted);margin-top:5px}
+  @media(max-width:820px){.today{grid-template-columns:1fr}}
+  @media(max-width:480px){.today-tiles{grid-template-columns:1fr}}
 
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
   .kpi{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px}
@@ -128,6 +150,8 @@
       <button class="btn btn-sm btn-primary" onclick="openAddOffi()" data-edit>＋ Officiel</button>
     </div>
   </div>
+
+  <div class="today" id="todayPanel"></div>
 
   <div class="kpis" id="kpis"></div>
 
@@ -242,7 +266,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="assets/plazma.js?v=20260929l" data-section="dashboard"></script>
+<script src="assets/plazma.js?v=20260929m" data-section="dashboard"></script>
 <script>
 'use strict';
 PZ.mountNav('dashboard', '#nav');
@@ -295,7 +319,63 @@ function record(rows){ const w=rows.filter(r=>r.result==='W').length, l=rows.fil
 function streak(rows){ let n=0,ty=''; for(const r of rows){ if(!ty){ty=r.result;n=1;} else if(r.result===ty) n++; else break; } return {n,ty}; }
 
 // ── RENDER ──
-function render(){ renderKPIs(); renderWeek(); renderResults(); renderOpp(); renderRoster(); renderObjectives(); renderSettingsForm(); }
+function render(){ renderToday(); renderKPIs(); renderWeek(); renderResults(); renderOpp(); renderRoster(); renderObjectives(); renderSettingsForm(); }
+
+// ── Panneau « Aujourd'hui » ──
+function topObjective(){
+  const order={high:0,medium:1,low:2};
+  return [...(state.objectives||[])].filter(o=>o.status!=='done')
+    .sort((a,b)=>(order[a.priority??'medium'])-(order[b.priority??'medium']))[0] || null;
+}
+// Catégorie d'erreur la plus fréquente (pondérée par gravité) — graine de l'Analytics.
+function topErrorCategory(){
+  const freq={};
+  (agg.scrims||[]).forEach(s=>{ const e=s.errors||{}; ['g1','g2','g3','g4','g5'].forEach(g=>{ (e[g]||[]).forEach(x=>{
+    const w = x.sev==='high'?3:x.sev==='low'?1:2; const c=x.cat||'Autre'; freq[c]=(freq[c]||0)+w; }); }); });
+  const arr=Object.entries(freq).sort((a,b)=>b[1]-a[1]); return arr.length?arr[0]:null;
+}
+function renderToday(){
+  const el=document.getElementById('todayPanel'); if(!el) return;
+  const wk=agg.week||{};
+  const nx=(agg.week && typeof nextSession==='function')?nextSession(wk):null;
+  const sc=record(scrimRows());
+  const opp=(agg.scoutLatest && (agg.scoutLatest.m_team||'').trim())?agg.scoutLatest:null;
+  const obj=topObjective();
+  const prob=topErrorCategory();
+  const rSize=agg.rosterSize||5;
+
+  // Hero : prochaine session (créneau 21h)
+  let heroMain, heroSub;
+  if(nx){ const t=(PTYPES[nx.slot.type]||PTYPES.autre);
+    heroMain = `${t.l} · ${nx.day}`;
+    heroSub = `${nx.slot.start?'<b>'+nx.slot.start+'</b> · ':''}${nx.slot.note?esc(nx.slot.note):(opp&&nx.slot.type==='scrim'?'vs '+esc(opp.m_team):'Créneau prévu')}`;
+  } else { heroMain='Rien de prévu'; heroSub=agg.weekDenied?'Accès Planning requis':'Aucune session à venir cette semaine'; }
+
+  // Dispo pour le jour de la prochaine session
+  let dispoVal='—', dispoSub='du prochain créneau', dispoColor='var(--text)';
+  if(nx){ const n=(agg.avail||{})[nx.day]||0; dispoVal=n+'/'+rSize; dispoColor = n>=rSize?'var(--ok)':n>=rSize-1?'var(--warn)':'var(--err)';
+    dispoSub = n>=rSize?'effectif complet':(rSize-n)+' joueur'+((rSize-n)>1?'s':'')+' manquant'+((rSize-n)>1?'s':''); }
+
+  const formeVal = sc.total? (sc.w+'V'+' – '+sc.l+'D') : '—';
+  const formeColor = sc.wr===null?'var(--text)':sc.wr>=50?'var(--ok)':'var(--err)';
+
+  el.innerHTML = `
+    <div class="today-hero">
+      <span class="today-eyebrow">Prochain rendez-vous</span>
+      <div class="today-main">${esc(heroMain)}</div>
+      <div class="today-sub">${heroSub}</div>
+    </div>
+    <div class="today-tiles">
+      <div class="ttile"><div class="ttile-lbl"><i style="--tc:var(--ok)"></i>Dispo à 21h</div>
+        <div class="ttile-val" style="color:${dispoColor}">${dispoVal}</div><div class="ttile-sub">${dispoSub}</div></div>
+      <div class="ttile"><div class="ttile-lbl"><i style="--tc:var(--warn)"></i>Forme scrims</div>
+        <div class="ttile-val" style="color:${formeColor}">${formeVal}</div><div class="ttile-sub">${sc.total?sc.total+' scrim'+(sc.total>1?'s':''):'aucun scrim'}</div></div>
+      <div class="ttile"><div class="ttile-lbl"><i style="--tc:var(--accent)"></i>Adversaire</div>
+        <div class="ttile-val sm">${opp?esc(opp.m_team):'—'}</div><div class="ttile-sub">${opp?({low:'menace faible',med:'menace moyenne',high:'menace élevée'}[opp.threatLevel]||'à scouter'):'aucune fiche'}</div></div>
+      <div class="ttile"><div class="ttile-lbl"><i style="--tc:var(--err)"></i>Point à travailler</div>
+        <div class="ttile-val sm">${prob?esc(prob[0]):(obj?esc(obj.name):'—')}</div><div class="ttile-sub">${prob?'erreur la plus fréquente':(obj?'objectif prioritaire':'pas encore de données')}</div></div>
+    </div>`;
+}
 
 function renderKPIs(){
   const sc=record(scrimRows()), off=record(offiRows());
@@ -496,9 +576,16 @@ async function loadAggregates(){
   } else { agg.scoutDenied=true; agg.scoutLatest=false; }
   // Planning (semaine courante)
   if(can('planning')){
-    try{ const d=await db.collection(PZ.COLLECTION).doc('schedule-'+currentWeekValue()).get(); agg.week=(d.exists&&d.data().schedule)||{}; }
+    try{ const d=await db.collection(PZ.COLLECTION).doc('schedule-'+currentWeekValue()).get(); agg.week=(d.exists&&d.data().schedule)||{}; agg.presence=(d.exists&&d.data().presence)||{}; }
     catch(e){ console.error('planning',e); agg.week={}; }
+    // Disponibilités (collection dédiée) → total « dispo » par jour
+    try{
+      const snap=await db.collection('plazma-availability').where('week','==',currentWeekValue()).get();
+      const perDay={}; snap.forEach(dd=>{ const days=(dd.data()||{}).days||{}; Object.keys(days).forEach(day=>{ if(days[day]==='yes') perDay[day]=(perDay[day]||0)+1; }); });
+      agg.avail=perDay;
+    }catch(e){ console.error('avail',e); agg.avail={}; }
   } else { agg.weekDenied=true; agg.week={}; }
+  agg.rosterSize = (PZ.getRoster?PZ.getRoster().length:5);
   agg.loaded=true; render();
 }
 

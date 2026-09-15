@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929l">
+<link rel="stylesheet" href="assets/theme.css?v=20260929m">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -73,6 +73,33 @@
   .add-slot{width:100%;margin-top:2px;background:none;border:1px dashed var(--border);color:var(--muted);
     border-radius:7px;padding:6px;cursor:pointer;font-family:var(--font)}
   .add-slot:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* ── Disponibilités & présence (21h) ── */
+  .av-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .av-toggle{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:2px}
+  .av-toggle button{background:none;border:0;color:var(--muted);font-family:var(--font);font-size:12.5px;font-weight:600;padding:6px 13px;border-radius:7px;cursor:pointer}
+  .av-toggle button.on{background:var(--accent-soft);color:var(--accent)}
+  .av-scroll{overflow-x:auto;margin-top:14px}
+  .av-table{width:100%;border-collapse:collapse;min-width:640px}
+  .av-table th{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:8px 6px;text-align:center;border-bottom:1px solid var(--border)}
+  .av-table th.pl{text-align:left;width:150px}
+  .av-table td{padding:5px 4px;text-align:center;border-bottom:1px solid var(--border)}
+  .av-table td.pl{text-align:left;font-weight:600;font-size:13px}
+  .av-table td.pl .role{font-size:10.5px;color:var(--muted);font-weight:500;margin-left:6px}
+  .av-cell{width:34px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);
+    cursor:default;font-size:14px;line-height:1;display:inline-flex;align-items:center;justify-content:center;transition:transform .1s,border-color .12s}
+  .av-cell.edit{cursor:pointer}
+  .av-cell.edit:hover{border-color:var(--border-2);transform:translateY(-1px)}
+  .av-cell.yes,.av-cell.present{background:color-mix(in srgb,var(--ok) 20%,transparent);border-color:color-mix(in srgb,var(--ok) 45%,transparent)}
+  .av-cell.maybe,.av-cell.late{background:color-mix(in srgb,var(--warn) 20%,transparent);border-color:color-mix(in srgb,var(--warn) 45%,transparent)}
+  .av-cell.no,.av-cell.absent{background:color-mix(in srgb,var(--err) 18%,transparent);border-color:color-mix(in srgb,var(--err) 42%,transparent)}
+  .av-mine td{background:color-mix(in srgb,var(--accent) 6%,transparent)}
+  .av-foot td{padding-top:9px;font-weight:700;font-size:12px;color:var(--dim)}
+  .av-foot .cnt{font-family:var(--font-mono)}
+  .av-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;font-size:11.5px;color:var(--muted)}
+  .av-legend span{display:inline-flex;align-items:center;gap:6px}
+  .av-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .av-note{font-size:12px;color:var(--muted);margin-top:4px}
 
   .legend{display:flex;flex-wrap:wrap;gap:7px;padding:14px 22px;border-top:1px solid var(--border)}
   .leg{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:5px}
@@ -173,6 +200,22 @@
     <div class="legend" id="legend"></div>
   </div>
 
+  <div class="card" id="availCard" style="padding:18px 22px 22px">
+    <div class="av-head">
+      <div>
+        <div class="eyebrow">PlaZma Esport · Créneau 21h</div>
+        <div class="card-title" id="avTitle">Disponibilités de la semaine</div>
+      </div>
+      <div class="av-toggle" data-noexport>
+        <button id="avTabDispo" class="on" onclick="setAvMode('dispo')">Disponibilités</button>
+        <button id="avTabPres" onclick="setAvMode('presence')">Présence</button>
+      </div>
+    </div>
+    <div class="av-note" id="avNote"></div>
+    <div class="av-scroll"><table class="av-table" id="avTable"></table></div>
+    <div class="av-legend" id="avLegend"></div>
+  </div>
+
   <div class="card" id="viewMonth" style="display:none">
     <div class="card-head">
       <div><div class="eyebrow">PlaZma Esport · Calendrier</div>
@@ -206,7 +249,7 @@
   </div>
 </div>
 
-<script src="assets/plazma.js?v=20260929l" data-section="planning"></script>
+<script src="assets/plazma.js?v=20260929m" data-section="planning"></script>
 <script>
 PZ.mountNav('schedule', '#nav');
 const db = PZ.db;
@@ -265,13 +308,99 @@ const picker = document.getElementById('weekPicker');
 picker.value = currentWeekValue();
 document.getElementById('weekLabel').textContent = weekLabel(picker.value);
 
-// ---- Sync ----
+// ---- Disponibilités (self-service, collection dédiée) & présence (staff, doc planning) ----
+// Dispo : plazma-availability/<week>__<uid> — chaque joueur écrit SON doc (règle : uid == auth.uid).
+// Présence : stockée dans le doc planning (schedule-*.presence), éditable par le staff uniquement.
+let availDocs = {};  // { playerId: { days:{Lundi:'yes'…}, uid } }  agrégé des docs de la semaine
+let presence = {};   // { playerId: { Lundi:'present'|'late'|'absent' } }
+let avMode = 'dispo';
+let myUid = null, myPlayerId = null;
+const avRoster = () => (PZ.getPlayers ? PZ.getPlayers() : PZ.getRoster());
+
+// ---- Sync (planning + présence) ----
 const sync = PZ.sync({
   docId: () => 'schedule-' + (picker.value || 'default'),
-  getState: () => ({ schedule }),
-  applyState: s => { schedule = (s && s.schedule) || {}; },
-  onData: renderGrid
+  getState: () => ({ schedule, presence }),
+  applyState: s => { schedule = (s && s.schedule) || {}; presence = (s && s.presence) || {}; },
+  onData: () => { renderGrid(); renderAvail(); }
 });
+
+const AV_STATES = { dispo:['','yes','maybe','no'], presence:['','present','late','absent'] };
+const AV_ICON = { yes:'🟢', maybe:'🟡', no:'🔴', present:'✓', late:'⏰', absent:'✕', '':'' };
+
+async function loadAvail(){
+  availDocs = {};
+  if(db && canSec('planning')){
+    try{
+      const snap = await db.collection('plazma-availability').where('week','==',picker.value||'').get();
+      snap.forEach(d=>{ const x=d.data()||{}; if(x.playerId) availDocs[x.playerId] = { days:x.days||{}, uid:x.uid }; });
+    }catch(e){ console.error('avail', e); }
+  }
+  renderAvail();
+}
+async function saveMyAvail(){
+  if(!db || !myUid || !myPlayerId) return;
+  const days = (availDocs[myPlayerId]||{}).days || {};
+  try{ await db.collection('plazma-availability').doc((picker.value||'')+'__'+myUid)
+        .set({ week:picker.value, uid:myUid, playerId:myPlayerId, days, ts:Date.now() }); }
+  catch(e){ console.error(e); if(window.PZ&&PZ.toast) PZ.toast('Enregistrement de la dispo impossible.'); }
+}
+
+function setAvMode(m){
+  avMode = m;
+  document.getElementById('avTabDispo').classList.toggle('on', m==='dispo');
+  document.getElementById('avTabPres').classList.toggle('on', m==='presence');
+  document.getElementById('avTitle').textContent = m==='dispo' ? 'Disponibilités de la semaine' : 'Présence réelle (21h)';
+  renderAvail();
+}
+function cycleCell(pid, day){
+  if(avMode==='dispo'){
+    if(pid!==myPlayerId) return;                 // chacun sa ligne
+    availDocs[pid] = availDocs[pid] || { days:{}, uid:myUid };
+    const seq=AV_STATES.dispo, cur=availDocs[pid].days[day]||'';
+    const next=seq[(seq.indexOf(cur)+1)%seq.length];
+    if(next) availDocs[pid].days[day]=next; else delete availDocs[pid].days[day];
+    renderAvail(); saveMyAvail();
+  } else {
+    if(!canEdit()) return;                        // présence = staff
+    presence[pid] = presence[pid] || {};
+    const seq=AV_STATES.presence, cur=presence[pid][day]||'';
+    const next=seq[(seq.indexOf(cur)+1)%seq.length];
+    if(next) presence[pid][day]=next; else delete presence[pid][day];
+    renderAvail(); sync.save();
+  }
+}
+function renderAvail(){
+  const table = document.getElementById('avTable'); if(!table) return;
+  const roster = avRoster();
+  const staff = canEdit();
+  const dispo = avMode==='dispo';
+  const yesKey = dispo ? 'yes' : 'present';
+  document.getElementById('avNote').textContent = dispo
+    ? 'Chaque joueur indique ses jours de présence prévus à 21h (clique sur ta ligne).'
+    : 'Présence réelle constatée aux sessions de 21h (réservé au staff).';
+  let html = '<thead><tr><th class="pl">Joueur</th>' + DAYS.map(d=>`<th>${d.slice(0,3)}</th>`).join('') + '</tr></thead><tbody>';
+  roster.forEach(p=>{
+    const mine = p.id===myPlayerId;
+    const canEditRow = dispo ? mine : staff;
+    const days = dispo ? ((availDocs[p.id]||{}).days||{}) : (presence[p.id]||{});
+    html += `<tr${mine?' class="av-mine"':''}><td class="pl">${p.emoji||''} ${escHtml(p.name)}<span class="role">${escHtml(p.role||'')}</span></td>`;
+    DAYS.forEach(day=>{
+      const st = days[day] || '';
+      html += `<td><button class="av-cell ${st}${canEditRow?' edit':''}" ${canEditRow?`onclick="cycleCell('${p.id}','${day}')"`:'disabled'} title="${day}">${AV_ICON[st]}</button></td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody><tfoot><tr class="av-foot"><td class="pl">Collectif</td>' + DAYS.map(day=>{
+    let n=0; roster.forEach(p=>{ const days = dispo ? ((availDocs[p.id]||{}).days||{}) : (presence[p.id]||{}); if(days[day]===yesKey) n++; });
+    const col = n>=5?'var(--ok)':n>=3?'var(--warn)':'var(--err)';
+    return `<td><span class="cnt" style="color:${col}">${n}/${roster.length}</span></td>`;
+  }).join('') + '</tr></tfoot>';
+  table.innerHTML = html;
+  document.getElementById('avLegend').innerHTML = dispo
+    ? '<span><i style="background:var(--ok)"></i>Disponible</span><span><i style="background:var(--warn)"></i>Incertain</span><span><i style="background:var(--err)"></i>Absent</span><span><i style="background:var(--surface-2);border:1px solid var(--border)"></i>Pas de réponse</span>'
+    : '<span><i style="background:var(--ok)"></i>Présent</span><span><i style="background:var(--warn)"></i>En retard</span><span><i style="background:var(--err)"></i>Absent</span>';
+}
 
 // ---- Render ----
 function renderGrid(){
@@ -389,7 +518,7 @@ function shiftWeek(delta){ picker.value = weekValueShifted(picker.value, delta);
 document.getElementById('prevWk').addEventListener('click', () => shiftWeek(-1));
 document.getElementById('nextWk').addEventListener('click', () => shiftWeek(1));
 document.getElementById('todayBtn').addEventListener('click', () => { picker.value=currentWeekValue(); picker.dispatchEvent(new Event('change')); });
-picker.addEventListener('change', () => { document.getElementById('weekLabel').textContent = weekLabel(picker.value); schedule={}; renderGrid(); sync.restart(); });
+picker.addEventListener('change', () => { document.getElementById('weekLabel').textContent = weekLabel(picker.value); schedule={}; presence={}; availDocs={}; renderGrid(); renderAvail(); sync.restart(); loadAvail(); });
 
 // ---- Menus déroulants ----
 function closeMenus(){ document.querySelectorAll('.menu.open').forEach(m => m.classList.remove('open')); }
@@ -588,6 +717,7 @@ function setView(v){
   document.getElementById('weekNav').style.display=v==='week'?'':'none';
   document.getElementById('monthNav').style.display=v==='month'?'':'none';
   document.getElementById('capture').style.display=v==='week'?'':'none';
+  document.getElementById('availCard').style.display=v==='week'?'':'none';
   document.getElementById('viewMonth').style.display=v==='month'?'':'none';
   if(v==='month') renderMonth();
 }
@@ -600,6 +730,15 @@ document.getElementById('todayMo').addEventListener('click',()=>{ const n=new Da
 renderFillMenu();
 loadTemplates();
 renderGrid();
+renderAvail();
+if(PZ.onRoster) PZ.onRoster(()=>renderAvail());   // maj noms/joueurs additionnels
+
+// Joueur lié au compte courant : lui permet d'éditer sa propre ligne de dispo.
+if(PZ.auth && PZ.auth.ready) PZ.auth.ready.then(res=>{
+  myUid = (res && res.user && res.user.uid) || null;
+  myPlayerId = (res && res.profile && res.profile.playerId) || null;
+  loadAvail();
+});
 
 // Lecture seule : masque les commandes d'édition si pas de droit « Modifier » sur le Planning.
 function applyPlanningRO(){

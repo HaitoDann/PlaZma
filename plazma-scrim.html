@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929l">
+<link rel="stylesheet" href="assets/theme.css?v=20260929m">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -43,7 +43,10 @@
   .errs-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
   .errs-head .lbl{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
   .err-row{display:grid;grid-template-columns:70px 130px 1fr 30px 30px;gap:8px;align-items:center;margin-bottom:6px}
+  /* Ligne d'erreur : colonnes supplémentaires gravité + responsable (schéma structuré) */
+  .err-row.note-err{grid-template-columns:60px 120px 96px 108px 1fr 30px 30px}
   .err-row input,.err-row select{padding:7px 9px;font-size:13px}
+  .err-sev[data-sev="high"]{color:var(--err)} .err-sev[data-sev="med"]{color:var(--warn)} .err-sev[data-sev="low"]{color:var(--muted)}
   .err-del{background:none;border:1px solid var(--border);border-radius:7px;height:34px;color:var(--muted);cursor:pointer}
   .err-del:hover{color:var(--err);border-color:rgba(239,68,68,.4)}
   .err-flag{background:none;border:1px solid var(--border);border-radius:7px;height:34px;color:var(--border-2);cursor:pointer;font-size:14px;line-height:1;transition:color .12s,border-color .12s}
@@ -192,7 +195,7 @@
   <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
 </div>
 
-<script src="assets/plazma.js?v=20260929l" data-section="scrim"></script>
+<script src="assets/plazma.js?v=20260929m" data-section="scrim"></script>
 <script>
 'use strict';
 PZ.mountNav('scrim', '#nav');
@@ -202,6 +205,10 @@ const SCRIMS_COL = 'plazma-scrims';
 let ROSTER = PZ.getRoster();   // roster central (mercato)
 const ERR_CATS = ['Positionnement','Objectif manqué','Rotation','Communication','Mécanique','Teamfight','Vision','Autre'];
 const STR_CATS = ['Positionnement','Objectif sécurisé','Rotation','Communication','Mécanique','Teamfight','Vision','Autre'];
+// Gravité (schéma structuré pour les statistiques agrégées)
+const ERR_SEV = [['low','Faible'],['med','Moyenne'],['high','Haute']];
+function sevOptions(v){ return ERR_SEV.map(([k,l])=>`<option value="${k}"${(v||'med')===k?' selected':''}>${l}</option>`).join(''); }
+function playerOptions(v){ return '<option value="">Équipe</option>'+ROSTER.map(p=>`<option value="${p.id}"${v===p.id?' selected':''}>${esc(p.name)}</option>`).join(''); }
 
 let errors = {g1:[],g2:[],g3:[],g4:[],g5:[]};
 let strengths = {g1:[],g2:[],g3:[],g4:[],g5:[]};   // points forts (time-codés, par game)
@@ -260,12 +267,14 @@ function noteEmptyState(gk){
 
 function addError(gk, data){
   const list=document.getElementById('notelist_'+gk);
-  const err = data || {id:uid(),timer:'',cat:ERR_CATS[0],desc:'',order:nextOrder(),main:false};
+  const err = data || {id:uid(),timer:'',cat:ERR_CATS[0],sev:'med',player:'',desc:'',order:nextOrder(),main:false};
   if(!data) errors[gk].push(err);
   const row=document.createElement('div'); row.className='err-row note-err'+(err.main?' note-main':''); row.id='errrow_'+err.id;
   row.innerHTML=`
     <input id="errt_${err.id}" type="text" value="${esc(err.timer)}" placeholder="00:00" oninput="updErr('${gk}','${err.id}','timer',this.value)">
     <select id="errc_${err.id}" onchange="updErr('${gk}','${err.id}','cat',this.value)">${ERR_CATS.map(c=>`<option${c===err.cat?' selected':''}>${c}</option>`).join('')}</select>
+    <select id="errs_${err.id}" class="err-sev" data-sev="${err.sev||'med'}" onchange="this.setAttribute('data-sev',this.value);updErr('${gk}','${err.id}','sev',this.value)" title="Gravité">${sevOptions(err.sev)}</select>
+    <select id="errp_${err.id}" onchange="updErr('${gk}','${err.id}','player',this.value)" title="Responsable">${playerOptions(err.player)}</select>
     <input id="errd_${err.id}" type="text" value="${esc(err.desc)}" placeholder="Décris l'erreur…" oninput="updErr('${gk}','${err.id}','desc',this.value)">
     <button class="err-del" data-noexport onclick="removeError('${gk}','${err.id}')">✕</button>
     <button class="err-flag${err.main?' active':''}" id="errflag_${err.id}" data-noexport onclick="toggleMain('${gk}','${err.id}')" title="Marquer comme erreur principale">★</button>`;
