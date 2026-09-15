@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929f">
+<link rel="stylesheet" href="assets/theme.css?v=20260929g">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -22,22 +22,17 @@
   /* ── #26 Scroll progress bar ── */
   #scroll-prog{
     position:fixed;top:0;left:0;height:2px;z-index:9999;width:0%;
-    background:linear-gradient(90deg,var(--accent),#8b5cf6,var(--accent));
-    background-size:200% 100%;
-    animation:prog-shimmer 2s linear infinite;
+    background:linear-gradient(90deg,var(--accent),#8b5cf6);
     transition:width .08s linear;
     pointer-events:none;
   }
-  @keyframes prog-shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
 
   /* ── Hero ── */
   .hero{text-align:center;padding:64px 0 40px}
 
-  /* #1 Logo — formation « forge » puis flottement */
-  @keyframes logo-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  /* #1 Logo — formation « forge » (plus de flottement permanent : perf) */
   .hero-logo{
     width:112px;height:90px;margin:0 auto 20px;position:relative;perspective:900px;
-    animation:logo-float 7s ease-in-out infinite 1.6s;
   }
   .hl-half{
     position:absolute;top:0;bottom:0;width:50%;
@@ -145,14 +140,14 @@
     opacity:0;
   }
   .tools.revealed .tool{animation:tool-rise .48s cubic-bezier(.16,1,.3,1) both}
-  .tools.revealed .tool:nth-child(1){animation-delay:.04s}
-  .tools.revealed .tool:nth-child(2){animation-delay:.10s}
-  .tools.revealed .tool:nth-child(3){animation-delay:.16s}
-  .tools.revealed .tool:nth-child(4){animation-delay:.22s}
-  .tools.revealed .tool:nth-child(5){animation-delay:.28s}
-  .tools.revealed .tool:nth-child(6){animation-delay:.34s}
-  .tools.revealed .tool:nth-child(7){animation-delay:.40s}
-  .tools.revealed .tool:nth-child(8){animation-delay:.46s}
+  .tools.revealed .tool:nth-child(1){animation-delay:.02s}
+  .tools.revealed .tool:nth-child(2){animation-delay:.05s}
+  .tools.revealed .tool:nth-child(3){animation-delay:.08s}
+  .tools.revealed .tool:nth-child(4){animation-delay:.11s}
+  .tools.revealed .tool:nth-child(5){animation-delay:.14s}
+  .tools.revealed .tool:nth-child(6){animation-delay:.17s}
+  .tools.revealed .tool:nth-child(7){animation-delay:.20s}
+  .tools.revealed .tool:nth-child(8){animation-delay:.23s}
 
   /* #15 Barre latérale — transition progressive */
   .tool::before{
@@ -167,14 +162,14 @@
     transform:translateY(-3px);
     border-color:color-mix(in srgb,var(--tc,var(--accent)) 35%,var(--border));
     background:var(--surface-2);
-    box-shadow:0 8px 30px color-mix(in srgb,var(--tc,var(--accent)) 16%,transparent);
+    box-shadow:0 4px 14px color-mix(in srgb,var(--tc,var(--accent)) 12%,transparent);
   }
   .tool-ico{margin-bottom:6px;display:flex}
   .tool-ico svg{width:26px;height:26px;stroke:var(--tc,var(--accent));stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none;flex-shrink:0;
-    transition:transform .3s cubic-bezier(.34,1.56,.64,1),filter .3s ease}
+    transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
   /* Anim évoluée : l'icône se redessine (tracé uniforme via pathLength=100) */
   .tool-ico svg *{stroke-dasharray:100}
-  .tool:hover .tool-ico svg{transform:scale(1.12);filter:drop-shadow(0 0 6px color-mix(in srgb,var(--tc,var(--accent)) 55%,transparent))}
+  .tool:hover .tool-ico svg{transform:scale(1.12)}
   .tool:hover .tool-ico svg *{animation:ico-draw .8s cubic-bezier(.65,0,.35,1)}
   @keyframes ico-draw{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
   @media (prefers-reduced-motion:reduce){
@@ -390,8 +385,8 @@
   </footer>
 
 </div>
-<script src="assets/plazma.js?v=20260929f"></script>
-<script src="assets/champions.js?v=20260929f"></script>
+<script src="assets/plazma.js?v=20260929g"></script>
+<script src="assets/champions.js?v=20260929g"></script>
 <script>
   /* Normalise la longueur des tracés d'icônes → tracé uniforme au survol */
   document.querySelectorAll('.tool-ico svg *').forEach(el => el.setAttribute('pathLength', '100'));

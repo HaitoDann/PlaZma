@@ -1077,7 +1077,7 @@
   // ---- Particules ascendantes ----
   function _initParticles() {
     if (document.getElementById('pz-particles')) return;
-    const N = perfCount(35);
+    const N = perfCount(18);
     if (!N) return;   // 'off' : aucun décor
     const c = document.createElement('div');
     c.id = 'pz-particles';
@@ -1132,9 +1132,9 @@
     wrap.id = 'pz-stars';
     wrap.setAttribute('aria-hidden', 'true');
     const layers = [
-      { count: perfCount(40), depth: 8,  smax: 1.4, op: [.20, .45] },
-      { count: perfCount(26), depth: 18, smax: 2.0, op: [.30, .60] },
-      { count: perfCount(14), depth: 34, smax: 2.8, op: [.40, .75] },
+      { count: perfCount(26), depth: 8,  smax: 1.4, op: [.20, .45] },
+      { count: perfCount(16), depth: 18, smax: 2.0, op: [.30, .60] },
+      { count: perfCount(8),  depth: 34, smax: 2.8, op: [.40, .75] },
     ];
     const layerEls = [];
     layers.forEach(cfg => {
@@ -1154,20 +1154,7 @@
       layerEls.push({ el: layer, depth: cfg.depth });
     });
     document.body.prepend(wrap);
-
-    if (PERF === 'low') return;   // pas de parallaxe sur appareil faible
-    let tx = 0, ty = 0, queued = false;
-    function apply() {
-      queued = false;
-      layerEls.forEach(l => {
-        l.el.style.transform = `translate(${(tx * l.depth).toFixed(1)}px, ${(ty * l.depth).toFixed(1)}px)`;
-      });
-    }
-    window.addEventListener('mousemove', e => {
-      tx = (e.clientX / window.innerWidth - 0.5) * -2;
-      ty = (e.clientY / window.innerHeight - 0.5) * -2;
-      if (!queued) { queued = true; requestAnimationFrame(apply); }
-    }, { passive: true });
+    // Parallaxe désactivée (coût mousemove continu) : étoiles statiques + scintillement.
   }
 
   // ---- Curseur personnalisé ARCHI (point précis, sans anneau) ----
