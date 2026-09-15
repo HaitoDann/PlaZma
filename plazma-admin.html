@@ -125,7 +125,7 @@ const $ = id => document.getElementById(id);
 let db, meUid;
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2600); }
+function toast(t){ if(window.PZ&&PZ.toast){ PZ.toast(t); return; } const el=$('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2600); }
 
 // Grille de cases à cocher pour la création
 // Contrôle 3 états par module : Aucun / Voir / Modifier.

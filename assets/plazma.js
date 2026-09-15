@@ -678,7 +678,7 @@
     db, COLLECTION, NAV, FIREBASE_CONFIG,
     mountNav, sync, status, nowTime, relTime, loadingDone,
     exportPNG, backup, importFile, logout, changePassword,
-    toggleTheme,
+    toggleTheme, toast,
     USER_DOMAIN, discord,
     // Roster central
     getRoster, getCoach, player, onRoster, setPlayer, saveRoster,
@@ -831,6 +831,78 @@
     }
   }
 
+  // ---- Toasts flottants ----
+  function toast(msg, type) {
+    let host = document.getElementById('pz-toasts');
+    if (!host) {
+      host = document.createElement('div');
+      host.id = 'pz-toasts';
+      host.setAttribute('aria-live', 'polite');
+      document.body.appendChild(host);
+    }
+    const t = document.createElement('div');
+    t.className = 'pz-toast' + (type ? ' ' + type : '');
+    const dot = document.createElement('span'); dot.className = 'pz-toast-dot';
+    const txt = document.createElement('span'); txt.textContent = msg;
+    t.append(dot, txt);
+    host.appendChild(t);
+    let done = false;
+    const dismiss = () => {
+      if (done) return; done = true;
+      t.classList.add('out');
+      setTimeout(() => t.remove(), 420);
+    };
+    const life = setTimeout(dismiss, 2800);
+    t.addEventListener('click', () => { clearTimeout(life); dismiss(); });
+    return t;
+  }
+
+  // ---- Tilt 3D sur les cartes joueur (.pcard) ----
+  function _initTilt() {
+    let cur = null, raf = 0, mx = 0, my = 0;
+    const apply = () => {
+      raf = 0;
+      if (!cur) return;
+      const r = cur.getBoundingClientRect();
+      const px = (mx - r.left) / r.width - 0.5;
+      const py = (my - r.top) / r.height - 0.5;
+      cur.style.transition = 'transform .06s linear, box-shadow .2s';
+      cur.style.transform =
+        `perspective(650px) rotateX(${(-py * 7).toFixed(2)}deg) rotateY(${(px * 7).toFixed(2)}deg) translateY(-4px) scale(1.015)`;
+      cur.style.boxShadow = '0 16px 34px color-mix(in srgb, var(--role, var(--accent)) 24%, transparent)';
+    };
+    const reset = el => {
+      el.style.transition = 'transform .4s cubic-bezier(.16,1,.3,1), box-shadow .3s';
+      el.style.transform = '';
+      el.style.boxShadow = '';
+    };
+    document.addEventListener('pointermove', e => {
+      const card = e.target.closest && e.target.closest('.pcard');
+      if (!card) { if (cur) { reset(cur); cur = null; } return; }
+      if (cur && cur !== card) reset(cur);
+      cur = card; mx = e.clientX; my = e.clientY;
+      if (!raf) raf = requestAnimationFrame(apply);
+    }, { passive: true });
+    document.addEventListener('pointerleave', () => { if (cur) { reset(cur); cur = null; } }, true);
+  }
+
+  // ---- Onde au clic sur les toggles jour/nuit ----
+  function _initToggleRipple() {
+    document.addEventListener('click', e => {
+      const t = e.target.closest && e.target.closest('.pz-daynight');
+      if (!t) return;
+      const r = t.getBoundingClientRect();
+      const ring = document.createElement('span');
+      ring.className = 'dn-ripple';
+      const size = Math.max(r.width, r.height) * 1.5;
+      ring.style.width = ring.style.height = size + 'px';
+      ring.style.left = (e.clientX - r.left) + 'px';
+      ring.style.top = (e.clientY - r.top) + 'px';
+      t.appendChild(ring);
+      setTimeout(() => ring.remove(), 520);
+    });
+  }
+
   // ---- Poussière d'étoiles avec parallaxe ----
   function _initStars() {
     if (document.getElementById('pz-stars')) return;
@@ -950,7 +1022,8 @@
     const reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
     function _boot() {
       _initParticles();
-      if (!reduce) { _initStars(); _initCursor(); }
+      _initToggleRipple();
+      if (!reduce) { _initStars(); _initCursor(); _initTilt(); }
       _initCounters(reduce);
       _initCmdPalette();
       _initEmojiShake();
