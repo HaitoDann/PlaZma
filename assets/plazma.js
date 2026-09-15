@@ -52,6 +52,11 @@
     console.error('Firebase indisponible :', e);
   }
 
+  // ---- Version de l'application (SemVer) ----
+  // MAJEUR.MINEUR.CORRECTIF — MINEUR à chaque lot de fonctionnalités,
+  // CORRECTIF pour les corrections. Affichée discrètement dans Paramètres.
+  const VERSION = '1.5.0';
+
   // ---- Niveau de performance : adapte la densité des effets ----
   // Full sur machine puissante (rendu identique), réduit sur mobile/appareil
   // faible, éteint si l'utilisateur demande de réduire les animations.
@@ -701,7 +706,9 @@
       '<p style="color:var(--muted);font-size:12.5px;margin:0 0 14px">Qualité visuelle du site (particules, étoiles, effets).</p>' +
       '<div style="display:flex;gap:4px;background:var(--surface-2);border:1px solid var(--border-2);border-radius:11px;padding:3px">' + seg + '</div>' +
       '<p style="color:var(--muted);font-size:11.5px;line-height:1.5;margin:11px 0 0">« Auto » s\'adapte à la puissance de ton appareil (actuellement : <b style="color:var(--dim)">' + PERF + '</b>). Choisis « Faible » si le site rame. La page se recharge au changement.</p>' +
-      '<div style="display:flex;justify-content:flex-end;margin-top:18px"><button type="button" id="pz_set_close" style="padding:8px 16px;border-radius:9px;border:1px solid var(--border-2);background:transparent;color:var(--dim);font-size:13px;cursor:pointer">Fermer</button></div>'
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:18px">' +
+      '<span style="font-size:11px;color:var(--muted);opacity:.7;letter-spacing:.02em">ARCHI v' + VERSION + '</span>' +
+      '<button type="button" id="pz_set_close" style="padding:8px 16px;border-radius:9px;border:1px solid var(--border-2);background:transparent;color:var(--dim);font-size:13px;cursor:pointer">Fermer</button></div>'
     );
     ov.querySelectorAll('[data-q]').forEach(b => b.addEventListener('click', () => {
       let c = 'auto'; try { c = localStorage.getItem('pz-quality') || 'auto'; } catch (e) {}
@@ -960,7 +967,7 @@
 
   // ---- API publique ----
   window.PZ = {
-    db, COLLECTION, NAV, FIREBASE_CONFIG,
+    db, COLLECTION, NAV, FIREBASE_CONFIG, VERSION,
     mountNav, sync, status, nowTime, relTime, loadingDone,
     exportPNG, backup, importFile, logout, changePassword,
     toggleTheme, toast, perf: PERF,
