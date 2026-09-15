@@ -55,7 +55,7 @@
   // ---- Version de l'application (SemVer) ----
   // MAJEUR.MINEUR.CORRECTIF — MINEUR à chaque lot de fonctionnalités,
   // CORRECTIF pour les corrections. Affichée discrètement dans Paramètres.
-  const VERSION = '1.5.0';
+  const VERSION = '2.6.0';
 
   // ---- Niveau de performance : adapte la densité des effets ----
   // Full sur machine puissante (rendu identique), réduit sur mobile/appareil
@@ -452,7 +452,7 @@
       `<div class="pz-topbar"><div class="pz-topbar-inner">
         <a class="pz-brand" href="index.html">
           <span class="pz-brand-mark"><img src="assets/logo-plazma.png" alt="ARCHI"></span>
-          <span><span class="pz-brand-name">ARCHI</span></span>
+          <span><span class="pz-brand-name">ARCHI</span><span class="pz-ver" title="Version d'ARCHI">v${VERSION}</span></span>
         </a>
         <nav class="pz-nav">${links}</nav>
         ${who}

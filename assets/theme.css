@@ -115,6 +115,10 @@ h3{font-size:1.02rem}
 }
 .pz-brand-mark img{height:30px;width:auto;display:block;object-fit:contain}
 .pz-brand-name{font-size:17px;letter-spacing:.04em}
+.pz-ver{margin-left:7px;font-family:var(--font);font-weight:600;font-size:9.5px;letter-spacing:.03em;
+  color:var(--muted);background:var(--surface-2);border:1px solid var(--border);border-radius:20px;
+  padding:1.5px 6px;vertical-align:middle;position:relative;top:-1px}
+@media(max-width:560px){.pz-ver{display:none}}
 .pz-brand-sub{font-size:10px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;font-family:var(--font)}
 .pz-nav{display:flex;align-items:center;gap:2px;flex-wrap:wrap}
 .pz-nav a{
