@@ -61,10 +61,38 @@
     background:radial-gradient(circle, rgba(34,211,238,.10), transparent 62%);
   }
 
+  /* Bulles d'aquarium qui remontent doucement */
+  .bubbles{position:absolute;inset:0;overflow:hidden}
+  .bubble{
+    position:absolute;bottom:-60px;border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle at 34% 30%, rgba(200,244,252,.5), rgba(34,211,238,.13) 58%, transparent 72%);
+    box-shadow:0 0 8px rgba(34,211,238,.14);
+    opacity:0;will-change:transform,opacity;
+    animation:bubble-rise linear infinite;
+  }
+  @keyframes bubble-rise{
+    0%{transform:translate(0,0) scale(.9);opacity:0}
+    12%{opacity:var(--op,.5)}
+    50%{transform:translate(var(--sway,12px),-52vh) scale(1)}
+    88%{opacity:calc(var(--op,.5) * .7)}
+    100%{transform:translate(0,-104vh) scale(1.04);opacity:0}
+  }
+
+  /* Ripple goutte d'eau au clic (écho de l'accueil) */
+  .wd-ring{
+    position:fixed;border-radius:50%;pointer-events:none;z-index:9997;
+    border:1px solid rgba(34,211,238,.6);transform:scale(0);
+  }
+  @keyframes water-rip{
+    0%{transform:scale(0);opacity:var(--op,.6)}
+    15%{opacity:var(--op,.6)}
+    100%{transform:scale(1);opacity:0}
+  }
+
   /* ---- Socle rond glassmorphism ---- */
-  .login{width:560px;max-width:100%;position:relative;z-index:1}
+  .login{width:520px;max-width:100%;position:relative;z-index:1;animation:socle-float 9s ease-in-out infinite}
   .login .glass{
-    aspect-ratio:1;border-radius:50%;padding:0 92px;
+    aspect-ratio:1;border-radius:50%;padding:0 114px;
     display:flex;flex-direction:column;justify-content:center;
     background:linear-gradient(155deg, rgba(24,34,46,.6), rgba(12,18,26,.48));
     backdrop-filter:blur(22px) saturate(150%);
@@ -81,11 +109,32 @@
   .login .glass::before{
     content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
     background:radial-gradient(120% 70% at 50% -6%, rgba(103,232,249,.16), transparent 46%);
+    z-index:2;
+  }
+  /* Caustique : lumière d'eau qui dérive lentement sur le verre */
+  .login .glass::after{
+    content:"";position:absolute;inset:-30%;border-radius:50%;pointer-events:none;z-index:1;
+    background:
+      radial-gradient(38% 30% at 32% 30%, rgba(103,232,249,.10), transparent 60%),
+      radial-gradient(30% 26% at 72% 64%, rgba(45,212,191,.08), transparent 62%);
+    filter:blur(6px);
+    animation:caustic 16s ease-in-out infinite;
+  }
+  .login .glass > *{position:relative;z-index:3}
+  @keyframes socle-float{
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-9px)}
+  }
+  @keyframes caustic{
+    0%,100%{transform:translate(0,0) rotate(0deg);opacity:.9}
+    50%{transform:translate(3%,-2%) rotate(8deg);opacity:1}
   }
 
   .login-brand{display:flex;flex-direction:column;align-items:center;gap:7px;margin-bottom:16px}
-  .login-mark{width:62px;height:62px;display:flex;align-items:center;justify-content:center}
+  .login-mark{width:62px;height:62px;display:flex;align-items:center;justify-content:center;
+    animation:logo-float 7s ease-in-out infinite .6s}
   .login-mark img{width:100%;height:100%;object-fit:contain}
+  @keyframes logo-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
   .login h1{
     font-size:2rem;letter-spacing:.14em;font-weight:800;
     background:linear-gradient(180deg,#ffffff, #b9e9f4 90%);
@@ -119,8 +168,8 @@
 
   .err{min-height:16px;text-align:center;font-size:12.5px;color:var(--err);margin-top:10px;opacity:0;transition:opacity .2s}
   .err.show{opacity:1}
-  .msg{min-height:14px;text-align:center;font-size:12.5px;color:var(--ok,#4ade80);margin-top:6px;opacity:0;transition:opacity .2s}
-  .msg.show{opacity:1}
+  .msg{min-height:0;text-align:center;font-size:12.5px;color:var(--ok,#4ade80);margin-top:0;opacity:0;transition:opacity .2s,min-height .2s,margin .2s}
+  .msg.show{opacity:1;min-height:14px;margin-top:6px}
 
   .login .btn{
     width:100%;margin-top:16px;padding:13px;border:0;cursor:pointer;
@@ -134,7 +183,7 @@
   .login .btn:active:not(:disabled){transform:translateY(0)}
   .login .btn:disabled{opacity:.7;cursor:default}
 
-  .forgot{display:block;text-align:center;margin-top:12px;font-size:11.5px;color:var(--muted);background:none;border:0;width:100%}
+  .forgot{display:block;text-align:center;margin:12px auto 0;max-width:210px;font-size:11.5px;line-height:1.5;color:var(--muted);background:none;border:0}
 
   @media (max-width:600px){
     .login{width:100%}
@@ -144,7 +193,8 @@
     .login h1{font-size:1.8rem}
   }
   @media (prefers-reduced-motion:reduce){
-    .arc{animation:none}
+    .arc,.bubble,.login,.login-mark,.login .glass::after{animation:none}
+    .bubbles{display:none}
   }
 </style>
 </head>
@@ -158,6 +208,7 @@
     <span class="arc a2"></span>
     <span class="arc a1"></span>
   </div>
+  <div class="bubbles" id="bubbles"></div>
 </div>
 <div class="login">
   <div class="glass">
@@ -231,6 +282,54 @@ function login(){
   auth.signInWithEmailAndPassword(toEmail(user), pw)
     .then(() => { redirecting = true; location.replace('index.html'); })
     .catch(e => { showErr(frError(e)); btn.disabled = false; btn.textContent = 'Se connecter'; $('pw').value=''; $('pw').focus(); });
+}
+
+/* ── Ambiance aquarium ─────────────────────────────────────
+   Respecte prefers-reduced-motion : aucun effet si l'utilisateur
+   a demandé à réduire les animations. */
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (!reduceMotion) {
+  // Bulles qui remontent doucement
+  (function bubbles(){
+    const host = $('bubbles');
+    if (!host) return;
+    const COUNT = window.innerWidth < 600 ? 9 : 16;
+    const rnd = (a,b) => a + Math.random() * (b - a);
+    for (let i = 0; i < COUNT; i++){
+      const b = document.createElement('span');
+      b.className = 'bubble';
+      const size = rnd(4, 13);
+      b.style.width = b.style.height = size.toFixed(1) + 'px';
+      b.style.left = rnd(0, 100).toFixed(2) + '%';
+      b.style.setProperty('--op', rnd(.18, .5).toFixed(2));
+      b.style.setProperty('--sway', (rnd(-22, 22)).toFixed(0) + 'px');
+      b.style.animationDuration = rnd(15, 30).toFixed(1) + 's';
+      b.style.animationDelay = (-rnd(0, 26)).toFixed(1) + 's';
+      host.appendChild(b);
+    }
+  })();
+
+  // Ripple goutte d'eau au clic sur le vide (comme l'accueil)
+  (function ripple(){
+    const SKIP = 'a,button,input,select,textarea,label,[onclick]';
+    const rings = [
+      {sz:56,  delay:0,   dur:750, op:.5},
+      {sz:104, delay:70,  dur:860, op:.28},
+      {sz:150, delay:145, dur:970, op:.15},
+    ];
+    document.addEventListener('click', e => {
+      if (e.target.closest(SKIP)) return;
+      rings.forEach(({sz, delay, dur, op}) => {
+        const r = document.createElement('div');
+        r.className = 'wd-ring';
+        r.style.cssText = `width:${sz}px;height:${sz}px;left:${e.clientX - sz/2}px;top:${e.clientY - sz/2}px;--op:${op};`;
+        document.body.appendChild(r);
+        r.getBoundingClientRect();
+        r.style.animation = `water-rip ${dur}ms ${delay}ms cubic-bezier(0,.55,.45,1) both`;
+        setTimeout(() => r.remove(), delay + dur + 60);
+      });
+    });
+  })();
 }
 </script>
 </body>
