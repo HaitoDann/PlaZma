@@ -1106,7 +1106,7 @@
     const reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
     function _boot() {
       _initParticles();
-      if (!reduce) { _initStars(); _initCursor(); }
+      if (!reduce) { _initStars(); }
       _initCounters(reduce);
       _initCmdPalette();
       _initEmojiShake();

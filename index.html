@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929b">
+<link rel="stylesheet" href="assets/theme.css?v=20260929c">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -33,14 +33,52 @@
   /* ── Hero ── */
   .hero{text-align:center;padding:64px 0 40px}
 
-  /* #1 Logo flottant */
+  /* #1 Logo — formation « forge » puis flottement */
   @keyframes logo-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
-  @keyframes logo-in{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
   .hero-logo{
-    width:112px;height:auto;margin:0 auto 20px;display:block;
-    animation:logo-in .55s cubic-bezier(.16,1,.3,1) both, logo-float 7s ease-in-out infinite .6s;
+    width:112px;height:90px;margin:0 auto 20px;position:relative;perspective:900px;
+    animation:logo-float 7s ease-in-out infinite 1.6s;
   }
-  .hero-logo:hover{animation-play-state:paused,paused}
+  .hl-half{
+    position:absolute;top:0;bottom:0;width:50%;
+    background-image:url(assets/logo-plazma.png);background-repeat:no-repeat;
+    background-size:112px auto;background-position-y:center;
+    opacity:0;will-change:transform,opacity,filter;
+  }
+  .hl-left{left:0;background-position-x:left;
+    animation:hl-left 1s cubic-bezier(.2,.8,.2,1.25) both .25s}
+  .hl-right{left:50%;background-position-x:right;
+    animation:hl-right 1s cubic-bezier(.2,.8,.2,1.25) both .33s}
+  @keyframes hl-left{
+    0%{transform:translate3d(-240px,-70px,-220px) rotateY(90deg) rotateZ(-26deg) scale(1.7);opacity:0;filter:blur(9px)}
+    45%{opacity:1;filter:blur(1px)}
+    70%{transform:translate3d(10px,0,0) rotateY(-10deg) scale(1.05);filter:blur(0)}
+    100%{transform:none;opacity:1;filter:blur(0)}
+  }
+  @keyframes hl-right{
+    0%{transform:translate3d(240px,-70px,-220px) rotateY(-90deg) rotateZ(26deg) scale(1.7);opacity:0;filter:blur(9px)}
+    45%{opacity:1;filter:blur(1px)}
+    70%{transform:translate3d(-10px,0,0) rotateY(10deg) scale(1.05);filter:blur(0)}
+    100%{transform:none;opacity:1;filter:blur(0)}
+  }
+  .hl-wave{position:absolute;left:50%;top:50%;width:96px;height:96px;z-index:-1;pointer-events:none;
+    transform:translate(-50%,-50%) scale(.15);border-radius:50%;border:2px solid rgba(34,211,238,.7);opacity:0;
+    animation:hl-wave .75s cubic-bezier(.16,1,.3,1) both 1s}
+  @keyframes hl-wave{0%{opacity:0;transform:translate(-50%,-50%) scale(.15)}22%{opacity:.85}100%{opacity:0;transform:translate(-50%,-50%) scale(2.7)}}
+  .hl-flash{position:absolute;inset:0;pointer-events:none;opacity:0;background:#eafcff;mix-blend-mode:screen;
+    -webkit-mask:url(assets/logo-plazma.png) center/112px auto no-repeat;mask:url(assets/logo-plazma.png) center/112px auto no-repeat;
+    animation:hl-flash .55s ease 1s both}
+  @keyframes hl-flash{0%{opacity:0}20%{opacity:.9}100%{opacity:0}}
+  .hl-glint{position:absolute;inset:0;pointer-events:none;opacity:0;transform:translateX(-120%);
+    background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.9) 50%,transparent 58%);
+    -webkit-mask:url(assets/logo-plazma.png) center/112px auto no-repeat;mask:url(assets/logo-plazma.png) center/112px auto no-repeat;
+    animation:hl-glint 1s ease-out 1.35s}
+  @keyframes hl-glint{0%{opacity:0;transform:translateX(-120%)}30%{opacity:1}100%{opacity:0;transform:translateX(120%)}}
+  @media (prefers-reduced-motion:reduce){
+    .hl-half{animation:none;opacity:1;transform:none;filter:none}
+    .hl-wave,.hl-flash,.hl-glint{display:none}
+    .hero-logo{animation:none}
+  }
 
   /* #5 Titre ARCHI — entrée letter-spacing */
   @keyframes title-in{from{opacity:0;letter-spacing:.2em;filter:blur(4px)}to{opacity:1;letter-spacing:.04em;filter:none}}
@@ -124,15 +162,29 @@
   .tool:hover::before{opacity:1;width:4px}
 
   /* #14 Glow coloré au hover */
+  .tool{--mx:50%;--my:50%}
   .tool:hover{
-    transform:translateY(-3px);
-    border-color:color-mix(in srgb,var(--tc,var(--accent)) 35%,var(--border));
+    transform:translateY(-4px) scale(1.012);
+    border-color:color-mix(in srgb,var(--tc,var(--accent)) 42%,var(--border));
     background:var(--surface-2);
-    box-shadow:0 8px 30px color-mix(in srgb,var(--tc,var(--accent)) 16%,transparent);
+    box-shadow:0 12px 34px color-mix(in srgb,var(--tc,var(--accent)) 20%,transparent);
   }
+  /* Projecteur qui suit le curseur */
+  .tool::after{
+    content:'';position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0;
+    transition:opacity .3s ease;
+    background:radial-gradient(200px circle at var(--mx) var(--my),
+      color-mix(in srgb,var(--tc,var(--accent)) 22%,transparent), transparent 60%);
+  }
+  .tool:hover::after{opacity:1}
+  .tool > *{position:relative;z-index:1}
   .tool-ico{margin-bottom:6px;display:flex}
-  .tool-ico svg{width:26px;height:26px;stroke:var(--tc,var(--accent));stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none;flex-shrink:0;transition:transform .2s cubic-bezier(.16,1,.3,1)}
-  .tool:hover .tool-ico svg{transform:scale(1.12)}
+  .tool-ico svg{width:26px;height:26px;stroke:var(--tc,var(--accent));stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none;flex-shrink:0;
+    transition:transform .28s cubic-bezier(.34,1.56,.64,1),filter .28s ease}
+  .tool:hover .tool-ico svg{transform:scale(1.18) rotate(-7deg);
+    filter:drop-shadow(0 0 7px color-mix(in srgb,var(--tc,var(--accent)) 65%,transparent))}
+  .tool-name{transition:transform .28s cubic-bezier(.16,1,.3,1)}
+  .tool:hover .tool-name{transform:translateX(3px)}
   .tool-name{font-family:var(--font-display);font-size:17px;font-weight:600}
   .tool-desc{font-size:12.5px;color:var(--muted);line-height:1.5}
 
@@ -243,7 +295,7 @@
 <div class="home">
 
   <header class="hero">
-    <img class="hero-logo" src="assets/logo-plazma.png" alt="PlaZma">
+    <div class="hero-logo" role="img" aria-label="Logo ARCHI"><span class="hl-wave"></span><span class="hl-half hl-left"></span><span class="hl-half hl-right"></span><span class="hl-flash"></span><span class="hl-glint"></span></div>
     <h1>ARCHI</h1>
     <span class="hero-sep"></span>
   </header>
@@ -346,8 +398,8 @@
   </footer>
 
 </div>
-<script src="assets/plazma.js?v=20260929b"></script>
-<script src="assets/champions.js?v=20260929b"></script>
+<script src="assets/plazma.js?v=20260929c"></script>
+<script src="assets/champions.js?v=20260929c"></script>
 <script>
   /* #26 Scroll progress */
   window.addEventListener('scroll', () => {
@@ -367,6 +419,23 @@
     });
   }, {threshold: 0.08});
   document.querySelectorAll('.sec').forEach(s => revealObs.observe(s));
+
+  /* Projecteur des cartes : suit le curseur (désactivé si mouvement réduit) */
+  (function(){
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let raf = 0, tool = null, mx = 0, my = 0;
+    const apply = () => { raf = 0; if (!tool) return;
+      const r = tool.getBoundingClientRect();
+      tool.style.setProperty('--mx', ((mx - r.left) / r.width * 100).toFixed(1) + '%');
+      tool.style.setProperty('--my', ((my - r.top) / r.height * 100).toFixed(1) + '%');
+    };
+    document.addEventListener('pointermove', e => {
+      const t = e.target.closest && e.target.closest('.tool');
+      if (!t) { tool = null; return; }
+      tool = t; mx = e.clientX; my = e.clientY;
+      if (!raf) raf = requestAnimationFrame(apply);
+    }, { passive: true });
+  })();
 
   /* #16 Ripple goutte d'eau — uniquement sur le vide (pas les cartes) */
   (function(){
