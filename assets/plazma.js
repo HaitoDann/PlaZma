@@ -52,6 +52,55 @@
     console.error('Firebase indisponible :', e);
   }
 
+  // ============ Suivi d'usage (jauges de quotas Firebase) ============
+  // On compte localement les lectures/écritures/suppressions/connexions et on
+  // pousse les DELTAS agrégés vers plazma/_usage (FieldValue.increment) au plus
+  // une fois par minute → coût quasi nul, totaux partagés entre tous les postes.
+  // Limites du plan gratuit Firebase (Spark) exposées pour la page d'admin.
+  const SPARK_LIMITS = { reads: 50000, writes: 20000, deletes: 20000, storageBytes: 1073741824, egressBytesMonth: 10737418240 };
+  const USAGE_DOC = '_usage';
+  const USAGE_KEY = 'pz-usage';
+  const _todayKey = () => {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  };
+  const _freshUsage = () => ({ date: _todayKey(), reads: 0, writes: 0, deletes: 0, logins: 0, fr: 0, fw: 0, fd: 0, fl: 0 });
+  let _usage = (function () {
+    try { const u = JSON.parse(localStorage.getItem(USAGE_KEY)); if (u && u.date === _todayKey()) return u; } catch (e) {}
+    return _freshUsage();
+  })();
+  const _saveUsage = () => { try { localStorage.setItem(USAGE_KEY, JSON.stringify(_usage)); } catch (e) {} };
+  let _flushTimer = 0;
+  function _bumpUsage(kind, n) {
+    if (_usage.date !== _todayKey()) _usage = _freshUsage();
+    _usage[kind] += (n || 1);
+    _saveUsage();
+    if (!_flushTimer) _flushTimer = setTimeout(flushUsage, 60000);
+  }
+  function flushUsage() {
+    _flushTimer = 0;
+    if (!db || !window.firebase || !firebase.firestore) return;
+    const dr = _usage.reads - _usage.fr, dw = _usage.writes - _usage.fw,
+          dd = _usage.deletes - _usage.fd, dl = _usage.logins - _usage.fl;
+    if (dr <= 0 && dw <= 0 && dd <= 0 && dl <= 0) return;
+    const inc = firebase.firestore.FieldValue.increment;
+    const payload = { updatedAt: Date.now() };
+    payload[_usage.date] = { reads: inc(dr), writes: inc(dw), deletes: inc(dd), logins: inc(dl) };
+    // NB : cette écriture de synthèse n'est volontairement pas recomptée.
+    db.collection(COLLECTION).doc(USAGE_DOC).set(payload, { merge: true })
+      .then(() => { _usage.fr = _usage.reads; _usage.fw = _usage.writes; _usage.fd = _usage.deletes; _usage.fl = _usage.logins; _saveUsage(); })
+      .catch(() => {});
+  }
+  window.addEventListener('pagehide', flushUsage);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushUsage(); });
+  // Lit le doc d'usage (pour la page d'admin) — compte 1 lecture.
+  function getUsage() {
+    if (!db) return Promise.resolve({ local: _usage, limits: SPARK_LIMITS, doc: {} });
+    return db.collection(COLLECTION).doc(USAGE_DOC).get()
+      .then(s => { _bumpUsage('reads', 1); return { local: _usage, limits: SPARK_LIMITS, doc: (s.exists ? s.data() : {}) }; })
+      .catch(() => ({ local: _usage, limits: SPARK_LIMITS, doc: {} }));
+  }
+
   // ============ Authentification & contrôle d'accès ============
   // La protection RÉELLE vient des règles de sécurité Firestore (firestore.rules).
   // Ce module gère la connexion, le profil de l'utilisateur et l'affichage
@@ -118,7 +167,7 @@
       gate(deniedHtml("Ton compte n'a pas encore d'accès à ARCHI (ou il a été désactivé). Contacte un administrateur."));
       return;
     }
-    if (page === 'plazma-admin.html' && !isAdmin()) { gate(deniedHtml('Cet espace est réservé aux administrateurs.')); return; }
+    if ((page === 'plazma-admin.html' || page === 'plazma-site-admin.html') && !isAdmin()) { gate(deniedHtml('Cet espace est réservé aux administrateurs.')); return; }
     if (pageSection && !can(pageSection)) { gate(deniedHtml("Tu n'as pas accès à ce module. Demande l'accès à un administrateur.")); return; }
     ungate();
     refreshNav();
@@ -199,7 +248,7 @@
     auth.onAuthStateChanged(async user => {
       authUser = user ? { uid: user.uid, email: user.email } : null;
       if (user && db) {
-        try { const s = await db.collection('users').doc(user.uid).get(); profile = s.exists ? s.data() : null; }
+        try { const s = await db.collection('users').doc(user.uid).get(); _bumpUsage('reads', 1); profile = s.exists ? s.data() : null; }
         catch (e) { console.error('Chargement du profil impossible', e); profile = null; }
       } else { profile = null; _clearAuthCache(); }
       if (authUser && profile && !profile.disabled) _saveAuthCache();
@@ -245,12 +294,13 @@
   function setPlayer(id, patch) { rosterOverrides[id] = Object.assign({}, rosterOverrides[id], patch); }
   function saveRoster() {
     if (!db) return Promise.resolve();
+    _bumpUsage('writes', 1);
     return db.collection(COLLECTION).doc('roster').set(rosterOverrides);
   }
 
   if (db) {
     db.collection(COLLECTION).doc('roster').onSnapshot(
-      doc => { rosterOverrides = (doc.exists && doc.data()) || {}; notifyRoster(); },
+      doc => { if (!doc.metadata.hasPendingWrites) _bumpUsage('reads', 1); rosterOverrides = (doc.exists && doc.data()) || {}; notifyRoster(); },
       e => console.error('roster', e)
     );
   }
@@ -306,9 +356,15 @@
 
   function renderNav() {
     const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-    let links = NAV.filter(n => !n.section || can(n.section))
-      .map(n => `<a href="${n.href}"${n.key === _navActive ? ' class="active"' : ''}>${n.label}</a>`).join('');
+    const disabled = (siteGet().disabled) || [];
+    let links = NAV.filter(n => (!n.section || can(n.section)) && (isAdmin() || disabled.indexOf(n.key) === -1))
+      .map(n => {
+        const off = disabled.indexOf(n.key) !== -1;
+        const cls = [n.key === _navActive ? 'active' : '', off ? 'pz-nav-off' : ''].filter(Boolean).join(' ');
+        return `<a href="${n.href}"${cls ? ` class="${cls}"` : ''}${off ? ' title="Section désactivée"' : ''}>${n.label}</a>`;
+      }).join('');
     if (isAdmin()) links += `<a href="plazma-admin.html"${_navActive === 'admin' ? ' class="active"' : ''}>Comptes</a>`;
+    if (isAdmin()) links += `<a href="plazma-site-admin.html"${_navActive === 'site' ? ' class="active"' : ''}>Système</a>`;
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
     const themeTitle = currentTheme === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair';
     const themeBtn = `<button class="pz-daynight" type="button" onclick="PZ.toggleTheme()" title="${themeTitle}" aria-label="${themeTitle}"><span class="dn-stars"></span><span class="dn-clouds"></span><span class="dn-knob"></span></button>`;
@@ -412,6 +468,7 @@
       unsub = db.collection(COLLECTION).doc(current).onSnapshot(
         doc => {
           if (doc.metadata.hasPendingWrites) return;             // écriture optimiste locale
+          _bumpUsage('reads', 1);                                // lecture distante comptabilisée
           if (!doc.exists) { status('connected', 'Vide', ''); onData && onData(false); loadingDone(); return; }
           // On ne reconstruit (applyState + re-render) que sur un VRAI changement distant,
           // jamais sur l'écho de nos propres sauvegardes → plus de sauts de curseur.
@@ -434,6 +491,7 @@
       status('syncing', 'Sauvegarde…');
       const state = getState();
       lastSavedSig = _sig(state); suppressUntil = Date.now() + 3000;   // ignorer l'écho de cette écriture
+      _bumpUsage('writes', 1);
       return db.collection(COLLECTION).doc(resolveId()).set(state)
         .then(() => status('connected', 'Synchronisé', nowTime()))
         .catch(e => { console.error(e); status('error', 'Erreur Firebase'); });
@@ -442,6 +500,7 @@
     function reset(confirmMsg) {
       if (confirmMsg && !confirm(confirmMsg)) return;
       if (!db) return;
+      _bumpUsage('deletes', 1);
       db.collection(COLLECTION).doc(resolveId()).delete()
         .then(() => { status('connected', 'Réinitialisé', ''); onData && onData(false); });
     }
@@ -554,14 +613,60 @@
     if (_discordCfg) return Promise.resolve(_discordCfg);
     if (!db) { _discordCfg = {}; return Promise.resolve(_discordCfg); }
     return db.collection(COLLECTION).doc('config').get()
-      .then(d => { _discordCfg = (d.exists && d.data().discordWebhooks) || {}; return _discordCfg; })
+      .then(d => { _bumpUsage('reads', 1); _discordCfg = (d.exists && d.data().discordWebhooks) || {}; return _discordCfg; })
       .catch(e => { console.error('Discord config', e); _discordCfg = {}; return _discordCfg; });
   }
   const discordWebhook = ch => (_discordCfg && _discordCfg[ch]) || '';
   function discordSetWebhook(ch, url) {
     if (!db) return Promise.reject(new Error('Firebase indisponible'));
+    _bumpUsage('writes', 1);
     return db.collection(COLLECTION).doc('config').set({ discordWebhooks: { [ch]: url } }, { merge: true })
       .then(() => { _discordCfg = _discordCfg || {}; _discordCfg[ch] = url; });
+  }
+
+  // ============ Configuration du site (annonce, sections, maintenance) ============
+  // Stockée dans plazma/config → { site: { announcement:{text,type,on}, disabled:[keys], maintenance:bool } }.
+  const SITE_DEFAULT = { announcement: { text: '', type: 'info', on: false }, disabled: [], maintenance: false };
+  let _siteCfg = null;
+  function siteEnsureCfg() {
+    if (_siteCfg) return Promise.resolve(_siteCfg);
+    if (!db) { _siteCfg = Object.assign({}, SITE_DEFAULT); return Promise.resolve(_siteCfg); }
+    return db.collection(COLLECTION).doc('config').get()
+      .then(d => { _bumpUsage('reads', 1); _siteCfg = Object.assign({}, SITE_DEFAULT, (d.exists && d.data().site) || {}); return _siteCfg; })
+      .catch(() => { _siteCfg = Object.assign({}, SITE_DEFAULT); return _siteCfg; });
+  }
+  function siteGet() { return _siteCfg || SITE_DEFAULT; }
+  function siteSave(patch) {
+    if (!db) return Promise.reject(new Error('Firebase indisponible'));
+    _siteCfg = Object.assign({}, SITE_DEFAULT, _siteCfg || {}, patch);
+    _bumpUsage('writes', 1);
+    return db.collection(COLLECTION).doc('config').set({ site: _siteCfg }, { merge: true });
+  }
+  // Applique l'annonce (bandeau) + le mode maintenance au chargement.
+  function _applySite() {
+    const s = siteGet();
+    _renderAnnounce(s.announcement);
+    if (s.maintenance && NEEDS_AUTH && !isAdmin()) _showMaintenance();
+  }
+  function _renderAnnounce(a) {
+    const old = document.getElementById('pz-announce');
+    if (old) old.remove();
+    if (!a || !a.on || !a.text) return;
+    const bar = document.createElement('div');
+    bar.id = 'pz-announce';
+    bar.className = 'pz-announce ' + (a.type || 'info');
+    bar.innerHTML = '<span class="pz-announce-ico">' + (a.type === 'warn' ? '⚠️' : a.type === 'ok' ? '✅' : 'ℹ️') + '</span><span></span><button type="button" class="pz-announce-x" aria-label="Fermer">✕</button>';
+    bar.querySelector('span:nth-child(2)').textContent = a.text;
+    bar.querySelector('.pz-announce-x').onclick = () => bar.remove();
+    document.body.prepend(bar);
+  }
+  function _showMaintenance() {
+    if (document.getElementById('pz-maint')) return;
+    const ov = document.createElement('div');
+    ov.id = 'pz-maint';
+    ov.className = 'pz-maint';
+    ov.innerHTML = '<div class="pz-maint-box"><div class="pz-maint-ico">🛠️</div><h2>Maintenance en cours</h2><p>ARCHI est momentanément en maintenance. Reviens dans quelques instants.</p></div>';
+    document.body.appendChild(ov);
   }
   async function discordSend(url, payload) {
     // Discord peut renvoyer 429 (rate-limit) sur des envois rapprochés : on
@@ -679,6 +784,10 @@
     mountNav, sync, status, nowTime, relTime, loadingDone,
     exportPNG, backup, importFile, logout, changePassword,
     toggleTheme, toast,
+    // Suivi d'usage & quotas
+    getUsage, flushUsage, SPARK_LIMITS,
+    // Configuration du site
+    siteEnsureCfg, siteGet, siteSave,
     USER_DOMAIN, discord,
     // Roster central
     getRoster, getCoach, player, onRoster, setPlayer, saveRoster,
@@ -741,6 +850,7 @@
     function getItems(q) {
       const list = NAV.filter(n => !n.section || can(n.section));
       if (isAdmin()) list.push({ key: 'admin', href: 'plazma-admin.html', label: 'Comptes' });
+      if (isAdmin()) list.push({ key: 'site', href: 'plazma-site-admin.html', label: 'Système' });
       if (!q) return list;
       const lq = q.toLowerCase();
       return list.filter(n => n.label.toLowerCase().includes(lq));
@@ -1027,6 +1137,20 @@
       _initCounters(reduce);
       _initCmdPalette();
       _initEmojiShake();
+      // Compte une connexion si l'utilisateur vient de se logger (drapeau posé par login.html).
+      try {
+        if (sessionStorage.getItem('pz-just-logged-in')) { sessionStorage.removeItem('pz-just-logged-in'); _bumpUsage('logins', 1); }
+      } catch (e) {}
+      // Config du site : bandeau d'annonce (immédiat) + maintenance (après auth).
+      if (page !== 'login.html') {
+        siteEnsureCfg().then(() => {
+          refreshNav();
+          _renderAnnounce(siteGet().announcement);
+          if (siteGet().maintenance && NEEDS_AUTH) {
+            onAuth(() => { if (siteGet().maintenance && !isAdmin()) _showMaintenance(); });
+          }
+        });
+      }
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _boot, { once: true });
     else _boot();

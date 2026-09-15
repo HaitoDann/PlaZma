@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="assets/logo-plazma.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARCHI — Système</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css?v=20260821f">
+<style>
+  .wrap{max-width:1100px;margin:0 auto;padding:26px var(--gut) 70px}
+  .pagehead{margin:8px 0 8px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .pagehead h1{font-size:1.8rem;font-family:var(--font-display)}
+  .pagehead p{color:var(--muted);font-size:13.5px;margin-top:4px}
+  .sec{margin-top:26px}
+  .sec-title{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:1.05rem;font-weight:600;margin-bottom:14px}
+  .sec-title .line{flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+
+  /* Vue d'ensemble */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px}
+  .kpi-val{font-family:var(--font-display);font-size:1.7rem;font-weight:700;line-height:1}
+  .kpi-lab{font-size:12px;color:var(--muted);margin-top:6px}
+
+  /* Jauges */
+  .gauges{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .ga{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:15px 17px}
+  .ga-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:9px}
+  .ga-label{font-size:13px;font-weight:600}
+  .ga-val{font-family:var(--font-mono,monospace);font-variant-numeric:tabular-nums;font-size:13px;font-weight:700}
+  .ga-max{color:var(--muted);font-weight:500}
+  .ga-bar{height:9px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+  .ga-fill{height:100%;width:0;border-radius:99px;transition:width 1s cubic-bezier(.16,1,.3,1)}
+  .ga-fill.ok{background:linear-gradient(90deg,#22d3ee,#0891b2)}
+  .ga-fill.warn{background:linear-gradient(90deg,#fbbf24,#f59e0b)}
+  .ga-fill.crit{background:linear-gradient(90deg,#fb7185,#ef4444)}
+  .ga-foot{display:flex;align-items:center;justify-content:space-between;margin-top:7px}
+  .ga-pct{font-size:11.5px;font-weight:700}
+  .ga-pct.ok{color:var(--accent)}.ga-pct.warn{color:var(--warn)}.ga-pct.crit{color:var(--err)}
+  .ga-note{font-size:10.5px;color:var(--muted)}
+  .ga.info .ga-bar{opacity:.5}
+
+  .hint{font-size:12px;color:var(--muted);line-height:1.6;background:var(--surface-2);border-radius:10px;padding:11px 13px;margin-top:12px}
+  .hint b{color:var(--dim)}
+
+  /* Cartes de réglage */
+  .card2{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px}
+  .grid2{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
+  @media(min-width:860px){.grid2{grid-template-columns:1fr 1fr}}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:12px;color:var(--dim);font-weight:600;margin-bottom:5px}
+  .field input,.field select,.field textarea{width:100%}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .seg-ctl{display:inline-flex;background:var(--surface-2);border:1px solid var(--border-2);border-radius:9px;padding:2px}
+  .seg{background:none;border:0;color:var(--muted);font-family:var(--font);font-size:12px;font-weight:600;padding:6px 12px;border-radius:7px;cursor:pointer}
+  .seg.on{background:var(--accent-soft);color:var(--accent)}
+
+  /* Interrupteurs de sections */
+  .switch-list{display:flex;flex-direction:column;gap:2px}
+  .switch-row{display:flex;align-items:center;gap:12px;padding:9px 4px;border-bottom:1px solid var(--border)}
+  .switch-row:last-child{border-bottom:0}
+  .switch-name{flex:1;font-size:13.5px;font-weight:600}
+  .switch-name small{display:block;font-weight:500;color:var(--muted);font-size:11px}
+  .sw{position:relative;width:44px;height:24px;flex-shrink:0;border:0;padding:0;cursor:pointer;border-radius:99px;background:var(--surface-2);border:1px solid var(--border-2);transition:background .25s,border-color .25s}
+  .sw::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:transform .28s cubic-bezier(.16,1,.3,1),background .25s}
+  .sw.on{background:var(--accent-soft);border-color:var(--accent-line)}
+  .sw.on::after{transform:translateX(20px);background:var(--accent)}
+  .sw.danger.on{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.4)}
+  .sw.danger.on::after{background:var(--err)}
+
+  .actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .an-preview{margin-top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="pagehead">
+    <div>
+      <h1>Système</h1>
+      <p>Santé du site, quotas Firebase, annonces et modules — réservé aux administrateurs.</p>
+    </div>
+    <button class="btn" id="refresh" type="button">↻ Actualiser</button>
+  </div>
+
+  <!-- Vue d'ensemble -->
+  <div class="sec">
+    <div class="sec-title">📊 Vue d'ensemble <span class="line"></span></div>
+    <div class="kpis" id="kpis">
+      <div class="kpi"><div class="kpi-val" id="k_players">—</div><div class="kpi-lab">Joueurs</div></div>
+      <div class="kpi"><div class="kpi-val" id="k_staff">—</div><div class="kpi-lab">Staff</div></div>
+      <div class="kpi"><div class="kpi-val" id="k_sections">—</div><div class="kpi-lab">Modules actifs</div></div>
+      <div class="kpi"><div class="kpi-val" id="k_logins">—</div><div class="kpi-lab">Connexions aujourd'hui</div></div>
+      <div class="kpi"><div class="kpi-val" id="k_sync">—</div><div class="kpi-lab">Dernière activité</div></div>
+    </div>
+  </div>
+
+  <!-- Quotas -->
+  <div class="sec">
+    <div class="sec-title">🩺 Quotas &amp; santé — plan gratuit Firebase (Spark) <span class="line"></span></div>
+    <div class="gauges" id="gauges"></div>
+    <div class="hint" id="quota-hint">
+      Les compteurs sont <b>estimés dans l'app</b> (chaque lecture/écriture/connexion est comptabilisée et agrégée dans <b>plazma/_usage</b>), pas via l'API de facturation Google. Ils reflètent l'activité réelle mais peuvent légèrement sous-estimer. Les limites Spark se réinitialisent chaque jour (à minuit, heure du Pacifique). Reste sous <b>~80 %</b> pour garder de la marge.
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="grid2">
+      <!-- Annonce -->
+      <div class="card2">
+        <div class="sec-title" style="margin-bottom:14px">📣 Bandeau d'annonce <span class="line"></span></div>
+        <div class="field">
+          <label for="an_text">Message (vide = pas de bandeau)</label>
+          <textarea id="an_text" rows="2" placeholder="Ex : Maintenance prévue ce soir à 22h…"></textarea>
+        </div>
+        <div class="row" style="justify-content:space-between">
+          <div class="field" style="margin:0">
+            <label>Type</label>
+            <div class="seg-ctl" id="an_type">
+              <button type="button" class="seg on" data-v="info">Info</button>
+              <button type="button" class="seg" data-v="warn">Alerte</button>
+              <button type="button" class="seg" data-v="ok">Succès</button>
+            </div>
+          </div>
+          <div class="field" style="margin:0">
+            <label>Affiché</label>
+            <button type="button" class="sw" id="an_on" aria-label="Activer le bandeau"></button>
+          </div>
+        </div>
+        <div class="an-preview" id="an_preview"></div>
+        <div class="actions">
+          <button class="btn btn-primary" id="an_save" type="button">Enregistrer l'annonce</button>
+        </div>
+      </div>
+
+      <!-- Modules / maintenance -->
+      <div class="card2">
+        <div class="sec-title" style="margin-bottom:14px">🧩 Modules &amp; maintenance <span class="line"></span></div>
+        <div class="switch-list" id="sections"></div>
+        <div class="switch-row" style="margin-top:8px;border-top:1px solid var(--border);border-bottom:0">
+          <div class="switch-name">Mode maintenance <small>Bloque l'accès aux non-admins</small></div>
+          <button type="button" class="sw danger" id="maint" aria-label="Mode maintenance"></button>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" id="sec_save" type="button">Enregistrer les modules</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="assets/plazma.js?v=20260821f"></script>
+<script>
+const $ = id => document.getElementById(id);
+const NAV_LABELS = [
+  ['schedule','Planning'],['scrim','CR Match'],['review','Review'],['scouting','Scouting'],
+  ['draft','Draft'],['theory','Theorycraft'],['wiki','Wiki'],['wikiperf','Encyclopédie'],
+  ['team','Équipe'],['dashboard','Dashboard'],['coach','Coach'],['satisfaction','Satisfaction']
+];
+function fmt(n){ n=Math.round(n||0); return n.toLocaleString('fr-FR'); }
+function fmtBytes(b){ if(b<1024)return b+' o'; if(b<1048576)return (b/1024).toFixed(0)+' Ko'; if(b<1073741824)return (b/1048576).toFixed(1)+' Mo'; return (b/1073741824).toFixed(2)+' Go'; }
+function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+function gauge(label, val, max, opts){
+  opts = opts || {};
+  const pct = max ? Math.min(100, val/max*100) : 0;
+  const lvl = pct>=90?'crit':pct>=70?'warn':'ok';
+  const valStr = opts.na ? '—' : (opts.bytes ? fmtBytes(val) : fmt(val));
+  const maxStr = opts.bytes ? fmtBytes(max) : fmt(max);
+  return `<div class="ga${opts.info?' info':''}">
+    <div class="ga-top"><span class="ga-label">${label}</span>
+      <span class="ga-val">${valStr}${max?`<span class="ga-max"> / ${maxStr}</span>`:''}</span></div>
+    <div class="ga-bar"><div class="ga-fill ${lvl}" data-w="${pct.toFixed(1)}"></div></div>
+    <div class="ga-foot"><span class="ga-pct ${lvl}">${opts.info?'—':pct.toFixed(pct<10?1:0)+' %'}</span>
+      <span class="ga-note">${opts.note||(opts.info?'référence':'aujourd\'hui')}</span></div>
+  </div>`;
+}
+function animateFills(){
+  requestAnimationFrame(()=>document.querySelectorAll('.ga-fill').forEach(f=>{ f.style.width=(f.dataset.w||0)+'%'; }));
+}
+
+function renderQuotas(usage){
+  const L = usage.limits || {reads:50000,writes:20000,deletes:20000};
+  const today = todayKey();
+  const doc = (usage.doc && usage.doc[today]) || {};
+  const loc = usage.local || {};
+  // total projet (flushé) + delta local non encore flushé de ce poste
+  const tot = k => (doc[k]||0) + Math.max(0,(loc[k]||0)-(loc['f'+k[0]]||0));
+  const reads = tot('reads'), writes = tot('writes'), deletes = tot('deletes'), logins = tot('logins');
+  $('k_logins').textContent = fmt(logins);
+  $('gauges').innerHTML =
+    gauge('Lectures Firestore', reads, L.reads) +
+    gauge('Écritures Firestore', writes, L.writes) +
+    gauge('Suppressions', deletes, L.deletes) +
+    gauge('Connexions', logins, 0, {note:'aujourd\'hui', info:true}) +
+    gauge('Stockage (1 Gio)', 0, L.storageBytes, {bytes:true, info:true, na:true, note:'non mesurable ici'}) +
+    gauge('Bande passante GitHub Pages', 0, 107374182400, {bytes:true, info:true, na:true, note:'~100 Go/mois'});
+  animateFills();
+  return {reads,writes,deletes,logins,updatedAt:(usage.doc&&usage.doc.updatedAt)};
+}
+
+function renderOverview(res){
+  const roster = (PZ.getRoster && PZ.getRoster()) || [];
+  $('k_players').textContent = roster.length;
+  $('k_staff').textContent = (PZ.getCoach && PZ.getCoach()) ? 1 : 0;
+  const disabled = (PZ.siteGet().disabled)||[];
+  $('k_sections').textContent = (NAV_LABELS.length - disabled.length) + '/' + NAV_LABELS.length;
+  const up = res && res.updatedAt;
+  $('k_sync').textContent = up ? new Date(up).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '—';
+}
+
+// ----- Annonce -----
+let anType='info', anOn=false;
+document.querySelectorAll('#an_type .seg').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#an_type .seg').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); anType=b.dataset.v; previewAnnounce();
+}));
+$('an_on').addEventListener('click',()=>{ anOn=!anOn; $('an_on').classList.toggle('on',anOn); previewAnnounce(); });
+$('an_text').addEventListener('input', previewAnnounce);
+function previewAnnounce(){
+  const t=$('an_text').value.trim();
+  const box=$('an_preview');
+  if(!t||!anOn){ box.innerHTML=''; return; }
+  const ico = anType==='warn'?'⚠️':anType==='ok'?'✅':'ℹ️';
+  box.innerHTML = `<div class="pz-announce ${anType}" style="border-radius:10px;animation:none"><span class="pz-announce-ico">${ico}</span><span></span></div>`;
+  box.querySelector('.pz-announce span:nth-child(2)').textContent = t;
+}
+$('an_save').addEventListener('click',()=>{
+  PZ.siteSave({ announcement:{ text:$('an_text').value.trim(), type:anType, on:anOn } })
+    .then(()=>PZ.toast('Annonce enregistrée.','ok'))
+    .catch(e=>PZ.toast('Erreur : '+(e.message||e),'err'));
+});
+
+// ----- Modules & maintenance -----
+let disabledSet = new Set();
+function renderSections(){
+  $('sections').innerHTML = NAV_LABELS.map(([k,l])=>
+    `<div class="switch-row"><div class="switch-name">${l}</div>
+      <button type="button" class="sw${disabledSet.has(k)?'':' on'}" data-k="${k}" aria-label="${l}"></button></div>`).join('');
+  document.querySelectorAll('#sections .sw').forEach(b=>b.addEventListener('click',()=>{
+    const k=b.dataset.k;
+    if(disabledSet.has(k)){ disabledSet.delete(k); b.classList.add('on'); }
+    else { disabledSet.add(k); b.classList.remove('on'); }
+  }));
+}
+let maintOn=false;
+$('maint').addEventListener('click',()=>{ maintOn=!maintOn; $('maint').classList.toggle('on',maintOn); });
+$('sec_save').addEventListener('click',()=>{
+  PZ.siteSave({ disabled:[...disabledSet], maintenance:maintOn })
+    .then(()=>PZ.toast('Modules mis à jour.','ok'))
+    .catch(e=>PZ.toast('Erreur : '+(e.message||e),'err'));
+});
+
+// ----- Chargement -----
+function loadAll(){
+  PZ.getUsage().then(u=>{ const r=renderQuotas(u); renderOverview(r); });
+}
+$('refresh').addEventListener('click', loadAll);
+
+PZ.mountNav('site');
+PZ.auth.ready.then(res=>{
+  if(!res.user || !PZ.auth.isAdmin()) return; // overlay d'accès déjà affiché
+  PZ.siteEnsureCfg().then(cfg=>{
+    // annonce
+    $('an_text').value = cfg.announcement.text||'';
+    anType = cfg.announcement.type||'info'; anOn = !!cfg.announcement.on;
+    document.querySelectorAll('#an_type .seg').forEach(x=>x.classList.toggle('on',x.dataset.v===anType));
+    $('an_on').classList.toggle('on',anOn);
+    previewAnnounce();
+    // modules
+    disabledSet = new Set(cfg.disabled||[]);
+    maintOn = !!cfg.maintenance; $('maint').classList.toggle('on',maintOn);
+    renderSections();
+  });
+  // roster peut arriver un peu après → on rafraîchit à sa réception
+  if(PZ.onRoster) PZ.onRoster(()=>loadAll());
+  loadAll();
+});
+</script>
+</body>
+</html>

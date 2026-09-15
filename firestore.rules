@@ -44,6 +44,7 @@ service cloud.firestore {
       allow read: if docId == 'roster'
         || (signedIn() && (
               docId == 'config'
+           || (docId == '_usage'           && isAdmin())
            || (docId == 'team-identity'    && canRead('team'))
            || (docId == 'dashboard'        && canRead('dashboard'))
            || (docId == 'coach-evaluation' && canRead('coach'))
@@ -52,6 +53,7 @@ service cloud.firestore {
         ));
       allow write: if signedIn() && (
               (docId == 'config'           && isAdmin())
+           || (docId == '_usage'           && active())
            || (docId == 'roster'           && canWrite('team'))
            || (docId == 'team-identity'    && canWrite('team'))
            || (docId == 'dashboard'        && canWrite('dashboard'))

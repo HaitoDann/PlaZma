@@ -391,6 +391,8 @@ function login(){
   auth.signInWithEmailAndPassword(toEmail(user), pw)
     .then(() => {
       redirecting = true;
+      // Drapeau lu par plazma.js sur la page suivante → compte 1 connexion (jauges).
+      try { sessionStorage.setItem('pz-just-logged-in', '1'); } catch (e) {}
       // Moment de succès : coche animée + rebond du socle, puis redirection.
       btn.classList.add('ok');
       btn.innerHTML = '<svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5 11-11"/></svg> Connecté';
