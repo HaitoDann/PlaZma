@@ -312,7 +312,8 @@
   ];
   const COACH_SLOT = { id:'coach', roleKey:'coach', role:'Head Coach', color:'var(--coach)', defaultName:'Coach', defaultEmoji:'♟️' };
 
-  let rosterOverrides = {};            // { id: { name, emoji } }
+  let rosterOverrides = {};            // { id: { name, emoji } }  (5 postes fixes + coach)
+  let rosterExtras = [];               // [ { id, name, emoji, role } ]  joueurs additionnels (dynamique)
   const rosterListeners = [];
 
   function resolveSlot(slot) {
@@ -323,9 +324,15 @@
       emoji: (o.emoji && o.emoji.trim()) || slot.defaultEmoji
     };
   }
-  const getRoster = () => ROSTER_SLOTS.map(resolveSlot);
+  const getRoster = () => ROSTER_SLOTS.map(resolveSlot);   // 5 postes de base (structurel, inchangé)
   const getCoach = () => resolveSlot(COACH_SLOT);
-  const player = id => getRoster().concat(getCoach()).find(p => p.id === id) || null;
+  const getExtras = () => rosterExtras.map(e => ({
+    id: e.id, roleKey: 'extra', role: (e.role && e.role.trim()) || 'Joueur', color: 'var(--muted)',
+    name: (e.name && e.name.trim()) || 'Joueur', emoji: (e.emoji && e.emoji.trim()) || '🎮', extra: true
+  }));
+  /** Effectif complet pour l'association de comptes : 5 postes + coach + joueurs additionnels. */
+  const getPlayers = () => getRoster().concat([getCoach()]).concat(getExtras());
+  const player = id => getPlayers().find(p => p.id === id) || null;
 
   function notifyRoster() {
     const r = getRoster(), c = getCoach();
@@ -333,16 +340,34 @@
   }
   /** Enregistre un callback (r, coach) appelé maintenant puis à chaque MAJ du roster. */
   function onRoster(cb) { rosterListeners.push(cb); cb(getRoster(), getCoach()); }
-  function setPlayer(id, patch) { rosterOverrides[id] = Object.assign({}, rosterOverrides[id], patch); }
+  function setPlayer(id, patch) {
+    const ex = rosterExtras.find(e => e.id === id);
+    if (ex) { Object.assign(ex, patch); return; }
+    rosterOverrides[id] = Object.assign({}, rosterOverrides[id], patch);
+  }
+  /** Ajoute un joueur additionnel au roster (dynamique). Renvoie son id. */
+  function addPlayer(p) {
+    const id = 'p_' + Math.random().toString(36).slice(2, 9);
+    rosterExtras.push({ id, name: (p && p.name) || 'Joueur', emoji: (p && p.emoji) || '🎮', role: (p && p.role) || 'Joueur' });
+    return id;
+  }
+  /** Retire un joueur additionnel (les 5 postes de base et le coach ne sont pas supprimables). */
+  function removePlayer(id) { rosterExtras = rosterExtras.filter(e => e.id !== id); }
   function saveRoster() {
     if (!db) return Promise.resolve();
     _bumpUsage('writes', 1);
-    return db.collection(COLLECTION).doc('roster').set(rosterOverrides);
+    return db.collection(COLLECTION).doc('roster').set(Object.assign({}, rosterOverrides, { _extras: rosterExtras }));
   }
 
   if (db) {
     db.collection(COLLECTION).doc('roster').onSnapshot(
-      doc => { if (!doc.metadata.hasPendingWrites) _bumpUsage('reads', 1); rosterOverrides = (doc.exists && doc.data()) || {}; notifyRoster(); },
+      doc => {
+        if (!doc.metadata.hasPendingWrites) _bumpUsage('reads', 1);
+        const data = (doc.exists && doc.data()) || {};
+        rosterExtras = Array.isArray(data._extras) ? data._extras : [];
+        rosterOverrides = Object.assign({}, data); delete rosterOverrides._extras;
+        notifyRoster();
+      },
       e => console.error('roster', e)
     );
   }
@@ -946,7 +971,7 @@
     siteEnsureCfg, siteGet, siteSave,
     USER_DOMAIN, discord,
     // Roster central
-    getRoster, getCoach, player, onRoster, setPlayer, saveRoster,
+    getRoster, getCoach, getExtras, getPlayers, player, onRoster, setPlayer, addPlayer, removePlayer, saveRoster,
     ROSTER_SLOTS, COACH_SLOT,
     // Authentification & accès
     auth: {

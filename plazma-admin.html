@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929g">
+<link rel="stylesheet" href="assets/theme.css?v=20260929h">
 <style>
   .wrap{max-width:960px;margin:0 auto;padding:26px var(--gut) 60px}
   .pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:8px 0 20px}
@@ -120,7 +120,10 @@
       <h1>Comptes &amp; accès</h1>
       <p>Crée les comptes du staff et des joueurs, classe-les et choisis les modules d'ARCHI accessibles.</p>
     </div>
-    <button class="btn btn-primary" onclick="openCreate()">+ Nouveau compte</button>
+    <div style="display:flex;gap:9px;flex-wrap:wrap">
+      <button class="btn btn-ghost" onclick="openRoster()">Roster</button>
+      <button class="btn btn-primary" onclick="openCreate()">+ Nouveau compte</button>
+    </div>
   </div>
 
   <div class="toolbar">
@@ -185,6 +188,27 @@
   </div>
 </div>
 
+<!-- Modale : roster (effectif) -->
+<div class="overlay" id="rosterOverlay">
+  <div class="modal lg" role="dialog" aria-modal="true">
+    <div class="modal-title">Roster de l'équipe</div>
+    <div class="modal-scroll">
+      <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px">Les 5 postes de base et le coach sont permanents (renommables dans <b>Équipe</b>). Ajoute ici des joueurs supplémentaires (remplaçants, académie…) pour pouvoir les lier à un compte.</p>
+      <div id="rosterRows"></div>
+      <div class="sublabel">Ajouter un joueur</div>
+      <div class="frow" style="align-items:flex-end">
+        <div class="field" style="max-width:70px"><label>Emoji</label><input id="r_emoji" maxlength="4" placeholder="🎮"></div>
+        <div class="field"><label>Nom</label><input id="r_name" placeholder="ex : Remplaçant Mid"></div>
+        <div class="field"><label>Poste / rôle</label><input id="r_role" placeholder="ex : Mid (sub)"></div>
+        <button class="btn btn-primary" style="margin-bottom:13px" onclick="addRosterPlayer()">Ajouter</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="closeRoster()">Fermer</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modale : gestion du membre -->
 <div class="overlay" id="editOverlay">
   <div class="modal lg" role="dialog" aria-modal="true">
@@ -216,7 +240,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="assets/plazma.js?v=20260929g"></script>
+<script src="assets/plazma.js?v=20260929h"></script>
 <script>
 const SECTIONS = [
   ['planning','Planning'], ['scrim','Scrim (CR)'], ['scouting','Scouting'],
@@ -253,8 +277,9 @@ function initials(name){
 
 /* ----- Roster (joueurs liables) ----- */
 function rosterList(){
-  if(!(window.PZ&&PZ.getRoster)) return [];
-  try{ return PZ.getRoster().concat(PZ.getCoach?PZ.getCoach():[]); }catch(_){ return []; }
+  if(window.PZ&&PZ.getPlayers){ try{ return PZ.getPlayers(); }catch(_){ } }
+  if(window.PZ&&PZ.getRoster){ try{ return PZ.getRoster().concat(PZ.getCoach?[PZ.getCoach()]:[]); }catch(_){ } }
+  return [];
 }
 function playerById(id){
   if(!id) return null;
@@ -484,11 +509,54 @@ async function removeUser(uid,label){
   catch(e){ console.error(e); toast('Erreur : '+(e.message||e.code)); }
 }
 
+/* ---------- Roster dynamique ---------- */
+function openRoster(){ renderRosterRows(); $('r_emoji').value=''; $('r_name').value=''; $('r_role').value=''; $('rosterOverlay').classList.add('open'); }
+function closeRoster(){ $('rosterOverlay').classList.remove('open'); }
+function renderRosterRows(){
+  const players=rosterList();
+  const linkCount=id=>ALL.filter(u=>u.playerId===id).length;
+  $('rosterRows').innerHTML = players.map(p=>{
+    const removable = !!p.extra; const n=linkCount(p.id);
+    return `<div class="urow" style="padding:10px 14px">
+      <div class="avatar" style="font-size:18px">${esc(p.emoji||'🎮')}</div>
+      <div class="uinfo">
+        <div class="uinfo-top"><span class="uname" style="font-size:14px">${esc(p.name)}</span>
+          <span class="badge staff">${esc(p.role)}</span>
+          ${removable?'':'<span class="badge me">permanent</span>'}</div>
+        <div class="uemail">${n?`Lié à ${n} compte${n>1?'s':''}`:'Aucun compte lié'}</div>
+      </div>
+      ${removable?`<button class="btn btn-sm btn-ghost" style="color:var(--err)" onclick="removeRosterPlayer('${p.id}')">Retirer</button>`:''}
+    </div>`;
+  }).join('');
+}
+async function addRosterPlayer(){
+  const name=$('r_name').value.trim(), role=$('r_role').value.trim(), emoji=$('r_emoji').value.trim()||'🎮';
+  if(!name){ toast('Nom du joueur requis.'); return; }
+  if(!(window.PZ&&PZ.addPlayer&&PZ.saveRoster)){ toast('Roster indisponible (recharge la page).'); return; }
+  PZ.addPlayer({name, role:role||'Joueur', emoji});
+  try{ await PZ.saveRoster(); toast('Joueur ajouté au roster.'); $('r_name').value=''; $('r_role').value=''; $('r_emoji').value='';
+    renderRosterRows(); renderList(); }
+  catch(e){ console.error(e); toast('Erreur : '+(e.message||e.code)); }
+}
+async function removeRosterPlayer(id){
+  const n=ALL.filter(u=>u.playerId===id).length;
+  if(n && !confirm('Ce joueur est lié à '+n+' compte(s). Le retirer du roster déliera ces comptes ?')) return;
+  if(!confirm('Retirer ce joueur du roster ?')) return;
+  PZ.removePlayer(id);
+  try{ await PZ.saveRoster();
+    // Délie les comptes qui pointaient vers lui.
+    const linked=ALL.filter(u=>u.playerId===id);
+    for(const u of linked){ try{ await db.collection('users').doc(u.uid).update({playerId:null}); }catch(_){ } }
+    if(linked.length) await loadUsers();
+    toast('Joueur retiré.'); renderRosterRows(); renderList(); }
+  catch(e){ console.error(e); toast('Erreur : '+(e.message||e.code)); }
+}
+
 // Ferme les modales sur clic du fond ou Échap.
-[['createOverlay',closeCreate],['editOverlay',closeEdit]].forEach(([id,fn])=>{
+[['createOverlay',closeCreate],['editOverlay',closeEdit],['rosterOverlay',closeRoster]].forEach(([id,fn])=>{
   $(id).addEventListener('click',e=>{ if(e.target===$(id)) fn(); });
 });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeCreate(); closeEdit(); } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeCreate(); closeEdit(); closeRoster(); } });
 
 // Init : plazma.js bloque déjà les non-admins.
 PZ.mountNav('admin');
