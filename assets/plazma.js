@@ -93,6 +93,26 @@
   }
   window.addEventListener('pagehide', flushUsage);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushUsage(); });
+  // Présence par utilisateur : au plus une écriture par session (+1 connexion
+  // si l'utilisateur vient de se logger). Alimente plazma/_usage.perUser
+  // { <uid>: { name, logins, last } } → « qui utilise ARCHI ».
+  function _trackPresence() {
+    onAuth((user, prof) => {
+      if (!user || !db || !window.firebase || !firebase.firestore) return;
+      let justLoggedIn = false, firstThisSession = false;
+      try { if (sessionStorage.getItem('pz-just-logged-in')) { justLoggedIn = true; sessionStorage.removeItem('pz-just-logged-in'); } } catch (e) {}
+      try { if (!sessionStorage.getItem('pz-seen')) { sessionStorage.setItem('pz-seen', '1'); firstThisSession = true; } } catch (e) {}
+      if (justLoggedIn) _bumpUsage('logins', 1);
+      if (!justLoggedIn && !firstThisSession) return;   // limite les écritures
+      const inc = firebase.firestore.FieldValue.increment;
+      const name = (prof && (prof.name || prof.username)) || user.email || user.uid;
+      const entry = { name: name, last: Date.now() };
+      if (justLoggedIn) entry.logins = inc(1);
+      // Écriture de présence volontairement non recomptée.
+      db.collection(COLLECTION).doc(USAGE_DOC).set({ perUser: { [user.uid]: entry } }, { merge: true }).catch(() => {});
+    });
+  }
+
   // Lit le doc d'usage (pour la page d'admin) — compte 1 lecture.
   function getUsage() {
     if (!db) return Promise.resolve({ local: _usage, limits: SPARK_LIMITS, doc: {} });
@@ -1090,10 +1110,8 @@
       _initCounters(reduce);
       _initCmdPalette();
       _initEmojiShake();
-      // Compte une connexion si l'utilisateur vient de se logger (drapeau posé par login.html).
-      try {
-        if (sessionStorage.getItem('pz-just-logged-in')) { sessionStorage.removeItem('pz-just-logged-in'); _bumpUsage('logins', 1); }
-      } catch (e) {}
+      // Présence : compte les connexions (global + par utilisateur) et l'activité.
+      _trackPresence();
       // Config du site : bandeau d'annonce (immédiat) + maintenance (après auth).
       if (page !== 'login.html') {
         siteEnsureCfg().then(() => {
