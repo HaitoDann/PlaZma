@@ -100,8 +100,9 @@ h3{font-size:1.02rem}
 /* ---- Top bar / navigation partagée (PZ.mountNav) ---- */
 .pz-topbar{
   position:sticky;top:0;z-index:40;
-  background:rgba(11,15,20,.85);
-  backdrop-filter:saturate(140%) blur(10px);
+  background:rgba(11,15,20,.9);
+  backdrop-filter:saturate(140%) blur(6px);
+  -webkit-backdrop-filter:saturate(140%) blur(6px);
   border-bottom:1px solid var(--border);
 }
 .pz-topbar-inner{
@@ -662,7 +663,7 @@ a[href="plazma-wiki-perf.html"]:hover .tool-ico svg{animation:tool-read .8s ease
   68%{transform:translate(-26px,36px)scale(.96)}
 }
 /* ── Bulles ascendantes (ambiance aquarium) ── */
-#pz-particles{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:-1}
+#pz-particles{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:-1;contain:layout paint style}
 .pz-particle{
   position:absolute;bottom:-6px;border-radius:50%;will-change:transform,opacity;
   box-shadow:0 0 6px currentColor;animation:pz-rise linear infinite;
@@ -675,7 +676,7 @@ a[href="plazma-wiki-perf.html"]:hover .tool-ico svg{animation:tool-read .8s ease
 }
 
 /* ── Poussière d'étoiles (parallaxe) ── */
-#pz-stars{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:-1}
+#pz-stars{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:-1;contain:layout paint style}
 .pz-star-layer{position:absolute;inset:-60px;will-change:transform;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
 .pz-star{position:absolute;border-radius:50%;background:#cfe9f5;animation:pz-twinkle ease-in-out infinite}
 [data-theme="light"] .pz-star{background:#334155}

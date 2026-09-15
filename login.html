@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929c">
+<link rel="stylesheet" href="assets/theme.css?v=20260929d">
 <style>
   /* ============================================================
      ARCHI — Connexion
@@ -193,7 +193,7 @@
     position:absolute;top:0;bottom:0;width:50%;
     background-image:url(assets/logo-plazma.png);
     background-repeat:no-repeat;background-size:64px auto;background-position-y:center;
-    opacity:0;will-change:transform,opacity,filter;
+    opacity:0;
   }
   .lf-left{left:0;background-position-x:left;
     animation:lf-left 1s cubic-bezier(.2,.8,.2,1.25) both .2s}
@@ -472,6 +472,18 @@ function login(){
 (function(){
 const $ = id => document.getElementById(id);
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Densité des effets adaptée à la puissance de l'appareil (comme plazma.js)
+const PERF = (function(){ try{
+  if(reduceMotion) return 'off';
+  const cores=navigator.hardwareConcurrency||8, mem=(typeof navigator.deviceMemory==='number')?navigator.deviceMemory:8;
+  const coarse=window.matchMedia&&matchMedia('(pointer: coarse)').matches;
+  if(coarse&&innerWidth<760) return 'low';
+  if(cores<=4&&mem<=4) return 'low';
+  if(cores<=4||mem<=4) return 'medium';
+  if(cores>=8&&mem>=8&&innerWidth>=1024) return 'high';
+  return 'medium';
+}catch(e){return 'medium';} })();
+const perfCount = n => Math.round(n * ({off:0,low:.35,medium:.6,high:1})[PERF]);
 
 // Afficher / masquer le mot de passe (UI pure, indépendant de Firebase)
 (function(){
@@ -493,9 +505,9 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').match
   if (!host) return;
   const rnd = (a,b) => a + Math.random() * (b - a);
   const layers = [
-    { count: 34, depth: 6,  smax: 1.3, op:[.20,.45] },
-    { count: 22, depth: 14, smax: 1.9, op:[.30,.6] },
-    { count: 12, depth: 26, smax: 2.6, op:[.4,.75] },
+    { count: perfCount(34), depth: 6,  smax: 1.3, op:[.20,.45] },
+    { count: perfCount(22), depth: 14, smax: 1.9, op:[.30,.6] },
+    { count: perfCount(12), depth: 26, smax: 2.6, op:[.4,.75] },
   ];
   const els = [];
   layers.forEach(cfg => {
@@ -515,7 +527,7 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').match
     host.appendChild(layer);
     els.push({ el: layer, depth: cfg.depth });
   });
-  if (!reduceMotion){
+  if (!reduceMotion && PERF !== 'low'){
     let tx = 0, ty = 0, queued = false;
     const apply = () => { queued = false; els.forEach(l => { l.el.style.transform = `translate(${(tx*l.depth).toFixed(1)}px,${(ty*l.depth).toFixed(1)}px)`; }); };
     window.addEventListener('mousemove', e => {
@@ -531,7 +543,7 @@ if (!reduceMotion) {
   (function bubbles(){
     const host = $('bubbles');
     if (!host) return;
-    const COUNT = window.innerWidth < 600 ? 9 : 16;
+    const COUNT = perfCount(window.innerWidth < 600 ? 9 : 16);
     const rnd = (a,b) => a + Math.random() * (b - a);
     for (let i = 0; i < COUNT; i++){
       const b = document.createElement('span');

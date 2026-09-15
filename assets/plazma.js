@@ -803,7 +803,7 @@
     db, COLLECTION, NAV, FIREBASE_CONFIG,
     mountNav, sync, status, nowTime, relTime, loadingDone,
     exportPNG, backup, importFile, logout, changePassword,
-    toggleTheme, toast,
+    toggleTheme, toast, perf: PERF,
     // Suivi d'usage & quotas
     getUsage, flushUsage, SPARK_LIMITS,
     // Configuration du site
@@ -939,14 +939,35 @@
   }
 
   // ---- Particules ascendantes ----
+  // ---- Niveau de performance : adapte la densité des effets ----
+  // Full sur machine puissante (rendu identique), réduit sur mobile/appareil
+  // faible, éteint si l'utilisateur demande de réduire les animations.
+  const PERF = (function () {
+    try {
+      if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return 'off';
+      const cores = navigator.hardwareConcurrency || 8;
+      const mem = (typeof navigator.deviceMemory === 'number') ? navigator.deviceMemory : 8;
+      const coarse = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+      if (coarse && innerWidth < 760) return 'low';
+      if (cores <= 4 && mem <= 4) return 'low';
+      if (cores <= 4 || mem <= 4) return 'medium';
+      if (cores >= 8 && mem >= 8 && innerWidth >= 1024) return 'high';
+      return 'medium';
+    } catch (e) { return 'medium'; }
+  })();
+  const PERF_SCALE = { off: 0, low: 0.35, medium: 0.6, high: 1 };
+  const perfCount = n => Math.round(n * PERF_SCALE[PERF]);
+
   function _initParticles() {
     if (document.getElementById('pz-particles')) return;
+    const N = perfCount(35);
+    if (!N) return;   // 'off' : aucun décor
     const c = document.createElement('div');
     c.id = 'pz-particles';
     c.setAttribute('aria-hidden', 'true');
     document.body.prepend(c);
     const colors = ['#22d3ee', '#6366f1', '#22d3ee'];
-    for (let i = 0; i < 35; i++) {
+    for (let i = 0; i < N; i++) {
       const el = document.createElement('span');
       const size   = (2 + Math.random() * 3).toFixed(1);
       const left   = (Math.random() * 100).toFixed(1);
@@ -994,9 +1015,9 @@
     wrap.id = 'pz-stars';
     wrap.setAttribute('aria-hidden', 'true');
     const layers = [
-      { count: 40, depth: 8,  smax: 1.4, op: [.20, .45] },
-      { count: 26, depth: 18, smax: 2.0, op: [.30, .60] },
-      { count: 14, depth: 34, smax: 2.8, op: [.40, .75] },
+      { count: perfCount(40), depth: 8,  smax: 1.4, op: [.20, .45] },
+      { count: perfCount(26), depth: 18, smax: 2.0, op: [.30, .60] },
+      { count: perfCount(14), depth: 34, smax: 2.8, op: [.40, .75] },
     ];
     const layerEls = [];
     layers.forEach(cfg => {
@@ -1017,6 +1038,7 @@
     });
     document.body.prepend(wrap);
 
+    if (PERF === 'low') return;   // pas de parallaxe sur appareil faible
     let tx = 0, ty = 0, queued = false;
     function apply() {
       queued = false;
