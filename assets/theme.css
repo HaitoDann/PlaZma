@@ -822,29 +822,11 @@ body::after{
 /* Variante bouton flottant (accueil / login) */
 .pz-daynight--fab{position:fixed;top:16px;right:16px;z-index:50}
 
-/* Onde au clic sur le toggle */
-.pz-daynight .dn-ripple{
-  position:absolute;border-radius:50%;pointer-events:none;z-index:3;
-  transform:translate(-50%,-50%) scale(0);
-  background:radial-gradient(circle,rgba(255,255,255,.5),rgba(255,255,255,0) 70%);
-  animation:dn-rip .5s ease-out forwards;
-}
-@keyframes dn-rip{to{transform:translate(-50%,-50%) scale(1);opacity:0}}
-
 @media (prefers-reduced-motion:reduce){
   .pz-daynight,.pz-daynight *{transition:none}
-  .pz-daynight .dn-ripple{display:none}
 }
 
-/* ════════════════════════════════════════════════════════
-   Logo ARCHI — éclat cyan au survol
-   ════════════════════════════════════════════════════════ */
-.hero-logo,.login-mark img,.pz-brand-mark img{transition:transform .35s cubic-bezier(.16,1,.3,1),filter .35s ease}
-.hero-logo:hover,.pz-brand:hover .pz-brand-mark img{
-  transform:scale(1.08) rotate(-2deg);
-  filter:drop-shadow(0 0 12px rgba(34,211,238,.6));
-}
-.login-mark:hover img{transform:scale(1.07) rotate(-2deg);animation:pz-logo-glint 1.1s ease}
+/* Éclat utilisé par l'icône du mode maintenance */
 @keyframes pz-logo-glint{
   0%,100%{filter:drop-shadow(0 0 5px rgba(34,211,238,.3))}
   45%{filter:drop-shadow(0 0 16px rgba(34,211,238,.85)) brightness(1.14)}
@@ -882,11 +864,6 @@ body::after{
   .pz-toast{animation:none;opacity:1;transform:none}
   .pz-toast.out{animation:none;opacity:0}
 }
-
-/* ════════════════════════════════════════════════════════
-   Cartes joueur — tilt 3D (JS ajoute la transform inline)
-   ════════════════════════════════════════════════════════ */
-.pcard{transform-style:preserve-3d;will-change:transform}
 
 /* ════════════════════════════════════════════════════════
    Bandeau d'annonce site + mode maintenance + nav désactivée

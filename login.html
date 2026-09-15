@@ -435,21 +435,6 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').match
   });
 })();
 
-// Onde au clic sur le toggle jour/nuit
-document.addEventListener('click', e => {
-  const t = e.target.closest && e.target.closest('.pz-daynight');
-  if (!t) return;
-  const r = t.getBoundingClientRect();
-  const ring = document.createElement('span');
-  ring.className = 'dn-ripple';
-  const size = Math.max(r.width, r.height) * 1.5;
-  ring.style.width = ring.style.height = size + 'px';
-  ring.style.left = (e.clientX - r.left) + 'px';
-  ring.style.top = (e.clientY - r.top) + 'px';
-  t.appendChild(ring);
-  setTimeout(() => ring.remove(), 520);
-});
-
 // Étoiles en fond (3 couches, parallaxe légère)
 (function stars(){
   const host = $('stars');
