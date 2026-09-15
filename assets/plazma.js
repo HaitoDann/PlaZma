@@ -852,7 +852,7 @@
       t.classList.add('out');
       setTimeout(() => t.remove(), 420);
     };
-    const life = setTimeout(dismiss, 2800);
+    const life = setTimeout(dismiss, 4800);
     t.addEventListener('click', () => { clearTimeout(life); dismiss(); });
     return t;
   }

@@ -236,10 +236,21 @@
     background:linear-gradient(180deg,#6ee7b7,#22c55e 58%,#16a34a);
     color:#04321f;pointer-events:none;
     box-shadow:0 12px 30px rgba(34,197,94,.34), inset 0 1px 0 rgba(255,255,255,.5);
+    animation:btn-win .8s ease;
   }
-  .login .btn .chk{width:19px;height:19px;margin-right:2px;vertical-align:-4px}
-  .login .btn .chk path{stroke-dasharray:26;stroke-dashoffset:26;animation:chk-draw .45s ease forwards}
+  @keyframes btn-win{
+    0%{box-shadow:0 0 0 0 rgba(34,197,94,.55), 0 12px 30px rgba(34,197,94,.34)}
+    70%{box-shadow:0 0 0 22px rgba(34,197,94,0), 0 12px 30px rgba(34,197,94,.34)}
+    100%{box-shadow:0 0 0 0 rgba(34,197,94,0), 0 12px 30px rgba(34,197,94,.34)}
+  }
+  .login .btn .chk{width:20px;height:20px;margin-right:2px;vertical-align:-4px;
+    animation:chk-pop .5s cubic-bezier(.34,1.56,.64,1)}
+  .login .btn .chk path{stroke-dasharray:26;stroke-dashoffset:26;animation:chk-draw .45s ease .08s forwards}
   @keyframes chk-draw{to{stroke-dashoffset:0}}
+  @keyframes chk-pop{0%{transform:scale(0) rotate(-25deg)}100%{transform:scale(1) rotate(0)}}
+  /* Petit rebond de tout le socle au succès */
+  .login.win .glass{animation:win-pop .75s cubic-bezier(.16,1,.3,1)}
+  @keyframes win-pop{0%{transform:scale(1)}34%{transform:scale(1.025)}100%{transform:scale(1)}}
 
   .err{min-height:16px;text-align:center;font-size:12.5px;color:var(--err);margin-top:10px;opacity:0;transition:opacity .2s}
   .err.show{opacity:1}
@@ -380,10 +391,12 @@ function login(){
   auth.signInWithEmailAndPassword(toEmail(user), pw)
     .then(() => {
       redirecting = true;
-      // Petit moment de succès : le bouton se transforme en coche animée.
+      // Moment de succès : coche animée + rebond du socle, puis redirection.
       btn.classList.add('ok');
       btn.innerHTML = '<svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5 11-11"/></svg> Connecté';
-      setTimeout(() => location.replace('index.html'), 650);
+      const card = document.querySelector('.login');
+      if (card) card.classList.add('win');
+      setTimeout(() => location.replace('index.html'), 1500);
     })
     .catch(e => { showErr(frError(e)); btn.disabled = false; btn.textContent = 'Se connecter'; $('pw').value=''; $('pw').focus(); });
 }
