@@ -140,6 +140,17 @@ h3{font-size:1.02rem}
 }
 .pz-nav-ico:hover{color:var(--accent);background:var(--elevated);transform:translateY(-1px)}
 .pz-nav-ico:active{transform:translateY(0) scale(.94)}
+
+/* Badge « idées non lues » sur le bouton Système */
+.pz-idea-badge{
+  position:absolute;top:-6px;right:-6px;min-width:16px;height:16px;padding:0 4px;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--err);color:#fff;font-size:10px;font-weight:700;line-height:1;
+  border-radius:99px;box-shadow:0 0 0 2px var(--bg);pointer-events:none;
+  animation:idea-badge-in .3s cubic-bezier(.34,1.56,.64,1);
+}
+.pz-nav a .pz-idea-badge{top:-4px;right:-8px}
+@keyframes idea-badge-in{from{transform:scale(0)}to{transform:scale(1)}}
 .pz-logout{
   display:inline-flex;align-items:center;justify-content:center;
   width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;

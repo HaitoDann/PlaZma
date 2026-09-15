@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929e">
+<link rel="stylesheet" href="assets/theme.css?v=20260929f">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -109,15 +109,14 @@
   .acct-fab:hover{color:var(--accent);border-color:var(--accent-line);background:var(--surface);
     transform:scale(1.08);box-shadow:0 0 16px rgba(34,211,238,.28)}
   .acct-fab:active{transform:scale(.92)}
-  .acct-fab svg{transition:transform .6s cubic-bezier(.34,1.56,.64,1)}
-  .acct-fab:hover svg{transform:rotate(180deg)}
-  /* Système & idées : pas de rotation, effet propre */
-  #sysBtn:hover svg,#ideasFab:hover svg,#setFab:hover svg{transform:none}
+  .acct-fab svg{transition:transform .5s cubic-bezier(.34,1.56,.64,1)}
+  /* Effet de survol propre à chaque bouton */
+  #setFab:hover svg{transform:rotate(90deg)}                 /* Paramètres : roue */
+  #acctBtn:hover svg{transform:scale(1.1)}                    /* Comptes : personnes */
   #sysBtn:hover path{animation:sys-pulse 1.1s ease-in-out infinite}
   #ideasFab:hover svg{animation:idea-pop .5s ease}
   @keyframes sys-pulse{0%,100%{opacity:1}50%{opacity:.45}}
   @keyframes idea-pop{0%,100%{transform:none}45%{transform:scale(1.15) rotate(-6deg)}}
-  #setFab:hover svg{transform:rotate(90deg)}
 
   /* ── #27 Sections scroll-reveal (progressive) ── */
   .sec{
@@ -280,7 +279,7 @@
     <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5 7 5-14 2.5 7H21"/></svg>
   </a>
   <a id="acctBtn" class="acct-fab" href="plazma-admin.html" title="Comptes &amp; droits" aria-label="Comptes et droits" hidden>
-    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
   </a>
   <button class="acct-fab" id="ideasFab" type="button" title="Boîte à idées" aria-label="Boîte à idées" onclick="window.PZ&&PZ.openIdeas&&PZ.openIdeas()">
     <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a6 6 0 0 0-4 10c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5a6 6 0 0 0-4-10Z"/></svg>
@@ -391,8 +390,8 @@
   </footer>
 
 </div>
-<script src="assets/plazma.js?v=20260929e"></script>
-<script src="assets/champions.js?v=20260929e"></script>
+<script src="assets/plazma.js?v=20260929f"></script>
+<script src="assets/champions.js?v=20260929f"></script>
 <script>
   /* Normalise la longueur des tracés d'icônes → tracé uniforme au survol */
   document.querySelectorAll('.tool-ico svg *').forEach(el => el.setAttribute('pathLength', '100'));

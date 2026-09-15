@@ -365,6 +365,7 @@
   ];
 
   let _navActive = null, _navMount;
+  let _ideaUnread = 0;   // nb d'idées non lues (badge Système, admins)
   /** Injecte la barre de navigation (filtrée selon les accès de l'utilisateur). */
   function mountNav(activeKey, mountSel) {
     _navActive = activeKey; _navMount = mountSel; renderNav();
@@ -406,7 +407,7 @@
         return `<a href="${n.href}"${cls ? ` class="${cls}"` : ''}${off ? ' title="Section désactivée"' : ''}>${n.label}</a>`;
       }).join('');
     if (isAdmin()) links += `<a href="plazma-admin.html"${_navActive === 'admin' ? ' class="active"' : ''}>Comptes</a>`;
-    if (isAdmin()) links += `<a href="plazma-site-admin.html"${_navActive === 'site' ? ' class="active"' : ''}>Système</a>`;
+    if (isAdmin()) links += `<a href="plazma-site-admin.html"${_navActive === 'site' ? ' class="active"' : ''} style="position:relative">Système${_ideaUnread > 0 ? `<span class="pz-idea-badge">${_ideaUnread > 9 ? '9+' : _ideaUnread}</span>` : ''}</a>`;
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
     const themeTitle = currentTheme === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair';
     const themeBtn = `<button class="pz-daynight" type="button" onclick="PZ.toggleTheme()" title="${themeTitle}" aria-label="${themeTitle}"><span class="dn-stars"></span><span class="dn-clouds"></span><span class="dn-knob"></span></button>`;
@@ -691,12 +692,48 @@
     if (!db) return Promise.reject(new Error('offline'));
     if (!t) return Promise.reject(new Error('vide'));
     _bumpUsage('writes', 1);
+    // Compteur global d'idées (pour le badge « non lues » des admins).
+    try {
+      if (window.firebase && firebase.firestore) {
+        db.collection(COLLECTION).doc(USAGE_DOC).set({ ideasTotal: firebase.firestore.FieldValue.increment(1) }, { merge: true }).catch(() => {});
+      }
+    } catch (e) {}
     return db.collection('plazma-ideas').add({
       text: t.slice(0, 2000),
       author: authUser ? authUser.uid : null,
       authorName: (profile && (profile.name || profile.username)) || 'Anonyme',
       ts: Date.now()
     });
+  }
+  // Badge « idées non lues » pour les admins (Système). Lit le compteur global.
+  function _setFabIdeaBadge() {
+    const fab = document.getElementById('sysBtn');
+    if (!fab) return;
+    fab.querySelectorAll('.pz-idea-badge').forEach(b => b.remove());
+    if (_ideaUnread > 0) {
+      fab.style.position = 'relative';
+      const b = document.createElement('span');
+      b.className = 'pz-idea-badge';
+      b.textContent = _ideaUnread > 9 ? '9+' : _ideaUnread;
+      fab.appendChild(b);
+    }
+  }
+  function _initIdeaBadge() {
+    onAuth(user => {
+      if (!user || !db || !isAdmin()) return;
+      db.collection(COLLECTION).doc(USAGE_DOC).get().then(s => {
+        const total = (s.exists && s.data().ideasTotal) || 0;
+        let seen = 0; try { seen = parseInt(localStorage.getItem('pz-ideas-seen') || '0', 10) || 0; } catch (e) {}
+        _ideaUnread = Math.max(0, total - seen);
+        refreshNav();
+        _setFabIdeaBadge();
+      }).catch(() => {});
+    });
+  }
+  // Appelée par la page Système une fois les idées consultées.
+  function markIdeasSeen(total) {
+    try { localStorage.setItem('pz-ideas-seen', String(total || 0)); } catch (e) {}
+    _ideaUnread = 0; refreshNav(); _setFabIdeaBadge();
   }
   function openIdeas() {
     const { ov, close } = _overlay(
@@ -902,7 +939,7 @@
     mountNav, sync, status, nowTime, relTime, loadingDone,
     exportPNG, backup, importFile, logout, changePassword,
     toggleTheme, toast, perf: PERF,
-    openSettings, openIdeas, setQuality, submitIdea,
+    openSettings, openIdeas, setQuality, submitIdea, markIdeasSeen,
     // Suivi d'usage & quotas
     getUsage, flushUsage, SPARK_LIMITS,
     // Configuration du site
@@ -1214,6 +1251,8 @@
       _initEmojiShake();
       // Présence : compte les connexions (global + par utilisateur) et l'activité.
       _trackPresence();
+      // Badge « idées non lues » sur le bouton Système (admins).
+      _initIdeaBadge();
       // Config du site : bandeau d'annonce (immédiat) + maintenance (après auth).
       if (page !== 'login.html') {
         siteEnsureCfg().then(() => {
