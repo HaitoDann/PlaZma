@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929d">
+<link rel="stylesheet" href="assets/theme.css?v=20260929e">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -99,8 +99,10 @@
   .hero-sub{color:var(--dim);font-size:15px;animation:fade-up .5s cubic-bezier(.16,1,.3,1) both .55s}
   .hero-sub b{color:var(--text);font-weight:600}
 
-  /* Boutons FAB (admin + thème) */
-  .acct-fab{position:fixed;top:16px;right:16px;z-index:50;width:40px;height:40px;
+  /* Barre de boutons flottants (haut-droite) — les cachés se replient */
+  #topFabs{position:fixed;top:16px;right:16px;z-index:50;display:flex;align-items:center;gap:10px}
+  #topFabs [hidden]{display:none}
+  .acct-fab{width:40px;height:40px;
     display:inline-flex;align-items:center;justify-content:center;border-radius:11px;
     background:var(--surface-2);border:1px solid var(--border);color:var(--dim);
     transition:color .15s,border-color .15s,background .15s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s}
@@ -109,13 +111,13 @@
   .acct-fab:active{transform:scale(.92)}
   .acct-fab svg{transition:transform .6s cubic-bezier(.34,1.56,.64,1)}
   .acct-fab:hover svg{transform:rotate(180deg)}
-  /* Toggle jour/nuit (styles dans theme.css) — positionné à gauche du bouton comptes */
-  #themeFab{position:fixed;top:21px;right:68px;z-index:50}
-  /* Bouton Système (admin) — à gauche du toggle */
-  #sysBtn{right:144px}
-  #sysBtn:hover svg{transform:none}
+  /* Système & idées : pas de rotation, effet propre */
+  #sysBtn:hover svg,#ideasFab:hover svg,#setFab:hover svg{transform:none}
   #sysBtn:hover path{animation:sys-pulse 1.1s ease-in-out infinite}
+  #ideasFab:hover svg{animation:idea-pop .5s ease}
   @keyframes sys-pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  @keyframes idea-pop{0%,100%{transform:none}45%{transform:scale(1.15) rotate(-6deg)}}
+  #setFab:hover svg{transform:rotate(90deg)}
 
   /* ── #27 Sections scroll-reveal (progressive) ── */
   .sec{
@@ -273,17 +275,25 @@
 <!-- #26 Barre de progression scroll -->
 <div id="scroll-prog" aria-hidden="true"></div>
 
-<button id="themeFab" class="pz-daynight" type="button" aria-label="Basculer thème" onclick="PZ.toggleTheme()">
-  <span class="dn-stars"></span>
-  <span class="dn-clouds"></span>
-  <span class="dn-knob"></span>
-</button>
-<a id="acctBtn" class="acct-fab" href="plazma-admin.html" title="Comptes &amp; droits" aria-label="Comptes et droits" hidden>
-  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-</a>
-<a id="sysBtn" class="acct-fab" href="plazma-site-admin.html" title="Administration du site" aria-label="Administration du site" hidden>
-  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5 7 5-14 2.5 7H21"/></svg>
-</a>
+<div id="topFabs">
+  <a id="sysBtn" class="acct-fab" href="plazma-site-admin.html" title="Administration du site" aria-label="Administration du site" hidden>
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5 7 5-14 2.5 7H21"/></svg>
+  </a>
+  <a id="acctBtn" class="acct-fab" href="plazma-admin.html" title="Comptes &amp; droits" aria-label="Comptes et droits" hidden>
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </a>
+  <button class="acct-fab" id="ideasFab" type="button" title="Boîte à idées" aria-label="Boîte à idées" onclick="window.PZ&&PZ.openIdeas&&PZ.openIdeas()">
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a6 6 0 0 0-4 10c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5a6 6 0 0 0-4-10Z"/></svg>
+  </button>
+  <button class="acct-fab" id="setFab" type="button" title="Paramètres" aria-label="Paramètres" onclick="window.PZ&&PZ.openSettings&&PZ.openSettings()">
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </button>
+  <button id="themeFab" class="pz-daynight" type="button" aria-label="Basculer thème" onclick="PZ.toggleTheme()">
+    <span class="dn-stars"></span>
+    <span class="dn-clouds"></span>
+    <span class="dn-knob"></span>
+  </button>
+</div>
 
 <div class="home">
 
@@ -381,8 +391,8 @@
   </footer>
 
 </div>
-<script src="assets/plazma.js?v=20260929d"></script>
-<script src="assets/champions.js?v=20260929d"></script>
+<script src="assets/plazma.js?v=20260929e"></script>
+<script src="assets/champions.js?v=20260929e"></script>
 <script>
   /* Normalise la longueur des tracés d'icônes → tracé uniforme au survol */
   document.querySelectorAll('.tool-ico svg *').forEach(el => el.setAttribute('pathLength', '100'));

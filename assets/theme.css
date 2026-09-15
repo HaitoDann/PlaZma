@@ -132,6 +132,14 @@ h3{font-size:1.02rem}
   transition:color .15s,background .15s;
 }
 .pz-nav-user:hover{color:var(--text);background:var(--surface-3,var(--surface-2))}
+.pz-nav-ico{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;flex-shrink:0;
+  background:var(--surface-2);color:var(--dim);line-height:1;
+  transition:color .15s,background .15s,transform .2s;
+}
+.pz-nav-ico:hover{color:var(--accent);background:var(--elevated);transform:translateY(-1px)}
+.pz-nav-ico:active{transform:translateY(0) scale(.94)}
 .pz-logout{
   display:inline-flex;align-items:center;justify-content:center;
   width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;

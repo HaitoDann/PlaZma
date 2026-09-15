@@ -52,6 +52,28 @@
     console.error('Firebase indisponible :', e);
   }
 
+  // ---- Niveau de performance : adapte la densité des effets ----
+  // Full sur machine puissante (rendu identique), réduit sur mobile/appareil
+  // faible, éteint si l'utilisateur demande de réduire les animations.
+  // Choix manuel (Paramètres) prioritaire sur l'auto-détection.
+  const PERF = (function () {
+    try {
+      if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return 'off';
+      let saved = null; try { saved = localStorage.getItem('pz-quality'); } catch (e) {}
+      if (saved === 'low' || saved === 'medium' || saved === 'high') return saved;
+      const cores = navigator.hardwareConcurrency || 8;
+      const mem = (typeof navigator.deviceMemory === 'number') ? navigator.deviceMemory : 8;
+      const coarse = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+      if (coarse && innerWidth < 760) return 'low';
+      if (cores <= 4 && mem <= 4) return 'low';
+      if (cores <= 4 || mem <= 4) return 'medium';
+      if (cores >= 8 && mem >= 8 && innerWidth >= 1024) return 'high';
+      return 'medium';
+    } catch (e) { return 'medium'; }
+  })();
+  const PERF_SCALE = { off: 0, low: 0.35, medium: 0.6, high: 1 };
+  const perfCount = n => Math.round(n * PERF_SCALE[PERF]);
+
   // ============ Suivi d'usage (jauges de quotas Firebase) ============
   // On compte localement les lectures/écritures/suppressions/connexions et on
   // pousse les DELTAS agrégés vers plazma/_usage (FieldValue.increment) au plus
@@ -389,7 +411,10 @@
     const themeTitle = currentTheme === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair';
     const themeBtn = `<button class="pz-daynight" type="button" onclick="PZ.toggleTheme()" title="${themeTitle}" aria-label="${themeTitle}"><span class="dn-stars"></span><span class="dn-clouds"></span><span class="dn-knob"></span></button>`;
     const who = profile
-      ? `<div class="pz-nav-right">${themeBtn}<button class="pz-nav-user" type="button" onclick="PZ.changePassword()" title="Changer mon mot de passe">${esc(profile.name || profile.username || '')}</button>` +
+      ? `<div class="pz-nav-right">${themeBtn}` +
+        `<button class="pz-nav-ico" type="button" onclick="PZ.openIdeas()" title="Boîte à idées" aria-label="Boîte à idées"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a6 6 0 0 0-4 10c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5a6 6 0 0 0-4-10Z"/></svg></button>` +
+        `<button class="pz-nav-ico" type="button" onclick="PZ.openSettings()" title="Paramètres" aria-label="Paramètres"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>` +
+        `<button class="pz-nav-user" type="button" onclick="PZ.changePassword()" title="Changer mon mot de passe">${esc(profile.name || profile.username || '')}</button>` +
         `<button class="pz-logout" type="button" onclick="PZ.logout()" title="Se déconnecter" aria-label="Se déconnecter"><svg class="pz-power" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path class="pz-power-ring" d="M7.8 6.3a7 7 0 1 0 8.4 0"/><line class="pz-power-bar" x1="12" y1="3.2" x2="12" y2="11.5"/></svg></button></div>`
       : `<div class="pz-nav-right">${themeBtn}</div>`;
     const html =
@@ -624,6 +649,79 @@
     setTimeout(() => { const f = ov.querySelector('#pz_cp_cur'); if (f) f.focus(); }, 30);
   }
 
+  // ---- Fenêtre générique (overlay auto-suffisant, sans dépendance CSS) ----
+  function _overlay(inner, width) {
+    const ov = document.createElement('div');
+    ov.tabIndex = -1;
+    ov.setAttribute('style', 'position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);padding:20px;font-family:var(--font,system-ui),sans-serif;opacity:0;transition:opacity .18s');
+    ov.innerHTML = '<div style="background:var(--surface,#171a22);color:var(--text,#e7e9ee);border:1px solid var(--border-2,#2a2f3a);border-radius:16px;padding:22px;width:' + (width || 360) + 'px;max-width:100%;box-shadow:0 24px 60px rgba(0,0,0,.5)">' + inner + '</div>';
+    document.body.appendChild(ov);
+    requestAnimationFrame(() => { ov.style.opacity = '1'; });
+    const close = () => { ov.style.opacity = '0'; setTimeout(() => ov.remove(), 180); };
+    ov.addEventListener('click', e => { if (e.target === ov) close(); });
+    ov.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+    ov.focus();
+    return { ov, close };
+  }
+
+  // ---- Paramètres (qualité du site) — accessible à tous ----
+  function setQuality(q) { try { localStorage.setItem('pz-quality', q); } catch (e) {} location.reload(); }
+  function openSettings() {
+    let cur = 'auto'; try { cur = localStorage.getItem('pz-quality') || 'auto'; } catch (e) {}
+    const opts = [['auto', 'Auto'], ['low', 'Faible'], ['medium', 'Moyen'], ['high', 'Élevé']];
+    const seg = opts.map(([v, l]) => '<button type="button" data-q="' + v + '" style="flex:1;padding:9px 6px;border:0;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;border-radius:9px;' + (cur === v ? 'background:var(--accent-soft);color:var(--accent)' : 'background:transparent;color:var(--muted)') + '">' + l + '</button>').join('');
+    const { ov, close } = _overlay(
+      '<h3 style="font-family:var(--font-display,inherit);margin:0 0 4px;font-size:17px">Paramètres</h3>' +
+      '<p style="color:var(--muted);font-size:12.5px;margin:0 0 14px">Qualité visuelle du site (particules, étoiles, effets).</p>' +
+      '<div style="display:flex;gap:4px;background:var(--surface-2);border:1px solid var(--border-2);border-radius:11px;padding:3px">' + seg + '</div>' +
+      '<p style="color:var(--muted);font-size:11.5px;line-height:1.5;margin:11px 0 0">« Auto » s\'adapte à la puissance de ton appareil (actuellement : <b style="color:var(--dim)">' + PERF + '</b>). Choisis « Faible » si le site rame. La page se recharge au changement.</p>' +
+      '<div style="display:flex;justify-content:flex-end;margin-top:18px"><button type="button" id="pz_set_close" style="padding:8px 16px;border-radius:9px;border:1px solid var(--border-2);background:transparent;color:var(--dim);font-size:13px;cursor:pointer">Fermer</button></div>'
+    );
+    ov.querySelectorAll('[data-q]').forEach(b => b.addEventListener('click', () => {
+      let c = 'auto'; try { c = localStorage.getItem('pz-quality') || 'auto'; } catch (e) {}
+      if (c === b.dataset.q) { close(); return; }
+      setQuality(b.dataset.q);
+    }));
+    ov.querySelector('#pz_set_close').addEventListener('click', close);
+  }
+
+  // ---- Boîte à idées — tout utilisateur peut proposer ----
+  function submitIdea(text) {
+    const t = (text || '').trim();
+    if (!db) return Promise.reject(new Error('offline'));
+    if (!t) return Promise.reject(new Error('vide'));
+    _bumpUsage('writes', 1);
+    return db.collection('plazma-ideas').add({
+      text: t.slice(0, 2000),
+      author: authUser ? authUser.uid : null,
+      authorName: (profile && (profile.name || profile.username)) || 'Anonyme',
+      ts: Date.now()
+    });
+  }
+  function openIdeas() {
+    const { ov, close } = _overlay(
+      '<h3 style="font-family:var(--font-display,inherit);margin:0 0 4px;font-size:17px">💡 Boîte à idées</h3>' +
+      '<p style="color:var(--muted);font-size:12.5px;margin:0 0 12px">Une idée, un axe d\'amélioration pour ARCHI ou l\'équipe ? Partage-la, le staff la verra.</p>' +
+      '<textarea id="pz_idea" rows="4" placeholder="Ton idée…" style="width:100%;box-sizing:border-box;padding:11px 13px;border-radius:11px;border:1px solid var(--border-2);background:var(--surface-2);color:var(--text);font-family:inherit;font-size:14px;resize:vertical"></textarea>' +
+      '<div id="pz_idea_msg" style="font-size:12px;min-height:16px;margin-top:8px;color:var(--muted)"></div>' +
+      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">' +
+      '<button type="button" id="pz_idea_cancel" style="padding:8px 14px;border-radius:9px;border:1px solid var(--border-2);background:transparent;color:var(--dim);font-size:13px;cursor:pointer">Annuler</button>' +
+      '<button type="button" id="pz_idea_send" style="padding:8px 16px;border-radius:9px;border:0;background:var(--accent);color:#04252d;font-weight:700;font-size:13px;cursor:pointer">Envoyer</button>' +
+      '</div>', 400
+    );
+    const msg = t => { const m = ov.querySelector('#pz_idea_msg'); if (m) m.textContent = t; };
+    ov.querySelector('#pz_idea_cancel').addEventListener('click', close);
+    const ta = ov.querySelector('#pz_idea'); if (ta) ta.focus();
+    ov.querySelector('#pz_idea_send').addEventListener('click', () => {
+      const v = ov.querySelector('#pz_idea').value;
+      if (!v.trim()) { msg('Écris ton idée d\'abord.'); return; }
+      const btn = ov.querySelector('#pz_idea_send'); btn.disabled = true; btn.textContent = '…';
+      submitIdea(v)
+        .then(() => { close(); if (typeof toast === 'function') toast('Merci ! Ton idée a été envoyée.', 'ok'); })
+        .catch(() => { msg('Envoi impossible. Réessaie.'); btn.disabled = false; btn.textContent = 'Envoyer'; });
+    });
+  }
+
   // ---- Intégration Discord (webhooks, 100 % statique) ----
   // Config partagée : plazma/config → { discordWebhooks: { scrim, planning, scouting, … } }.
   const escHtml = s => String(s == null ? '' : s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
@@ -804,6 +902,7 @@
     mountNav, sync, status, nowTime, relTime, loadingDone,
     exportPNG, backup, importFile, logout, changePassword,
     toggleTheme, toast, perf: PERF,
+    openSettings, openIdeas, setQuality, submitIdea,
     // Suivi d'usage & quotas
     getUsage, flushUsage, SPARK_LIMITS,
     // Configuration du site
@@ -939,25 +1038,6 @@
   }
 
   // ---- Particules ascendantes ----
-  // ---- Niveau de performance : adapte la densité des effets ----
-  // Full sur machine puissante (rendu identique), réduit sur mobile/appareil
-  // faible, éteint si l'utilisateur demande de réduire les animations.
-  const PERF = (function () {
-    try {
-      if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return 'off';
-      const cores = navigator.hardwareConcurrency || 8;
-      const mem = (typeof navigator.deviceMemory === 'number') ? navigator.deviceMemory : 8;
-      const coarse = window.matchMedia && matchMedia('(pointer: coarse)').matches;
-      if (coarse && innerWidth < 760) return 'low';
-      if (cores <= 4 && mem <= 4) return 'low';
-      if (cores <= 4 || mem <= 4) return 'medium';
-      if (cores >= 8 && mem >= 8 && innerWidth >= 1024) return 'high';
-      return 'medium';
-    } catch (e) { return 'medium'; }
-  })();
-  const PERF_SCALE = { off: 0, low: 0.35, medium: 0.6, high: 1 };
-  const perfCount = n => Math.round(n * PERF_SCALE[PERF]);
-
   function _initParticles() {
     if (document.getElementById('pz-particles')) return;
     const N = perfCount(35);

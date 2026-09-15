@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929d">
+<link rel="stylesheet" href="assets/theme.css?v=20260929e">
 <style>
   .wrap{max-width:1100px;margin:0 auto;padding:26px var(--gut) 70px}
   .pagehead{margin:8px 0 8px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
@@ -61,6 +61,16 @@
   .ustat-n{font-family:var(--font-display);font-size:1.3rem;font-weight:700;line-height:1}
   .ustat-l{font-size:10px;color:var(--muted)}
   .badge-never{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(239,68,68,.14);color:#f38b8b}
+
+  /* Idées */
+  .ideas{display:flex;flex-direction:column;gap:10px}
+  .idea{display:flex;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:13px 15px}
+  .idea-body{flex:1;min-width:0}
+  .idea-text{font-size:13.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+  .idea-meta{font-size:11.5px;color:var(--muted);margin-top:6px}
+  .idea-del{flex-shrink:0;align-self:flex-start;background:var(--surface-2);border:1px solid var(--border);color:var(--muted);cursor:pointer;
+    width:30px;height:30px;border-radius:8px;font-size:14px;transition:color .15s,background .15s,border-color .15s}
+  .idea-del:hover{color:var(--err);border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.08)}
 
   /* Cartes de réglage */
   .card2{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px}
@@ -128,6 +138,12 @@
     <div class="users" id="users"><div class="empty">Chargement…</div></div>
   </div>
 
+  <!-- Boîte à idées -->
+  <div class="sec">
+    <div class="sec-title">💡 Boîte à idées <span class="line"></span></div>
+    <div class="ideas" id="ideas"><div class="empty">Chargement…</div></div>
+  </div>
+
   <div class="sec">
     <div class="grid2">
       <!-- Annonce -->
@@ -176,7 +192,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="assets/plazma.js?v=20260929d"></script>
+<script src="assets/plazma.js?v=20260929e"></script>
 <script>
 const $ = id => document.getElementById(id);
 const NAV_LABELS = [
@@ -307,6 +323,27 @@ $('sec_save').addEventListener('click',()=>{
     .catch(e=>PZ.toast('Erreur : '+(e.message||e),'err'));
 });
 
+// ----- Boîte à idées -----
+function renderIdeas(list){
+  if(!list.length){ $('ideas').innerHTML='<div class="empty">Aucune idée pour l\'instant.</div>'; return; }
+  $('ideas').innerHTML = list.map(it=>`<div class="idea" data-id="${it.id}">
+    <div class="idea-body"><div class="idea-text">${esc(it.text)}</div>
+      <div class="idea-meta">${esc(it.authorName||'Anonyme')} · ${esc(relTime(it.ts))}</div></div>
+    <button class="idea-del" title="Supprimer" aria-label="Supprimer">✕</button></div>`).join('');
+  $('ideas').querySelectorAll('.idea-del').forEach(b=>b.addEventListener('click',()=>{
+    const row=b.closest('.idea'); const id=row.dataset.id;
+    if(!confirm('Supprimer cette idée ?')) return;
+    PZ.db.collection('plazma-ideas').doc(id).delete().then(()=>{ row.remove(); if(!$('ideas').children.length) renderIdeas([]); })
+      .catch(()=>{ if(PZ.toast) PZ.toast('Suppression impossible','err'); });
+  }));
+}
+function loadIdeas(){
+  if(!PZ.db){ $('ideas').innerHTML='<div class="empty">Hors-ligne.</div>'; return; }
+  PZ.db.collection('plazma-ideas').orderBy('ts','desc').limit(100).get()
+    .then(snap=>renderIdeas(snap.docs.map(d=>Object.assign({id:d.id},d.data()))))
+    .catch(()=>{ $('ideas').innerHTML='<div class="empty">Lecture impossible.</div>'; });
+}
+
 // ----- Chargement -----
 function loadAll(){
   PZ.getUsage().then(u=>{
@@ -321,7 +358,7 @@ function loadAll(){
     }
   });
 }
-$('refresh').addEventListener('click', loadAll);
+$('refresh').addEventListener('click', ()=>{ loadAll(); loadIdeas(); });
 
 PZ.mountNav('site');
 PZ.auth.ready.then(res=>{
@@ -341,6 +378,7 @@ PZ.auth.ready.then(res=>{
   // roster peut arriver un peu après → on rafraîchit à sa réception
   if(PZ.onRoster) PZ.onRoster(()=>loadAll());
   loadAll();
+  loadIdeas();
 });
 </script>
 </body>

@@ -84,6 +84,15 @@ service cloud.firestore {
       allow update: if false;
     }
 
+    // ---- Boîte à idées ----
+    // Tout membre actif peut proposer une idée ; seuls les admins les lisent/suppriment.
+    match /plazma-ideas/{id} {
+      allow create: if active();
+      allow read:   if isAdmin();
+      allow delete: if isAdmin();
+      allow update: if false;
+    }
+
     // ---- Satisfaction Head Coach ----
     match /plazma-satisfaction-coach/{id} {
       allow create: if true;
