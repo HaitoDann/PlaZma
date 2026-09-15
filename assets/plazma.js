@@ -370,7 +370,7 @@
     const themeBtn = `<button class="pz-daynight" type="button" onclick="PZ.toggleTheme()" title="${themeTitle}" aria-label="${themeTitle}"><span class="dn-stars"></span><span class="dn-clouds"></span><span class="dn-knob"></span></button>`;
     const who = profile
       ? `<div class="pz-nav-right">${themeBtn}<button class="pz-nav-user" type="button" onclick="PZ.changePassword()" title="Changer mon mot de passe">${esc(profile.name || profile.username || '')}</button>` +
-        `<button class="pz-logout" type="button" onclick="PZ.logout()" title="Se déconnecter">⏻</button></div>`
+        `<button class="pz-logout" type="button" onclick="PZ.logout()" title="Se déconnecter" aria-label="Se déconnecter"><svg class="pz-power" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path class="pz-power-ring" d="M7.8 6.3a7 7 0 1 0 8.4 0"/><line class="pz-power-bar" x1="12" y1="3.2" x2="12" y2="11.5"/></svg></button></div>`
       : `<div class="pz-nav-right">${themeBtn}</div>`;
     const html =
       `<div class="pz-topbar"><div class="pz-topbar-inner">

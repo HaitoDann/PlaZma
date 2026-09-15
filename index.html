@@ -73,6 +73,11 @@
   .acct-fab:hover svg{transform:rotate(180deg)}
   /* Toggle jour/nuit (styles dans theme.css) — positionné à gauche du bouton comptes */
   #themeFab{position:fixed;top:21px;right:68px;z-index:50}
+  /* Bouton Système (admin) — à gauche du toggle */
+  #sysBtn{right:144px}
+  #sysBtn:hover svg{transform:none}
+  #sysBtn:hover path{animation:sys-pulse 1.1s ease-in-out infinite}
+  @keyframes sys-pulse{0%,100%{opacity:1}50%{opacity:.45}}
 
   /* ── #27 Sections scroll-reveal (progressive) ── */
   .sec{
@@ -230,6 +235,9 @@
 </button>
 <a id="acctBtn" class="acct-fab" href="plazma-admin.html" title="Comptes &amp; droits" aria-label="Comptes et droits" hidden>
   <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+</a>
+<a id="sysBtn" class="acct-fab" href="plazma-site-admin.html" title="Administration du site" aria-label="Administration du site" hidden>
+  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5 7 5-14 2.5 7H21"/></svg>
 </a>
 
 <div class="home">
@@ -427,7 +435,7 @@
   /* Bouton admin */
   (function(){
     function reveal(){
-      try { if(PZ.auth.isAdmin && PZ.auth.isAdmin()){ const b=document.getElementById('acctBtn'); if(b) b.hidden=false; }} catch(e){}
+      try { if(PZ.auth.isAdmin && PZ.auth.isAdmin()){ ['acctBtn','sysBtn'].forEach(id=>{ const b=document.getElementById(id); if(b) b.hidden=false; }); }} catch(e){}
     }
     if(window.PZ && PZ.auth && PZ.auth.onAuth) PZ.auth.onAuth(reveal);
     else if(window.PZ && PZ.auth && PZ.auth.ready) PZ.auth.ready.then(reveal).catch(()=>{});
