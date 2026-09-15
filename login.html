@@ -26,45 +26,39 @@
       linear-gradient(160deg, #060a10 0%, #0a1017 46%, #070c12 100%);
   }
 
-  /* ---- Décor : sphères 3D flottantes ---- */
+  /* ---- Décor : grille technique + anneaux (motif loader Archi) ---- */
   .scene{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-  .orb{
-    position:absolute;border-radius:50%;
-    filter:blur(.4px);
-    background:
-      radial-gradient(circle at 32% 28%, rgba(207,247,255,.85), rgba(103,232,249,.92) 18%, #22d3ee 44%, #0e7490 76%, #063847 100%);
-    box-shadow:
-      inset -14px -18px 40px rgba(2,20,28,.65),
-      inset 10px 12px 30px rgba(186,238,250,.35),
-      0 40px 90px rgba(6,58,71,.55),
-      0 0 70px rgba(34,211,238,.30);
-    animation:float 14s ease-in-out infinite;
+
+  /* Grille de points discrète, estompée vers les bords */
+  .grid-bg{
+    position:absolute;inset:0;
+    background-image:radial-gradient(circle at 1px 1px, rgba(159,176,192,.08) 1px, transparent 1.6px);
+    background-size:30px 30px;
+    -webkit-mask:radial-gradient(closest-side at 50% 46%, #000 22%, transparent 82%);
+    mask:radial-gradient(closest-side at 50% 46%, #000 22%, transparent 82%);
   }
-  .orb.teal{
-    background:
-      radial-gradient(circle at 34% 30%, rgba(198,250,244,.82), rgba(94,234,212,.9) 20%, #14b8a6 48%, #0f766e 78%, #053a38 100%);
-    box-shadow:
-      inset -12px -16px 38px rgba(2,26,24,.6),
-      inset 8px 10px 26px rgba(190,248,240,.32),
-      0 36px 80px rgba(5,58,56,.5),
-      0 0 60px rgba(45,212,191,.26);
+
+  /* Anneaux concentriques fins, centrés derrière le socle */
+  .rings{
+    position:absolute;top:50%;left:50%;width:min(96vw,1120px);aspect-ratio:1;
+    transform:translate(-50%,-50%);
   }
-  .o1{width:230px;height:230px;top:-46px;left:8%;animation-delay:-1s}
-  .o2{width:150px;height:150px;top:26%;left:-58px;animation-delay:-5s}
-  .o3{width:118px;height:118px;bottom:-30px;left:22%;animation-delay:-3s}
-  .o4{width:96px;height:96px;top:8%;right:12%;animation-delay:-7s}
-  .o5{width:200px;height:200px;bottom:-70px;right:6%;animation-delay:-2s}
-  .o6{width:66px;height:66px;top:40%;right:4%;animation-delay:-9s}
-  .o7{width:44px;height:44px;top:64%;left:14%;animation-delay:-6s}
-  @keyframes float{
-    0%,100%{transform:translateY(0) translateX(0)}
-    33%{transform:translateY(-26px) translateX(12px)}
-    66%{transform:translateY(16px) translateX(-14px)}
-  }
-  /* Voile de flou pour fondre les sphères derrière la carte */
+  .rings span{position:absolute;inset:0;margin:auto;border-radius:50%;border:1px solid transparent}
+  .r1{width:52%;height:52%;border-color:rgba(34,211,238,.14)}
+  .r2{width:74%;height:74%;border-color:rgba(34,211,238,.10)}
+  .r3{width:98%;height:98%;border-color:rgba(34,211,238,.06)}
+  /* Arcs lumineux qui tournent lentement — écho du loader */
+  .arc{border-width:1.5px}
+  .a1{width:74%;height:74%;border-top-color:rgba(34,211,238,.42);border-right-color:rgba(34,211,238,.12);animation:ring-cw 26s linear infinite}
+  .a2{width:98%;height:98%;border-top-color:rgba(45,212,191,.30);border-left-color:rgba(34,211,238,.08);animation:ring-ccw 40s linear infinite}
+  @keyframes ring-cw{to{transform:rotate(360deg)}}
+  @keyframes ring-ccw{to{transform:rotate(-360deg)}}
+
+  /* Halo cyan diffus derrière le socle */
   .scene::after{
-    content:"";position:absolute;inset:0;
-    background:radial-gradient(760px 620px at 50% 50%, rgba(6,10,16,.28), transparent 70%);
+    content:"";position:absolute;top:50%;left:50%;width:660px;height:660px;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(circle, rgba(34,211,238,.10), transparent 62%);
   }
 
   /* ---- Socle rond glassmorphism ---- */
@@ -148,22 +142,22 @@
     .login .glass{aspect-ratio:auto;border-radius:34px;padding:36px 28px 30px}
     .login .glass::before{border-radius:34px}
     .login h1{font-size:1.8rem}
-    .o1,.o5{width:150px;height:150px}
   }
   @media (prefers-reduced-motion:reduce){
-    .orb{animation:none}
+    .arc{animation:none}
   }
 </style>
 </head>
 <body>
 <div class="scene" aria-hidden="true">
-  <div class="orb o1"></div>
-  <div class="orb teal o2"></div>
-  <div class="orb o3"></div>
-  <div class="orb teal o4"></div>
-  <div class="orb o5"></div>
-  <div class="orb teal o6"></div>
-  <div class="orb o7"></div>
+  <div class="grid-bg"></div>
+  <div class="rings">
+    <span class="r3"></span>
+    <span class="r2"></span>
+    <span class="r1"></span>
+    <span class="arc a2"></span>
+    <span class="arc a1"></span>
+  </div>
 </div>
 <div class="login">
   <div class="glass">
