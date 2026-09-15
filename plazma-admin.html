@@ -16,11 +16,29 @@
   .pagehead p{color:var(--muted);font-size:13.5px;margin-top:4px;max-width:46ch}
 
   /* Barre d'outils : recherche + compteur */
-  .toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
   .search{position:relative;flex:1;min-width:200px}
   .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted);pointer-events:none}
   .search input{width:100%;padding-left:36px}
   .count{font-size:12.5px;color:var(--muted);white-space:nowrap}
+
+  /* Onglets de filtre (façon GitHub) */
+  .tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:18px}
+  .tab{background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);
+    font-family:var(--font);font-size:13px;font-weight:600;padding:8px 12px;margin-bottom:-1px;cursor:pointer;
+    display:flex;align-items:center;gap:7px;transition:color .15s}
+  .tab:hover{color:var(--text)}
+  .tab.on{color:var(--text);border-bottom-color:var(--accent)}
+  .tab .n{font-size:11px;font-weight:700;background:var(--surface-2);color:var(--dim);
+    padding:1px 7px;border-radius:20px;min-width:20px;text-align:center}
+  .tab.on .n{background:var(--accent-soft);color:var(--accent)}
+
+  /* Groupes */
+  .group-head{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:700;letter-spacing:.05em;
+    text-transform:uppercase;color:var(--muted);margin:22px 0 10px}
+  .group-head:first-child{margin-top:0}
+  .group-head .n{font-size:11px;background:var(--surface-2);padding:1px 8px;border-radius:20px}
+  .group-head .line{flex:1;height:1px;background:var(--border)}
 
   /* Liste des comptes */
   .ulist{display:flex;flex-direction:column;gap:10px}
@@ -29,26 +47,30 @@
   .urow:hover{border-color:var(--border-2);background:var(--surface-2)}
   .urow.dis{opacity:.6}
   .avatar{flex-shrink:0;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
-    font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--accent);
+    font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--accent);letter-spacing:.02em;
     background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 25%,transparent)}
   .avatar.admin{color:#04222a;background:var(--accent);border-color:var(--accent)}
   .uinfo{flex:1;min-width:0}
   .uinfo-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .uname{font-weight:700;font-size:15px}
   .uemail{font-size:12.5px;color:var(--muted);margin-top:2px}
-  .uaccess{font-size:12px;color:var(--dim);margin-top:3px}
+  .uaccess{font-size:12px;color:var(--dim);margin-top:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .badge{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:20px;line-height:1}
   .badge.admin{background:var(--accent-soft);color:var(--accent)}
   .badge.staff{background:var(--surface-2);color:var(--dim);border:1px solid var(--border)}
   .badge.off{background:rgba(220,80,80,.16);color:#f38b8b}
   .badge.me{background:transparent;color:var(--muted);border:1px solid var(--border)}
+  .plink{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;padding:2px 9px 2px 6px;border-radius:20px;
+    background:var(--surface-2);border:1px solid var(--border);color:var(--text)}
+  .plink .role{color:var(--muted)}
+  .dot{width:1px;height:11px;background:var(--border)}
 
   /* Menu d'actions (kebab) */
   .uactions{position:relative;flex-shrink:0}
   .kebab{width:34px;height:34px;border-radius:9px;border:1px solid var(--border);background:transparent;
     color:var(--muted);cursor:pointer;display:grid;place-items:center;transition:.15s}
   .kebab:hover{background:var(--surface-2);color:var(--text);border-color:var(--border-2)}
-  .menu{position:absolute;right:0;top:calc(100% + 6px);z-index:30;min-width:190px;
+  .menu{position:absolute;right:0;top:calc(100% + 6px);z-index:30;min-width:200px;
     background:var(--elevated);border:1px solid var(--border-2);border-radius:12px;
     box-shadow:var(--shadow-3,0 16px 40px rgba(0,0,0,.45));padding:6px;display:none}
   .menu.open{display:block}
@@ -68,6 +90,8 @@
   .field label{display:block;font-size:12px;color:var(--dim);font-weight:600;margin-bottom:5px}
   .field input,.field select{width:100%}
   .field .hint{font-size:11px;color:var(--muted);margin-top:4px}
+  .frow{display:flex;gap:12px}
+  .frow .field{flex:1}
   .secgrid{display:flex;flex-direction:column;gap:6px;margin-top:6px}
   .secgrid.dim{opacity:.45;pointer-events:none}
   .secrow{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--text);
@@ -86,6 +110,7 @@
     padding:10px 12px;font-size:12.5px;margin-top:12px;word-break:break-all;line-height:1.6}
   .modal.lg{width:560px}
   .modal-scroll{max-height:56vh;overflow:auto;margin:0 -4px;padding:0 4px}
+  .sublabel{font-size:12px;color:var(--dim);font-weight:600;margin:16px 0 6px}
 </style>
 </head>
 <body>
@@ -93,7 +118,7 @@
   <div class="pagehead">
     <div>
       <h1>Comptes &amp; accès</h1>
-      <p>Crée les comptes du staff et choisis, pour chacun, les modules d'ARCHI accessibles.</p>
+      <p>Crée les comptes du staff et des joueurs, classe-les et choisis les modules d'ARCHI accessibles.</p>
     </div>
     <button class="btn btn-primary" onclick="openCreate()">+ Nouveau compte</button>
   </div>
@@ -105,6 +130,8 @@
     </div>
     <span class="count" id="count"></span>
   </div>
+
+  <div class="tabs" id="tabs"></div>
 
   <div class="ulist" id="ulist"><div class="empty">Chargement…</div></div>
 
@@ -124,11 +151,25 @@
       <div class="field"><label>Mot de passe provisoire</label>
         <input id="n_pw" placeholder="min. 6 caractères">
       </div>
-      <div class="field"><label>Rôle</label>
-        <select id="n_role">
-          <option value="staff">Membre (accès selon les modules cochés)</option>
-          <option value="admin">Administrateur (accès total + gestion des comptes)</option>
-        </select>
+      <div class="frow">
+        <div class="field"><label>Rôle (droits)</label>
+          <select id="n_role">
+            <option value="staff">Membre</option>
+            <option value="admin">Administrateur</option>
+          </select>
+          <div class="hint">L'admin a accès à tout + gestion des comptes.</div>
+        </div>
+        <div class="field"><label>Catégorie</label>
+          <select id="n_group">
+            <option value="staff">Staff</option>
+            <option value="starter">Joueur titulaire</option>
+            <option value="sub">Joueur remplaçant</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Joueur lié (roster)</label>
+        <select id="n_player"></select>
+        <div class="hint">Associe ce compte à un joueur du roster (fiches perf, satisfaction…).</div>
       </div>
       <div class="field">
         <label>Modules accessibles</label>
@@ -144,17 +185,30 @@
   </div>
 </div>
 
-<!-- Modale : édition des accès -->
+<!-- Modale : gestion du membre -->
 <div class="overlay" id="editOverlay">
   <div class="modal lg" role="dialog" aria-modal="true">
-    <div class="modal-title" id="editTitle">Accès</div>
+    <div class="modal-title" id="editTitle">Membre</div>
     <div class="modal-scroll">
+      <div class="frow">
+        <div class="field"><label>Catégorie</label>
+          <select id="e_group">
+            <option value="staff">Staff</option>
+            <option value="starter">Joueur titulaire</option>
+            <option value="sub">Joueur remplaçant</option>
+          </select>
+        </div>
+        <div class="field"><label>Joueur lié (roster)</label>
+          <select id="e_player"></select>
+        </div>
+      </div>
+      <div class="sublabel" id="e_seclabel">Modules accessibles</div>
       <div class="presets" id="e_presets"></div>
       <div class="secgrid" id="e_sections"></div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeEdit()">Annuler</button>
-      <button class="btn btn-primary" id="saveBtn" onclick="saveAccess()">Enregistrer</button>
+      <button class="btn btn-primary" id="saveBtn" onclick="saveMember()">Enregistrer</button>
     </div>
   </div>
 </div>
@@ -177,14 +231,42 @@ const PRESETS = {
   'Joueur':        ['planning','team','perf','satisfaction'],
   'Aucun':         []
 };
+// Catégories de membres (façon "équipes" GitHub). Ordre d'affichage.
+const GROUPS = [
+  ['starter','Joueurs titulaires'],
+  ['sub','Joueurs remplaçants'],
+  ['staff','Staff']
+];
+const GROUP_LABEL = Object.fromEntries(GROUPS);
+const groupOf = u => (u.group==='starter'||u.group==='sub') ? u.group : 'staff';
+
 const $ = id => document.getElementById(id);
-let db, meUid, ALL=[], editUid=null;
+let db, meUid, ALL=[], editUid=null, filter='all';
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function toast(t){ if(window.PZ&&PZ.toast){ PZ.toast(t); return; } alert(t); }
-function initials(name){ const p=String(name||'?').trim().split(/\s+/); return ((p[0]||'?')[0]+(p[1]||'')[0]||'').toUpperCase()||'?'; }
+function initials(name){
+  const p=String(name||'').trim().split(/\s+/).filter(Boolean);
+  const a=(p[0]||'')[0]||'', b=p.length>1 ? (p[p.length-1][0]||'') : '';
+  return (a+b).toUpperCase() || '?';
+}
 
-// Grille de segments : Aucun / Voir / Modifier par module.
+/* ----- Roster (joueurs liables) ----- */
+function rosterList(){
+  if(!(window.PZ&&PZ.getRoster)) return [];
+  try{ return PZ.getRoster().concat(PZ.getCoach?PZ.getCoach():[]); }catch(_){ return []; }
+}
+function playerById(id){
+  if(!id) return null;
+  return rosterList().find(p=>p.id===id) || null;
+}
+function playerOptions(sel){
+  const opts = ['<option value="">— Aucun —</option>'].concat(
+    rosterList().map(p=>`<option value="${esc(p.id)}"${p.id===sel?' selected':''}>${esc(p.emoji||'')} ${esc(p.name)} — ${esc(p.role)}</option>`));
+  return opts.join('');
+}
+
+/* ----- Grille de segments : Aucun / Voir / Modifier ----- */
 const SEG=[['','Aucun'],['view','Voir'],['edit','Modifier']];
 function segRows(levels){
   return SECTIONS.map(([k,l])=>`<div class="secrow"><span class="secname">${l}</span><div class="seg-ctl" data-sec="${k}">${
@@ -200,10 +282,9 @@ function readSections(scope){
   document.querySelectorAll(scope+' .seg-ctl').forEach(g=>{ const on=g.querySelector('.seg.on'); const v=on?on.dataset.v:''; if(v) out[g.dataset.sec]=v; });
   return out;
 }
-// Un clic sur un segment sélectionne ce niveau dans son groupe.
+function presetLevels(name){ return levelsFromSections(Object.fromEntries((PRESETS[name]||[]).map(k=>[k,'edit']))); }
 document.addEventListener('click', e=>{ const b=e.target.closest('.seg'); if(!b)return; const g=b.closest('.seg-ctl'); if(!g)return;
   g.querySelectorAll('.seg').forEach(x=>x.classList.remove('on')); b.classList.add('on'); });
-// Ferme les menus kebab au clic extérieur.
 document.addEventListener('click', e=>{ if(!e.target.closest('.uactions')) document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open')); });
 
 const USER_DOMAIN = (window.PZ&&PZ.USER_DOMAIN) || 'archi.local';
@@ -211,21 +292,25 @@ const normUser = u => u.trim().toLowerCase().replace(/[^a-z0-9._-]/g,'');
 
 /* ---------- Création ---------- */
 function openCreate(){
-  $('n_name').value=''; $('n_user').value=''; $('n_pw').value=''; $('n_role').value='staff';
+  $('n_name').value=''; $('n_user').value=''; $('n_pw').value=''; $('n_role').value='staff'; $('n_group').value='staff';
   $('createOut').innerHTML='';
   $('n_sections').classList.remove('dim');
   $('n_sections').innerHTML = segRows({});
   $('n_presets').innerHTML = Object.keys(PRESETS).map(name=>`<button type="button" onclick="applyPreset('${name}')">${name}</button>`).join('');
+  $('n_player').innerHTML = playerOptions('');
   $('createOverlay').classList.add('open');
   setTimeout(()=>$('n_name').focus(),60);
 }
 function closeCreate(){ $('createOverlay').classList.remove('open'); }
 $('n_role').addEventListener('change',function(){ $('n_sections').classList.toggle('dim', this.value==='admin'); });
-function applyPreset(name){ setLevels('#n_sections', levelsFromSections(Object.fromEntries((PRESETS[name]||[]).map(k=>[k,'edit'])))); }
+$('n_group').addEventListener('change',function(){ // pré-remplit un preset joueur quand on choisit un joueur
+  if((this.value==='starter'||this.value==='sub') && $('n_role').value!=='admin') setLevels('#n_sections', presetLevels('Joueur'));
+});
+function applyPreset(name){ setLevels('#n_sections', presetLevels(name)); }
 
 async function createUser(){
   const name=$('n_name').value.trim(), username=normUser($('n_user').value), pw=$('n_pw').value;
-  const role=$('n_role').value;
+  const role=$('n_role').value, group=$('n_group').value, playerId=$('n_player').value||null;
   $('createOut').innerHTML='';
   if(!name||!username){ toast("Nom et nom d'utilisateur requis."); return; }
   if(pw.length<6){ toast('Mot de passe : 6 caractères minimum.'); return; }
@@ -238,11 +323,11 @@ async function createUser(){
     await sec.auth().signOut();
     const sections = role==='admin' ? {} : readSections('#n_sections');
     await db.collection('users').doc(uid).set({
-      name, username, role, disabled:false, sections,
+      name, username, role, group, playerId, disabled:false, sections,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     $('createOut').innerHTML = `<div class="cred">✅ Compte créé.<br>Nom d'utilisateur : ${esc(username)}<br>Mot de passe provisoire : ${esc(pw)}</div>`;
-    $('n_name').value=''; $('n_user').value=''; $('n_pw').value='';
+    $('n_name').value=''; $('n_user').value=''; $('n_pw').value=''; $('n_player').value='';
     applyPreset('Aucun');
     toast('Compte créé.');
     loadUsers();
@@ -261,9 +346,19 @@ async function loadUsers(){
     catch(_){ snap=await db.collection('users').get(); }
     ALL=[]; snap.forEach(d=>ALL.push({uid:d.id,...d.data()}));
     ALL.sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'fr'));
+    renderTabs();
     renderList();
   }catch(e){ console.error(e); $('ulist').innerHTML='<div class="empty">Lecture impossible (vérifie les règles Firestore).</div>'; }
 }
+
+function renderTabs(){
+  const counts={all:ALL.length}; GROUPS.forEach(([k])=>counts[k]=0);
+  ALL.forEach(u=>counts[groupOf(u)]++);
+  const tabs=[['all','Tous']].concat(GROUPS);
+  $('tabs').innerHTML = tabs.map(([k,l])=>
+    `<button class="tab${filter===k?' on':''}" onclick="setFilter('${k}')">${l}<span class="n">${counts[k]||0}</span></button>`).join('');
+}
+function setFilter(k){ filter=k; renderTabs(); renderList(); }
 
 function accessSummary(u){
   if(u.role==='admin') return 'Accès total';
@@ -276,12 +371,23 @@ function accessSummary(u){
 
 function renderList(){
   const q=($('q').value||'').trim().toLowerCase();
-  const rows=ALL.filter(u=>!q || String(u.name||'').toLowerCase().includes(q) || String(u.username||u.email||'').toLowerCase().includes(q));
-  $('count').textContent = ALL.length ? `${rows.length}/${ALL.length} compte${ALL.length>1?'s':''}` : '';
   const host=$('ulist');
-  if(!ALL.length){ host.innerHTML='<div class="empty">Aucun compte pour le moment.<br>Clique sur « + Nouveau compte » pour commencer.</div>'; return; }
-  if(!rows.length){ host.innerHTML='<div class="empty">Aucun résultat pour « '+esc(q)+' ».</div>'; return; }
-  host.innerHTML = rows.map(renderUser).join('');
+  if(!ALL.length){ host.innerHTML='<div class="empty">Aucun compte pour le moment.<br>Clique sur « + Nouveau compte » pour commencer.</div>'; $('count').textContent=''; return; }
+  let rows=ALL.filter(u=>!q || String(u.name||'').toLowerCase().includes(q) || String(u.username||u.email||'').toLowerCase().includes(q));
+  if(filter!=='all') rows=rows.filter(u=>groupOf(u)===filter);
+  $('count').textContent = `${rows.length}/${ALL.length} compte${ALL.length>1?'s':''}`;
+  if(!rows.length){ host.innerHTML='<div class="empty">Aucun résultat.</div>'; return; }
+
+  // Regroupé par catégorie (sauf si un filtre unique est actif → simple liste)
+  if(filter!=='all'){ host.innerHTML = rows.map(renderUser).join(''); return; }
+  let html='';
+  GROUPS.forEach(([k,label])=>{
+    const grp=rows.filter(u=>groupOf(u)===k);
+    if(!grp.length) return;
+    html += `<div class="group-head">${label}<span class="n">${grp.length}</span><span class="line"></span></div>`;
+    html += `<div class="ulist">${grp.map(renderUser).join('')}</div>`;
+  });
+  host.innerHTML = html;
 }
 
 function renderUser(u){
@@ -290,19 +396,21 @@ function renderUser(u){
   const roleBadge = admin?'<span class="badge admin">Admin</span>':'<span class="badge staff">Membre</span>';
   const offBadge = u.disabled?'<span class="badge off">Désactivé</span>':'';
   const meBadge = isMe?'<span class="badge me">toi</span>':'';
+  const p = playerById(u.playerId);
+  const plink = p ? `<span class="dot"></span><span class="plink">${esc(p.emoji||'🎮')} ${esc(p.name)}<span class="role">· ${esc(p.role)}</span></span>` : '';
   return `<div class="urow${u.disabled?' dis':''}" data-uid="${u.uid}">
     <div class="avatar${admin?' admin':''}">${esc(initials(u.name))}</div>
     <div class="uinfo">
       <div class="uinfo-top"><span class="uname">${esc(u.name||'—')}</span> ${roleBadge} ${offBadge} ${meBadge}</div>
       <div class="uemail">@${esc(u.username||u.email||'')}</div>
-      <div class="uaccess">${esc(accessSummary(u))}</div>
+      <div class="uaccess">${esc(accessSummary(u))}${plink}</div>
     </div>
     <div class="uactions">
       <button class="kebab" onclick="toggleMenu(event,'${u.uid}')" aria-label="Actions">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>
       </button>
       <div class="menu" id="menu_${u.uid}">
-        ${admin?'':`<button onclick="openEdit('${u.uid}')">✎ Modifier les accès</button>`}
+        <button onclick="openEdit('${u.uid}')">✎ Gérer le membre</button>
         <button onclick="toggleRole('${u.uid}','${admin?'staff':'admin'}')">${admin?'↓ Retirer admin':'↑ Passer admin'}</button>
         ${isMe?'':`<button onclick="toggleDisabled('${u.uid}',${u.disabled?'false':'true'})">${u.disabled?'✓ Réactiver':'⏸ Désactiver'}</button>`}
         ${isMe?'':'<div class="menu-sep"></div>'}
@@ -319,26 +427,40 @@ function toggleMenu(e,uid){
   if(!open) m.classList.add('open');
 }
 
-/* ---------- Édition des accès (modale) ---------- */
+/* ---------- Gestion du membre (modale) ---------- */
 function openEdit(uid){
   document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open'));
   const u=ALL.find(x=>x.uid===uid)||{};
   editUid=uid;
-  $('editTitle').textContent='Accès — '+(u.name||'');
+  const admin=u.role==='admin';
+  $('editTitle').textContent='Gérer — '+(u.name||'');
+  $('e_group').value=groupOf(u);
+  $('e_player').innerHTML = playerOptions(u.playerId||'');
   $('e_presets').innerHTML = Object.keys(PRESETS).map(n=>`<button type="button" onclick="editPreset('${n}')">${n}</button>`).join('');
-  db.collection('users').doc(uid).get().then(d=>{
-    const s=(d.data()||{}).sections||{};
-    $('e_sections').innerHTML = segRows(levelsFromSections(s));
-  });
+  const showSec = !admin;
+  $('e_seclabel').style.display = showSec?'':'none';
+  $('e_presets').style.display = showSec?'':'none';
+  $('e_sections').style.display = showSec?'':'none';
+  if(showSec){
+    db.collection('users').doc(uid).get().then(d=>{
+      const s=(d.data()||{}).sections||{};
+      $('e_sections').innerHTML = segRows(levelsFromSections(s));
+    });
+  } else {
+    $('e_sections').innerHTML = '<div class="hint" style="display:block">Administrateur : accès à tous les modules.</div>';
+    $('e_seclabel').style.display='';
+  }
   $('editOverlay').classList.add('open');
 }
 function closeEdit(){ $('editOverlay').classList.remove('open'); editUid=null; }
-function editPreset(name){ setLevels('#e_sections', levelsFromSections(Object.fromEntries((PRESETS[name]||[]).map(k=>[k,'edit'])))); }
-async function saveAccess(){
+function editPreset(name){ setLevels('#e_sections', presetLevels(name)); }
+async function saveMember(){
   if(!editUid) return;
-  const sections=readSections('#e_sections');
+  const u=ALL.find(x=>x.uid===editUid)||{};
+  const patch={ group:$('e_group').value, playerId:$('e_player').value||null };
+  if(u.role!=='admin') patch.sections = readSections('#e_sections');
   const btn=$('saveBtn'); btn.disabled=true;
-  try{ await db.collection('users').doc(editUid).update({sections}); toast('Accès mis à jour.'); closeEdit(); loadUsers(); }
+  try{ await db.collection('users').doc(editUid).update(patch); toast('Membre mis à jour.'); closeEdit(); loadUsers(); }
   catch(e){ console.error(e); toast('Erreur : '+(e.message||e.code)); }
   finally{ btn.disabled=false; }
 }
@@ -374,6 +496,8 @@ PZ.auth.ready.then(res=>{
   if(!res.user || !PZ.auth.isAdmin()) return; // l'overlay d'accès s'affiche déjà
   db = PZ.db; meUid = res.user.uid;
   loadUsers();
+  // Le roster arrive en asynchrone : re-render pour afficher les joueurs liés.
+  if(window.PZ&&PZ.onRoster) PZ.onRoster(()=>{ if(ALL.length) renderList(); });
 });
 </script>
 </body>
