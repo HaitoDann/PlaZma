@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929j">
+<link rel="stylesheet" href="assets/theme.css?v=20260929k">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -106,7 +106,8 @@
   .acct-fab:active{transform:scale(.92)}
   .acct-fab svg{transition:transform .5s cubic-bezier(.34,1.56,.64,1)}
   /* Effet de survol propre à chaque bouton */
-  #setFab:hover svg{transform:rotate(90deg)}                 /* Paramètres : roue */
+  #logoutFab:hover svg{transform:translateX(2px)}            /* Déconnexion : flèche */
+  #logoutFab:hover{border-color:color-mix(in srgb,var(--err) 45%,var(--border));color:var(--err)}
   #acctBtn:hover svg{transform:scale(1.1)}                    /* Comptes : personnes */
   #sysBtn:hover path{animation:sys-pulse 1.1s ease-in-out infinite}
   #ideasFab:hover svg{animation:idea-pop .5s ease}
@@ -279,8 +280,8 @@
   <button class="acct-fab" id="ideasFab" type="button" title="Boîte à idées" aria-label="Boîte à idées" onclick="window.PZ&&PZ.openIdeas&&PZ.openIdeas()">
     <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a6 6 0 0 0-4 10c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5a6 6 0 0 0-4-10Z"/></svg>
   </button>
-  <button class="acct-fab" id="setFab" type="button" title="Paramètres" aria-label="Paramètres" onclick="window.PZ&&PZ.openSettings&&PZ.openSettings()">
-    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  <button class="acct-fab" id="logoutFab" type="button" title="Se déconnecter" aria-label="Se déconnecter" onclick="window.PZ&&PZ.logout&&PZ.logout()">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
   </button>
   <button id="themeFab" class="pz-daynight" type="button" aria-label="Basculer thème" onclick="PZ.toggleTheme()">
     <span class="dn-stars"></span>
@@ -385,8 +386,8 @@
   </footer>
 
 </div>
-<script src="assets/plazma.js?v=20260929j"></script>
-<script src="assets/champions.js?v=20260929j"></script>
+<script src="assets/plazma.js?v=20260929k"></script>
+<script src="assets/champions.js?v=20260929k"></script>
 <script>
   /* Normalise la longueur des tracés d'icônes → tracé uniforme au survol */
   document.querySelectorAll('.tool-ico svg *').forEach(el => el.setAttribute('pathLength', '100'));

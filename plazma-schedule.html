@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929j">
+<link rel="stylesheet" href="assets/theme.css?v=20260929k">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -57,6 +57,11 @@
   .slot{position:relative;padding:9px 10px;margin-bottom:6px;border-radius:8px;cursor:pointer;
     background:var(--surface-2);border:1px solid var(--border);border-left:3px solid var(--sc,var(--accent));transition:background .12s}
   .slot:hover{background:var(--elevated)}
+  .slot[draggable="true"]{cursor:grab}
+  .slot.dragging{opacity:.4;cursor:grabbing}
+  .day.drag-over{background:color-mix(in srgb,var(--accent) 10%,transparent);outline:2px dashed color-mix(in srgb,var(--accent) 55%,transparent);outline-offset:-3px;border-radius:8px}
+  .slot-grip{position:absolute;top:6px;left:5px;color:var(--muted);opacity:0;transition:opacity .12s;font-size:11px;line-height:1;pointer-events:none}
+  .slot[draggable="true"]:hover .slot-grip{opacity:.55}
   .slot-type{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
     padding:2px 7px;border-radius:5px;margin-bottom:5px;color:var(--sc);background:color-mix(in srgb,var(--sc) 15%,transparent)}
   .slot-time{font-size:11px;color:var(--muted);margin-bottom:2px}
@@ -201,7 +206,7 @@
   </div>
 </div>
 
-<script src="assets/plazma.js?v=20260929j" data-section="planning"></script>
+<script src="assets/plazma.js?v=20260929k" data-section="planning"></script>
 <script>
 PZ.mountNav('schedule', '#nav');
 const db = PZ.db;
@@ -242,6 +247,7 @@ function slotTimeText(s){
 
 let schedule = {};
 let templates = {};
+let dragSrc = null;   // {day, idx} du créneau en cours de glisser-déposer
 
 // ---- Semaine ----
 function getWeekNum(d){ d=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); const day=d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-day); const y1=new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d-y1)/86400000)+1)/7); }
@@ -278,19 +284,37 @@ function renderGrid(){
     slots.sort((a,b) => slotStartKey(a).localeCompare(slotStartKey(b)));   // tri par heure de début
     const col = document.createElement('div');
     col.className = 'day' + (isCurrentWeek && di===ti ? ' today' : '');
+    col.dataset.day = day;
     col.innerHTML = `<div class="day-name">${day}</div>`;
     const editable = canEdit();
+    if(editable){
+      // Zone de dépôt : accueille un créneau glissé depuis un autre jour.
+      col.addEventListener('dragover', e => { if(dragSrc){ e.preventDefault(); col.classList.add('drag-over'); } });
+      col.addEventListener('dragleave', e => { if(!col.contains(e.relatedTarget)) col.classList.remove('drag-over'); });
+      col.addEventListener('drop', e => {
+        e.preventDefault(); col.classList.remove('drag-over');
+        if(!dragSrc) return;
+        const tgt = col.dataset.day;
+        if(tgt === dragSrc.day){ dragSrc = null; return; }   // même jour : rien à faire (tri auto)
+        const moved = (schedule[dragSrc.day]||[]).splice(dragSrc.idx, 1)[0];
+        if(moved){ (schedule[tgt] = schedule[tgt] || []).push(moved); renderGrid(); sync.save(); if(window.PZ&&PZ.toast) PZ.toast('Créneau déplacé vers '+tgt+'.'); }
+        dragSrc = null;
+      });
+    }
     slots.forEach((slot, idx) => {
       const t = getType(slot.type);
       const time = slotTimeText(slot);
       const el = document.createElement('div');
       el.className = 'slot';
       el.style.setProperty('--sc', t.color);
-      el.innerHTML = `${editable ? '<button class="slot-del" data-noexport title="Supprimer">✕</button>' : ''}
+      el.innerHTML = `${editable ? '<button class="slot-del" data-noexport title="Supprimer">✕</button><span class="slot-grip" data-noexport>⠿</span>' : ''}
         <span class="slot-type">${t.label}</span>
         ${time ? `<div class="slot-time">⏱ ${time}</div>` : ''}
         ${slot.note ? `<div class="slot-note">${escHtml(slot.note)}</div>` : ''}`;
       if(editable){
+        el.draggable = true;
+        el.addEventListener('dragstart', e => { dragSrc = {day, idx}; el.classList.add('dragging'); try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain', day+':'+idx); }catch(_){}; });
+        el.addEventListener('dragend', () => { el.classList.remove('dragging'); document.querySelectorAll('.day.drag-over').forEach(d=>d.classList.remove('drag-over')); dragSrc = null; });
         el.addEventListener('click', e => { if(!e.target.classList.contains('slot-del')) openModal(day, idx); });
         el.querySelector('.slot-del').addEventListener('click', e => { e.stopPropagation(); schedule[day].splice(idx,1); renderGrid(); sync.save(); });
       } else { el.style.cursor = 'default'; }

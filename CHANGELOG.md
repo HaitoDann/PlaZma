@@ -17,6 +17,14 @@ bas de la fenêtre **Paramètres**.
 
 ## 2.x — Refonte visuelle & administration
 
+### 2.7.0 — Planning, idées & épuration
+- **Drag & drop** dans le planning : glisse un créneau d'un jour à l'autre.
+- **Boîte à idées** enrichie : catégories, compteur de caractères et onglet
+  « Mes idées » (historique local).
+- **Page de maintenance** redessinée (logo animé, carte, cohérence visuelle).
+- Retrait de la fenêtre **Paramètres** (qualité), désormais 100 % automatique.
+- **Bouton de déconnexion** ajouté sur l'accueil.
+
 ### 2.6.0 — Gestion des comptes & roster
 - Refonte de la page **Comptes & accès** (avatars, recherche, badges, modales) —
   corrige le bug des variables CSS `--line`/`--card`.

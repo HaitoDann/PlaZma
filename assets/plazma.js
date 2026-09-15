@@ -55,7 +55,7 @@
   // ---- Version de l'application (SemVer) ----
   // MAJEUR.MINEUR.CORRECTIF — MINEUR à chaque lot de fonctionnalités,
   // CORRECTIF pour les corrections. Affichée discrètement dans Paramètres.
-  const VERSION = '2.6.0';
+  const VERSION = '2.7.0';
 
   // ---- Niveau de performance : adapte la densité des effets ----
   // Full sur machine puissante (rendu identique), réduit sur mobile/appareil
@@ -444,7 +444,6 @@
     const who = profile
       ? `<div class="pz-nav-right">${themeBtn}` +
         `<button class="pz-nav-ico" type="button" onclick="PZ.openIdeas()" title="Boîte à idées" aria-label="Boîte à idées"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a6 6 0 0 0-4 10c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5a6 6 0 0 0-4-10Z"/></svg></button>` +
-        `<button class="pz-nav-ico" type="button" onclick="PZ.openSettings()" title="Paramètres" aria-label="Paramètres"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>` +
         `<button class="pz-nav-user" type="button" onclick="PZ.changePassword()" title="Changer mon mot de passe">${esc(profile.name || profile.username || '')}</button>` +
         `<button class="pz-logout" type="button" onclick="PZ.logout()" title="Se déconnecter" aria-label="Se déconnecter"><svg class="pz-power" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path class="pz-power-ring" d="M7.8 6.3a7 7 0 1 0 8.4 0"/><line class="pz-power-bar" x1="12" y1="3.2" x2="12" y2="11.5"/></svg></button></div>`
       : `<div class="pz-nav-right">${themeBtn}</div>`;
@@ -695,34 +694,19 @@
     return { ov, close };
   }
 
-  // ---- Paramètres (qualité du site) — accessible à tous ----
-  function setQuality(q) { try { localStorage.setItem('pz-quality', q); } catch (e) {} location.reload(); }
-  function openSettings() {
-    let cur = 'auto'; try { cur = localStorage.getItem('pz-quality') || 'auto'; } catch (e) {}
-    const opts = [['auto', 'Auto'], ['low', 'Faible'], ['medium', 'Moyen'], ['high', 'Élevé']];
-    const seg = opts.map(([v, l]) => '<button type="button" data-q="' + v + '" style="flex:1;padding:9px 6px;border:0;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;border-radius:9px;' + (cur === v ? 'background:var(--accent-soft);color:var(--accent)' : 'background:transparent;color:var(--muted)') + '">' + l + '</button>').join('');
-    const { ov, close } = _overlay(
-      '<h3 style="font-family:var(--font-display,inherit);margin:0 0 4px;font-size:17px">Paramètres</h3>' +
-      '<p style="color:var(--muted);font-size:12.5px;margin:0 0 14px">Qualité visuelle du site (particules, étoiles, effets).</p>' +
-      '<div style="display:flex;gap:4px;background:var(--surface-2);border:1px solid var(--border-2);border-radius:11px;padding:3px">' + seg + '</div>' +
-      '<p style="color:var(--muted);font-size:11.5px;line-height:1.5;margin:11px 0 0">« Auto » s\'adapte à la puissance de ton appareil (actuellement : <b style="color:var(--dim)">' + PERF + '</b>). Choisis « Faible » si le site rame. La page se recharge au changement.</p>' +
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:18px">' +
-      '<span style="font-size:11px;color:var(--muted);opacity:.7;letter-spacing:.02em">ARCHI v' + VERSION + '</span>' +
-      '<button type="button" id="pz_set_close" style="padding:8px 16px;border-radius:9px;border:1px solid var(--border-2);background:transparent;color:var(--dim);font-size:13px;cursor:pointer">Fermer</button></div>'
-    );
-    ov.querySelectorAll('[data-q]').forEach(b => b.addEventListener('click', () => {
-      let c = 'auto'; try { c = localStorage.getItem('pz-quality') || 'auto'; } catch (e) {}
-      if (c === b.dataset.q) { close(); return; }
-      setQuality(b.dataset.q);
-    }));
-    ov.querySelector('#pz_set_close').addEventListener('click', close);
-  }
-
   // ---- Boîte à idées — tout utilisateur peut proposer ----
-  function submitIdea(text) {
+  const IDEA_CATS = [
+    ['feature', '✨ Fonctionnalité'], ['improve', '⚡ Amélioration'],
+    ['bug', '🐞 Bug / souci'], ['team', '🎯 Équipe / staff'], ['other', '💬 Autre']
+  ];
+  const IDEA_CAT_LABEL = Object.fromEntries(IDEA_CATS);
+  function _myIdeas() { try { return JSON.parse(localStorage.getItem('pz-my-ideas') || '[]') || []; } catch (e) { return []; } }
+  function _pushMyIdea(o) { try { const a = _myIdeas(); a.unshift(o); localStorage.setItem('pz-my-ideas', JSON.stringify(a.slice(0, 50))); } catch (e) {} }
+  function submitIdea(text, meta) {
     const t = (text || '').trim();
     if (!db) return Promise.reject(new Error('offline'));
     if (!t) return Promise.reject(new Error('vide'));
+    const category = (meta && meta.category) || 'other';
     _bumpUsage('writes', 1);
     // Compteur global d'idées (pour le badge « non lues » des admins).
     try {
@@ -732,10 +716,12 @@
     } catch (e) {}
     return db.collection('plazma-ideas').add({
       text: t.slice(0, 2000),
+      category,
+      status: 'new',
       author: authUser ? authUser.uid : null,
       authorName: (profile && (profile.name || profile.username)) || 'Anonyme',
       ts: Date.now()
-    });
+    }).then(ref => { _pushMyIdea({ text: t.slice(0, 500), category, ts: Date.now() }); return ref; });
   }
   // Badge « idées non lues » pour les admins (Système). Lit le compteur global.
   function _setFabIdeaBadge() {
@@ -767,25 +753,73 @@
     try { localStorage.setItem('pz-ideas-seen', String(total || 0)); } catch (e) {}
     _ideaUnread = 0; refreshNav(); _setFabIdeaBadge();
   }
+  const MAX_IDEA = 500;
   function openIdeas() {
+    const inp = 'width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;border:1px solid var(--border-2);background:var(--surface-2);color:var(--text);font-family:inherit;font-size:14px';
+    const cats = IDEA_CATS.map(([v, l], i) =>
+      '<button type="button" class="pz-idea-cat" data-cat="' + v + '"' +
+      ' style="padding:6px 11px;border-radius:20px;border:1px solid var(--border-2);cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;' +
+      (i === 0 ? 'background:var(--accent-soft);color:var(--accent);border-color:transparent' : 'background:transparent;color:var(--muted)') + '">' + l + '</button>').join('');
+    const tab = (id, l, on) => '<button type="button" class="pz-idea-tab" data-tab="' + id + '" style="flex:1;padding:9px 6px;border:0;background:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;border-bottom:2px solid ' + (on ? 'var(--accent)' : 'transparent') + ';color:' + (on ? 'var(--text)' : 'var(--muted)') + '">' + l + '</button>';
     const { ov, close } = _overlay(
-      '<h3 style="font-family:var(--font-display,inherit);margin:0 0 4px;font-size:17px">💡 Boîte à idées</h3>' +
-      '<p style="color:var(--muted);font-size:12.5px;margin:0 0 12px">Une idée, un axe d\'amélioration pour ARCHI ou l\'équipe ? Partage-la, le staff la verra.</p>' +
-      '<textarea id="pz_idea" rows="4" placeholder="Ton idée…" style="width:100%;box-sizing:border-box;padding:11px 13px;border-radius:11px;border:1px solid var(--border-2);background:var(--surface-2);color:var(--text);font-family:inherit;font-size:14px;resize:vertical"></textarea>' +
-      '<div id="pz_idea_msg" style="font-size:12px;min-height:16px;margin-top:8px;color:var(--muted)"></div>' +
-      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">' +
-      '<button type="button" id="pz_idea_cancel" style="padding:8px 14px;border-radius:9px;border:1px solid var(--border-2);background:transparent;color:var(--dim);font-size:13px;cursor:pointer">Annuler</button>' +
+      '<h3 style="font-family:var(--font-display,inherit);margin:0 0 3px;font-size:17px">💡 Boîte à idées</h3>' +
+      '<p style="color:var(--muted);font-size:12.5px;margin:0 0 12px">Propose une idée, un axe d\'amélioration ou signale un souci. Le staff les consulte dans l\'administration.</p>' +
+      '<div style="display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:14px">' + tab('new', 'Proposer', true) + tab('mine', 'Mes idées', false) + '</div>' +
+      // --- Onglet Proposer ---
+      '<div id="pz_tab_new">' +
+      '<div style="font-size:12px;color:var(--dim);font-weight:600;margin-bottom:6px">Catégorie</div>' +
+      '<div id="pz_idea_cats" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:13px">' + cats + '</div>' +
+      '<div style="font-size:12px;color:var(--dim);font-weight:600;margin-bottom:6px">Ton idée</div>' +
+      '<textarea id="pz_idea" rows="4" maxlength="' + MAX_IDEA + '" placeholder="Décris ton idée le plus clairement possible…" style="' + inp + ';resize:vertical"></textarea>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">' +
+      '<span id="pz_idea_msg" style="font-size:12px;color:var(--muted)"></span>' +
+      '<span id="pz_idea_count" style="font-size:11px;color:var(--muted)">0/' + MAX_IDEA + '</span></div>' +
+      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">' +
+      '<button type="button" id="pz_idea_cancel" style="padding:8px 14px;border-radius:9px;border:1px solid var(--border-2);background:transparent;color:var(--dim);font-size:13px;cursor:pointer">Fermer</button>' +
       '<button type="button" id="pz_idea_send" style="padding:8px 16px;border-radius:9px;border:0;background:var(--accent);color:#04252d;font-weight:700;font-size:13px;cursor:pointer">Envoyer</button>' +
-      '</div>', 400
+      '</div></div>' +
+      // --- Onglet Mes idées ---
+      '<div id="pz_tab_mine" style="display:none"><div id="pz_mine_list"></div></div>', 430
     );
+    let cat = 'feature';
     const msg = t => { const m = ov.querySelector('#pz_idea_msg'); if (m) m.textContent = t; };
+    ov.querySelectorAll('.pz-idea-cat').forEach(b => b.addEventListener('click', () => {
+      cat = b.dataset.cat;
+      ov.querySelectorAll('.pz-idea-cat').forEach(x => { const on = x === b;
+        x.style.background = on ? 'var(--accent-soft)' : 'transparent';
+        x.style.color = on ? 'var(--accent)' : 'var(--muted)';
+        x.style.borderColor = on ? 'transparent' : 'var(--border-2)'; });
+    }));
+    const ta = ov.querySelector('#pz_idea'); const cnt = ov.querySelector('#pz_idea_count');
+    if (ta) { ta.addEventListener('input', () => { cnt.textContent = ta.value.length + '/' + MAX_IDEA; }); ta.focus(); }
     ov.querySelector('#pz_idea_cancel').addEventListener('click', close);
-    const ta = ov.querySelector('#pz_idea'); if (ta) ta.focus();
+    // Onglets
+    function renderMine() {
+      const list = _myIdeas();
+      const host = ov.querySelector('#pz_mine_list');
+      if (!list.length) { host.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:26px 10px;border:1px dashed var(--border);border-radius:12px">Tu n\'as pas encore proposé d\'idée.</div>'; return; }
+      host.innerHTML = list.map(o => {
+        const d = new Date(o.ts); const when = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+        return '<div style="border:1px solid var(--border);border-radius:11px;padding:10px 13px;margin-bottom:8px;background:var(--surface)">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:5px">' +
+          '<span style="font-size:11px;font-weight:700;color:var(--accent)">' + (IDEA_CAT_LABEL[o.category] || '💬 Autre') + '</span>' +
+          '<span style="font-size:11px;color:var(--muted)">' + when + '</span></div>' +
+          '<div style="font-size:13px;color:var(--text);line-height:1.45;white-space:pre-wrap">' + escHtml(o.text) + '</div></div>';
+      }).join('');
+    }
+    ov.querySelectorAll('.pz-idea-tab').forEach(t => t.addEventListener('click', () => {
+      const id = t.dataset.tab;
+      ov.querySelectorAll('.pz-idea-tab').forEach(x => { const on = x === t;
+        x.style.borderBottomColor = on ? 'var(--accent)' : 'transparent'; x.style.color = on ? 'var(--text)' : 'var(--muted)'; });
+      ov.querySelector('#pz_tab_new').style.display = id === 'new' ? '' : 'none';
+      ov.querySelector('#pz_tab_mine').style.display = id === 'mine' ? '' : 'none';
+      if (id === 'mine') renderMine();
+    }));
     ov.querySelector('#pz_idea_send').addEventListener('click', () => {
-      const v = ov.querySelector('#pz_idea').value;
+      const v = ta.value;
       if (!v.trim()) { msg('Écris ton idée d\'abord.'); return; }
       const btn = ov.querySelector('#pz_idea_send'); btn.disabled = true; btn.textContent = '…';
-      submitIdea(v)
+      submitIdea(v, { category: cat })
         .then(() => { close(); if (typeof toast === 'function') toast('Merci ! Ton idée a été envoyée.', 'ok'); })
         .catch(() => { msg('Envoi impossible. Réessaie.'); btn.disabled = false; btn.textContent = 'Envoyer'; });
     });
@@ -852,7 +886,13 @@
     const ov = document.createElement('div');
     ov.id = 'pz-maint';
     ov.className = 'pz-maint';
-    ov.innerHTML = '<div class="pz-maint-box"><div class="pz-maint-ico">🛠️</div><h2>Maintenance en cours</h2><p>ARCHI est momentanément en maintenance. Reviens dans quelques instants.</p></div>';
+    ov.innerHTML = '<div class="pz-maint-box">' +
+      '<div class="pz-maint-logo"><img src="assets/logo-plazma.png" alt="ARCHI"></div>' +
+      '<span class="pz-maint-tag">Maintenance</span>' +
+      '<h2>ARCHI revient vite</h2>' +
+      '<p>Le staff effectue une mise à jour. Le site sera de nouveau accessible dans quelques instants.</p>' +
+      '<div class="pz-maint-dots"><span></span><span></span><span></span></div>' +
+      '<div class="pz-maint-foot">PlaZma Esport · ARCHI v' + VERSION + '</div></div>';
     document.body.appendChild(ov);
   }
   async function discordSend(url, payload) {
@@ -971,7 +1011,7 @@
     mountNav, sync, status, nowTime, relTime, loadingDone,
     exportPNG, backup, importFile, logout, changePassword,
     toggleTheme, toast, perf: PERF,
-    openSettings, openIdeas, setQuality, submitIdea, markIdeasSeen,
+    openIdeas, submitIdea, markIdeasSeen,
     // Suivi d'usage & quotas
     getUsage, flushUsage, SPARK_LIMITS,
     // Configuration du site
