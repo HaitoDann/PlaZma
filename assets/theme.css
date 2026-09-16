@@ -234,6 +234,435 @@ h3{font-size:1.02rem}
 .btn-sm{padding:6px 11px;font-size:12px}
 .btn-icon{padding:8px;width:34px;height:34px}
 
+/* ============================================================
+   ANIMATIONS DE BOUTONS ÉVOLUÉES (style Archi)
+   Chaque icône SVG peut être décomposée en paths animables.
+   Inspiré du bouton déconnexion (pz-power-bar / pz-power-ring).
+   ============================================================ */
+
+/* ---- Bouton Cœur (Like/Favoris) ---- */
+.pz-heart{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--dim);font-size:15px;line-height:1;
+  transition:color .18s,background .18s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
+}
+.pz-heart:hover{
+  color:var(--err);background:var(--surface-3,var(--surface-2));
+  transform:scale(1.1);
+  box-shadow:0 0 14px rgba(239,68,68,.4);
+}
+.pz-heart:active{transform:scale(.92)}
+/* Animation du cœur : battement + remplissage progressif */
+.pz-heart-path{transform-origin:center;transition:transform .2s, fill .3s}
+.pz-heart:hover .pz-heart-path{animation:pz-heart-beat 1.2s ease-in-out infinite, pz-heart-fill 0.4s ease-out forwards}
+@keyframes pz-heart-beat{
+  0%,100%{transform:scale(1)}
+  25%{transform:scale(1.15)}
+  50%{transform:scale(1)}
+  75%{transform:scale(1.08)}
+}
+@keyframes pz-heart-fill{
+  0%{fill:transparent}
+  100%{fill:currentColor}
+}
+
+/* ---- Bouton Étoile (Favoris/Star) ---- */
+.pz-star-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--dim);font-size:15px;line-height:1;
+  transition:color .18s,background .18s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
+}
+.pz-star-btn:hover{
+  color:var(--accent);background:var(--surface-3,var(--surface-2));
+  transform:scale(1.1);
+  box-shadow:0 0 14px rgba(34,211,238,.4);
+}
+.pz-star-btn:active{transform:scale(.92)}
+/* Animation étoile : scintillement + rotation légère */
+.pz-star-btn:hover .pz-star-path{animation:pz-star-spin 1.5s ease-in-out infinite, pz-star-glow 1s ease-in-out infinite}
+.pz-star-path{transform-origin:center;transition:transform .2s}
+@keyframes pz-star-spin{
+  0%,100%{transform:rotate(0) scale(1)}
+  50%{transform:rotate(10deg) scale(1.05)}
+}
+@keyframes pz-star-glow{
+  0%,100%{filter:drop-shadow(0 0 0 rgba(34,211,238,0))}
+  50%{filter:drop-shadow(0 0 8px rgba(34,211,238,.8))}
+}
+
+/* ---- Bouton Coche (Validation/Success) ---- */
+.pz-check-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--dim);font-size:15px;line-height:1;
+  transition:color .18s,background .18s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
+}
+.pz-check-btn:hover{
+  color:var(--ok);background:var(--surface-3,var(--surface-2));
+  transform:scale(1.1);
+  box-shadow:0 0 14px rgba(34,197,94,.4);
+}
+.pz-check-btn:active{transform:scale(.92)}
+/* Animation coche : dessin progressif + rebond */
+.pz-check-path{stroke-dasharray:26;stroke-dashoffset:26;transition:stroke-dashoffset .4s ease, transform .2s}
+.pz-check-btn:hover .pz-check-path{animation:pz-check-draw 0.5s ease forwards, pz-check-bounce 0.6s ease-in-out infinite}
+@keyframes pz-check-draw{to{stroke-dashoffset:0}}
+@keyframes pz-check-bounce{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.15)}
+}
+
+/* ---- Bouton Plus (Ajout) ---- */
+.pz-plus-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--dim);font-size:15px;line-height:1;
+  transition:color .18s,background .18s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
+}
+.pz-plus-btn:hover{
+  color:var(--accent);background:var(--surface-3,var(--surface-2));
+  transform:scale(1.1) rotate(45deg);
+  box-shadow:0 0 14px rgba(34,211,238,.4);
+}
+.pz-plus-btn:active{transform:scale(.92) rotate(45deg)}
+/* Animation plus : rotation + transformation en croix */
+.pz-plus-line{transform-origin:center;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.pz-plus-btn:hover .pz-plus-line-horz{animation:pz-plus-to-cross 0.3s cubic-bezier(.34,1.56,.64,1) forwards}
+.pz-plus-btn:hover .pz-plus-line-vert{animation:pz-plus-to-cross 0.3s cubic-bezier(.34,1.56,.64,1) forwards 0.1s}
+@keyframes pz-plus-to-cross{
+  0%{transform:scale(1)}
+  100%{transform:scale(1) rotate(90deg)}
+}
+
+/* ---- Bouton Paramètres (Rouage) ---- */
+.pz-gear-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--dim);font-size:15px;line-height:1;
+  transition:color .18s,background .18s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
+}
+.pz-gear-btn:hover{
+  color:var(--accent);background:var(--surface-3,var(--surface-2));
+  transform:scale(1.1);
+  box-shadow:0 0 14px rgba(34,211,238,.4);
+}
+.pz-gear-btn:active{transform:scale(.92)}
+/* Animation rouage : rotation continue + dents qui apparaissent */
+.pz-gear-btn:hover .pz-gear-path{animation:pz-gear-spin 2s linear infinite}
+.pz-gear-path{transform-origin:center;transition:transform .2s}
+@keyframes pz-gear-spin{to{transform:rotate(360deg)}}
+
+/* ---- Bouton Corbeille (Suppression) ---- */
+.pz-trash-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--dim);font-size:15px;line-height:1;
+  transition:color .18s,background .18s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
+}
+.pz-trash-btn:hover{
+  color:var(--err);background:var(--surface-3,var(--surface-2));
+  transform:scale(1.1);
+  box-shadow:0 0 14px rgba(239,68,68,.4);
+}
+.pz-trash-btn:active{transform:scale(.92)}
+/* Animation corbeille : couvercle qui s'ouvre + contenu qui tremble */
+.pz-trash-lid{transform-origin:top center;transition:transform .2s}
+.pz-trash-btn:hover .pz-trash-lid{animation:pz-trash-lid-open 0.4s cubic-bezier(.34,1.56,.64,1) forwards}
+.pz-trash-can{transition:transform .2s}
+.pz-trash-btn:hover .pz-trash-can{animation:pz-trash-shake 0.5s ease-in-out infinite}
+@keyframes pz-trash-lid-open{to{transform:rotate(-45deg) translateY(-2px)}}
+@keyframes pz-trash-shake{
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-2px)}
+  75%{transform:translateX(2px)}
+}
+
+/* ---- Bouton Téléchargement (Flèche vers le bas) ---- */
+.pz-download-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--dim);font-size:15px;line-height:1;
+  transition:color .18s,background .18s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
+}
+.pz-download-btn:hover{
+  color:var(--accent);background:var(--surface-3,var(--surface-2));
+  transform:scale(1.1);
+  box-shadow:0 0 14px rgba(34,211,238,.4);
+}
+.pz-download-btn:active{transform:scale(.92)}
+/* Animation flèche : la flèche descend puis remonte */
+.pz-download-arrow{transform-origin:center top;transition:transform .2s}
+.pz-download-btn:hover .pz-download-arrow{animation:pz-download-bounce 1s ease-in-out infinite}
+@keyframes pz-download-bounce{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(4px)}
+}
+
+/* ---- Bouton Recherche (Loupe) ---- */
+.pz-search-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--dim);font-size:15px;line-height:1;
+  transition:color .18s,background .18s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
+}
+.pz-search-btn:hover{
+  color:var(--accent);background:var(--surface-3,var(--surface-2));
+  transform:scale(1.1);
+  box-shadow:0 0 14px rgba(34,211,238,.4);
+}
+.pz-search-btn:active{transform:scale(.92)}
+/* Animation loupe : le cercle de la loupe pulse */
+.pz-search-circle{transform-origin:center;transition:transform .2s}
+.pz-search-btn:hover .pz-search-circle{animation:pz-search-pulse 1.2s ease-in-out infinite}
+@keyframes pz-search-pulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.1)}
+}
+
+/* ---- Bouton Notification (Cloche) ---- */
+.pz-bell-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--dim);font-size:15px;line-height:1;
+  transition:color .18s,background .18s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
+}
+.pz-bell-btn:hover{
+  color:var(--accent);background:var(--surface-3,var(--surface-2));
+  transform:scale(1.1);
+  box-shadow:0 0 14px rgba(34,211,238,.4);
+}
+.pz-bell-btn:active{transform:scale(.92)}
+/* Animation cloche : la cloche oscille comme si elle sonnait */
+.pz-bell-btn:hover .pz-bell-path{animation:pz-bell-ring 0.8s ease-in-out infinite}
+.pz-bell-path{transform-origin:center bottom;transition:transform .2s}
+@keyframes pz-bell-ring{
+  0%,100%{transform:rotate(0)}
+  25%{transform:rotate(-15deg)}
+  75%{transform:rotate(15deg)}
+}
+
+/* ---- Bouton Enveloppe (Message) ---- */
+.pz-mail-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--dim);font-size:15px;line-height:1;
+  transition:color .18s,background .18s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
+}
+.pz-mail-btn:hover{
+  color:var(--accent);background:var(--surface-3,var(--surface-2));
+  transform:scale(1.1);
+  box-shadow:0 0 14px rgba(34,211,238,.4);
+}
+.pz-mail-btn:active{transform:scale(.92)}
+/* Animation enveloppe : le rabat s'ouvre */
+.pz-mail-flap{transform-origin:top center;transition:transform .2s}
+.pz-mail-btn:hover .pz-mail-flap{animation:pz-mail-open 0.5s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes pz-mail-open{to{transform:rotate(-45deg)}}
+
+/* ---- Bouton Flèche Gauche (Retour) ---- */
+.pz-back-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--dim);font-size:15px;line-height:1;
+  transition:color .18s,background .18s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
+}
+.pz-back-btn:hover{
+  color:var(--accent);background:var(--surface-3,var(--surface-2));
+  transform:translateX(-4px);
+  box-shadow:0 0 14px rgba(34,211,238,.4);
+}
+.pz-back-btn:active{transform:translateX(0)}
+/* Animation flèche : la flèche recule puis avance */
+.pz-back-arrow{transform-origin:center;transition:transform .2s}
+.pz-back-btn:hover .pz-back-arrow{animation:pz-back-slide 0.8s ease-in-out infinite}
+@keyframes pz-back-slide{
+  0%,100%{transform:translateX(0)}
+  50%{transform:translateX(-3px)}
+}
+
+/* ---- Bouton Flèche Droite (Suivant) ---- */
+.pz-next-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--dim);font-size:15px;line-height:1;
+  transition:color .18s,background .18s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
+}
+.pz-next-btn:hover{
+  color:var(--accent);background:var(--surface-3,var(--surface-2));
+  transform:translateX(4px);
+  box-shadow:0 0 14px rgba(34,211,238,.4);
+}
+.pz-next-btn:active{transform:translateX(0)}
+/* Animation flèche : la flèche avance puis recule */
+.pz-next-arrow{transform-origin:center;transition:transform .2s}
+.pz-next-btn:hover .pz-next-arrow{animation:pz-next-slide 0.8s ease-in-out infinite}
+@keyframes pz-next-slide{
+  0%,100%{transform:translateX(0)}
+  50%{transform:translateX(3px)}
+}
+
+/* ---- Bouton Crayon (Éditer) ---- */
+.pz-edit-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--dim);font-size:15px;line-height:1;
+  transition:color .18s,background .18s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
+}
+.pz-edit-btn:hover{
+  color:var(--warn);background:var(--surface-3,var(--surface-2));
+  transform:scale(1.1);
+  box-shadow:0 0 14px rgba(245,158,11,.4);
+}
+.pz-edit-btn:active{transform:scale(.92)}
+/* Animation crayon : la pointe du crayon écrit (tracé) */
+.pz-edit-tip{transform-origin:center;transition:transform .2s}
+.pz-edit-btn:hover .pz-edit-tip{animation:pz-edit-write 1s ease-in-out infinite}
+@keyframes pz-edit-write{
+  0%,100%{transform:translateY(0) rotate(0)}
+  50%{transform:translateY(-2px) rotate(5deg)}
+}
+
+/* ---- Bouton Œil (Visibilité) ---- */
+.pz-eye-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--dim);font-size:15px;line-height:1;
+  transition:color .18s,background .18s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
+}
+.pz-eye-btn:hover{
+  color:var(--accent);background:var(--surface-3,var(--surface-2));
+  transform:scale(1.1);
+  box-shadow:0 0 14px rgba(34,211,238,.4);
+}
+.pz-eye-btn:active{transform:scale(.92)}
+/* Animation œil : la pupille se dilate */
+.pz-eye-pupil{transform-origin:center;transition:transform .2s}
+.pz-eye-btn:hover .pz-eye-pupil{animation:pz-eye-dilate 1.2s ease-in-out infinite}
+@keyframes pz-eye-dilate{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.2)}
+}
+
+/* ---- Bouton Cadenas (Verrouillage) ---- */
+.pz-lock-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--dim);font-size:15px;line-height:1;
+  transition:color .18s,background .18s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
+}
+.pz-lock-btn:hover{
+  color:var(--accent);background:var(--surface-3,var(--surface-2));
+  transform:scale(1.1);
+  box-shadow:0 0 14px rgba(34,211,238,.4);
+}
+.pz-lock-btn:active{transform:scale(.92)}
+/* Animation cadenas : le cadenas se verrouille (animation de clic) */
+.pz-lock-shackle{transform-origin:center;transition:transform .2s}
+.pz-lock-btn:hover .pz-lock-shackle{animation:pz-lock-close 0.8s ease-in-out infinite}
+@keyframes pz-lock-close{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-2px)}
+}
+
+/* ---- Bouton Éclair (Rapide/Action) ---- */
+.pz-bolt-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--dim);font-size:15px;line-height:1;
+  transition:color .18s,background .18s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
+}
+.pz-bolt-btn:hover{
+  color:var(--accent);background:var(--surface-3,var(--surface-2));
+  transform:scale(1.1);
+  box-shadow:0 0 14px rgba(34,211,238,.4);
+}
+.pz-bolt-btn:active{transform:scale(.92)}
+/* Animation éclair : l'éclair zappe (clignotement) */
+.pz-bolt-path{transition:opacity .2s}
+.pz-bolt-btn:hover .pz-bolt-path{animation:pz-bolt-zap 0.6s ease-in-out infinite}
+@keyframes pz-bolt-zap{
+  0%,100%{opacity:1}
+  50%{opacity:.4}
+}
+
+/* ---- Bouton Cœur Brisé (Dislike) ---- */
+.pz-heart-broken-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--dim);font-size:15px;line-height:1;
+  transition:color .18s,background .18s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
+}
+.pz-heart-broken-btn:hover{
+  color:var(--err);background:var(--surface-3,var(--surface-2));
+  transform:scale(1.1);
+  box-shadow:0 0 14px rgba(239,68,68,.4);
+}
+.pz-heart-broken-btn:active{transform:scale(.92)}
+/* Animation cœur brisé : les morceaux se séparent */
+.pz-heart-broken-piece{transform-origin:center;transition:transform .2s}
+.pz-heart-broken-btn:hover .pz-heart-broken-piece-1{animation:pz-heart-break-left 0.8s ease-in-out infinite}
+.pz-heart-broken-btn:hover .pz-heart-broken-piece-2{animation:pz-heart-break-right 0.8s ease-in-out infinite}
+@keyframes pz-heart-break-left{
+  0%,100%{transform:translate(0,0) rotate(0)}
+  50%{transform:translate(-3px,2px) rotate(-15deg)}
+}
+@keyframes pz-heart-break-right{
+  0%,100%{transform:translate(0,0) rotate(0)}
+  50%{transform:translate(3px,2px) rotate(15deg)}
+}
+
+/* ---- Bouton Partage (Flèche en cercle) ---- */
+.pz-share-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--dim);font-size:15px;line-height:1;
+  transition:color .18s,background .18s,transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;
+}
+.pz-share-btn:hover{
+  color:var(--accent);background:var(--surface-3,var(--surface-2));
+  transform:scale(1.1);
+  box-shadow:0 0 14px rgba(34,211,238,.4);
+}
+.pz-share-btn:active{transform:scale(.92)}
+/* Animation partage : les flèches tournent */
+.pz-share-arrow{transform-origin:center;transition:transform .2s}
+.pz-share-btn:hover .pz-share-arrow-1{animation:pz-share-rotate-1 1.2s linear infinite}
+.pz-share-btn:hover .pz-share-arrow-2{animation:pz-share-rotate-2 1.2s linear infinite}
+@keyframes pz-share-rotate-1{to{transform:rotate(360deg)}}
+@keyframes pz-share-rotate-2{to{transform:rotate(-360deg)}}
+
+/* ============================================================
+   RESPONSIVE : désactive les animations si motion réduite
+   ============================================================ */
+@media (prefers-reduced-motion:reduce){
+  .pz-heart:hover .pz-heart-path,
+  .pz-star-btn:hover .pz-star-path,
+  .pz-check-btn:hover .pz-check-path,
+  .pz-plus-btn:hover .pz-plus-line-horz,
+  .pz-plus-btn:hover .pz-plus-line-vert,
+  .pz-gear-btn:hover .pz-gear-path,
+  .pz-trash-btn:hover .pz-trash-lid,
+  .pz-trash-btn:hover .pz-trash-can,
+  .pz-download-btn:hover .pz-download-arrow,
+  .pz-search-btn:hover .pz-search-circle,
+  .pz-bell-btn:hover .pz-bell-path,
+  .pz-mail-btn:hover .pz-mail-flap,
+  .pz-back-btn:hover .pz-back-arrow,
+  .pz-next-btn:hover .pz-next-arrow,
+  .pz-edit-btn:hover .pz-edit-tip,
+  .pz-eye-btn:hover .pz-eye-pupil,
+  .pz-lock-btn:hover .pz-lock-shackle,
+  .pz-bolt-btn:hover .pz-bolt-path,
+  .pz-heart-broken-btn:hover .pz-heart-broken-piece-1,
+  .pz-heart-broken-btn:hover .pz-heart-broken-piece-2,
+  .pz-share-btn:hover .pz-share-arrow-1,
+  .pz-share-btn:hover .pz-share-arrow-2{
+    animation:none
+  }
+}
+
 /* ---- Badges ---- */
 .badge{
   display:inline-flex;align-items:center;gap:5px;
