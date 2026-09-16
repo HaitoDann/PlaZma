@@ -968,3 +968,27 @@ body::after{
 /* Le nouveau thème est dévoilé par le cercle qui grandit, par-dessus l'ancien. */
 html.pz-theme-anim::view-transition-new(root){ z-index:9999 }
 html.pz-theme-anim::view-transition-old(root){ z-index:1 }
+
+/* ── Boutons-icônes animés (micro-animation au survol, façon bouton déconnexion) ── */
+.btn .ib{width:15px;height:15px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round;transform-box:fill-box;transform-origin:center;
+  transition:transform .2s ease}
+.btn-sm .ib{width:14px;height:14px}
+@media(prefers-reduced-motion:no-preference){
+  .btn:hover .ib-plus{animation:ib-plus .45s ease}
+  .btn:hover .ib-refresh{animation:ib-refresh .7s ease}
+  .btn:hover .ib-trash{animation:ib-wobble .5s ease}
+  .btn:hover .ib-send{animation:ib-send .55s ease}
+  .btn:hover .ib-save{animation:ib-pop .4s ease}
+  .btn:hover .ib-doc{animation:ib-pop .4s ease}
+  .btn:hover .ib-chart{animation:ib-pop .4s ease}
+  .btn:hover .ib-link{animation:ib-wobble .5s ease}
+  .btn:hover .ib-menu{animation:ib-pop .4s ease}
+  .btn:hover .ib-copy{animation:ib-pop .4s ease}
+  .btn:hover .ib-discord{animation:ib-send .55s ease}
+}
+@keyframes ib-plus   {from{transform:rotate(0)}to{transform:rotate(90deg)}}
+@keyframes ib-refresh{to{transform:rotate(360deg)}}
+@keyframes ib-wobble {0%,100%{transform:rotate(0)}25%{transform:rotate(-11deg)}75%{transform:rotate(11deg)}}
+@keyframes ib-send   {0%{transform:none}40%{transform:translate(3px,-3px)}100%{transform:none}}
+@keyframes ib-pop    {0%{transform:scale(1)}45%{transform:scale(1.18)}100%{transform:scale(1)}}

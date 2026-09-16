@@ -194,11 +194,11 @@
       <button class="side-tab red" id="sideRed" onclick="setPlazmaside('red')">PlaZma Red</button>
     </div>
     <span style="flex:1"></span>
-    <button class="btn btn-sm" onclick="copyComp()" id="btnCopy" data-tip="Copier la compo en texte">📋</button>
-    <button class="btn btn-sm" onclick="newDraft()" data-edit>＋ Nouvelle</button>
+    <button class="btn btn-sm" onclick="copyComp()" id="btnCopy" data-tip="Copier la compo en texte"><svg class="ib ib-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+    <button class="btn btn-sm" onclick="newDraft()" data-edit><svg class="ib ib-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nouvelle</button>
     <button class="btn btn-sm" onclick="openDrawer()">Historique <span id="draftCount" class="muted"></span></button>
-    <button class="btn btn-sm" onclick="openScoutModal()" data-edit>📥 Scouting</button>
-    <button class="btn btn-sm btn-danger" onclick="resetDraft()" data-edit>Vider</button>
+    <button class="btn btn-sm" onclick="openScoutModal()" data-edit><svg class="ib ib-doc" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Scouting</button>
+    <button class="btn btn-sm btn-danger" onclick="resetDraft()" data-edit><svg class="ib ib-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Vider</button>
   </div>
 
   <div class="scn-tabs" id="scnTabs"></div>
@@ -287,7 +287,7 @@
     <button class="btn btn-icon btn-ghost" onclick="closeDrawer()">✕</button>
   </div>
   <div style="padding:14px 14px 0">
-    <button class="btn btn-primary" style="width:100%" onclick="newDraft();closeDrawer()">＋ Nouvelle draft</button>
+    <button class="btn btn-primary" style="width:100%" onclick="newDraft();closeDrawer()"><svg class="ib ib-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nouvelle draft</button>
   </div>
   <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
 </div>
@@ -295,7 +295,7 @@
 <!-- Modal import scouting -->
 <div class="overlay" id="scoutOverlay">
   <div class="modal" style="width:480px">
-    <div class="modal-title">📥 Importer depuis Scouting</div>
+    <div class="modal-title"><svg class="ib ib-doc" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Importer depuis Scouting</div>
     <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Sélectionne une fiche pour pré-remplir l'équipe adverse et le nom du scénario.</p>
     <div id="scoutList" style="max-height:300px;overflow-y:auto"></div>
     <div class="modal-actions">
@@ -902,9 +902,9 @@ function renderScnTabs() {
   bar.innerHTML = scenarios.map((s, i) =>
     `<button class="scn-tab${i===curScn?' active':''}" data-i="${i}">${esc(s.name||'Draft '+(i+1))}</button>`
   ).join('')
-    + `<button class="btn btn-sm" id="scnNew" data-edit>＋</button>`
-    + `<button class="btn btn-sm" id="scnDup" data-edit>Dupliquer</button>`
-    + `<button class="btn btn-sm btn-danger" id="scnDel" data-edit>Supprimer</button>`;
+    + `<button class="btn btn-sm" id="scnNew" data-edit><svg class="ib ib-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>`
+    + `<button class="btn btn-sm" id="scnDup" data-edit><svg class="ib ib-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Dupliquer</button>`
+    + `<button class="btn btn-sm btn-danger" id="scnDel" data-edit><svg class="ib ib-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Supprimer</button>`;
   bar.querySelectorAll('.scn-tab').forEach(t => t.addEventListener('click', () => {
     curScn = +t.dataset.i; step = 0; renderAll();
   }));
@@ -1017,7 +1017,7 @@ async function loadDrawer() {
       </div></div>
       <div class="dr-actions">
         <button onclick="loadDraft('${doc.id}')">${active?'Modifier':'Ouvrir'}</button>
-        <button onclick="deleteDraft('${doc.id}',event)">Supprimer</button>
+        <button onclick="deleteDraft('${doc.id}',event)"><svg class="ib ib-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Supprimer</button>
       </div>`;
     el.querySelector('.dr-main').addEventListener('click', () => loadDraft(doc.id));
     list.appendChild(el);
