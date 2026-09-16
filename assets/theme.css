@@ -143,6 +143,11 @@ h3{font-size:1.02rem}
 }
 .pz-nav-ico:hover{color:var(--accent);background:var(--elevated);transform:translateY(-1px)}
 .pz-nav-ico:active{transform:translateY(0) scale(.94)}
+.pz-nav-ico svg{transition:transform .2s ease;transform-box:fill-box;transform-origin:center}
+@media(prefers-reduced-motion:no-preference){
+  .pz-nav-ico:hover svg{animation:fab-idea 1.1s ease-in-out infinite}
+}
+@keyframes fab-idea{0%,100%{transform:translateY(0) scale(1) rotate(0)}30%{transform:translateY(-2px) scale(1.1) rotate(-5deg)}65%{transform:translateY(0) scale(1.05) rotate(5deg)}}
 
 /* Badge « idées non lues » sur le bouton Système */
 .pz-idea-badge{
@@ -968,3 +973,86 @@ body::after{
 /* Le nouveau thème est dévoilé par le cercle qui grandit, par-dessus l'ancien. */
 html.pz-theme-anim::view-transition-new(root){ z-index:9999 }
 html.pz-theme-anim::view-transition-old(root){ z-index:1 }
+
+/* ── Boutons-icônes animés (micro-animation au survol, façon bouton déconnexion) ── */
+.btn .ib{width:15px;height:15px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round;transform-box:fill-box;transform-origin:center;
+  transition:transform .2s ease}
+.btn-sm .ib{width:14px;height:14px}
+/* Animations plus évoluées : mouvement continu tant que le bouton est survolé. */
+/* États de repos des sous-parties (invisibles/positionnées avant survol) */
+.ib-save .sv-check,.ib-refresh .rf-check{stroke:var(--ok);opacity:0;transform-box:fill-box;transform-origin:center}
+.ib-plus .pl-dot{transform-box:fill-box;transform-origin:center;opacity:0}
+.ib-plus .pl-cross,.ib-refresh .rf-arrows,.ib-save .sv-disk,.ib-copy .cp-front{transform-box:fill-box;transform-origin:center}
+.ib-history .hi-hand{transform-box:view-box;transform-origin:12px 12px}
+
+@media(prefers-reduced-motion:no-preference){
+  /* corbeille : couvercle s'ouvre, déchet tombe, couvercle se referme */
+  .btn:hover .ib-trash .tr-lid {animation:tr-lid  1.5s ease-in-out infinite}
+  .btn:hover .ib-trash .tr-item{animation:tr-item 1.5s ease-in-out infinite}
+  /* + : la croix tourne, un point apparaît (élément ajouté) */
+  .btn:hover .ib-plus .pl-cross{animation:pl-cross 1.3s ease-in-out infinite}
+  .btn:hover .ib-plus .pl-dot  {animation:pl-dot   1.3s ease-in-out infinite}
+  /* actualiser : les flèches tournent puis se figent sur un ✓ */
+  .btn:hover .ib-refresh .rf-arrows{animation:rf-spin  1.7s ease-in-out infinite}
+  .btn:hover .ib-refresh .rf-check {animation:rf-check 1.7s ease-in-out infinite}
+  /* enregistrer : la disquette s'efface, un ✓ vert apparaît */
+  .btn:hover .ib-save .sv-disk {animation:sv-disk  1.6s ease-in-out infinite}
+  .btn:hover .ib-save .sv-check{animation:sv-check 1.6s ease-in-out infinite}
+  /* historique : l'aiguille recule (rembobinage) */
+  .btn:hover .ib-history .hi-hand{animation:hi-hand 1.4s cubic-bezier(.5,0,.2,1) infinite}
+  /* copier : la feuille du dessus se détache et glisse */
+  .btn:hover .ib-copy .cp-front{animation:cp-front 1.3s ease-in-out infinite}
+  /* avion : décolle, sort du cadre, un nouveau réapparaît */
+  .btn:hover .ib-send,.btn:hover .ib-discord{animation:ib-send 1.2s ease-in-out infinite}
+  /* crayon : écrit */
+  .btn:hover .ib-pencil{animation:ib-pencil 1s ease-in-out infinite}
+  /* autres : mouvements simples */
+  .btn:hover .ib-doc  {animation:ib-bob   1s   ease-in-out infinite}
+  .btn:hover .ib-chart{animation:ib-chart 1s   ease-in-out infinite}
+  .btn:hover .ib-link {animation:ib-link  1.1s ease-in-out infinite}
+  .btn:hover .ib-menu {animation:ib-menu  .9s  ease-in-out infinite}
+}
+/* + : croix + point */
+@keyframes pl-cross{0%,100%{transform:rotate(0) scale(1)}45%{transform:rotate(90deg) scale(1.12)}}
+@keyframes pl-dot  {0%,35%{opacity:0;transform:scale(0)}55%{opacity:1;transform:scale(1)}82%,100%{opacity:0;transform:scale(.4)}}
+/* actualiser : flèches puis ✓ */
+@keyframes rf-spin {0%{transform:rotate(0);opacity:1}50%{transform:rotate(360deg);opacity:1}62%{opacity:0}100%{transform:rotate(360deg);opacity:0}}
+@keyframes rf-check{0%,58%{opacity:0;transform:scale(.4)}70%,90%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
+/* enregistrer : disquette → ✓ */
+@keyframes sv-disk {0%,100%{opacity:1;transform:scale(1)}40%,70%{opacity:.12;transform:scale(.78)}}
+@keyframes sv-check{0%,30%{opacity:0;transform:scale(.4)}46%,68%{opacity:1;transform:scale(1)}84%,100%{opacity:0;transform:scale(.6)}}
+/* historique : aiguille qui recule */
+@keyframes hi-hand {0%{transform:rotate(0)}100%{transform:rotate(-360deg)}}
+/* copier : feuille avant qui glisse */
+@keyframes cp-front{0%,100%{transform:translate(0,0)}45%{transform:translate(2.5px,2.5px) scale(1.05)}}
+/* crayon : écriture */
+@keyframes ib-pencil{0%,100%{transform:translate(0,0) rotate(0)}25%{transform:translate(-1px,1px) rotate(-3deg)}75%{transform:translate(1px,-1px) rotate(3deg)}}
+/* corbeille narrative : sous-parties animées séparément */
+.ib-trash .tr-lid{transform-box:fill-box;transform-origin:right bottom;transition:transform .2s}
+.ib-trash .tr-item{transform-box:fill-box;transform-origin:center;opacity:0}
+@keyframes tr-lid {0%,100%{transform:rotate(0)}14%,60%{transform:rotate(-45deg)}}
+@keyframes tr-item{
+  0%,12%{opacity:0;transform:translateY(-4px) scale(.7)}
+  22%{opacity:1;transform:translateY(-4px) scale(1)}   /* apparaît au-dessus, couvercle ouvert */
+  50%{opacity:1;transform:translateY(9px) scale(.95)}  /* tombe jusque dans le bac */
+  58%{opacity:0;transform:translateY(11px) scale(.5)}  /* disparaît dans la poubelle */
+  100%{opacity:0;transform:translateY(11px) scale(.5)}
+}
+/* avion/discord : décolle, sort du cadre, un nouveau réapparaît */
+@keyframes ib-send   {0%{transform:translate(0,0);opacity:1}35%{transform:translate(11px,-11px) rotate(8deg);opacity:0}36%{transform:translate(-9px,9px);opacity:0}60%{opacity:1}100%{transform:translate(0,0);opacity:1}}
+/* barres du graphe qui montent/descendent */
+@keyframes ib-chart  {0%,100%{transform:scaleY(1)}25%{transform:scaleY(1.22)}50%{transform:scaleY(.82)}75%{transform:scaleY(1.12)}}
+/* léger flottement */
+@keyframes ib-bob    {0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+/* maillon qui pivote */
+@keyframes ib-link   {0%,100%{transform:rotate(0)}30%{transform:rotate(-12deg)}70%{transform:rotate(12deg)}}
+/* menu : petit décalage latéral */
+@keyframes ib-menu   {0%,100%{transform:translateX(0)}30%{transform:translateX(-1.5px)}70%{transform:translateX(1.5px)}}
+
+/* Ampoule « Boîte à idées » : rayons d'allumage au survol (barre de nav) */
+.pz-nav-ico .bulb-rays{opacity:0}
+@media(prefers-reduced-motion:no-preference){
+  .pz-nav-ico:hover .bulb-rays{animation:bulb-rays 1.1s ease-in-out infinite}
+}
+@keyframes bulb-rays{0%,100%{opacity:0}30%{opacity:.95}65%{opacity:.4}}

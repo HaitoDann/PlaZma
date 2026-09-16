@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929o">
+<link rel="stylesheet" href="assets/theme.css?v=20260929v">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -320,19 +320,19 @@
 <!-- SUBMIT -->
 <div class="submit-area">
   <div class="submit-error" id="submitError"></div>
-  <button class="btn-submit" id="submitBtn" onclick="submitForm()">📩 Envoyer mon questionnaire</button>
+  <button class="btn-submit" id="submitBtn" onclick="submitForm()"><svg class="ib ib-send" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Envoyer mon questionnaire</button>
   <div class="submit-note">Tes réponses sont confidentielles — visibles uniquement par le staff PlaZma.</div>
 </div>
 </div></div></div>
 <div class="admin-toggle-bar" id="adminBar">
-  <button class="btn-admin-view" id="adminBtn" onclick="toggleAdmin()">📊 Voir les résultats</button>
+  <button class="btn-admin-view" id="adminBtn" onclick="toggleAdmin()"><svg class="ib ib-chart" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Voir les résultats</button>
 </div>
 <div class="results-panel" id="resultsPanel">
-  <div class="rp-header"><div class="rp-title">📊 Réponses — Staff uniquement</div><button class="rp-close" onclick="closeAdmin()">✕</button></div>
+  <div class="rp-header"><div class="rp-title"><svg class="ib ib-chart" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Réponses — Staff uniquement</div><button class="rp-close" onclick="closeAdmin()">✕</button></div>
   <div class="rp-body" id="rpBody"></div>
 </div>
 <div class="toast" id="toast"></div>
-<script src="assets/plazma.js?v=20260929o" data-public></script>
+<script src="assets/plazma.js?v=20260929v" data-public></script>
 <script>
 const db = PZ.db;
 // Roster central (mercato) — nom/emoji dynamiques ; couleur hex par rôle (pour les suffixes alpha)
@@ -522,7 +522,7 @@ async function submitForm(){
     await db.collection('plazma-satisfaction').add(data);
     document.getElementById('formBody').style.display='none';
     document.getElementById('successScreen').classList.add('show');
-  }catch(e){showToast('Erreur : '+e.message);btn.disabled=false;btn.textContent='📩 Envoyer mon questionnaire';}
+  }catch(e){showToast('Erreur : '+e.message);btn.disabled=false;btn.textContent='<svg class="ib ib-send" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Envoyer mon questionnaire';}
 }
 function resetForm(){
   selectedPlayer=null;
@@ -533,7 +533,7 @@ function resetForm(){
   document.getElementById('formBody').style.display='';
   document.getElementById('successScreen').classList.remove('show');
   document.getElementById('submitBtn').disabled=false;
-  document.getElementById('submitBtn').textContent='📩 Envoyer mon questionnaire';
+  document.getElementById('submitBtn').textContent='<svg class="ib ib-send" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Envoyer mon questionnaire';
   ['q1','q3','q11','q14','q15'].forEach(id=>document.getElementById(id).value='');
   initAll(); window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -653,7 +653,7 @@ function rCard(r){
       <div class="rc-pseudo" style="color:${rc}">${esc(r.pseudo||'—')}</div>
       <div class="rc-note">${r.q13_note||'—'}<span style="font-size:12px;color:var(--muted);font-weight:500">/10</span></div>
       <div class="rc-date">${r.date||'—'}</div>
-      <button class="btn-del-r" onclick="event.stopPropagation();delResp('${r.id}')">🗑</button>
+      <button class="btn-del-r" onclick="event.stopPropagation();delResp('${r.id}')"><svg class="ib ib-trash" viewBox="0 0 24 24"><g class="tr-can"><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></g><g class="tr-lid"><polyline points="3 6 5 6 21 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></g><circle class="tr-item" cx="12" cy="2" r="1.7" fill="currentColor" stroke="none"/></svg></button>
       <span class="rc-chevron">▸</span>
     </div>
     <div class="rc-body">
