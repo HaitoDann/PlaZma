@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929u">
+<link rel="stylesheet" href="assets/theme.css?v=20260929v">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -332,7 +332,7 @@
   <div class="rp-body" id="rpBody"></div>
 </div>
 <div class="toast" id="toast"></div>
-<script src="assets/plazma.js?v=20260929u" data-public></script>
+<script src="assets/plazma.js?v=20260929v" data-public></script>
 <script>
 const db = PZ.db;
 // Roster central (mercato) — nom/emoji dynamiques ; couleur hex par rôle (pour les suffixes alpha)
@@ -653,7 +653,7 @@ function rCard(r){
       <div class="rc-pseudo" style="color:${rc}">${esc(r.pseudo||'—')}</div>
       <div class="rc-note">${r.q13_note||'—'}<span style="font-size:12px;color:var(--muted);font-weight:500">/10</span></div>
       <div class="rc-date">${r.date||'—'}</div>
-      <button class="btn-del-r" onclick="event.stopPropagation();delResp('${r.id}')"><svg class="ib ib-trash" viewBox="0 0 24 24"><circle class="tr-item" cx="12" cy="3" r="1.5" fill="currentColor" stroke="none"/><g class="tr-lid"><polyline points="3 6 5 6 21 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></g><g class="tr-can"><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></g></svg></button>
+      <button class="btn-del-r" onclick="event.stopPropagation();delResp('${r.id}')"><svg class="ib ib-trash" viewBox="0 0 24 24"><g class="tr-can"><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></g><g class="tr-lid"><polyline points="3 6 5 6 21 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></g><circle class="tr-item" cx="12" cy="2" r="1.7" fill="currentColor" stroke="none"/></svg></button>
       <span class="rc-chevron">▸</span>
     </div>
     <div class="rc-body">

@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929u">
+<link rel="stylesheet" href="assets/theme.css?v=20260929v">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -120,6 +120,9 @@
   /* Boîte à idées : l'ampoule s'allume et rebondit */
   #ideasFab:hover{box-shadow:0 0 18px color-mix(in srgb,var(--accent) 32%,transparent)}
   #ideasFab:hover svg{animation:fab-idea 1.1s ease-in-out infinite;transform-origin:center}
+  #ideasFab .bulb-rays{opacity:0}
+  #ideasFab:hover .bulb-rays{animation:bulb-rays 1.1s ease-in-out infinite}
+  @keyframes bulb-rays{0%,100%{opacity:0}30%{opacity:.95}65%{opacity:.4}}
   @keyframes fab-idea{0%,100%{transform:translateY(0) scale(1) rotate(0)}30%{transform:translateY(-2px) scale(1.1) rotate(-5deg)}65%{transform:translateY(0) scale(1.05) rotate(5deg)}}
 
   /* ── #27 Sections scroll-reveal (progressive) ── */
@@ -286,7 +289,7 @@
     <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
   </a>
   <button class="acct-fab" id="ideasFab" type="button" title="Boîte à idées" aria-label="Boîte à idées" onclick="window.PZ&&PZ.openIdeas&&PZ.openIdeas()">
-    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a6 6 0 0 0-4 10c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5a6 6 0 0 0-4-10Z"/></svg>
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><g class="bulb-rays"><line x1="5.5" y1="5" x2="3.8" y2="3.4"/><line x1="12" y1="1.4" x2="12" y2="0"/><line x1="18.5" y1="5" x2="20.2" y2="3.4"/></g><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a6 6 0 0 0-4 10c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5a6 6 0 0 0-4-10Z"/></svg>
   </button>
   <button class="acct-fab" id="logoutFab" type="button" title="Se déconnecter" aria-label="Se déconnecter" onclick="window.PZ&&PZ.logout&&PZ.logout()">
     <svg class="pz-power" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path class="pz-power-ring" d="M7.8 6.3a7 7 0 1 0 8.4 0"/><line class="pz-power-bar" x1="12" y1="3.2" x2="12" y2="11.5"/></svg>
@@ -394,8 +397,8 @@
   </footer>
 
 </div>
-<script src="assets/plazma.js?v=20260929u"></script>
-<script src="assets/champions.js?v=20260929u"></script>
+<script src="assets/plazma.js?v=20260929v"></script>
+<script src="assets/champions.js?v=20260929v"></script>
 <script>
   /* Normalise la longueur des tracés d'icônes → tracé uniforme au survol */
   document.querySelectorAll('.tool-ico svg *').forEach(el => el.setAttribute('pathLength', '100'));
