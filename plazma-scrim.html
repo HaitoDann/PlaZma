@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929t">
+<link rel="stylesheet" href="assets/theme.css?v=20260929u">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -122,8 +122,8 @@
 <div class="content">
   <div class="toolbar" data-noexport>
     <span class="sync-pill"><span class="sync-dot offline" id="syncDot"></span><span id="syncText">En attente…</span><span class="sync-time" id="syncTime"></span></span>
-    <button class="btn btn-sm" onclick="newSession()" data-edit><svg class="ib ib-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nouveau</button>
-    <button class="btn btn-sm" onclick="openHistory()"><svg class="ib ib-history" viewBox="0 0 24 24"><path d="M3 3v5h5"/><path d="M3.05 13a9 9 0 1 0 2.6-6.4L3 8"/><path d="M12 7v5l3 2"/></svg> Historique <span id="histCount" class="muted"></span></button>
+    <button class="btn btn-sm" onclick="newSession()" data-edit><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-cross"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></g><circle class="pl-dot" cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/></svg> Nouveau</button>
+    <button class="btn btn-sm" onclick="openHistory()"><svg class="ib ib-history" viewBox="0 0 24 24"><path d="M3 3v5h5"/><path d="M3.05 13a9 9 0 1 0 2.6-6.4L3 8"/><path class="hi-hand" d="M12 7v5l3 2"/></svg> Historique <span id="histCount" class="muted"></span></button>
     <button class="btn btn-sm btn-primary" onclick="publishDiscord()"><svg class="ib ib-discord" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Discord</button>
     <button class="btn btn-sm btn-danger" onclick="resetCurrentSession()" data-edit><svg class="ib ib-trash" viewBox="0 0 24 24"><circle class="tr-item" cx="12" cy="3" r="1.5" fill="currentColor" stroke="none"/><g class="tr-lid"><polyline points="3 6 5 6 21 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></g><g class="tr-can"><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></g></svg> Vider</button>
   </div>
@@ -188,11 +188,11 @@
 <div class="drawer-ov" id="drawerOv" onclick="closeHistory()"></div>
 <div class="drawer" id="drawer">
   <div class="drawer-head"><h2 style="font-size:1.1rem">Historique</h2><button class="btn btn-icon btn-ghost" onclick="closeHistory()">✕</button></div>
-  <div style="padding:14px 14px 0"><button class="btn btn-primary" style="width:100%" onclick="newSession();closeHistory()"><svg class="ib ib-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nouveau compte rendu</button></div>
+  <div style="padding:14px 14px 0"><button class="btn btn-primary" style="width:100%" onclick="newSession();closeHistory()"><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-cross"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></g><circle class="pl-dot" cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/></svg> Nouveau compte rendu</button></div>
   <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
 </div>
 
-<script src="assets/plazma.js?v=20260929t" data-section="scrim"></script>
+<script src="assets/plazma.js?v=20260929u" data-section="scrim"></script>
 <script>
 'use strict';
 PZ.mountNav('scrim', '#nav');
