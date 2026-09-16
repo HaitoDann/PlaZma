@@ -7,8 +7,8 @@
 <title>ARCHI — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929m">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css?v=20260929n">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -40,9 +40,9 @@
   @media(max-width:480px){.today-tiles{grid-template-columns:1fr}}
 
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-  .kpi{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px}
-  .kpi::before{content:'';position:absolute;left:0;top:0;right:0;height:3px;background:var(--kc,var(--accent));opacity:.85}
-  .kpi-lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .kpi{position:relative;overflow:hidden;background:var(--surface);border:1px solid transparent;border-radius:var(--r-lg);padding:18px;box-shadow:var(--shadow-1)}
+  /* filet coloré retiré : le chiffre porte le sens, pas un liseré sur chaque carte (dé-slop) */
+  .kpi-lbl{font-size:11px;letter-spacing:0;color:var(--muted);margin-bottom:10px}
   .kpi-val{font-family:var(--font-display);font-size:2.3rem;font-weight:700;line-height:1;letter-spacing:-.02em}
   .kpi-sub{font-size:12px;color:var(--muted);margin-top:7px}
   .kpi-sub b{color:var(--dim)}
@@ -266,7 +266,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="assets/plazma.js?v=20260929m" data-section="dashboard"></script>
+<script src="assets/plazma.js?v=20260929n" data-section="dashboard"></script>
 <script>
 'use strict';
 PZ.mountNav('dashboard', '#nav');
