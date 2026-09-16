@@ -17,6 +17,15 @@ bas de la fenêtre **Paramètres**.
 
 ## 2.x — Refonte visuelle & administration
 
+### 2.9.0 — Passe « de-slop » (identité visuelle)
+- Suppression des marqueurs « design IA » : plus de dégradé cyan→violet,
+  cartes/panneaux **sans bordure** (hiérarchie par fond + ombre), retrait du
+  **glassmorphism** (topbar/cartes opaques), filets colorés de KPI enlevés.
+- Typographie d'identité : **Space Grotesk** (titres) + **JetBrains Mono**
+  (chiffres/timers), Manrope conservé pour le texte.
+- Eyebrows en casse normale (fin du tracking majuscule générique).
+- `DESIGN.md` : règles verrouillées pour ne plus re-dériver vers la moyenne.
+
 ### 2.8.0 — Données croisées : schéma scrim, cockpit & présence
 - **Scrim → données structurées** : chaque erreur porte désormais une
   **gravité** (Faible/Moyenne/Haute) et un **responsable** (joueur ou équipe),
