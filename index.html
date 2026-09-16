@@ -28,72 +28,19 @@
     pointer-events:none;
   }
 
-  /* ── Hero ── */
-  .hero{text-align:center;padding:64px 0 40px}
-
-  /* #1 Logo — formation « forge » (plus de flottement permanent : perf) */
-  .hero-logo{
-    width:112px;height:90px;margin:0 auto 20px;position:relative;perspective:900px;
-  }
-  .hl-half{
-    position:absolute;top:0;bottom:0;width:50%;
-    background-image:url(assets/logo-plazma.png);background-repeat:no-repeat;
-    background-size:112px auto;background-position-y:center;
-    opacity:0;
-  }
-  .hl-left{left:0;background-position-x:left;
-    animation:hl-left 1s cubic-bezier(.2,.8,.2,1.25) both .25s}
-  .hl-right{left:50%;background-position-x:right;
-    animation:hl-right 1s cubic-bezier(.2,.8,.2,1.25) both .33s}
-  @keyframes hl-left{
-    0%{transform:translate3d(-240px,-70px,-220px) rotateY(90deg) rotateZ(-26deg) scale(1.7);opacity:0;filter:blur(9px)}
-    45%{opacity:1;filter:blur(1px)}
-    70%{transform:translate3d(10px,0,0) rotateY(-10deg) scale(1.05);filter:blur(0)}
-    100%{transform:none;opacity:1;filter:blur(0)}
-  }
-  @keyframes hl-right{
-    0%{transform:translate3d(240px,-70px,-220px) rotateY(-90deg) rotateZ(26deg) scale(1.7);opacity:0;filter:blur(9px)}
-    45%{opacity:1;filter:blur(1px)}
-    70%{transform:translate3d(-10px,0,0) rotateY(10deg) scale(1.05);filter:blur(0)}
-    100%{transform:none;opacity:1;filter:blur(0)}
-  }
-  .hl-wave{position:absolute;left:50%;top:50%;width:96px;height:96px;z-index:-1;pointer-events:none;
-    transform:translate(-50%,-50%) scale(.15);border-radius:50%;border:2px solid rgba(34,211,238,.7);opacity:0;
-    animation:hl-wave .75s cubic-bezier(.16,1,.3,1) both 1s}
-  @keyframes hl-wave{0%{opacity:0;transform:translate(-50%,-50%) scale(.15)}22%{opacity:.85}100%{opacity:0;transform:translate(-50%,-50%) scale(2.7)}}
-  .hl-flash{position:absolute;inset:0;pointer-events:none;opacity:0;background:#eafcff;mix-blend-mode:screen;
-    -webkit-mask:url(assets/logo-plazma.png) center/112px auto no-repeat;mask:url(assets/logo-plazma.png) center/112px auto no-repeat;
-    animation:hl-flash .55s ease 1s both}
-  @keyframes hl-flash{0%{opacity:0}20%{opacity:.9}100%{opacity:0}}
-  .hl-glint{position:absolute;inset:0;pointer-events:none;opacity:0;transform:translateX(-120%);
-    background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.9) 50%,transparent 58%);
-    -webkit-mask:url(assets/logo-plazma.png) center/112px auto no-repeat;mask:url(assets/logo-plazma.png) center/112px auto no-repeat;
-    animation:hl-glint 1s ease-out 1.35s}
-  @keyframes hl-glint{0%{opacity:0;transform:translateX(-120%)}30%{opacity:1}100%{opacity:0;transform:translateX(120%)}}
-  @media (prefers-reduced-motion:reduce){
-    .hl-half{animation:none;opacity:1;transform:none;filter:none}
-    .hl-wave,.hl-flash,.hl-glint{display:none}
-    .hero-logo{animation:none}
-  }
-
-  /* #5 Titre ARCHI — entrée letter-spacing */
-  @keyframes title-in{from{opacity:0;letter-spacing:.2em;filter:blur(4px)}to{opacity:1;letter-spacing:.04em;filter:none}}
-  .hero h1{
-    font-size:clamp(44px,9vw,76px);letter-spacing:.04em;margin-bottom:10px;
-    animation:title-in .85s cubic-bezier(.16,1,.3,1) both .12s;
-  }
-
-  /* #8 Séparateur animé */
-  @keyframes sep-grow{from{width:0;opacity:0}to{width:64px;opacity:1}}
+  /* ── En-tête « centre d'opérations » — outil, pas landing (alignée à gauche, dense) ── */
   @keyframes fade-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  .hero-sep{
-    display:block;height:2px;
-    background:linear-gradient(90deg,transparent,var(--accent),transparent);
-    margin:0 auto 12px;border-radius:1px;
-    animation:sep-grow .75s cubic-bezier(.16,1,.3,1) both .45s;
+  .board-head{
+    display:flex;align-items:center;gap:16px;
+    padding:34px 0 24px;border-bottom:1px solid var(--border);margin-bottom:8px;
+    animation:fade-up .4s ease both;
   }
-  .hero-sub{color:var(--dim);font-size:15px;animation:fade-up .5s cubic-bezier(.16,1,.3,1) both .55s}
-  .hero-sub b{color:var(--text);font-weight:600}
+  .board-head img{width:46px;height:46px;object-fit:contain;flex-shrink:0}
+  .board-head h1{font-size:clamp(26px,4vw,34px);letter-spacing:.01em;line-height:1.05}
+  .board-head .bh-sub{color:var(--muted);font-size:13.5px;margin-top:3px}
+  .board-head .bh-meta{margin-left:auto;text-align:right;font-size:12.5px;color:var(--muted);white-space:nowrap}
+  .board-head .bh-meta b{display:block;color:var(--dim);font-family:var(--font-mono);font-weight:600;font-size:13px}
+  @media(max-width:560px){.board-head .bh-meta{display:none}}
 
   /* Barre de boutons flottants (haut-droite) — les cachés se replient */
   #topFabs{position:fixed;top:16px;right:16px;z-index:50;display:flex;align-items:center;gap:10px}
@@ -180,18 +127,6 @@
     .tool:hover .tool-ico svg *{animation:none}
   }
   .tool-name{font-family:var(--font-display);font-size:17px;font-weight:600}
-
-  /* #16 Ripple clic (vide seulement — voir JS) */
-  @keyframes water-rip{
-    0%  {transform:scale(0);opacity:var(--op,.6)}
-    15% {opacity:var(--op,.6)}
-    100%{transform:scale(1);opacity:0}
-  }
-  .wd-ring{
-    position:fixed;border-radius:50%;pointer-events:none;z-index:9997;
-    border:1px solid rgba(34,211,238,.6);
-    transform:scale(0);
-  }
 
   /* ── Roster ── */
   .roster{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
@@ -295,10 +230,13 @@
 
 <div class="home">
 
-  <header class="hero">
-    <div class="hero-logo" role="img" aria-label="Logo ARCHI"><span class="hl-wave"></span><span class="hl-half hl-left"></span><span class="hl-half hl-right"></span><span class="hl-flash"></span><span class="hl-glint"></span></div>
-    <h1>ARCHI</h1>
-    <span class="hero-sep"></span>
+  <header class="board-head">
+    <img src="assets/logo-plazma.png" alt="ARCHI">
+    <div>
+      <h1>Centre d'opérations</h1>
+      <div class="bh-sub">PlaZma Esport — planning, scrims, scouting et perf, au même endroit.</div>
+    </div>
+    <div class="bh-meta" id="bhMeta"></div>
   </header>
 
   <!-- OUTILS -->
@@ -414,29 +352,13 @@
   }, {threshold: 0.08});
   document.querySelectorAll('.sec').forEach(s => revealObs.observe(s));
 
-  /* #16 Ripple goutte d'eau — uniquement sur le vide (pas les cartes) */
+  /* Contexte daté dans l'en-tête (donne le côté « outil ») */
   (function(){
-    const SKIP = 'a,button,input,select,textarea,label,[onclick],[role=button],.btn';
-    const rings = [
-      {sz:60,  delay:0,   dur:750, op:.56},
-      {sz:110, delay:70,  dur:860, op:.32},
-      {sz:160, delay:145, dur:970, op:.17},
-    ];
-    document.addEventListener('click', e => {
-      if (e.target.closest(SKIP)) return;
-      rings.forEach(({sz, delay, dur, op}) => {
-        const ring = document.createElement('div');
-        ring.className = 'wd-ring';
-        ring.style.cssText =
-          `width:${sz}px;height:${sz}px;` +
-          `left:${e.clientX - sz/2}px;top:${e.clientY - sz/2}px;` +
-          `--op:${op};`;
-        document.body.appendChild(ring);
-        ring.getBoundingClientRect(); // force reflow → scale(0) peint avant l'anim
-        ring.style.animation = `water-rip ${dur}ms ${delay}ms cubic-bezier(0,.55,.45,1) both`;
-        setTimeout(() => ring.remove(), delay + dur + 50);
-      });
-    });
+    const el = document.getElementById('bhMeta'); if(!el) return;
+    const d = new Date();
+    const w = (function(x){ x=new Date(Date.UTC(x.getFullYear(),x.getMonth(),x.getDate())); const day=x.getUTCDay()||7; x.setUTCDate(x.getUTCDate()+4-day); const y1=new Date(Date.UTC(x.getUTCFullYear(),0,1)); return Math.ceil((((x-y1)/86400000)+1)/7); })(d);
+    const date = d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'});
+    el.innerHTML = '<b>Semaine ' + w + '</b>' + date.charAt(0).toUpperCase() + date.slice(1);
   })();
 
   /* Wiki champion search */
