@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929n">
+<link rel="stylesheet" href="assets/theme.css?v=20260929o">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -144,8 +144,6 @@
     <div class="dash-actions">
       <span class="sync-pill"><span class="sync-dot offline" id="syncDot"></span><span id="syncText">En attente…</span><span class="sync-time" id="syncTime"></span></span>
       <button class="btn btn-sm" id="btnRefresh" title="Recharger les données agrégées">↻ Actualiser</button>
-      <button class="btn btn-sm" id="btnBackup">Backup</button>
-      <button class="btn btn-sm" id="btnImport" data-edit>Import</button>
       <button class="btn btn-sm btn-danger" id="btnReset" data-edit>Reset</button>
       <button class="btn btn-sm btn-primary" onclick="openAddOffi()" data-edit>＋ Officiel</button>
     </div>
@@ -266,7 +264,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="assets/plazma.js?v=20260929n" data-section="dashboard"></script>
+<script src="assets/plazma.js?v=20260929o" data-section="dashboard"></script>
 <script>
 'use strict';
 PZ.mountNav('dashboard', '#nav');
@@ -654,8 +652,6 @@ function saveSettings(){
 
 // ── Toolbar ──
 document.getElementById('btnRefresh').addEventListener('click',()=>{ agg={scrims:null,scrimsDenied:false,scoutLatest:null,scoutDenied:false,week:null,weekDenied:false,loaded:false}; render(); loadAggregates(); showToast('Données actualisées'); });
-document.getElementById('btnBackup').addEventListener('click',()=>PZ.backup(getState(),'archi-dashboard'));
-document.getElementById('btnImport').addEventListener('click',()=>PZ.importFile(d=>{applyState(d);render();sync.save();showToast('Backup importé ✓');}));
 document.getElementById('btnReset').addEventListener('click',()=>{
   if(!confirm('Réinitialiser les données du dashboard (officiels, objectifs, rangs) ?'))return;
   state.officials=[]; state.objectives=[];

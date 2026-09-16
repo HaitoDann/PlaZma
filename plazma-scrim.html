@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929n">
+<link rel="stylesheet" href="assets/theme.css?v=20260929o">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -126,8 +126,6 @@
     <button class="btn btn-sm" onclick="newSession()" data-edit>＋ Nouveau</button>
     <button class="btn btn-sm" onclick="openHistory()">Historique <span id="histCount" class="muted"></span></button>
     <button class="btn btn-sm btn-primary" onclick="publishDiscord()">📢 Discord</button>
-    <button class="btn btn-sm" id="exportBtn">⬇ PNG</button>
-    <button class="btn btn-sm" onclick="importBackup()" data-edit>Import</button>
     <button class="btn btn-sm btn-danger" onclick="resetCurrentSession()" data-edit>Vider</button>
   </div>
   <div style="text-align:center"><span class="session-chip" id="sessionChip">Chargement…</span></div>
@@ -195,7 +193,7 @@
   <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
 </div>
 
-<script src="assets/plazma.js?v=20260929n" data-section="scrim"></script>
+<script src="assets/plazma.js?v=20260929o" data-section="scrim"></script>
 <script>
 'use strict';
 PZ.mountNav('scrim', '#nav');
@@ -488,8 +486,6 @@ document.getElementById('capture').addEventListener('input', e=>{
   if(e.target.id==='m_adv'){ document.getElementById('advLabel').textContent=e.target.value||'Adversaire'; document.getElementById('advTitle').textContent=e.target.value?'Scrim vs '+e.target.value:'Scrim'; }
   queueSave();
 });
-function importBackup(){ PZ.importFile(d=>{ applyState(d); save(); }); }
-document.getElementById('exportBtn').addEventListener('click',()=>PZ.exportPNG(document.getElementById('capture'),'archi-scrim'));
 document.getElementById('footDate').textContent='Mise à jour le '+new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
 
 // ── Publication Discord (embed écrit) ──

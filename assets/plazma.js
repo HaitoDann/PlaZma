@@ -55,7 +55,7 @@
   // ---- Version de l'application (SemVer) ----
   // MAJEUR.MINEUR.CORRECTIF — MINEUR à chaque lot de fonctionnalités,
   // CORRECTIF pour les corrections. Affichée discrètement dans Paramètres.
-  const VERSION = '2.9.0';
+  const VERSION = '2.10.0';
 
   // ---- Niveau de performance : adapte la densité des effets ----
   // Full sur machine puissante (rendu identique), réduit sur mobile/appareil
@@ -414,10 +414,29 @@
       btn.setAttribute('aria-label', label);
     });
   }
+  // Mémorise la position du dernier clic sur un bouton thème (origine de l'animation).
+  let _themeOrigin = null;
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('.pz-daynight');
+    if (b) _themeOrigin = { x: e.clientX, y: e.clientY };
+  }, true);
   function toggleTheme() {
     const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    try { localStorage.setItem(THEME_KEY, next); } catch(e) {}
-    _applyTheme(next);
+    const apply = () => { try { localStorage.setItem(THEME_KEY, next); } catch(e) {} _applyTheme(next); };
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Révélation circulaire depuis le bouton (View Transitions API) — sinon simple bascule.
+    if (!document.startViewTransition || reduce) { apply(); return; }
+    const o = _themeOrigin || { x: innerWidth - 40, y: 40 };
+    const r = Math.hypot(Math.max(o.x, innerWidth - o.x), Math.max(o.y, innerHeight - o.y));
+    document.documentElement.classList.add('pz-theme-anim');
+    const vt = document.startViewTransition(apply);
+    vt.ready.then(() => {
+      document.documentElement.animate(
+        { clipPath: [`circle(0px at ${o.x}px ${o.y}px)`, `circle(${r}px at ${o.x}px ${o.y}px)`] },
+        { duration: 480, easing: 'cubic-bezier(.16,1,.3,1)', pseudoElement: '::view-transition-new(root)' }
+      );
+    });
+    vt.finished.finally(() => document.documentElement.classList.remove('pz-theme-anim'));
   }
   // Lire la préférence sauvegardée (ou système) le plus tôt possible
   (function initTheme() {

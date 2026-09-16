@@ -17,6 +17,12 @@ bas de la fenêtre **Paramètres**.
 
 ## 2.x — Refonte visuelle & administration
 
+### 2.10.0 — Bascule thème animée & épuration
+- **Bascule clair/sombre** en révélation circulaire **depuis le bouton**
+  (View Transitions API), repli propre si non supporté / reduced-motion.
+- Retrait des boutons **Backup**, **Export PNG** et **Import** sur toutes les
+  pages (peu utiles) — barres d'outils allégées.
+
 ### 2.9.0 — Passe « de-slop » (identité visuelle)
 - Suppression des marqueurs « design IA » : plus de dégradé cyan→violet,
   cartes/panneaux **sans bordure** (hiérarchie par fond + ombre), retrait du

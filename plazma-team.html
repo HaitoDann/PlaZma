@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929n">
+<link rel="stylesheet" href="assets/theme.css?v=20260929o">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -80,7 +80,6 @@
         <span id="syncText">En attente…</span>
         <span class="sync-time" id="syncTime"></span>
       </span>
-      <button class="btn btn-sm" id="exportBtn">⬇ PNG</button>
       <button class="btn btn-sm btn-danger" id="resetBtn" data-edit>Reset</button>
     </div>
   </div>
@@ -120,8 +119,8 @@
   <div class="tierlist" id="tierlist"></div>
 </div>
 
-<script src="assets/plazma.js?v=20260929n" data-section="team"></script>
-<script src="assets/champions.js?v=20260929n"></script>
+<script src="assets/plazma.js?v=20260929o" data-section="team"></script>
+<script src="assets/champions.js?v=20260929o"></script>
 <script>
 PZ.mountNav('team', '#nav');
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
@@ -280,7 +279,7 @@ function render(){
 document.querySelectorAll('[data-style]').forEach(t => {
   t.addEventListener('input', () => { state.style[t.dataset.style] = t.value; queueSave(); });
 });
-document.getElementById('exportBtn').addEventListener('click', () => PZ.exportPNG(document.getElementById('capture'), 'archi-equipe'));
+
 document.getElementById('resetBtn').addEventListener('click', () => sync.reset('Réinitialiser l\'identité d\'équipe ?'));
 
 registerRoster();  // maintenant que state/TIERS/currentPlayer sont définis

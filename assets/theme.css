@@ -961,3 +961,10 @@ body::after{
 .pz-maint-foot{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);
   font-size:11px;color:var(--muted);letter-spacing:.04em}
 @media(prefers-reduced-motion:reduce){.pz-maint-logo::before,.pz-maint-logo::after,.pz-maint-dots span{animation:none}}
+
+/* ── Bascule de thème : révélation circulaire depuis le bouton (View Transitions) ── */
+::view-transition-old(root),
+::view-transition-new(root){ animation:none; mix-blend-mode:normal }
+/* Le nouveau thème est dévoilé par le cercle qui grandit, par-dessus l'ancien. */
+html.pz-theme-anim::view-transition-new(root){ z-index:9999 }
+html.pz-theme-anim::view-transition-old(root){ z-index:1 }

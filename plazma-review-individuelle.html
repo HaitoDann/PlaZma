@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929n">
+<link rel="stylesheet" href="assets/theme.css?v=20260929o">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -156,7 +156,6 @@
     <span class="sync-pill"><span class="sync-dot offline" id="syncDot"></span><span id="syncText">En attente…</span><span class="sync-time" id="syncTime"></span></span>
     <button class="btn btn-sm" onclick="newSession()" data-edit>＋ Nouveau</button>
     <button class="btn btn-sm" onclick="openHistory()">Historique <span id="histCount" class="muted"></span></button>
-    <button class="btn btn-sm" id="exportBtn">⬇ PNG</button>
     <button class="btn btn-sm btn-danger" onclick="resetCurrentSession()" data-edit>Vider</button>
   </div>
   <div style="text-align:center"><span class="session-chip" id="sessionChip">Chargement…</span></div>
@@ -254,8 +253,8 @@
   <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
 </div>
 
-<script src="assets/plazma.js?v=20260929n" data-section="scrim"></script>
-<script src="assets/champions.js?v=20260929n"></script>
+<script src="assets/plazma.js?v=20260929o" data-section="scrim"></script>
+<script src="assets/champions.js?v=20260929o"></script>
 <script>
 'use strict';
 PZ.mountNav('review', '#nav');
@@ -605,11 +604,6 @@ function deleteSession(docId){
 function openHistory(){ document.getElementById('drawerOv').classList.add('open'); document.getElementById('drawer').classList.add('open'); }
 function closeHistory(){ document.getElementById('drawerOv').classList.remove('open'); document.getElementById('drawer').classList.remove('open'); }
 
-// ── Export PNG ──
-document.getElementById('exportBtn').addEventListener('click', ()=>{
-  const p = ROSTER.find(r=>r.id===val('sel_player'));
-  PZ.exportPNG(document.getElementById('capture'), 'review-' + (p?p.name.toLowerCase():'joueur') + '-' + (val('m_date')||'match'));
-});
 
 // ── Init ──
 buildPlayerSelect();

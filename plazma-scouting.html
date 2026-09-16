@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929n">
+<link rel="stylesheet" href="assets/theme.css?v=20260929o">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -184,7 +184,6 @@
     <button class="btn btn-sm" onclick="newSheet()" data-edit>＋ Nouvelle</button>
     <button class="btn btn-sm" onclick="openDrawer()">Fiches <span id="sheetCount" class="muted"></span></button>
     <button class="btn btn-sm btn-primary" id="pubScoutBtn" title="Publier la synthèse adverse sur Discord">📢 Discord</button>
-    <button class="btn btn-sm" id="exportBtn">⬇ PNG</button>
     <button class="btn btn-sm btn-danger" onclick="resetCurrentSheet()" data-edit>Vider</button>
   </div>
   <div style="text-align:center"><span class="chip" id="sheetChip">Chargement…</span></div>
@@ -275,8 +274,8 @@
   <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
 </div>
 
-<script src="assets/plazma.js?v=20260929n" data-section="scouting"></script>
-<script src="assets/champions.js?v=20260929n"></script>
+<script src="assets/plazma.js?v=20260929o" data-section="scouting"></script>
+<script src="assets/champions.js?v=20260929o"></script>
 <script>
 'use strict';
 PZ.mountNav('scouting', '#nav');
@@ -616,7 +615,7 @@ document.querySelectorAll('#m_team,#m_rank,#m_tournoi,#f_note,#f_comment').forEa
   readInputs(); if(inp.id==='m_team') document.getElementById('teamTitle').textContent = inp.value?'Scouting · '+inp.value:'Fiche adverse'; queueSave();
 }));
 document.getElementById('multiOpgg').addEventListener('click',()=>{ const url=multiOpggUrl(); if(url) window.open(url,'_blank','noopener'); else alert('Renseigne au moins un identifiant OP.GG (Pseudo#TAG).'); });
-document.getElementById('exportBtn').addEventListener('click',()=>PZ.exportPNG(document.getElementById('capture'),'archi-scouting'));
+
 
 // ── Publication Discord (synthèse adverse) ──
 function buildScoutEmbed(){

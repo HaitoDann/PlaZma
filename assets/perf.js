@@ -262,9 +262,6 @@
     .forEach(el => el.addEventListener('input', queueSave));
 
   // ---- Barre d'outils ----
-  document.getElementById('btnExport').addEventListener('click', () => PZ.exportPNG(root, 'archi-' + P.docId));
-  document.getElementById('btnBackup').addEventListener('click', () => PZ.backup(getState(), 'archi-' + P.docId));
-  document.getElementById('btnImport').addEventListener('click', () => PZ.importFile(d => { applyState(d); sync.save(); }));
   document.getElementById('btnReset').addEventListener('click', () => {
     if (!confirm('Réinitialiser la fiche de ' + ident().name + ' ?')) return;
     Object.keys(jV).forEach(k => jV[k] = 0);
