@@ -75,12 +75,12 @@
       <div>
         <div class="perf-sec-title"><span class="d" style="background:${P.roleVar}"></span>Analyse qualitative</div>
         <div class="obs-grid">
-          <div class="obs-card" style="--oc:var(--ok)"><div class="obs-lbl">✦ Forces identifiées</div>
+          <div class="obs-card" style="--oc:var(--ok)"><div class="obs-lbl">Forces identifiées</div>
             <textarea id="t_forces" placeholder="2 à 3 forces avec exemples concrets…"></textarea></div>
-          <div class="obs-card" style="--oc:var(--err)"><div class="obs-lbl">✦ Points à améliorer</div>
+          <div class="obs-card" style="--oc:var(--err)"><div class="obs-lbl">Points à améliorer</div>
             <textarea id="t_faib" placeholder="Axes de progression, avec exemples…"></textarea></div>
         </div>
-        <div class="obs-card" style="--oc:var(--accent)"><div class="obs-lbl">✦ Observations générales</div>
+        <div class="obs-card" style="--oc:var(--accent)"><div class="obs-lbl">Observations générales</div>
           <textarea id="t_obs" placeholder="Comportement in-game, communication, régularité, attitude en match…"></textarea></div>
       </div>
       <div>
