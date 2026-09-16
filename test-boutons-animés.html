@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="assets/logo-plazma.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test Boutons Animés - Archi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css?v=20260929o">
+<style>
+  /* ============================================================
+     PAGE DE TEST DES BOUTONS ANIMÉS
+     ============================================================ */
+  
+  body {
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+  
+  .test-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  
+  header h1 {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 44px);
+    color: var(--text);
+    margin-bottom: 8px;
+    letter-spacing: .04em;
+  }
+  
+  header p {
+    color: var(--dim);
+    font-size: 15px;
+  }
+  
+  .test-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+  
+  .button-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-1);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  
+  .button-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-2);
+  }
+  
+  .button-card h3 {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    letter-spacing: .02em;
+  }
+  
+  .button-card .description {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  
+  .button-showcase {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: var(--surface-2);
+    border-radius: var(--r);
+    border: 1px solid var(--border-2);
+  }
+  
+  .button-wrapper {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .btn-label {
+    font-size: 11px;
+    color: var(--dim);
+    text-align: center;
+    margin-top: 8px;
+    font-weight: 500;
+  }
+  
+  .code-block {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    overflow-x: auto;
+    margin-top: 12px;
+  }
+  
+  .code-block code {
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 32px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    letter-spacing: .04em;
+  }
+  
+  .hint {
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-line);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 24px 0;
+    font-size: 13px;
+    color: var(--accent);
+  }
+  
+  .hint strong {
+    font-weight: 600;
+  }
+  
+  /* Animation pour attirer l'attention sur le survol */
+  @keyframes pulse-hint {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .6; }
+  }
+  
+  .hint-animated {
+    animation: pulse-hint 2s ease-in-out infinite;
+  }
+  
+  /* Style pour les boutons de test */
+  .test-btn {
+    margin: 0 auto;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .test-grid {
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    
+    .button-showcase {
+      padding: 12px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .test-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    body {
+      padding: 20px 12px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="test-container">
+    <header>
+      <h1>✨ Test Boutons Animés Archi</h1>
+      <p>Survole chaque bouton pour voir son animation unique</p>
+    </header>
+
+    <div class="hint hint-animated">
+      <strong>💡 Astuce :</strong> Passe ta souris sur les boutons ci-dessous pour déclencher leurs animations !
+    </div>
+
+    <!-- =========================================================
+         SECTION 1 : BOUTONS D'ACTION PRINCIPAUX
+         ========================================================= -->
+    <h2 class="section-title">🎯 Boutons d'Action Principaux</h2>
+    
+    <div class="test-grid">
+      <!-- Bouton Cœur -->
+      <div class="button-card">
+        <h3>Cœur (Like/Favoris)</h3>
+        <p class="description">Cœur qui bat et se remplit progressivement au survol</p>
+        <div class="button-showcase">
+          <button class="pz-heart-btn test-btn" type="button" aria-label="Ajouter aux favoris">
+            <svg class="pz-heart" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path class="pz-heart-path" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
+          <span class="btn-label">pz-heart-btn</span>
+        </div>
+      </div>
+
+      <!-- Bouton Étoile -->
+      <div class="button-card">
+        <h3>Étoile (Star/Favoris)</h3>
+        <p class="description">Étoile qui scintille et tourne légèrement</p>
+        <div class="button-showcase">
+          <button class="pz-star-btn test-btn" type="button" aria-label="Épingler">
+            <svg class="pz-star" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path class="pz-star-path" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          </button>
+          <span class="btn-label">pz-star-btn</span>
+        </div>
+      </div>
+
+      <!-- Bouton Coche -->
+      <div class="button-card">
+        <h3>Coche (Validation)</h3>
+        <p class="description">Coche qui se dessine avec effet de rebond</p>
+        <div class="button-showcase">
+          <button class="pz-check-btn test-btn" type="button" aria-label="Valider">
+            <svg class="pz-check" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline class="pz-check-path" points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+          <span class="btn-label">pz-check-btn</span>
+        </div>
+      </div>
+
+      <!-- Bouton Plus -->
+      <div class="button-card">
+        <h3>Plus (Ajouter)</h3>
+        <p class="description">Plus qui se transforme en croix à 45°</p>
+        <div class="button-showcase">
+          <button class="pz-plus-btn test-btn" type="button" aria-label="Ajouter">
+            <svg class="pz-plus" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <line class="pz-plus-line pz-plus-line-horz" x1="12" y1="5" x2="12" y2="19"/>
+              <line class="pz-plus-line pz-plus-line-vert" x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
+          <span class="btn-label">pz-plus-btn</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         SECTION 2 : BOUTONS SYSTÈME
+         ========================================================= -->
+    <h2 class="section-title">⚙️ Boutons Système</h2>
+    
+    <div class="test-grid">
+      <!-- Bouton Rouage -->
+      <div class="button-card">
+        <h3>Rouage (Paramètres)</h3>
+        <p class="description">Rouage qui tourne en continu</p>
+        <div class="button-showcase">
+          <button class="pz-gear-btn test-btn" type="button" aria-label="Paramètres">
+            <svg class="pz-gear" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <circle class="pz-gear-path" cx="12" cy="12" r="10"/>
+              <path class="pz-gear-path" d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+          </button>
+          <span class="btn-label">pz-gear-btn</span>
+        </div>
+      </div>
+
+      <!-- Bouton Corbeille -->
+      <div class="button-card">
+        <h3>Corbeille (Supprimer)</h3>
+        <p class="description">Couvercle qui s'ouvre et contenu qui tremble</p>
+        <div class="button-showcase">
+          <button class="pz-trash-btn test-btn" type="button" aria-label="Supprimer">
+            <svg class="pz-trash" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path class="pz-trash-lid" d="M3 6h18"/>
+              <path class="pz-trash-can" d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+          </button>
+          <span class="btn-label">pz-trash-btn</span>
+        </div>
+      </div>
+
+      <!-- Bouton Téléchargement -->
+      <div class="button-card">
+        <h3>Téléchargement</h3>
+        <p class="description">Flèche qui rebondit vers le bas</p>
+        <div class="button-showcase">
+          <button class="pz-download-btn test-btn" type="button" aria-label="Télécharger">
+            <svg class="pz-download" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path class="pz-download-arrow" d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline class="pz-download-arrow" points="7 10 12 15 17 10"/>
+              <line class="pz-download-arrow" x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </button>
+          <span class="btn-label">pz-download-btn</span>
+        </div>
+      </div>
+
+      <!-- Bouton Recherche -->
+      <div class="button-card">
+        <h3>Recherche</h3>
+        <p class="description">Loupe dont le cercle pulse</p>
+        <div class="button-showcase">
+          <button class="pz-search-btn test-btn" type="button" aria-label="Rechercher">
+            <svg class="pz-search" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <circle class="pz-search-circle" cx="11" cy="11" r="8"/>
+              <line class="pz-search-line" x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </button>
+          <span class="btn-label">pz-search-btn</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         SECTION 3 : BOUTONS DE NAVIGATION
+         ========================================================= -->
+    <h2 class="section-title">🧭 Boutons de Navigation</h2>
+    
+    <div class="test-grid">
+      <!-- Bouton Cloche -->
+      <div class="button-card">
+        <h3>Cloche (Notifications)</h3>
+        <p class="description">Cloche qui oscille comme si elle sonnait</p>
+        <div class="button-showcase">
+          <button class="pz-bell-btn test-btn" type="button" aria-label="Notifications">
+            <svg class="pz-bell" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path class="pz-bell-path" d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path class="pz-bell-path" d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+          </button>
+          <span class="btn-label">pz-bell-btn</span>
+        </div>
+      </div>
+
+      <!-- Bouton Enveloppe -->
+      <div class="button-card">
+        <h3>Enveloppe (Messages)</h3>
+        <p class="description">Enveloppe dont le rabat s'ouvre</p>
+        <div class="button-showcase">
+          <button class="pz-mail-btn test-btn" type="button" aria-label="Messages">
+            <svg class="pz-mail" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path class="pz-mail-flap" d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline class="pz-mail-line" points="22,6 12,13 2,6"/>
+            </svg>
+          </button>
+          <span class="btn-label">pz-mail-btn</span>
+        </div>
+      </div>
+
+      <!-- Bouton Flèche Gauche -->
+      <div class="button-card">
+        <h3>Retour (Flèche Gauche)</h3>
+        <p class="description">Flèche qui glisse en arrière</p>
+        <div class="button-showcase">
+          <button class="pz-back-btn test-btn" type="button" aria-label="Retour">
+            <svg class="pz-back" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline class="pz-back-arrow" points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <span class="btn-label">pz-back-btn</span>
+        </div>
+      </div>
+
+      <!-- Bouton Flèche Droite -->
+      <div class="button-card">
+        <h3>Suivant (Flèche Droite)</h3>
+        <p class="description">Flèche qui glisse en avant</p>
+        <div class="button-showcase">
+          <button class="pz-next-btn test-btn" type="button" aria-label="Suivant">
+            <svg class="pz-next" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline class="pz-next-arrow" points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+          <span class="btn-label">pz-next-btn</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         SECTION 4 : BOUTONS DIVERS
+         ========================================================= -->
+    <h2 class="section-title">🎨 Boutons Divers</h2>
+    
+    <div class="test-grid">
+      <!-- Bouton Crayon -->
+      <div class="button-card">
+        <h3>Crayon (Éditer)</h3>
+        <p class="description">Crayon dont la pointe écrit</p>
+        <div class="button-showcase">
+          <button class="pz-edit-btn test-btn" type="button" aria-label="Éditer">
+            <svg class="pz-edit" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path class="pz-edit-tip" d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path class="pz-edit-tip" d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+          <span class="btn-label">pz-edit-btn</span>
+        </div>
+      </div>
+
+      <!-- Bouton Œil -->
+      <div class="button-card">
+        <h3>Œil (Visibilité)</h3>
+        <p class="description">Œil dont la pupille se dilate</p>
+        <div class="button-showcase">
+          <button class="pz-eye-btn test-btn" type="button" aria-label="Afficher/Masquer">
+            <svg class="pz-eye" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <circle class="pz-eye-outline" cx="12" cy="12" r="10"/>
+              <circle class="pz-eye-pupil" cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+          <span class="btn-label">pz-eye-btn</span>
+        </div>
+      </div>
+
+      <!-- Bouton Cadenas -->
+      <div class="button-card">
+        <h3>Cadenas (Verrouillage)</h3>
+        <p class="description">Cadenas dont l'anneau se ferme</p>
+        <div class="button-showcase">
+          <button class="pz-lock-btn test-btn" type="button" aria-label="Verrouiller">
+            <svg class="pz-lock" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <rect class="pz-lock-body" x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path class="pz-lock-shackle" d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </button>
+          <span class="btn-label">pz-lock-btn</span>
+        </div>
+      </div>
+
+      <!-- Bouton Éclair -->
+      <div class="button-card">
+        <h3>Éclair (Action Rapide)</h3>
+        <p class="description">Éclair qui clignote (zap)</p>
+        <div class="button-showcase">
+          <button class="pz-bolt-btn test-btn" type="button" aria-label="Action rapide">
+            <svg class="pz-bolt" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon class="pz-bolt-path" points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+          </button>
+          <span class="btn-label">pz-bolt-btn</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         SECTION 5 : BOUTONS SPÉCIAUX
+         ========================================================= -->
+    <h2 class="section-title">❤️‍🩹 Boutons Spéciaux</h2>
+    
+    <div class="test-grid">
+      <!-- Bouton Cœur Brisé -->
+      <div class="button-card">
+        <h3>Cœur Brisé (Dislike)</h3>
+        <p class="description">Cœur brisé dont les morceaux se séparent</p>
+        <div class="button-showcase">
+          <button class="pz-heart-broken-btn test-btn" type="button" aria-label="Ne plus aimer">
+            <svg class="pz-heart-broken" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path class="pz-heart-broken-piece pz-heart-broken-piece-1" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              <path class="pz-heart-broken-piece pz-heart-broken-piece-2" d="M12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5c0-3.78-3.4-6.86-8.55-11.54L12 21.35z"/>
+            </svg>
+          </button>
+          <span class="btn-label">pz-heart-broken-btn</span>
+        </div>
+      </div>
+
+      <!-- Bouton Partage -->
+      <div class="button-card">
+        <h3>Partage</h3>
+        <p class="description">Flèches de partage qui tournent</p>
+        <div class="button-showcase">
+          <button class="pz-share-btn test-btn" type="button" aria-label="Partager">
+            <svg class="pz-share" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <circle class="pz-share-circle" cx="18" cy="5" r="3"/>
+              <circle class="pz-share-circle" cx="6" cy="12" r="3"/>
+              <circle class="pz-share-circle" cx="18" cy="19" r="3"/>
+              <line class="pz-share-arrow pz-share-arrow-1" x1="8.56" y1="4.51" x2="15.42" y2="7.49"/>
+              <line class="pz-share-arrow pz-share-arrow-2" x1="15.41" y1="16.51" x2="8.57" y2="19.49"/>
+            </svg>
+          </button>
+          <span class="btn-label">pz-share-btn</span>
+        </div>
+      </div>
+
+      <!-- Bouton Déconnexion (Original) -->
+      <div class="button-card">
+        <h3>Déconnexion (Original)</h3>
+        <p class="description">Le bouton qui a inspiré tous les autres</p>
+        <div class="button-showcase">
+          <button class="pz-logout test-btn" type="button" aria-label="Se déconnecter">
+            <svg class="pz-power" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path class="pz-power-ring" d="M7.8 6.3a7 7 0 1 0 8.4 0"/>
+              <line class="pz-power-bar" x1="12" y1="3.2" x2="12" y2="11.5"/>
+            </svg>
+          </button>
+          <span class="btn-label">pz-logout (original)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         SECTION : CODE EXEMPLE
+         ========================================================= -->
+    <h2 class="section-title">📝 Exemple de Code</h2>
+    
+    <div class="button-card" style="margin-bottom: 40px;">
+      <h3>Comment utiliser ces boutons dans ton code ?</h3>
+      <p class="description" style="margin-bottom: 20px;">Copie-colle simplement le code HTML du bouton que tu veux utiliser. Les styles sont déjà chargés via <code>theme.css</code>.</p>
+      
+      <div class="code-block">
+<code>&lt;!-- Exemple avec le bouton Cœur --&gt;
+&lt;button class=&quot;pz-heart-btn&quot; type=&quot;button&quot; aria-label=&quot;Ajouter aux favoris&quot;&gt;
+  &lt;svg class=&quot;pz-heart&quot; viewBox=&quot;0 0 24 24&quot; width=&quot;18&quot; height=&quot;18&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot;&gt;
+    &lt;path class=&quot;pz-heart-path&quot; d=&quot;M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z&quot;/&gt;
+  &lt;/svg&gt;
+&lt;/button&gt;</code>
+      </div>
+      
+      <p class="description" style="margin-top: 16px;">
+        <strong>Note :</strong> Assure-toi que la classe CSS du bouton (<code>pz-heart-btn</code>) et les classes des éléments SVG (<code>pz-heart</code>, <code>pz-heart-path</code>) sont correctement appliquées pour que les animations fonctionnent.
+      </p>
+    </div>
+
+  </div>
+
+  <script>
+    // Thème appliqué au plus tôt
+    (function(){
+      var t=null; try{ t=localStorage.getItem('pz-theme'); }catch(e){}
+      if(!t) t=(window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+    
+    function toggleTheme(){
+      var cur=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';
+      try{ localStorage.setItem('pz-theme', cur); }catch(e){}
+      document.documentElement.setAttribute('data-theme', cur);
+    }
+  </script>
+
+  <!-- Bouton de bascule de thème -->
+  <button class="pz-daynight pz-daynight--fab" type="button" aria-label="Basculer le thème" onclick="toggleTheme()" style="position: fixed; top: 16px; right: 16px; z-index: 1000;">
+    <span class="dn-stars"></span>
+    <span class="dn-clouds"></span>
+    <span class="dn-knob"></span>
+  </button>
+</body>
+</html>
