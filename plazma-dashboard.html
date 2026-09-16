@@ -25,13 +25,13 @@
     display:grid;grid-template-columns:minmax(220px,1.1fr) 2fr;gap:20px;align-items:stretch}
   .today::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
   .today-hero{display:flex;flex-direction:column;justify-content:center;gap:7px}
-  .today-eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .today-eyebrow{font-size:11px;letter-spacing:.08em;text-transform:none;color:var(--muted)}
   .today-main{font-family:var(--font-display);font-size:1.65rem;font-weight:700;line-height:1.1;letter-spacing:-.01em}
   .today-sub{font-size:13px;color:var(--muted)}
   .today-sub b{color:var(--dim);font-weight:600}
   .today-tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
   .ttile{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:13px 15px}
-  .ttile-lbl{display:flex;align-items:center;gap:7px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+  .ttile-lbl{display:flex;align-items:center;gap:7px;font-size:10.5px;letter-spacing:.05em;text-transform:none;color:var(--muted);margin-bottom:9px}
   .ttile-lbl i{width:8px;height:8px;border-radius:50%;background:var(--tc,var(--accent));flex-shrink:0}
   .ttile-val{font-family:var(--font-display);font-size:1.45rem;font-weight:700;line-height:1;letter-spacing:-.01em}
   .ttile-val.sm{font-size:1.05rem}
@@ -76,9 +76,9 @@
   .pc-head{display:flex;align-items:center;gap:9px;padding:12px 13px;border-bottom:1px solid var(--border)}
   .pc-emo{font-size:20px}
   .pc-name{font-family:var(--font-display);font-weight:600;font-size:15px}
-  .pc-role{font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+  .pc-role{font-size:10px;letter-spacing:.06em;text-transform:none;font-weight:600}
   .pc-body{padding:11px 13px;display:flex;flex-direction:column;gap:9px}
-  .pc-lbl{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+  .pc-lbl{font-size:10px;letter-spacing:.06em;text-transform:none;color:var(--muted);margin-bottom:4px}
   .pc-row{display:flex;gap:6px}
   .pc-row>div{flex:1}
   .pc-rank{font-family:var(--font-display);font-weight:600;font-size:15px}
@@ -89,10 +89,10 @@
 
   /* Résultats */
   .forme{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
-  .forme-lbl{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+  .forme-lbl{font-size:11px;letter-spacing:.06em;text-transform:none;color:var(--muted);margin-right:4px}
   .wl-dot{width:16px;height:16px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff}
   .mtable{width:100%;border-collapse:collapse;font-size:13px}
-  .mtable th{text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border)}
+  .mtable th{text-align:left;font-size:10px;letter-spacing:.06em;text-transform:none;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border)}
   .mtable td{padding:9px 10px;border-bottom:1px solid var(--border)}
   .mtable tr[data-row]{cursor:pointer}
   .mtable tr[data-row]:hover td{background:var(--surface-2)}

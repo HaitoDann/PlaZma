@@ -25,12 +25,12 @@
 
 .site-header{padding:20px 32px 0;display:flex;align-items:center;justify-content:space-between}
 .header-pill{background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:999px;padding:5px 14px;
-  font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+  font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:none;color:var(--accent)}
 .header-link{font-size:12px;font-weight:600;color:var(--muted);text-decoration:none}
 .header-link:hover{color:var(--accent)}
 
 .hero{text-align:center;padding:40px 32px 32px}
-.hero-eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:14px}
+.hero-eyebrow{font-size:11px;letter-spacing:.14em;text-transform:none;color:var(--muted);font-weight:600;margin-bottom:14px}
 .hero-title{font-family:var(--font-display);font-size:clamp(38px,7vw,62px);font-weight:700;letter-spacing:-.01em;line-height:1.02;margin-bottom:14px;color:var(--text)}
 .hero-sub{font-size:15px;color:var(--dim);max-width:540px;margin:0 auto;line-height:1.6}
 
@@ -40,7 +40,7 @@
 .fh-inner{display:flex;align-items:center;gap:13px}
 .fh-avatar{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid;flex-shrink:0}
 .fh-name{font-family:var(--font-display);font-size:22px;font-weight:600}
-.fh-role{font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-top:2px;color:var(--muted)}
+.fh-role{font-size:11px;letter-spacing:.08em;text-transform:none;margin-top:2px;color:var(--muted)}
 .fh-date{margin-left:auto;font-size:12px;color:var(--muted);flex-shrink:0}
 .form-body{padding:26px;display:flex;flex-direction:column;gap:28px}
 .form-section{display:flex;flex-direction:column;gap:14px}
@@ -127,7 +127,7 @@
 .rp-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:6px}
 .rp-kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center}
 .rp-kpi-val{font-family:var(--font-display);font-size:1.7rem;font-weight:700;color:var(--accent)}
-.rp-kpi-lbl{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+.rp-kpi-lbl{font-size:11px;letter-spacing:.06em;text-transform:none;color:var(--muted);margin-top:3px}
 .resp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
 .rc-head{padding:12px 16px;background:var(--surface-2);display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
 .resp-card.open .rc-head{border-bottom:1px solid var(--border)}
@@ -501,7 +501,7 @@ function trendCard(rows,metrics){
       <div style="font-family:var(--font-display);font-size:18px;font-weight:700;color:${m.color}">${cur.toFixed(1)}<span style="font-size:11px;color:var(--text3)">/${m.max}</span> <span style="font-size:11px;color:${col};font-weight:600">${arr}</span></div></div>
       <div style="flex:1;min-width:0">${spark(s,m.color,m.max)}</div></div>`; }).filter(Boolean).join('');
   return blocks?`<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:4px">
-    <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;font-weight:600">📈 Évolution dans le temps</div>${blocks}</div>`:'';
+    <div style="font-size:11px;letter-spacing:.06em;text-transform:none;color:var(--text3);margin-bottom:8px;font-weight:600">📈 Évolution dans le temps</div>${blocks}</div>`:'';
 }
 
 function renderAdmin(){
@@ -517,7 +517,7 @@ function renderAdmin(){
     </div>
     ${trendCard(f, COACH_TREND)}
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:4px">
-      <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;font-weight:600">Moyennes — groupe &amp; moyens</div>
+      <div style="font-size:11px;letter-spacing:.06em;text-transform:none;color:var(--text3);margin-bottom:12px;font-weight:600">Moyennes — groupe &amp; moyens</div>
       ${CRITERIA.map(c=>`<div style="display:flex;align-items:center;gap:12px;margin-bottom:7px">
         <div style="font-size:13px;color:var(--text2);min-width:250px">${c.label.replace('&amp;','&')}</div>
         <div style="display:flex;gap:3px;flex:1">${Array.from({length:5},(_,i)=>`<div style="flex:1;height:6px;border-radius:2px;background:${c.color};opacity:${parseFloat(avgCrit(c.id))>i?1:.14}"></div>`).join('')}</div>
@@ -554,7 +554,7 @@ function rCard(r){
     </div>
     <div class="rc-body">
       ${rows.map(([q,a])=>`<div class="rc-row"><div class="rc-q">${q}</div><div class="rc-a">${a}</div></div>`).join('')}
-      <div class="rc-row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:8px;flex-direction:column;gap:6px"><div class="rc-q" style="color:${COACH_HEX};font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:11px">Groupe & moyens</div>${critRows}</div>
+      <div class="rc-row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:8px;flex-direction:column;gap:6px"><div class="rc-q" style="color:${COACH_HEX};font-weight:700;letter-spacing:.06em;text-transform:none;font-size:11px">Groupe & moyens</div>${critRows}</div>
     </div>
   </div>`;
 }
