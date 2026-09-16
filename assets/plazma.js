@@ -715,10 +715,19 @@
 
   // ---- Boîte à idées — tout utilisateur peut proposer ----
   const IDEA_CATS = [
-    ['feature', '✨ Fonctionnalité'], ['improve', '⚡ Amélioration'],
-    ['bug', '🐞 Bug / souci'], ['team', '🎯 Équipe / staff'], ['other', '💬 Autre']
+    ['feature', 'Fonctionnalité'], ['improve', 'Amélioration'],
+    ['bug', 'Bug / souci'], ['team', 'Équipe / staff'], ['other', 'Autre']
   ];
   const IDEA_CAT_LABEL = Object.fromEntries(IDEA_CATS);
+  // Icônes ligne (remplacent les emojis d'interface).
+  const _icoSvg = p => '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px">' + p + '</svg>';
+  const IDEA_CAT_ICON = {
+    feature: _icoSvg('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>'),
+    improve: _icoSvg('<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>'),
+    bug:     _icoSvg('<rect x="8" y="6" width="8" height="13" rx="4"/><path d="M19 8h-3M8 8H5M20 13h-4M8 13H4M19 18h-3M8 18H5M12 2v4"/>'),
+    team:    _icoSvg('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>'),
+    other:   _icoSvg('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>')
+  };
   function _myIdeas() { try { return JSON.parse(localStorage.getItem('pz-my-ideas') || '[]') || []; } catch (e) { return []; } }
   function _pushMyIdea(o) { try { const a = _myIdeas(); a.unshift(o); localStorage.setItem('pz-my-ideas', JSON.stringify(a.slice(0, 50))); } catch (e) {} }
   function submitIdea(text, meta) {
@@ -778,10 +787,10 @@
     const cats = IDEA_CATS.map(([v, l], i) =>
       '<button type="button" class="pz-idea-cat" data-cat="' + v + '"' +
       ' style="padding:6px 11px;border-radius:20px;border:1px solid var(--border-2);cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;' +
-      (i === 0 ? 'background:var(--accent-soft);color:var(--accent);border-color:transparent' : 'background:transparent;color:var(--muted)') + '">' + l + '</button>').join('');
+      (i === 0 ? 'background:var(--accent-soft);color:var(--accent);border-color:transparent' : 'background:transparent;color:var(--muted)') + '">' + (IDEA_CAT_ICON[v] || '') + l + '</button>').join('');
     const tab = (id, l, on) => '<button type="button" class="pz-idea-tab" data-tab="' + id + '" style="flex:1;padding:9px 6px;border:0;background:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;border-bottom:2px solid ' + (on ? 'var(--accent)' : 'transparent') + ';color:' + (on ? 'var(--text)' : 'var(--muted)') + '">' + l + '</button>';
     const { ov, close } = _overlay(
-      '<h3 style="font-family:var(--font-display,inherit);margin:0 0 3px;font-size:17px">💡 Boîte à idées</h3>' +
+      '<h3 style="font-family:var(--font-display,inherit);margin:0 0 3px;font-size:17px">Boîte à idées</h3>' +
       '<p style="color:var(--muted);font-size:12.5px;margin:0 0 12px">Propose une idée, un axe d\'amélioration ou signale un souci. Le staff les consulte dans l\'administration.</p>' +
       '<div style="display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:14px">' + tab('new', 'Proposer', true) + tab('mine', 'Mes idées', false) + '</div>' +
       // --- Onglet Proposer ---
@@ -821,7 +830,7 @@
         const d = new Date(o.ts); const when = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
         return '<div style="border:1px solid var(--border);border-radius:11px;padding:10px 13px;margin-bottom:8px;background:var(--surface)">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:5px">' +
-          '<span style="font-size:11px;font-weight:700;color:var(--accent)">' + (IDEA_CAT_LABEL[o.category] || '💬 Autre') + '</span>' +
+          '<span style="font-size:11px;font-weight:700;color:var(--accent)">' + (IDEA_CAT_ICON[o.category] || '') + (IDEA_CAT_LABEL[o.category] || 'Autre') + '</span>' +
           '<span style="font-size:11px;color:var(--muted)">' + when + '</span></div>' +
           '<div style="font-size:13px;color:var(--text);line-height:1.45;white-space:pre-wrap">' + escHtml(o.text) + '</div></div>';
       }).join('');
