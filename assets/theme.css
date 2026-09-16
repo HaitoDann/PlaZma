@@ -1029,7 +1029,7 @@ html.pz-theme-anim::view-transition-old(root){ z-index:1 }
 /* crayon : écriture */
 @keyframes ib-pencil{0%,100%{transform:translate(0,0) rotate(0)}25%{transform:translate(-1px,1px) rotate(-3deg)}75%{transform:translate(1px,-1px) rotate(3deg)}}
 /* corbeille narrative : sous-parties animées séparément */
-.ib-trash .tr-lid{transform-box:fill-box;transform-origin:right bottom;transition:transform .2s}
+.ib-trash .tr-lid{transform-box:fill-box;transform-origin:left bottom;transition:transform .2s}
 .ib-trash .tr-item{transform-box:fill-box;transform-origin:center;opacity:0}
 @keyframes tr-lid {0%,100%{transform:rotate(0)}14%,60%{transform:rotate(-45deg)}}
 @keyframes tr-item{
