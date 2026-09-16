@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929s">
+<link rel="stylesheet" href="assets/theme.css?v=20260929t">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -144,7 +144,7 @@
     <div class="dash-actions">
       <span class="sync-pill"><span class="sync-dot offline" id="syncDot"></span><span id="syncText">En attente…</span><span class="sync-time" id="syncTime"></span></span>
       <button class="btn btn-sm" id="btnRefresh" title="Recharger les données agrégées"><svg class="ib ib-refresh" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></svg> Actualiser</button>
-      <button class="btn btn-sm btn-danger" id="btnReset" data-edit><svg class="ib ib-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Reset</button>
+      <button class="btn btn-sm btn-danger" id="btnReset" data-edit><svg class="ib ib-trash" viewBox="0 0 24 24"><circle class="tr-item" cx="12" cy="3" r="1.5" fill="currentColor" stroke="none"/><g class="tr-lid"><polyline points="3 6 5 6 21 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></g><g class="tr-can"><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></g></svg> Reset</button>
       <button class="btn btn-sm btn-primary" onclick="openAddOffi()" data-edit><svg class="ib ib-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Officiel</button>
     </div>
   </div>
@@ -234,7 +234,7 @@
     </div>
     <div class="field"><label>Note</label><textarea id="mNote" rows="2" placeholder="Compétition, faits marquants…"></textarea></div>
     <div class="modal-actions">
-      <button class="btn btn-danger" id="mDel" style="display:none;flex:0" onclick="deleteOffi()"><svg class="ib ib-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Supprimer</button>
+      <button class="btn btn-danger" id="mDel" style="display:none;flex:0" onclick="deleteOffi()"><svg class="ib ib-trash" viewBox="0 0 24 24"><circle class="tr-item" cx="12" cy="3" r="1.5" fill="currentColor" stroke="none"/><g class="tr-lid"><polyline points="3 6 5 6 21 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></g><g class="tr-can"><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></g></svg> Supprimer</button>
       <button class="btn btn-ghost" onclick="closeModals()">Annuler</button>
       <button class="btn btn-primary" id="mConf"><svg class="ib ib-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Ajouter</button>
     </div>
@@ -255,7 +255,7 @@
       <div class="field"><label>Échéance</label><input type="date" id="oDl"></div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-danger" id="oDel" style="display:none;flex:0" onclick="deleteObj()"><svg class="ib ib-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Supprimer</button>
+      <button class="btn btn-danger" id="oDel" style="display:none;flex:0" onclick="deleteObj()"><svg class="ib ib-trash" viewBox="0 0 24 24"><circle class="tr-item" cx="12" cy="3" r="1.5" fill="currentColor" stroke="none"/><g class="tr-lid"><polyline points="3 6 5 6 21 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></g><g class="tr-can"><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></g></svg> Supprimer</button>
       <button class="btn btn-ghost" onclick="closeModals()">Annuler</button>
       <button class="btn btn-primary" id="oConf"><svg class="ib ib-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Ajouter</button>
     </div>
@@ -264,7 +264,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="assets/plazma.js?v=20260929s" data-section="dashboard"></script>
+<script src="assets/plazma.js?v=20260929t" data-section="dashboard"></script>
 <script>
 'use strict';
 PZ.mountNav('dashboard', '#nav');

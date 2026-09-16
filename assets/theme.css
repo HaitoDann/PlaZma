@@ -983,7 +983,9 @@ html.pz-theme-anim::view-transition-old(root){ z-index:1 }
 @media(prefers-reduced-motion:no-preference){
   .btn:hover .ib-plus   {animation:ib-plus    1.1s ease-in-out infinite}
   .btn:hover .ib-refresh{animation:ib-refresh .9s  linear      infinite}
-  .btn:hover .ib-trash  {animation:ib-trash   .9s  ease-in-out infinite}
+  /* corbeille narrative : le couvercle s'ouvre, un déchet tombe, le couvercle se referme */
+  .btn:hover .ib-trash .tr-lid {animation:tr-lid  1.5s ease-in-out infinite}
+  .btn:hover .ib-trash .tr-item{animation:tr-item 1.5s ease-in-out infinite}
   .btn:hover .ib-send   {animation:ib-send    1s   ease-in-out infinite}
   .btn:hover .ib-discord{animation:ib-send    1s   ease-in-out infinite}
   .btn:hover .ib-save   {animation:ib-save    1s   ease-in-out infinite}
@@ -998,8 +1000,16 @@ html.pz-theme-anim::view-transition-old(root){ z-index:1 }
 @keyframes ib-plus   {0%,100%{transform:rotate(0) scale(1)}50%{transform:rotate(90deg) scale(1.12)}}
 /* rotation continue */
 @keyframes ib-refresh{to{transform:rotate(360deg)}}
-/* corbeille : le couvercle bascule d'avant en arrière */
-@keyframes ib-trash  {0%,100%{transform:rotate(0)}20%{transform:rotate(-14deg)}55%{transform:rotate(10deg)}80%{transform:rotate(-4deg)}}
+/* corbeille narrative : sous-parties animées séparément */
+.ib-trash .tr-lid{transform-box:fill-box;transform-origin:right bottom;transition:transform .2s}
+.ib-trash .tr-item{transform-box:fill-box;transform-origin:center;opacity:0}
+@keyframes tr-lid {0%,100%{transform:rotate(0)}12%,58%{transform:rotate(-42deg)}}
+@keyframes tr-item{
+  0%,8%{opacity:0;transform:translateY(-3px) scale(.8)}
+  18%{opacity:1;transform:translateY(-3px) scale(1)}
+  46%{opacity:1;transform:translateY(8px) scale(.9)}
+  54%,100%{opacity:0;transform:translateY(9px) scale(.6)}
+}
 /* avion/discord : décolle en diagonale puis revient */
 @keyframes ib-send   {0%{transform:translate(0,0)}45%{transform:translate(4px,-4px) rotate(6deg)}60%{transform:translate(-1px,1px)}100%{transform:translate(0,0)}}
 /* disquette : petit rebond vertical */
