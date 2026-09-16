@@ -143,6 +143,11 @@ h3{font-size:1.02rem}
 }
 .pz-nav-ico:hover{color:var(--accent);background:var(--elevated);transform:translateY(-1px)}
 .pz-nav-ico:active{transform:translateY(0) scale(.94)}
+.pz-nav-ico svg{transition:transform .2s ease;transform-box:fill-box;transform-origin:center}
+@media(prefers-reduced-motion:no-preference){
+  .pz-nav-ico:hover svg{animation:fab-idea 1.1s ease-in-out infinite}
+}
+@keyframes fab-idea{0%,100%{transform:translateY(0) scale(1) rotate(0)}30%{transform:translateY(-2px) scale(1.1) rotate(-5deg)}65%{transform:translateY(0) scale(1.05) rotate(5deg)}}
 
 /* Badge « idées non lues » sur le bouton Système */
 .pz-idea-badge{
@@ -974,21 +979,40 @@ html.pz-theme-anim::view-transition-old(root){ z-index:1 }
   stroke-linecap:round;stroke-linejoin:round;transform-box:fill-box;transform-origin:center;
   transition:transform .2s ease}
 .btn-sm .ib{width:14px;height:14px}
+/* Animations plus évoluées : mouvement continu tant que le bouton est survolé. */
 @media(prefers-reduced-motion:no-preference){
-  .btn:hover .ib-plus{animation:ib-plus .45s ease}
-  .btn:hover .ib-refresh{animation:ib-refresh .7s ease}
-  .btn:hover .ib-trash{animation:ib-wobble .5s ease}
-  .btn:hover .ib-send{animation:ib-send .55s ease}
-  .btn:hover .ib-save{animation:ib-pop .4s ease}
-  .btn:hover .ib-doc{animation:ib-pop .4s ease}
-  .btn:hover .ib-chart{animation:ib-pop .4s ease}
-  .btn:hover .ib-link{animation:ib-wobble .5s ease}
-  .btn:hover .ib-menu{animation:ib-pop .4s ease}
-  .btn:hover .ib-copy{animation:ib-pop .4s ease}
-  .btn:hover .ib-discord{animation:ib-send .55s ease}
+  .btn:hover .ib-plus   {animation:ib-plus    1.1s ease-in-out infinite}
+  .btn:hover .ib-refresh{animation:ib-refresh .9s  linear      infinite}
+  .btn:hover .ib-trash  {animation:ib-trash   .9s  ease-in-out infinite}
+  .btn:hover .ib-send   {animation:ib-send    1s   ease-in-out infinite}
+  .btn:hover .ib-discord{animation:ib-send    1s   ease-in-out infinite}
+  .btn:hover .ib-save   {animation:ib-save    1s   ease-in-out infinite}
+  .btn:hover .ib-doc    {animation:ib-bob     1s   ease-in-out infinite}
+  .btn:hover .ib-chart  {animation:ib-chart   1s   ease-in-out infinite}
+  .btn:hover .ib-link   {animation:ib-link    1.1s ease-in-out infinite}
+  .btn:hover .ib-menu   {animation:ib-menu    .9s  ease-in-out infinite}
+  .btn:hover .ib-copy   {animation:ib-copy    1s   ease-in-out infinite}
+  .btn:hover .ib-history{animation:ib-history 1.3s cubic-bezier(.5,0,.2,1) infinite}
 }
-@keyframes ib-plus   {from{transform:rotate(0)}to{transform:rotate(90deg)}}
+/* + qui tourne d'un quart et respire */
+@keyframes ib-plus   {0%,100%{transform:rotate(0) scale(1)}50%{transform:rotate(90deg) scale(1.12)}}
+/* rotation continue */
 @keyframes ib-refresh{to{transform:rotate(360deg)}}
-@keyframes ib-wobble {0%,100%{transform:rotate(0)}25%{transform:rotate(-11deg)}75%{transform:rotate(11deg)}}
-@keyframes ib-send   {0%{transform:none}40%{transform:translate(3px,-3px)}100%{transform:none}}
-@keyframes ib-pop    {0%{transform:scale(1)}45%{transform:scale(1.18)}100%{transform:scale(1)}}
+/* corbeille : le couvercle bascule d'avant en arrière */
+@keyframes ib-trash  {0%,100%{transform:rotate(0)}20%{transform:rotate(-14deg)}55%{transform:rotate(10deg)}80%{transform:rotate(-4deg)}}
+/* avion/discord : décolle en diagonale puis revient */
+@keyframes ib-send   {0%{transform:translate(0,0)}45%{transform:translate(4px,-4px) rotate(6deg)}60%{transform:translate(-1px,1px)}100%{transform:translate(0,0)}}
+/* disquette : petit rebond vertical */
+@keyframes ib-save   {0%,100%{transform:translateY(0)}35%{transform:translateY(-2px) scale(1.06)}70%{transform:translateY(1px)}}
+/* barres du graphe qui montent/descendent */
+@keyframes ib-chart  {0%,100%{transform:scaleY(1)}25%{transform:scaleY(1.22)}50%{transform:scaleY(.82)}75%{transform:scaleY(1.12)}}
+/* léger flottement */
+@keyframes ib-bob    {0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+/* maillon qui pivote */
+@keyframes ib-link   {0%,100%{transform:rotate(0)}30%{transform:rotate(-12deg)}70%{transform:rotate(12deg)}}
+/* menu : petit décalage latéral */
+@keyframes ib-menu   {0%,100%{transform:translateX(0)}30%{transform:translateX(-1.5px)}70%{transform:translateX(1.5px)}}
+/* copie : soulève la feuille */
+@keyframes ib-copy   {0%,100%{transform:translate(0,0)}45%{transform:translate(1.5px,-1.5px) scale(1.06)}}
+/* historique : rembobinage (rotation anti-horaire) + léger rebond d'échelle */
+@keyframes ib-history{0%{transform:rotate(0) scale(1)}55%{transform:rotate(-320deg) scale(.92)}100%{transform:rotate(-360deg) scale(1)}}
