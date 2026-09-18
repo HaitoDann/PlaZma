@@ -17,6 +17,24 @@ bas de la fenêtre **Paramètres**.
 
 ## 2.x — Refonte visuelle & administration
 
+### 2.12.0 — Statistiques du club (tableau de bord chiffré)
+- **Nouvelle page admin `Statistiques du club`** (`plazma-stats.html`),
+  complément quantitatif du Pilotage :
+  - **Communauté & audience** : abonnés par réseau (X, Insta, TikTok, YouTube,
+    Twitch) + membres Discord, total agrégé et courbe d'évolution.
+  - **Finances** : trésorerie, revenus/dépenses du mois, résultat net et
+    « autonomie » (runway), courbe de trésorerie.
+  - **Effectif & RH** : titulaires / remplaçants / staff / total, calculé
+    automatiquement depuis les comptes.
+  - **Suivi mensuel** : bouton « Enregistrer le relevé du mois » qui fige un
+    snapshot daté → variations (▲/▼) et courbes alimentées automatiquement ;
+    historique sur 12 mois.
+- Saisie hybride (auto quand ARCHI a la donnée, manuelle sinon), sauvegarde
+  auto et partagée entre admins (doc Firestore `plazma/club-stats`).
+- Accès via un **bouton dédié** sur l'accueil (admins) + gate admin.
+- ⚠️ **Règles Firestore** mises à jour (`club-stats` en admin) : à redéployer
+  manuellement dans la console Firebase.
+
 ### 2.11.0 — Pilotage du club (vue hors-terrain)
 - **Nouvelle page admin `Pilotage du club`** (`plazma-club.html`) : regroupe
   tout le hors-sportif en 6 domaines — Organisation, Compétition, Équipe,

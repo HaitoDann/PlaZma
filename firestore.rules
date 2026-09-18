@@ -46,6 +46,7 @@ service cloud.firestore {
               docId == 'config'
            || (docId == '_usage'           && isAdmin())
            || (docId == 'club-vision'      && isAdmin())
+           || (docId == 'club-stats'       && isAdmin())
            || (docId == 'team-identity'    && canRead('team'))
            || (docId == 'dashboard'        && canRead('dashboard'))
            || (docId == 'coach-evaluation' && canRead('coach'))
@@ -56,6 +57,7 @@ service cloud.firestore {
               (docId == 'config'           && isAdmin())
            || (docId == '_usage'           && active())
            || (docId == 'club-vision'      && isAdmin())
+           || (docId == 'club-stats'       && isAdmin())
            || (docId == 'roster'           && canWrite('team'))
            || (docId == 'team-identity'    && canWrite('team'))
            || (docId == 'dashboard'        && canWrite('dashboard'))
