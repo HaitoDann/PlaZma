@@ -8,18 +8,18 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260929x">
+<link rel="stylesheet" href="assets/theme.css?v=20260929y">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
-  /* ââ Layout ââ */
+  /* ── Layout ── */
   body{display:flex;flex-direction:column;align-items:center;padding-bottom:64px;
     animation:pz-enter .55s ease both}
   @keyframes pz-enter{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
   .home{width:100%;max-width:var(--page-max);padding:0 var(--gut)}
 
-  /* ââ #26 Scroll progress bar ââ */
+  /* ── #26 Scroll progress bar ── */
   #scroll-prog{
     position:fixed;top:0;left:0;height:2px;z-index:9999;width:100%;
     background:var(--accent);
@@ -28,10 +28,10 @@
     pointer-events:none;
   }
 
-  /* ââ Hero ââ */
+  /* ── Hero ── */
   .hero{text-align:center;padding:64px 0 40px}
 
-  /* #1 Logo â formation Â« forge Â» (plus de flottement permanent : perf) */
+  /* #1 Logo — formation « forge » (plus de flottement permanent : perf) */
   .hero-logo{
     width:112px;height:90px;margin:0 auto 20px;position:relative;perspective:900px;
   }
@@ -76,14 +76,14 @@
     .hero-logo{animation:none}
   }
 
-  /* #5 Titre ARCHI â entrÃ©e letter-spacing */
+  /* #5 Titre ARCHI — entrée letter-spacing */
   @keyframes title-in{from{opacity:0;letter-spacing:.2em;filter:blur(4px)}to{opacity:1;letter-spacing:.04em;filter:none}}
   .hero h1{
     font-size:clamp(44px,9vw,76px);letter-spacing:.04em;margin-bottom:10px;
     animation:title-in .85s cubic-bezier(.16,1,.3,1) both .12s;
   }
 
-  /* #8 SÃ©parateur animÃ© */
+  /* #8 Séparateur animé */
   @keyframes sep-grow{from{width:0;opacity:0}to{width:64px;opacity:1}}
   @keyframes fade-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .hero-sep{
@@ -95,7 +95,7 @@
   .hero-sub{color:var(--dim);font-size:15px;animation:fade-up .5s cubic-bezier(.16,1,.3,1) both .55s}
   .hero-sub b{color:var(--text);font-weight:600}
 
-  /* Barre de boutons flottants (haut-droite) â les cachÃ©s se replient */
+  /* Barre de boutons flottants (haut-droite) — les cachés se replient */
   #topFabs{position:fixed;top:16px;right:16px;z-index:50;display:flex;align-items:center;gap:10px}
   #topFabs [hidden]{display:none}
   .acct-fab{width:40px;height:40px;
@@ -106,18 +106,18 @@
     transform:scale(1.08);box-shadow:0 0 16px rgba(34,211,238,.28)}
   .acct-fab:active{transform:scale(.92)}
   .acct-fab svg{transition:transform .5s cubic-bezier(.34,1.56,.64,1)}
-  /* Effet de survol propre Ã  chaque bouton */
-  /* DÃ©connexion : mÃªme icÃ´ne Â« power Â» animÃ©e que la barre de navigation */
+  /* Effet de survol propre à chaque bouton */
+  /* Déconnexion : même icône « power » animée que la barre de navigation */
   #logoutFab:hover{color:var(--err);border-color:color-mix(in srgb,var(--err) 45%,var(--border));box-shadow:0 0 16px rgba(239,68,68,.28)}
   #logoutFab:hover .pz-power-bar{animation:pz-power-bar 1.1s ease-in-out infinite}
   #logoutFab:hover .pz-power-ring{animation:pz-power-ring 2.2s linear infinite}
   /* Comptes & droits : les silhouettes se balancent */
   #acctBtn:hover svg{animation:fab-people 1.2s ease-in-out infinite;transform-origin:center bottom}
   @keyframes fab-people{0%,100%{transform:none}30%{transform:translateX(-1.5px) rotate(-5deg)}70%{transform:translateX(1.5px) rotate(5deg)}}
-  /* Administration du site : la courbe d'activitÃ© bat comme un moniteur */
+  /* Administration du site : la courbe d'activité bat comme un moniteur */
   #sysBtn:hover svg{animation:fab-activity 1s ease-in-out infinite;transform-origin:center}
   @keyframes fab-activity{0%,100%{transform:scaleY(1)}25%{transform:scaleY(1.3)}50%{transform:scaleY(.82)}75%{transform:scaleY(1.15)}}
-  /* BoÃ®te Ã  idÃ©es : l'ampoule s'allume et rebondit */
+  /* Boîte à idées : l'ampoule s'allume et rebondit */
   #ideasFab:hover{box-shadow:0 0 18px color-mix(in srgb,var(--accent) 32%,transparent)}
   #ideasFab:hover svg{animation:fab-idea 1.1s ease-in-out infinite;transform-origin:center}
   #ideasFab .bulb-rays{opacity:0}
@@ -125,7 +125,7 @@
   @keyframes bulb-rays{0%,100%{opacity:0}30%{opacity:.95}65%{opacity:.4}}
   @keyframes fab-idea{0%,100%{transform:translateY(0) scale(1) rotate(0)}30%{transform:translateY(-2px) scale(1.1) rotate(-5deg)}65%{transform:translateY(0) scale(1.05) rotate(5deg)}}
 
-  /* ââ #27 Sections scroll-reveal (progressive) ââ */
+  /* ── #27 Sections scroll-reveal (progressive) ── */
   .sec{
     margin-top:44px;
     opacity:0;transform:translateY(20px);
@@ -137,10 +137,10 @@
   /* #28 Ligne de section en gradient */
   .sec-head .line{flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
 
-  /* ââ Tool grid ââ */
+  /* ── Tool grid ── */
   .tools{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 
-  /* #12 Stagger entrÃ©e outils (progressive â dÃ©clenchÃ© par IntersectionObserver) */
+  /* #12 Stagger entrée outils (progressive — déclenché par IntersectionObserver) */
   @keyframes tool-rise{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
   .tool{
     display:flex;flex-direction:column;gap:6px;
@@ -161,7 +161,7 @@
   .tools.revealed .tool:nth-child(7){animation-delay:.20s}
   .tools.revealed .tool:nth-child(8){animation-delay:.23s}
 
-  /* #15 Barre latÃ©rale â transition progressive */
+  /* #15 Barre latérale — transition progressive */
   .tool::before{
     content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
     background:var(--tc,var(--accent));opacity:.7;
@@ -169,7 +169,7 @@
   }
   .tool:hover::before{opacity:1;width:4px}
 
-  /* #14 Glow colorÃ© au hover */
+  /* #14 Glow coloré au hover */
   .tool:hover{
     transform:translateY(-3px);
     border-color:color-mix(in srgb,var(--tc,var(--accent)) 35%,var(--border));
@@ -179,7 +179,7 @@
   .tool-ico{margin-bottom:6px;display:flex}
   .tool-ico svg{width:26px;height:26px;stroke:var(--tc,var(--accent));stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none;flex-shrink:0;
     transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
-  /* Anim Ã©voluÃ©e : l'icÃ´ne se redessine (tracÃ© uniforme via pathLength=100) */
+  /* Anim évoluée : l'icône se redessine (tracé uniforme via pathLength=100) */
   .tool-ico svg *{stroke-dasharray:100}
   .tool:hover .tool-ico svg{transform:scale(1.12)}
   .tool:hover .tool-ico svg *{animation:ico-draw .8s cubic-bezier(.65,0,.35,1)}
@@ -189,7 +189,7 @@
   }
   .tool-name{font-family:var(--font-display);font-size:17px;font-weight:600}
 
-  /* #16 Ripple clic (vide seulement â voir JS) */
+  /* #16 Ripple clic (vide seulement — voir JS) */
   @keyframes water-rip{
     0%  {transform:scale(0);opacity:var(--op,.6)}
     15% {opacity:var(--op,.6)}
@@ -201,10 +201,10 @@
     transform:scale(0);
   }
 
-  /* ââ Roster ââ */
+  /* ── Roster ── */
   .roster{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
 
-  /* #22 Stagger entrÃ©e joueurs (progressive) */
+  /* #22 Stagger entrée joueurs (progressive) */
   @keyframes pcard-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
   .pcard{
     position:relative;overflow:hidden;
@@ -214,7 +214,7 @@
     transition:border-color .22s,transform .22s cubic-bezier(.16,1,.3,1),box-shadow .22s,background .22s;
     opacity:0;
   }
-  /* liserÃ© de rÃ´le en haut de la carte */
+  /* liseré de rôle en haut de la carte */
   .pcard::before{
     content:"";position:absolute;top:0;left:0;right:0;height:3px;
     background:linear-gradient(90deg,transparent,var(--role,var(--accent)),transparent);
@@ -234,14 +234,16 @@
   }
   .pcard:hover::before{opacity:1;height:4px}
   .pcard-av{
-    width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;
-    background:color-mix(in srgb,var(--role) 12%,transparent);
-    border:1px solid color-mix(in srgb,var(--role) 30%,transparent);
+    width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:.02em;
+    color:var(--role,var(--accent));
+    background:linear-gradient(150deg,color-mix(in srgb,var(--role) 18%,transparent),color-mix(in srgb,var(--role) 7%,transparent));
+    border:1px solid color-mix(in srgb,var(--role) 32%,transparent);
     transition:transform .22s cubic-bezier(.16,1,.3,1),box-shadow .22s;
   }
   .pcard:hover .pcard-av{transform:scale(1.08) translateY(-1px);box-shadow:0 0 0 4px color-mix(in srgb,var(--role) 14%,transparent)}
   .pcard-name{font-family:var(--font-display);font-size:16px;font-weight:600;letter-spacing:-.01em}
-  /* CTA : prend la couleur du rÃ´le + la flÃ¨che glisse au survol */
+  /* CTA : prend la couleur du rôle + la flèche glisse au survol */
   .pcard-cta{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);transition:color .2s}
   .pcard:hover .pcard-cta{color:var(--role,var(--accent))}
   .pcard-arrow{display:inline-block;transition:transform .22s cubic-bezier(.16,1,.3,1)}
@@ -251,31 +253,16 @@
   .pcard-skel{opacity:1 !important}
   .pcard-skel .pcard-av{background:var(--surface-2)!important;border-color:transparent!important}
 
-  /* ââ Staff ââ */
+  /* ── Staff ── */
   .staff{display:flex;justify-content:center}
   .staff .pcard{flex-direction:row;align-items:center;gap:16px;text-align:left;min-width:250px;padding:16px 24px 16px 22px;opacity:0}
-  /* pour le staff, le liserÃ© passe Ã  gauche (barre verticale) */
+  /* pour le staff, le liseré passe à gauche (barre verticale) */
   .staff .pcard::before{top:0;bottom:0;left:0;right:auto;width:3px;height:auto;
     background:linear-gradient(180deg,transparent,var(--role,var(--accent)),transparent)}
   .staff .pcard:hover::before{width:4px;height:auto}
   .staff.revealed .pcard{animation:pcard-in .48s cubic-bezier(.16,1,.3,1) both .1s}
 
-  /* ââ Wiki chercheur rapide ââ */
-  .sec-head .wiki-all{margin-left:auto;font-size:12px;font-weight:600;color:var(--muted);transition:color .15s}
-  .sec-head .wiki-all:hover{color:var(--accent)}
-  #wikiSearch{width:100%}
-  .wiki-res{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:10px;margin-top:12px}
-  .wiki-hint{grid-column:1/-1;color:var(--muted);font-size:12.5px;padding:6px 2px}
-  /* #29 Tiles Wiki hover */
-  .wr-tile{display:flex;flex-direction:column;align-items:center;gap:5px;padding:9px 5px;text-decoration:none;
-    background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
-    transition:transform .15s,border-color .15s,box-shadow .15s}
-  .wr-tile:hover{transform:translateY(-4px);border-color:var(--accent-line);box-shadow:0 6px 18px rgba(34,211,238,.11)}
-  .wr-tile img{width:46px;height:46px;border-radius:11px;display:block;transition:transform .18s cubic-bezier(.16,1,.3,1)}
-  .wr-tile:hover img{transform:scale(1.08)}
-  .wr-tile span{font-size:11px;font-weight:600;color:var(--text);text-align:center;line-height:1.2}
-
-  /* #30 Footer fade-in diffÃ©rÃ© */
+  /* #30 Footer fade-in différé */
   footer{
     margin-top:52px;padding-top:22px;border-top:1px solid var(--border);width:100%;
     display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;
@@ -310,13 +297,13 @@
   <a id="acctBtn" class="acct-fab" href="plazma-admin.html" title="Comptes &amp; droits" aria-label="Comptes et droits" hidden>
     <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
   </a>
-  <button class="acct-fab" id="ideasFab" type="button" title="BoÃ®te Ã  idÃ©es" aria-label="BoÃ®te Ã  idÃ©es" onclick="window.PZ&&PZ.openIdeas&&PZ.openIdeas()">
+  <button class="acct-fab" id="ideasFab" type="button" title="Boîte à idées" aria-label="Boîte à idées" onclick="window.PZ&&PZ.openIdeas&&PZ.openIdeas()">
     <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><g class="bulb-rays"><line x1="5.5" y1="5" x2="3.8" y2="3.4"/><line x1="12" y1="1.4" x2="12" y2="0"/><line x1="18.5" y1="5" x2="20.2" y2="3.4"/></g><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a6 6 0 0 0-4 10c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5a6 6 0 0 0-4-10Z"/></svg>
   </button>
-  <button class="acct-fab" id="logoutFab" type="button" title="Se dÃ©connecter" aria-label="Se dÃ©connecter" onclick="window.PZ&&PZ.logout&&PZ.logout()">
+  <button class="acct-fab" id="logoutFab" type="button" title="Se déconnecter" aria-label="Se déconnecter" onclick="window.PZ&&PZ.logout&&PZ.logout()">
     <svg class="pz-power" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path class="pz-power-ring" d="M7.8 6.3a7 7 0 1 0 8.4 0"/><line class="pz-power-bar" x1="12" y1="3.2" x2="12" y2="11.5"/></svg>
   </button>
-  <button id="themeFab" class="pz-daynight" type="button" aria-label="Basculer thÃ¨me" onclick="PZ.toggleTheme()">
+  <button id="themeFab" class="pz-daynight" type="button" aria-label="Basculer thème" onclick="PZ.toggleTheme()">
     <span class="dn-stars"></span>
     <span class="dn-clouds"></span>
     <span class="dn-knob"></span>
@@ -357,7 +344,7 @@
       </a>
       <a class="tool" href="plazma-team.html" style="--tc:#22d3ee">
         <span class="tool-ico"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-        <span class="tool-name">Ãquipe</span>
+        <span class="tool-name">Équipe</span>
       </a>
       <a class="tool" href="plazma-dashboard.html" style="--tc:#38bdf8">
         <span class="tool-ico"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
@@ -367,22 +354,11 @@
         <span class="tool-ico"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
         <span class="tool-name">Satisfaction</span>
       </a>
-      <a class="tool" href="plazma-wiki.html" style="--tc:#64748b">
-        <span class="tool-ico"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 0 3-3h7z"/></svg></span>
-        <span class="tool-name">Wiki</span>
-      </a>
       <a class="tool" href="plazma-wiki-perf.html" style="--tc:#eab308">
         <span class="tool-ico"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
-        <span class="tool-name">EncyclopÃ©die</span>
+        <span class="tool-name">Encyclopédie</span>
       </a>
     </div>
-  </section>
-
-  <!-- WIKI â chercheur rapide -->
-  <section class="sec" id="sec-wiki">
-    <div class="sec-head"><h2>Wiki champions</h2><span class="line"></span><a class="wiki-all" href="plazma-wiki.html">Tout voir â</a></div>
-    <input id="wikiSearch" type="text" placeholder="Rechercher un champion â sorts, stats, cooldownsâ¦" autocomplete="off" spellcheck="false">
-    <div class="wiki-res" id="wikiRes"><div class="wiki-hint">Tape un nom de champion pour ouvrir sa fiche.</div></div>
   </section>
 
   <!-- ROSTER -->
@@ -410,27 +386,32 @@
   </section>
 
   <footer>
-    <a href="plazma-schedule.html">Planning</a><span class="dot">Â·</span>
-    <a href="plazma-scrim.html">Scrim</a><span class="dot">Â·</span>
-    <a href="plazma-scouting.html">Scouting</a><span class="dot">Â·</span>
-    <a href="plazma-team.html">Ãquipe</a><span class="dot">Â·</span>
+    <a href="plazma-schedule.html">Planning</a><span class="dot">·</span>
+    <a href="plazma-scrim.html">Scrim</a><span class="dot">·</span>
+    <a href="plazma-scouting.html">Scouting</a><span class="dot">·</span>
+    <a href="plazma-team.html">Équipe</a><span class="dot">·</span>
     <a href="plazma-dashboard.html">Dashboard</a>
-    <span class="dot">Â·</span><span>ARCHI Â· PlaZma Esport</span>
+    <span class="dot">·</span><span>ARCHI · PlaZma Esport</span>
   </footer>
 
 </div>
-<script src="assets/plazma.js?v=20260929x"></script>
-<script src="assets/champions.js?v=20260929x"></script>
+<script src="assets/plazma.js?v=20260929y"></script>
 <script>
-  /* Normalise la longueur des tracÃ©s d'icÃ´nes â tracÃ© uniforme au survol */
+  /* Normalise la longueur des tracés d'icônes → tracé uniforme au survol */
   document.querySelectorAll('.tool-ico svg *').forEach(el => el.setAttribute('pathLength', '100'));
 
-  /* #26 Scroll progress */
-  window.addEventListener('scroll', () => {
-    const max = document.body.scrollHeight - innerHeight;
-    document.getElementById('scroll-prog').style.transform =
-      'scaleX(' + (max > 0 ? Math.min(scrollY / max, 1) : 0) + ')';
-  }, {passive:true});
+  /* #26 Scroll progress — throttlé en rAF + hauteur mise en cache (évite le
+     layout thrashing qui faisait ramer la page à chaque molette) */
+  (function(){
+    const bar = document.getElementById('scroll-prog');
+    let max = 0, ticking = false;
+    const measure = () => { max = document.body.scrollHeight - innerHeight; };
+    const update = () => { ticking = false; bar.style.transform = 'scaleX(' + (max > 0 ? Math.min(scrollY / max, 1) : 0) + ')'; };
+    measure();
+    window.addEventListener('scroll', () => { if (!ticking){ ticking = true; requestAnimationFrame(update); } }, {passive:true});
+    window.addEventListener('resize', () => { measure(); requestAnimationFrame(update); }, {passive:true});
+    window.addEventListener('load', measure);
+  })();
 
   /* #27 Scroll-reveal IntersectionObserver */
   const revealObs = new IntersectionObserver(entries => {
@@ -444,7 +425,7 @@
   }, {threshold: 0.08});
   document.querySelectorAll('.sec').forEach(s => revealObs.observe(s));
 
-  /* #16 Ripple goutte d'eau â uniquement sur le vide (pas les cartes) */
+  /* #16 Ripple goutte d'eau — uniquement sur le vide (pas les cartes) */
   (function(){
     const SKIP = 'a,button,input,select,textarea,label,[onclick],[role=button],.btn';
     const rings = [
@@ -462,43 +443,27 @@
           `left:${e.clientX - sz/2}px;top:${e.clientY - sz/2}px;` +
           `--op:${op};`;
         document.body.appendChild(ring);
-        ring.getBoundingClientRect(); // force reflow â scale(0) peint avant l'anim
+        ring.getBoundingClientRect(); // force reflow → scale(0) peint avant l'anim
         ring.style.animation = `water-rip ${dur}ms ${delay}ms cubic-bezier(0,.55,.45,1) both`;
         setTimeout(() => ring.remove(), delay + dur + 50);
       });
     });
   })();
 
-  /* Wiki champion search */
-  Champions.ready.then(() => {
-    const inp = document.getElementById('wikiSearch'), res = document.getElementById('wikiRes');
-    if (!inp || !res) return;
-    if (!Champions.list.length) { res.innerHTML = '<div class="wiki-hint">Wiki indisponible (hors-ligne).</div>'; return; }
-    const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-    function render() {
-      const q = inp.value.trim().toLowerCase();
-      if (!q) { res.innerHTML = '<div class="wiki-hint">Tape un nom de champion pour ouvrir sa fiche.</div>'; return; }
-      const items = Champions.list.filter(c => c.name.toLowerCase().includes(q) || c.id.toLowerCase().includes(q)).slice(0, 18);
-      res.innerHTML = items.length
-        ? items.map(c => `<a class="wr-tile" href="plazma-wiki.html#${encodeURIComponent(c.id)}"><img src="${Champions.iconUrl(c.id)}" alt="" loading="lazy" onerror="Champions.imgFallback(this,'${c.id}')"><span>${esc(c.name)}</span></a>`).join('')
-        : '<div class="wiki-hint">Aucun champion trouvÃ©.</div>';
-    }
-    inp.addEventListener('input', render);
-  });
-
   /* Roster & staff */
   const PERF_HREF = {top:'plazma-perf-top.html',jungle:'plazma-perf-jungler.html',mid:'plazma-perf-mid.html',adc:'plazma-perf-adc.html',support:'plazma-perf-supp.html'};
+  const initialsOf = n => { n=(n||'').trim(); if(!n) return '•'; const w=n.split(/\s+/); return (w.length>1 ? w[0][0]+w[1][0] : n.slice(0,2)).toUpperCase(); };
   PZ.onRoster((roster, coach) => {
     document.getElementById('rosterGrid').innerHTML = roster.map(p => `
       <a class="pcard" href="${PERF_HREF[p.roleKey]}" style="--role:${p.color}">
-        <div class="pcard-av">${p.emoji}</div>
+        <div class="pcard-av">${initialsOf(p.name)}</div>
         <span class="role-badge" style="--role:${p.color}">${p.role}</span>
         <div class="pcard-name">${p.name}</div>
         <div class="pcard-cta">Voir la fiche <span class="pcard-arrow">→</span></div>
       </a>`).join('');
     document.getElementById('staffGrid').innerHTML = `
       <a class="pcard" href="plazma-coach.html" style="--role:${coach.color}">
-        <div class="pcard-av">${coach.emoji}</div>
+        <div class="pcard-av">${initialsOf(coach.name)}</div>
         <div>
           <span class="role-badge" style="--role:${coach.color}">${coach.role}</span>
           <div class="pcard-name" style="margin-top:6px">${coach.name}</div>

@@ -55,7 +55,7 @@
   // ---- Version de l'application (SemVer) ----
   // MAJEUR.MINEUR.CORRECTIF — MINEUR à chaque lot de fonctionnalités,
   // CORRECTIF pour les corrections. Affichée discrètement dans Paramètres.
-  const VERSION = '2.10.1';
+  const VERSION = '2.10.2';
 
   // ---- Niveau de performance : adapte la densité des effets ----
   // Full sur machine puissante (rendu identique), réduit sur mobile/appareil
@@ -386,7 +386,6 @@
     { key: 'scouting',     href: 'plazma-scouting.html',    label: 'Scouting',     section: 'scouting' },
     { key: 'draft',        href: 'plazma-draft.html',       label: 'Draft',        section: 'scouting' },
     { key: 'theory',       href: 'plazma-theory.html',      label: 'Theorycraft' },
-    { key: 'wiki',         href: 'plazma-wiki.html',        label: 'Wiki' },
     { key: 'wikiperf',     href: 'plazma-wiki-perf.html',   label: 'Encyclopédie' },
     { key: 'team',         href: 'plazma-team.html',        label: 'Équipe',       section: 'team' },
     { key: 'dashboard',    href: 'plazma-dashboard.html',   label: 'Dashboard',    section: 'dashboard' },

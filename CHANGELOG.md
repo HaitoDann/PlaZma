@@ -17,6 +17,21 @@ bas de la fenêtre **Paramètres**.
 
 ## 2.x — Refonte visuelle & administration
 
+### 2.10.2 — Crayon, monogrammes, perf & nettoyage
+- **Correctif accents** : `index.html` avait été ré-encodé par erreur (les
+  accents s'affichaient « Ã‰quipe »). Encodage UTF-8 rétabli.
+- **Icône « Nouveau »** : le « + » est remplacé par un **crayon** propre qui
+  glisse en traçant un trait au survol (animation revue, plus fluide).
+- **Fiches joueurs/staff** : les emojis d'avatar laissent place à un
+  **monogramme** (initiales) dans la couleur du rôle — plus sobre et pro.
+- **Perf accueil** : `champions.js` (Data Dragon) n'est plus chargé sur
+  l'accueil (il ne servait qu'au wiki) et la barre de progression du scroll est
+  throttlée en `requestAnimationFrame` (fin du layout thrashing qui faisait
+  ramer la page).
+- **Wiki champions retiré** : page `plazma-wiki.html`, section de recherche de
+  l'accueil, carte outil et lien de navigation supprimés. L'« Encyclopédie »
+  (wiki-perf) est conservée.
+
 ### 2.10.1 — Fiches accueil, animations & renommage des comptes
 - **Correctif page Système** : l'icône du titre « Vue d'ensemble » n'avait pas
   de dimensions (SVG `.ib` hors bouton) et s'étirait, poussant les indicateurs
