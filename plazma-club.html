@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="assets/logo-plazma.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARCHI — Pilotage du club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css?v=20260929z">
+<style>
+  .wrap{max-width:1080px;margin:0 auto;padding:26px var(--gut) 70px}
+  .pagehead{margin:8px 0 6px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .pagehead h1{font-size:1.8rem;font-family:var(--font-display)}
+  .pagehead p{color:var(--muted);font-size:13.5px;margin-top:4px;max-width:60ch}
+  .head-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+
+  /* Résumé global */
+  .overview{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center;
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px 22px;margin:18px 0 26px}
+  @media(max-width:620px){.overview{grid-template-columns:1fr;gap:16px}}
+  .ring{position:relative;width:116px;height:116px;flex-shrink:0}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .track{stroke:var(--surface-2)}
+  .ring .prog{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset 1s cubic-bezier(.16,1,.3,1)}
+  .ring-mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring-pct{font-family:var(--font-display);font-size:1.7rem;font-weight:700;line-height:1}
+  .ring-lab{font-size:10.5px;color:var(--muted);margin-top:2px}
+  .ov-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
+  .ov-tile{background:var(--surface-2);border-radius:12px;padding:13px 15px}
+  .ov-val{font-family:var(--font-display);font-size:1.4rem;font-weight:700;line-height:1}
+  .ov-lab{font-size:11.5px;color:var(--muted);margin-top:5px}
+  .ov-val.doing{color:var(--warn)} .ov-val.done{color:var(--ok)}
+
+  /* Grille des domaines */
+  .domains{display:grid;grid-template-columns:1fr;gap:16px}
+  @media(min-width:820px){.domains{grid-template-columns:1fr 1fr}}
+  .dom{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;
+    display:flex;flex-direction:column}
+  .dom-head{display:flex;align-items:flex-start;gap:13px}
+  .dom-ico{width:42px;height:42px;flex-shrink:0;border-radius:12px;display:grid;place-items:center;
+    color:var(--dc,var(--accent));background:color-mix(in srgb,var(--dc,var(--accent)) 13%,transparent);
+    border:1px solid color-mix(in srgb,var(--dc,var(--accent)) 30%,transparent)}
+  .dom-ico svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .dom-tt{flex:1;min-width:0}
+  .dom-name{font-family:var(--font-display);font-size:1.08rem;font-weight:600}
+  .dom-desc{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.45}
+  .dom-pct{font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--dc,var(--accent));white-space:nowrap}
+  .dom-bar{height:6px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin:13px 0 4px}
+  .dom-fill{height:100%;width:0;border-radius:99px;background:var(--dc,var(--accent));transition:width .8s cubic-bezier(.16,1,.3,1)}
+
+  .items{display:flex;flex-direction:column;margin-top:10px}
+  .item{display:flex;align-items:flex-start;gap:11px;padding:9px 2px;border-bottom:1px solid var(--border)}
+  .item:last-of-type{border-bottom:0}
+  /* Pastille d'état cliquable : à faire → en cours → fait */
+  .st{flex-shrink:0;margin-top:1px;width:22px;height:22px;border-radius:50%;border:2px solid var(--border-2);
+    background:transparent;cursor:pointer;display:grid;place-items:center;padding:0;transition:.18s;position:relative}
+  .st svg{width:12px;height:12px;fill:none;stroke:#04222a;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+  .st.doing{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 22%,transparent)}
+  .st.doing::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--warn)}
+  .st.done{border-color:var(--ok);background:var(--ok)}
+  .st.done svg{opacity:1}
+  .it-txt{flex:1;min-width:0;font-size:13.5px;line-height:1.45;color:var(--text);
+    background:transparent;border:0;padding:2px 0;font-family:var(--font);resize:none;overflow:hidden}
+  .it-txt:focus{outline:none}
+  .item.done .it-txt{color:var(--muted);text-decoration:line-through}
+  .it-del{flex-shrink:0;opacity:0;background:none;border:0;color:var(--muted);cursor:pointer;width:26px;height:26px;
+    border-radius:7px;display:grid;place-items:center;transition:.15s;font-size:15px}
+  .item:hover .it-del{opacity:1}
+  .it-del:hover{color:var(--err);background:rgba(239,68,68,.1)}
+
+  .add{display:flex;align-items:center;gap:9px;margin-top:11px}
+  .add input{flex:1;font-size:13px;padding:8px 11px}
+  .add-btn{flex-shrink:0;width:34px;height:34px;border-radius:9px;border:1px solid var(--border);background:var(--surface-2);
+    color:var(--dim);cursor:pointer;display:grid;place-items:center;transition:.15s}
+  .add-btn:hover{color:var(--dc,var(--accent));border-color:color-mix(in srgb,var(--dc,var(--accent)) 45%,var(--border))}
+  .add-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+
+  .dom-notes{margin-top:13px}
+  .dom-notes summary{font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;list-style:none;
+    display:inline-flex;align-items:center;gap:6px;padding:4px 0}
+  .dom-notes summary::-webkit-details-marker{display:none}
+  .dom-notes summary::before{content:"›";display:inline-block;transition:transform .2s;font-size:15px}
+  .dom-notes[open] summary::before{transform:rotate(90deg)}
+  .dom-notes textarea{width:100%;margin-top:6px;min-height:64px;font-size:13px;line-height:1.5}
+
+  .foot-note{font-size:12px;color:var(--muted);line-height:1.6;background:var(--surface-2);border-radius:10px;
+    padding:12px 14px;margin-top:24px}
+  .foot-note b{color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="pagehead">
+    <div>
+      <h1>Pilotage du club</h1>
+      <p>Tout le hors-terrain réuni : une vue d'ensemble de ce que PlaZma doit construire pour devenir un vrai club esport. Réservé aux administrateurs.</p>
+    </div>
+    <div class="head-right">
+      <span class="sync-pill"><span class="sync-dot offline" id="syncDot"></span><span id="syncText">En attente…</span><span class="sync-time" id="syncTime"></span></span>
+    </div>
+  </div>
+
+  <!-- Résumé global -->
+  <div class="overview">
+    <div class="ring">
+      <svg width="116" height="116" viewBox="0 0 116 116">
+        <circle class="track" cx="58" cy="58" r="50" fill="none" stroke-width="10"></circle>
+        <circle class="prog" id="ringProg" cx="58" cy="58" r="50" fill="none" stroke-width="10" stroke-dasharray="314" stroke-dashoffset="314"></circle>
+      </svg>
+      <div class="ring-mid"><div class="ring-pct" id="ovPct">0%</div><div class="ring-lab">avancement</div></div>
+    </div>
+    <div class="ov-tiles">
+      <div class="ov-tile"><div class="ov-val" id="ovTotal">0</div><div class="ov-lab">Objectifs suivis</div></div>
+      <div class="ov-tile"><div class="ov-val done" id="ovDone">0</div><div class="ov-lab">Atteints</div></div>
+      <div class="ov-tile"><div class="ov-val doing" id="ovDoing">0</div><div class="ov-lab">En cours</div></div>
+      <div class="ov-tile"><div class="ov-val" id="ovTodo">0</div><div class="ov-lab">À lancer</div></div>
+    </div>
+  </div>
+
+  <div class="domains" id="domains"></div>
+
+  <div class="foot-note">
+    Chaque domaine se pilote comme une checklist vivante : clique sur la pastille pour passer un objectif de <b>à faire</b> → <b>en cours</b> → <b>atteint</b>. Ajoute, renomme ou supprime les objectifs selon la réalité du club. Tout est <b>sauvegardé automatiquement</b> et partagé entre administrateurs.
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="assets/plazma.js?v=20260929z"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* Les 6 domaines hors-sportif + objectifs de départ (une base crédible que
+   l'admin ajuste ensuite). */
+const DOMAINS = [
+  { key:'organisation', color:'#38bdf8', name:'Organisation',
+    desc:'Statut, bureau, administratif, banque, documents.',
+    ico:'<svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V10l7-5 7 5v11"/><path d="M9 21v-6h6v6"/><path d="M4 10h16"/></svg>',
+    seed:['Statut juridique défini (association loi 1901)','Bureau constitué : président, trésorier, secrétaire','Statuts & règlement intérieur rédigés','Compte bancaire dédié au club','Documents administratifs centralisés et à jour','Assurance responsabilité civile souscrite'] },
+  { key:'competition', color:'#22d3ee', name:'Compétition',
+    desc:'Roster, niveau moyen, résultats, scrims, objectifs.',
+    ico:'<svg viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 0 12 0V3H6z"/><path d="M6 5H3v2a3 3 0 0 0 3 3"/><path d="M18 5h3v2a3 3 0 0 1-3 3"/><path d="M9 21h6"/><path d="M12 15v6"/></svg>',
+    seed:['Roster titulaire stable et engagé','Niveau moyen évalué (elo/MMR) et suivi','Objectifs de saison fixés (division visée)','Planning de scrims régulier','Débrief et analyse après chaque match','Engagement en ligues / tournois officiels'] },
+  { key:'equipe', color:'#a855f7', name:'Équipe',
+    desc:'Joueurs, staff, recrutement, disponibilité, satisfaction.',
+    ico:'<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    seed:['Fiches joueurs & staff à jour','Processus de recrutement défini','Suivi des disponibilités (créneau 21h)','Questionnaires de satisfaction réguliers','Coach / manager clairement identifié','Cohésion d’équipe entretenue (events, communication)'] },
+  { key:'infra', color:'#14b8a6', name:'Infrastructure',
+    desc:'ARCHI, Réginald, Discord, site, outils internes.',
+    ico:'<svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-2.4z"/></svg>',
+    seed:['ARCHI (site interne) opérationnel','Réginald (bot Discord) configuré','Serveur Discord structuré (rôles, salons)','Outils internes documentés','Accès & sauvegardes sécurisés'] },
+  { key:'visibilite', color:'#f59e0b', name:'Visibilité',
+    desc:'Réseaux, contenu, communauté, partenaires.',
+    ico:'<svg viewBox="0 0 24 24"><path d="M3 11v3a1 1 0 0 0 1 1h3l4 4V7L7 11H4a1 1 0 0 0-1 0z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+    seed:['Présence active sur les réseaux (X, Insta, TikTok)','Ligne éditoriale & calendrier de contenu','Identité visuelle cohérente (logo, charte)','Communauté animée (Discord public, events)','Recherche de partenaires / clubs amis','Diffusion des matchs (stream / VOD)'] },
+  { key:'ressources', color:'#34d399', name:'Ressources',
+    desc:'Trésorerie, dépenses, revenus, sponsors, matériel.',
+    ico:'<svg viewBox="0 0 24 24"><path d="M3 7h18v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 7l3-4h12l3 4"/><path d="M16 13h2"/></svg>',
+    seed:['Budget prévisionnel établi','Suivi de trésorerie (revenus / dépenses)','Recherche de sponsors engagée','Matériel joueurs (setup, licences)','Sources de revenus diversifiées (goodies, dons)'] },
+];
+const STATES = ['todo','doing','done'];
+
+let DATA = null, sync = null, saveTimer = null;
+
+function blankData(){
+  const domains = {};
+  DOMAINS.forEach(d => { domains[d.key] = { notes:'', items:d.seed.map(t=>({t,s:'todo'})) }; });
+  return { domains };
+}
+function ensureShape(data){
+  const out = data && data.domains ? data : blankData();
+  DOMAINS.forEach(d => {
+    if(!out.domains[d.key]) out.domains[d.key] = { notes:'', items:[] };
+    if(!Array.isArray(out.domains[d.key].items)) out.domains[d.key].items = [];
+    if(typeof out.domains[d.key].notes !== 'string') out.domains[d.key].notes = '';
+  });
+  return out;
+}
+
+function scoreItems(items){
+  if(!items.length) return {pct:0,done:0,doing:0,todo:0,total:0};
+  let s=0,done=0,doing=0,todo=0;
+  items.forEach(it=>{ if(it.s==='done'){s+=1;done++;} else if(it.s==='doing'){s+=.5;doing++;} else todo++; });
+  return { pct:Math.round(s/items.length*100), done, doing, todo, total:items.length };
+}
+
+function queueSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(()=>{ sync && sync.save(); }, 650); }
+
+function render(){
+  const host = $('domains');
+  host.innerHTML = DOMAINS.map(d=>{
+    const dd = DATA.domains[d.key];
+    const sc = scoreItems(dd.items);
+    const items = dd.items.map((it,i)=>`
+      <div class="item ${it.s}" data-dom="${d.key}" data-i="${i}">
+        <button class="st ${it.s}" title="Changer l'état" aria-label="Changer l'état"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></button>
+        <textarea class="it-txt" rows="1" spellcheck="false">${esc(it.t)}</textarea>
+        <button class="it-del" title="Supprimer">✕</button>
+      </div>`).join('');
+    return `
+    <div class="dom" style="--dc:${d.color}">
+      <div class="dom-head">
+        <div class="dom-ico">${d.ico}</div>
+        <div class="dom-tt">
+          <div class="dom-name">${d.name}</div>
+          <div class="dom-desc">${d.desc}</div>
+        </div>
+        <div class="dom-pct">${sc.pct}%</div>
+      </div>
+      <div class="dom-bar"><div class="dom-fill" style="width:${sc.pct}%"></div></div>
+      <div class="items" data-dom="${d.key}">${items || '<div style="font-size:12.5px;color:var(--muted);padding:8px 0">Aucun objectif — ajoute le premier ci-dessous.</div>'}</div>
+      <div class="add" data-dom="${d.key}">
+        <input type="text" placeholder="Ajouter un objectif…" maxlength="120">
+        <button class="add-btn" title="Ajouter" aria-label="Ajouter"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      </div>
+      <details class="dom-notes">
+        <summary>Notes</summary>
+        <textarea data-dom="${d.key}" placeholder="Contexte, prochaines étapes, responsables…" spellcheck="false">${esc(dd.notes)}</textarea>
+      </details>
+    </div>`;
+  }).join('');
+  autosizeAll();
+  renderOverview();
+}
+
+function renderOverview(){
+  let total=0,done=0,doing=0,todo=0,sum=0;
+  DOMAINS.forEach(d=>{ const sc=scoreItems(DATA.domains[d.key].items); total+=sc.total; done+=sc.done; doing+=sc.doing; todo+=sc.todo; sum+=sc.total?sc.pct*sc.total:0; });
+  const pct = total ? Math.round((done + doing*.5)/total*100) : 0;
+  $('ovTotal').textContent=total; $('ovDone').textContent=done; $('ovDoing').textContent=doing; $('ovTodo').textContent=todo;
+  $('ovPct').textContent=pct+'%';
+  const C=2*Math.PI*50;
+  $('ringProg').style.strokeDashoffset = C*(1-pct/100);
+}
+
+function autosize(t){ t.style.height='auto'; t.style.height=t.scrollHeight+'px'; }
+function autosizeAll(){ document.querySelectorAll('.it-txt, .dom-notes textarea').forEach(autosize); }
+
+/* Délégation d'événements */
+$('domains').addEventListener('click', e=>{
+  const st = e.target.closest('.st');
+  if(st){ const it=st.closest('.item'); const dom=it.dataset.dom, i=+it.dataset.i;
+    const cur=DATA.domains[dom].items[i].s; const nx=STATES[(STATES.indexOf(cur)+1)%3];
+    DATA.domains[dom].items[i].s=nx; render(); queueSave(); return; }
+  const del = e.target.closest('.it-del');
+  if(del){ const it=del.closest('.item'); DATA.domains[it.dataset.dom].items.splice(+it.dataset.i,1); render(); queueSave(); return; }
+  const add = e.target.closest('.add-btn');
+  if(add){ const box=add.closest('.add'); addItem(box.dataset.dom, box.querySelector('input')); return; }
+});
+$('domains').addEventListener('keydown', e=>{
+  if(e.target.matches('.add input') && e.key==='Enter'){ const box=e.target.closest('.add'); addItem(box.dataset.dom, e.target); }
+});
+$('domains').addEventListener('input', e=>{
+  if(e.target.classList.contains('it-txt')){ const it=e.target.closest('.item'); DATA.domains[it.dataset.dom].items[+it.dataset.i].t=e.target.value; autosize(e.target); queueSave(); }
+  else if(e.target.closest('.dom-notes')){ DATA.domains[e.target.dataset.dom].notes=e.target.value; autosize(e.target); queueSave(); }
+});
+function addItem(dom, input){
+  const v=(input.value||'').trim(); if(!v) return;
+  DATA.domains[dom].items.push({t:v,s:'todo'}); input.value=''; render(); queueSave();
+  // garde le focus sur le champ d'ajout du même domaine
+  const again=document.querySelector(`.add[data-dom="${dom}"] input`); again && again.focus();
+}
+
+/* Démarrage : réservé aux admins (le gate de plazma.js bloque les autres) */
+PZ.mountNav('club');
+PZ.auth.ready.then(res=>{
+  if(!res.user || !PZ.auth.isAdmin()) return; // overlay d'accès déjà affiché
+  sync = PZ.sync({
+    docId:'club-vision',
+    getState:()=>DATA,
+    applyState:(d)=>{ DATA=ensureShape(d); render(); },
+    onData:(exists)=>{ if(!exists){ DATA=blankData(); render(); sync.save(); } }
+  });
+});
+</script>
+</body>
+</html>

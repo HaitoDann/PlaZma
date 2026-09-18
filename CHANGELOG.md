@@ -17,6 +17,20 @@ bas de la fenêtre **Paramètres**.
 
 ## 2.x — Refonte visuelle & administration
 
+### 2.11.0 — Pilotage du club (vue hors-terrain)
+- **Nouvelle page admin `Pilotage du club`** (`plazma-club.html`) : regroupe
+  tout le hors-sportif en 6 domaines — Organisation, Compétition, Équipe,
+  Infrastructure, Visibilité, Ressources. Chaque domaine est une checklist
+  vivante d'objectifs à 3 états (à faire / en cours / atteint), avec barre de
+  progression par domaine, résumé global (anneau + compteurs) et notes.
+- Objectifs de départ pré-remplis (base crédible d'un club esport), éditables,
+  ajoutables et supprimables. Sauvegarde automatique et partagée entre admins
+  (doc Firestore `plazma/club-vision`, réservé aux administrateurs).
+- Accès via un **bouton dédié** sur l'accueil (visible uniquement pour les
+  admins) et gate admin dans `plazma.js`.
+- ⚠️ **Règles Firestore** mises à jour (`club-vision` en admin) : à redéployer
+  manuellement dans la console Firebase.
+
 ### 2.10.2 — Crayon, monogrammes, perf & nettoyage
 - **Correctif accents** : `index.html` avait été ré-encodé par erreur (les
   accents s'affichaient « Ã‰quipe »). Encodage UTF-8 rétabli.

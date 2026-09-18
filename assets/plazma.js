@@ -55,7 +55,7 @@
   // ---- Version de l'application (SemVer) ----
   // MAJEUR.MINEUR.CORRECTIF — MINEUR à chaque lot de fonctionnalités,
   // CORRECTIF pour les corrections. Affichée discrètement dans Paramètres.
-  const VERSION = '2.10.2';
+  const VERSION = '2.11.0';
 
   // ---- Niveau de performance : adapte la densité des effets ----
   // Full sur machine puissante (rendu identique), réduit sur mobile/appareil
@@ -214,7 +214,7 @@
       gate(deniedHtml("Ton compte n'a pas encore d'accès à ARCHI (ou il a été désactivé). Contacte un administrateur."));
       return;
     }
-    if ((page === 'plazma-admin.html' || page === 'plazma-site-admin.html') && !isAdmin()) { gate(deniedHtml('Cet espace est réservé aux administrateurs.')); return; }
+    if ((page === 'plazma-admin.html' || page === 'plazma-site-admin.html' || page === 'plazma-club.html') && !isAdmin()) { gate(deniedHtml('Cet espace est réservé aux administrateurs.')); return; }
     if (pageSection && !can(pageSection)) { gate(deniedHtml("Tu n'as pas accès à ce module. Demande l'accès à un administrateur.")); return; }
     ungate();
     refreshNav();

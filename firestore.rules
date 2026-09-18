@@ -45,6 +45,7 @@ service cloud.firestore {
         || (signedIn() && (
               docId == 'config'
            || (docId == '_usage'           && isAdmin())
+           || (docId == 'club-vision'      && isAdmin())
            || (docId == 'team-identity'    && canRead('team'))
            || (docId == 'dashboard'        && canRead('dashboard'))
            || (docId == 'coach-evaluation' && canRead('coach'))
@@ -54,6 +55,7 @@ service cloud.firestore {
       allow write: if signedIn() && (
               (docId == 'config'           && isAdmin())
            || (docId == '_usage'           && active())
+           || (docId == 'club-vision'      && isAdmin())
            || (docId == 'roster'           && canWrite('team'))
            || (docId == 'team-identity'    && canWrite('team'))
            || (docId == 'dashboard'        && canWrite('dashboard'))
