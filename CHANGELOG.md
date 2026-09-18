@@ -17,6 +17,19 @@ bas de la fenêtre **Paramètres**.
 
 ## 2.x — Refonte visuelle & administration
 
+### 2.10.1 — Fiches accueil, animations & renommage des comptes
+- **Correctif page Système** : l'icône du titre « Vue d'ensemble » n'avait pas
+  de dimensions (SVG `.ib` hors bouton) et s'étirait, poussant les indicateurs
+  tout en bas. Les icônes `.ib` ont désormais une taille par défaut.
+- **Fiches joueurs/staff de l'accueil** revues : liseré de rôle, halo coloré et
+  avatar animé au survol, flèche « Voir la fiche » qui glisse.
+- **Bouton « + Nouveau »** : le « + » qui tournait est remplacé par un **stylo
+  qui écrit** une ligne au survol.
+- **Pastille « Synchronisé »** : animation plus riche (cœur qui respire + double
+  onde verte ; anneau ambre qui tourne pendant la sauvegarde).
+- **Comptes** : possibilité de **renommer** le nom affiché d'un membre depuis
+  « Gérer le membre » (le pseudo de connexion reste fixe).
+
 ### 2.10.0 — Bascule thème animée & épuration
 - **Bascule clair/sombre** en révélation circulaire **depuis le bouton**
   (View Transitions API), repli propre si non supporté / reduced-motion.

@@ -195,7 +195,7 @@
     </div>
     <span style="flex:1"></span>
     <button class="btn btn-sm" onclick="copyComp()" id="btnCopy" data-tip="Copier la compo en texte"><svg class="ib ib-copy" viewBox="0 0 24 24"><path class="cp-back" d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/><rect class="cp-front" x="9" y="9" width="13" height="13" rx="2"/></svg></button>
-    <button class="btn btn-sm" onclick="newDraft()" data-edit><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-cross"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></g><circle class="pl-dot" cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/></svg> Nouvelle</button>
+    <button class="btn btn-sm" onclick="newDraft()" data-edit><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-cross"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></g><g class="pl-pen"><path class="pl-pen-body" d="M15 4l5 5-9 9-5 1 1-5z"/><path class="pl-pen-nib" d="M13 6l5 5"/></g><path class="pl-pen-line" d="M4 21h15"/></svg> Nouvelle</button>
     <button class="btn btn-sm" onclick="openDrawer()"><svg class="ib ib-history" viewBox="0 0 24 24"><path d="M3 3v5h5"/><path d="M3.05 13a9 9 0 1 0 2.6-6.4L3 8"/><path class="hi-hand" d="M12 7v5l3 2"/></svg> Historique <span id="draftCount" class="muted"></span></button>
     <button class="btn btn-sm" onclick="openScoutModal()" data-edit><svg class="ib ib-doc" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Scouting</button>
     <button class="btn btn-sm btn-danger" onclick="resetDraft()" data-edit><svg class="ib ib-trash" viewBox="0 0 24 24"><g class="tr-can"><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></g><g class="tr-lid"><polyline points="3 6 5 6 21 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></g><circle class="tr-item" cx="12" cy="2" r="1.7" fill="currentColor" stroke="none"/></svg> Vider</button>
@@ -287,7 +287,7 @@
     <button class="btn btn-icon btn-ghost" onclick="closeDrawer()">✕</button>
   </div>
   <div style="padding:14px 14px 0">
-    <button class="btn btn-primary" style="width:100%" onclick="newDraft();closeDrawer()"><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-cross"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></g><circle class="pl-dot" cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/></svg> Nouvelle draft</button>
+    <button class="btn btn-primary" style="width:100%" onclick="newDraft();closeDrawer()"><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-cross"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></g><g class="pl-pen"><path class="pl-pen-body" d="M15 4l5 5-9 9-5 1 1-5z"/><path class="pl-pen-nib" d="M13 6l5 5"/></g><path class="pl-pen-line" d="M4 21h15"/></svg> Nouvelle draft</button>
   </div>
   <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
 </div>
@@ -902,7 +902,7 @@ function renderScnTabs() {
   bar.innerHTML = scenarios.map((s, i) =>
     `<button class="scn-tab${i===curScn?' active':''}" data-i="${i}">${esc(s.name||'Draft '+(i+1))}</button>`
   ).join('')
-    + `<button class="btn btn-sm" id="scnNew" data-edit><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-cross"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></g><circle class="pl-dot" cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/></svg></button>`
+    + `<button class="btn btn-sm" id="scnNew" data-edit><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-cross"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></g><g class="pl-pen"><path class="pl-pen-body" d="M15 4l5 5-9 9-5 1 1-5z"/><path class="pl-pen-nib" d="M13 6l5 5"/></g><path class="pl-pen-line" d="M4 21h15"/></svg></button>`
     + `<button class="btn btn-sm" id="scnDup" data-edit><svg class="ib ib-copy" viewBox="0 0 24 24"><path class="cp-back" d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/><rect class="cp-front" x="9" y="9" width="13" height="13" rx="2"/></svg> Dupliquer</button>`
     + `<button class="btn btn-sm btn-danger" id="scnDel" data-edit><svg class="ib ib-trash" viewBox="0 0 24 24"><g class="tr-can"><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></g><g class="tr-lid"><polyline points="3 6 5 6 21 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></g><circle class="tr-item" cx="12" cy="2" r="1.7" fill="currentColor" stroke="none"/></svg> Supprimer</button>`;
   bar.querySelectorAll('.scn-tab').forEach(t => t.addEventListener('click', () => {
