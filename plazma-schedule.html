@@ -176,7 +176,7 @@
       <div class="menu" id="moreMenu">
         <button class="btn btn-sm" id="moreBtn" title="Plus d'actions">⋯</button>
         <div class="menu-list">
-          <div class="menu-sep"></div>
+          <div class="menu-label">Actions de la semaine</div>
           <button class="menu-item danger" id="resetBtn">Réinitialiser la semaine</button>
         </div>
       </div>
@@ -712,6 +712,13 @@ function setView(v){
   document.getElementById('capture').style.display=v==='week'?'':'none';
   document.getElementById('availCard').style.display=v==='week'?'':'none';
   document.getElementById('viewMonth').style.display=v==='month'?'':'none';
+  // Les actions « semaine » (Pré-remplir, Discord, …) n'ont pas de sens en vue Calendrier.
+  const weekV = v==='week';
+  const canE = (typeof canEdit==='function') ? canEdit() : true;
+  const pub = document.getElementById('pubDiscordBtn'); if(pub) pub.style.display = weekV ? '' : 'none';
+  const fm = document.getElementById('fillMenu');       if(fm)  fm.style.display  = (weekV && canE) ? '' : 'none';
+  const mm = document.getElementById('moreMenu');        if(mm)  mm.style.display  = (weekV && canE) ? '' : 'none';
+  closeMenus();
   if(v==='month') renderMonth();
 }
 document.getElementById('vwWeek').addEventListener('click',()=>setView('week'));
@@ -736,8 +743,10 @@ if(PZ.auth && PZ.auth.ready) PZ.auth.ready.then(res=>{
 // Lecture seule : masque les commandes d'édition si pas de droit « Modifier » sur le Planning.
 function applyPlanningRO(){
   const ro=!canEdit();
-  const fm=document.getElementById('fillMenu'); if(fm) fm.style.display=ro?'none':'';
-  ['resetBtn'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display=ro?'none':''; });
+  // La barre d'actions dépend aussi de la vue courante : on laisse setView réconcilier.
+  if(typeof setView==='function' && typeof view!=='undefined') setView(view);
+  else { const fm=document.getElementById('fillMenu'); if(fm) fm.style.display=ro?'none':''; }
+  const mm=document.getElementById('moreMenu'); if(mm && ro) mm.style.display='none';
   renderGrid();
 }
 if(PZ.auth && PZ.auth.ready) PZ.auth.ready.then(applyPlanningRO); else applyPlanningRO();
