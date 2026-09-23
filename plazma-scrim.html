@@ -127,7 +127,7 @@
     <button class="btn btn-sm btn-primary" onclick="publishDiscord()"><svg class="ib ib-discord" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Discord</button>
     <button class="btn btn-sm btn-danger" onclick="resetCurrentSession()" data-edit><svg class="ib ib-trash" viewBox="0 0 24 24"><g class="tr-can"><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></g><g class="tr-lid"><polyline points="3 6 5 6 21 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></g><circle class="tr-item" cx="12" cy="2" r="1.7" fill="currentColor" stroke="none"/></svg> Vider</button>
   </div>
-  <div style="text-align:center"><span class="session-chip" id="sessionChip">Chargement…</span></div>
+  <div style="text-align:center"><span class="session-chip" id="sessionChip">Chargement…</span> <a class="session-chip slot-chip" id="slotChip" href="plazma-schedule.html" hidden></a></div>
 
   <div class="card" id="capture">
     <div class="scrim-head">
@@ -208,6 +208,8 @@ function sevOptions(v){ return ERR_SEV.map(([k,l])=>`<option value="${k}"${(v||'
 function playerOptions(v){ return '<option value="">Équipe</option>'+ROSTER.map(p=>`<option value="${p.id}"${v===p.id?' selected':''}>${esc(p.name)}</option>`).join(''); }
 
 let errors = {g1:[],g2:[],g3:[],g4:[],g5:[]};
+// Créneau du Planning rattaché à ce CR ({slotId, slotWeek} ou null).
+let crLink = null;
 let strengths = {g1:[],g2:[],g3:[],g4:[],g5:[]};   // points forts (time-codés, par game)
 let _errId = 0, _strId = 0, currentDocId = null, _unsub = null, _saveT = null;
 let lastSavedSig = null, suppressUntil = 0;   // garde anti-écho Firestore
@@ -365,10 +367,12 @@ function getState(){
     errors:JSON.parse(JSON.stringify(errors)), strengths:JSON.parse(JSON.stringify(strengths)) };
   for(let g=1;g<=5;g++) s[`g${g}_result`]=val(`g${g}_result`);
   ROSTER.forEach(p=>s['rem_'+p.id]=val('rem_'+p.id));
+  if(crLink){ s.slotId=crLink.slotId; s.slotWeek=crLink.slotWeek; }
   return s;
 }
 function applyState(s){
   if(!s) return;
+  crLink = s.slotId ? { slotId:s.slotId, slotWeek:s.slotWeek||'' } : null;
   ['m_date','m_adv','s_plazma','s_adv','t_bien','t_corriger','f_note','f_comment'].forEach(k=>set(k,s[k]));
   for(let g=1;g<=5;g++){ set(`g${g}_result`,s[`g${g}_result`]); const sel=document.getElementById(`g${g}_result`); if(sel)styleResult(sel); }
   ROSTER.forEach(p=>set('rem_'+p.id,s['rem_'+p.id]));
@@ -387,6 +391,8 @@ function updateChip(){
   const adv=val('m_adv')||'Sans titre', d=val('m_date');
   const ds=d?new Date(d+'T12:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'Sans date';
   document.getElementById('sessionChip').textContent=adv+' — '+ds;
+  const sc=document.getElementById('slotChip');
+  if(sc){ sc.hidden=!crLink; if(crLink){ sc.textContent='Planning · '+(d?new Date(d+'T12:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'short'}):'créneau lié'); sc.title='Créneau du Planning rattaché à ce compte rendu'; } }
 }
 function save(){
   if(!db){ PZ.status('error','Firebase indisponible'); return; }
@@ -416,6 +422,7 @@ function startSync(docId){
   }, err=>{ console.error(err); PZ.status('error','Erreur connexion'); PZ.loadingDone(); });
 }
 function blankForm(){
+  crLink = null;
   errors={g1:[],g2:[],g3:[],g4:[],g5:[]};
   strengths={g1:[],g2:[],g3:[],g4:[],g5:[]}; renderNotes();
   ['m_adv','t_bien','t_corriger','f_comment'].forEach(k=>set(k,''));
@@ -558,13 +565,35 @@ function publishDiscord(){
   PZ.discord.publish({ channel:'scrim', embeds:buildScrimMessages(s) });
 }
 
+// Ouvre le CR du créneau s'il existe déjà, sinon en crée un pré-rempli (date, adversaire, lien).
+async function openFromSlot(q){
+  const slot=q.get('slot')||'', week=q.get('week')||'', date=q.get('date')||'', adv=q.get('adv')||'';
+  history.replaceState(null,'',location.pathname);
+  if(slot){
+    try{
+      const snap=await db.collection(SCRIMS_COL).where('slotId','==',slot).get();
+      const hit=snap.docs.find(d=>!week || !(d.data()||{}).slotWeek || d.data().slotWeek===week);
+      if(hit){ startSync(hit.id); return; }
+    }catch(e){ console.error(e); }
+  }
+  blankForm();
+  if(date) set('m_date',date);
+  if(adv){ set('m_adv',adv); document.getElementById('advLabel').textContent=adv; document.getElementById('advTitle').textContent='Match vs '+adv; }
+  if(slot) crLink={ slotId:slot, slotWeek:week };
+  startSync(newDocId());
+  save();   // enregistré tout de suite : le Planning voit le lien immédiatement
+  PZ.toast && PZ.toast('Compte rendu créé depuis le Planning.');
+}
+
 // Init
 buildGames(); buildPlayers();
 (async()=>{
   if(!db){ PZ.status('error','Firebase indisponible'); PZ.loadingDone(); blankForm(); return; }
   // Lien profond depuis le calendrier : #<docId> ouvre ce CR précis.
   const hashId=(location.hash||'').replace(/^#/,'').trim();
-  if(hashId){ startSync(hashId); return; }
+  // Depuis un créneau du Planning : #new?slot=…&week=…&date=…&adv=…
+  if(hashId.startsWith('new')){ await openFromSlot(new URLSearchParams(hashId.split('?')[1]||'')); return; }
+  if(hashId){ startSync(decodeURIComponent(hashId)); return; }
   try{ const snap=await db.collection(SCRIMS_COL).orderBy('_savedAt','desc').limit(1).get();
     startSync(snap.empty?newDocId():snap.docs[0].id); }
   catch{ startSync(newDocId()); }

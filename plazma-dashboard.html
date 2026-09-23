@@ -13,121 +13,126 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
-  .content{max-width:1180px;margin:0 auto;padding:22px var(--gut) 80px;display:flex;flex-direction:column;gap:20px}
+  .content{max-width:1180px;margin:0 auto;padding:22px var(--gut) 80px;display:flex;flex-direction:column;gap:18px}
   .dash-top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
   .dash-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .evt{font-size:13px;color:var(--muted);margin-top:4px}
+  .evt b{color:var(--text);font-weight:600}
 
-  /* ── Panneau « Aujourd'hui » (cockpit décisionnel) ── */
-  /* Règles : un seul accent, hiérarchie (1 primaire + secondaires), le chiffre
-     est le héros, ombre uniquement sur ce panneau qui « flotte ». */
-  .today{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--border-2);
-    border-radius:var(--r-lg);box-shadow:0 18px 48px -26px rgba(0,0,0,.55);padding:20px 22px;
-    display:grid;grid-template-columns:minmax(220px,1.1fr) 2fr;gap:20px;align-items:stretch}
-  .today::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
-  .today-hero{display:flex;flex-direction:column;justify-content:center;gap:7px}
-  .today-eyebrow{font-size:11px;letter-spacing:.01em;color:var(--muted)}
-  .today-main{font-family:var(--font-display);font-size:1.65rem;font-weight:700;line-height:1.1;letter-spacing:-.01em}
+  /* Aujourd'hui */
+  .today{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;
+    display:grid;grid-template-columns:minmax(220px,1fr) 2fr;gap:20px;align-items:stretch}
+  .today-hero{display:flex;flex-direction:column;justify-content:center;gap:6px}
+  .today-eyebrow{font-size:12px;color:var(--muted)}
+  .today-main{font-size:1.45rem;font-weight:600;line-height:1.15}
   .today-sub{font-size:13px;color:var(--muted)}
   .today-sub b{color:var(--dim);font-weight:600}
-  .today-tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-  .ttile{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:13px 15px}
-  .ttile-lbl{display:flex;align-items:center;gap:7px;font-size:10.5px;letter-spacing:.01em;color:var(--muted);margin-bottom:9px}
-  .ttile-lbl i{width:8px;height:8px;border-radius:50%;background:var(--tc,var(--accent));flex-shrink:0}
-  .ttile-val{font-family:var(--font-display);font-size:1.45rem;font-weight:700;line-height:1;letter-spacing:-.01em}
-  .ttile-val.sm{font-size:1.05rem}
-  .ttile-sub{font-size:11.5px;color:var(--muted);margin-top:5px}
+  .today-tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .ttile{background:var(--surface-2);border-radius:var(--r);padding:12px 14px;display:block;color:inherit}
+  a.ttile:hover{background:var(--elevated)}
+  .ttile-lbl{font-size:12px;color:var(--muted);margin-bottom:6px}
+  .ttile-val{font-family:var(--font-mono);font-size:1.3rem;font-weight:500;line-height:1.1}
+  .ttile-val.sm{font-family:var(--font);font-size:1rem;font-weight:600}
+  .ttile-sub{font-size:12px;color:var(--muted);margin-top:4px}
   @media(max-width:820px){.today{grid-template-columns:1fr}}
   @media(max-width:480px){.today-tiles{grid-template-columns:1fr}}
-
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-  .kpi{position:relative;overflow:hidden;background:var(--surface);border:1px solid transparent;border-radius:var(--r-lg);padding:18px;box-shadow:var(--shadow-1)}
-  /* filet coloré retiré : le chiffre porte le sens, pas un liseré sur chaque carte (dé-slop) */
-  .kpi-lbl{font-size:11px;letter-spacing:0;color:var(--muted);margin-bottom:10px}
-  .kpi-val{font-family:var(--font-display);font-size:2.3rem;font-weight:700;line-height:1;letter-spacing:-.02em}
-  .kpi-sub{font-size:12px;color:var(--muted);margin-top:7px}
-  .kpi-sub b{color:var(--dim)}
-  .up{color:var(--ok)}.dn{color:var(--err)}.neu{color:var(--muted)}
 
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
   .panel-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
   .panel-h .card-title{font-size:1rem}
-  .plink{font-size:12px;font-weight:600;color:var(--accent);cursor:pointer}
+  .panel-sub{font-size:12px;color:var(--muted);font-weight:400;margin-left:6px}
+  .plink{font-size:12.5px;font-weight:500;color:var(--accent);cursor:pointer}
   .plink:hover{text-decoration:underline}
-
-  /* Cette semaine */
-  .wk-chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-  .wk-total{font-size:13px;color:var(--dim);margin-right:6px}
-  .wk-total b{color:var(--text);font-weight:700}
-  .wk-chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:20px;color:var(--wc);background:color-mix(in srgb,var(--wc) 14%,transparent)}
-  .wk-next{margin-top:13px;padding-top:12px;border-top:1px solid var(--border);font-size:13px;color:var(--dim)}
-  .wk-next b{color:var(--text)}
-  .wk-next .none{color:var(--muted)}
-
-  /* Prochain adversaire */
-  .opp-name{font-family:var(--font-display);font-size:1.5rem;font-weight:700;letter-spacing:-.01em}
-  .opp-meta{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:8px;font-size:12.5px;color:var(--muted)}
-  .opp-meta b{color:var(--dim);font-weight:600}
-  .threat{display:inline-block;padding:3px 11px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.03em;margin-top:12px}
-
-  /* Roster SoloQ */
-  .roster{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-  .pcard{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
-  .pc-strip{height:3px}
-  .pc-head{display:flex;align-items:center;gap:9px;padding:12px 13px;border-bottom:1px solid var(--border)}
-  .pc-emo{font-size:20px}
-  .pc-name{font-family:var(--font-display);font-weight:600;font-size:15px}
-  .pc-role{font-size:10px;letter-spacing:.01em;font-weight:600}
-  .pc-body{padding:11px 13px;display:flex;flex-direction:column;gap:9px}
-  .pc-lbl{font-size:10px;letter-spacing:.01em;color:var(--muted);margin-bottom:4px}
-  .pc-row{display:flex;gap:6px}
-  .pc-row>div{flex:1}
-  .pc-rank{font-family:var(--font-display);font-weight:600;font-size:15px}
-  .pc-lp{font-size:11px;color:var(--muted);margin-top:2px}
-  .btn-opgg{display:block;text-align:center;margin-top:2px;font-size:11px;font-weight:600;color:var(--accent);
-    background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:8px;padding:7px;cursor:pointer}
-  .btn-opgg.off{color:var(--muted);background:transparent;border-color:var(--border)}
-
-  /* Résultats */
-  .forme{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
-  .forme-lbl{font-size:11px;letter-spacing:.01em;color:var(--muted);margin-right:4px}
-  .wl-dot{width:16px;height:16px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff}
-  .mtable{width:100%;border-collapse:collapse;font-size:13px}
-  .mtable th{text-align:left;font-size:10px;letter-spacing:.01em;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border)}
-  .mtable td{padding:9px 10px;border-bottom:1px solid var(--border)}
-  .mtable tr[data-row]{cursor:pointer}
-  .mtable tr[data-row]:hover td{background:var(--surface-2)}
-  .mres{font-weight:700;font-size:12px}
-  .mres.W{color:var(--ok)}.mres.L{color:var(--err)}.mres.D{color:var(--muted)}
-  .mtype{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);color:var(--dim)}
-  .mtype.offi{color:var(--support);border-color:var(--support);background:color-mix(in srgb,var(--support) 12%,transparent)}
-  .empty{padding:24px;text-align:center;color:var(--muted);font-size:13px}
+  .empty{padding:20px;text-align:center;color:var(--muted);font-size:13px}
   .empty a{color:var(--accent);cursor:pointer}
 
+  /* Cette semaine : une ligne par session */
+  .wk-list{display:flex;flex-direction:column}
+  .wk-row{display:grid;grid-template-columns:110px 70px 1fr auto;gap:12px;align-items:center;padding:9px 2px;border-bottom:1px solid var(--border);font-size:13px}
+  .wk-row:last-child{border-bottom:0}
+  .wk-row.past{color:var(--muted)}
+  .wk-day{font-weight:600}
+  .wk-row.past .wk-day{font-weight:500}
+  .wk-time{font-family:var(--font-mono);color:var(--dim)}
+  .wk-type{display:flex;align-items:center;gap:8px;min-width:0}
+  .wk-type i{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--wc)}
+  .wk-type span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .wk-cr{font-size:12px;white-space:nowrap}
+  .wk-cr a{color:var(--accent)}
+  .wk-cr.todo a{color:var(--warn)}
+  .wk-cr.ok{color:var(--dim)}
+  .wk-foot{margin-top:10px;font-size:12.5px;color:var(--muted)}
+  @media(max-width:560px){.wk-row{grid-template-columns:80px 1fr auto}.wk-time{display:none}}
+
+  /* Performance (calculée) */
+  .perf{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .pt{background:var(--surface-2);border-radius:var(--r);padding:12px 14px}
+  .pt-lbl{font-size:12px;color:var(--muted)}
+  .pt-val{font-family:var(--font-mono);font-size:1.5rem;font-weight:500;line-height:1.1;margin-top:6px}
+  .pt-sub{font-size:12px;color:var(--muted);margin-top:4px}
+  .ok-t{color:var(--ok)}.err-t{color:var(--err)}.warn-t{color:var(--warn)}
+  .perf-extra{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+  .mini-h{font-size:12px;color:var(--muted);margin-bottom:8px}
+  .bars{display:flex;flex-direction:column;gap:6px}
+  .bar-row{display:grid;grid-template-columns:34px 1fr 64px;gap:10px;align-items:center;font-size:12.5px}
+  .bar-row .lab{font-family:var(--font-mono);color:var(--dim)}
+  .bar-track{height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+  .bar-fill{height:100%;background:var(--accent);border-radius:3px}
+  .bar-row .v{font-family:var(--font-mono);text-align:right;color:var(--dim)}
+  .err-list{display:flex;flex-direction:column;gap:6px;font-size:13px}
+  .err-list div{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)}
+  .err-list div:last-child{border-bottom:0}
+  .err-list span{color:var(--muted);font-family:var(--font-mono);font-size:12px}
+  @media(max-width:900px){.perf{grid-template-columns:repeat(2,1fr)}.perf-extra,.grid2{grid-template-columns:1fr}}
+
+  /* Résultats */
+  .forme{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+  .forme-lbl{font-size:12px;color:var(--muted);margin-right:6px}
+  .wl-dot{width:18px;height:18px;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff}
+  .mtable{width:100%;border-collapse:collapse;font-size:13px}
+  .mtable th{text-align:left;font-size:11.5px;font-weight:500;color:var(--muted);padding:7px 8px;border-bottom:1px solid var(--border)}
+  .mtable td{padding:8px;border-bottom:1px solid var(--border)}
+  .mtable tr[data-row]{cursor:pointer}
+  .mtable tr[data-row]:hover td{background:var(--surface-2)}
+  .mres{font-weight:600;font-size:12px}
+  .mres.W{color:var(--ok)}.mres.L{color:var(--err)}.mres.D{color:var(--muted)}
+  .mtype{font-size:11px;color:var(--muted)}
+
   /* Objectifs */
-  .objs{display:flex;flex-direction:column;gap:9px}
-  .obj{position:relative;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;cursor:pointer}
-  .obj::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px;background:var(--oc,var(--accent))}
-  .obj-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:9px}
-  .obj-name{font-weight:600;font-size:14px}
+  .objs{display:flex;flex-direction:column;gap:8px}
+  .obj{background:var(--surface-2);border-radius:var(--r);padding:11px 13px;cursor:pointer}
+  .obj:hover{background:var(--elevated)}
+  .obj-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:8px}
+  .obj-name{font-weight:500;font-size:13.5px}
   .obj-badges{display:flex;gap:6px;flex-shrink:0}
   .obj-bar{display:flex;align-items:center;gap:10px}
-  .obj-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+  .obj-track{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
   .obj-fill{height:100%;border-radius:3px}
-  .obj-pct{font-family:var(--font-mono);font-weight:700;font-size:13px;min-width:38px;text-align:right}
-  .obj-dl{font-size:11px;color:var(--muted);margin-top:7px}
+  .obj-pct{font-family:var(--font-mono);font-size:12px;min-width:36px;text-align:right;color:var(--dim)}
+  .obj-dl{font-size:11.5px;color:var(--muted);margin-top:6px}
+
+  /* Roster */
+  .rlist{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  .rrow{display:flex;align-items:center;gap:10px;background:var(--surface-2);border-radius:var(--r);padding:10px 12px;min-width:0}
+  .rrow-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .rrow-main{flex:1;min-width:0}
+  .rrow-name{font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rrow-role{font-size:12px;color:var(--muted)}
+  .rrow a{font-size:12px;color:var(--accent);white-space:nowrap}
+  .rrow .off{font-size:12px;color:var(--muted)}
+  @media(max-width:900px){.rlist{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:480px){.rlist{grid-template-columns:1fr}}
 
   .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .rcr{display:grid;grid-template-columns:22px 120px 1fr;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)}
+  .rcr{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)}
   .rcr:last-child{border-bottom:none}
   .field{margin-bottom:11px}
+  @media(max-width:900px){.settings-grid{grid-template-columns:1fr}}
 
   .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--elevated);border:1px solid var(--border-2);
-    border-radius:9px;padding:10px 16px;font-size:13px;font-weight:500;z-index:500;opacity:0;transition:opacity .3s;pointer-events:none}
+    border-radius:var(--r);padding:10px 16px;font-size:13px;font-weight:500;z-index:500;opacity:0;transition:opacity .3s;pointer-events:none}
   .toast.show{opacity:1}
-
-  @media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.roster{grid-template-columns:repeat(3,1fr)}.grid2,.settings-grid{grid-template-columns:1fr}}
-  @media(max-width:520px){.roster{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
@@ -140,68 +145,56 @@
     <div>
       <div class="eyebrow" id="dateSub">—</div>
       <h1>Dashboard</h1>
+      <div class="evt" id="evtLine"></div>
     </div>
     <div class="dash-actions">
       <span class="sync-pill"><span class="sync-dot offline" id="syncDot"></span><span id="syncText">En attente…</span><span class="sync-time" id="syncTime"></span></span>
-      <button class="btn btn-sm" id="btnRefresh" title="Recharger les données agrégées"><svg class="ib ib-refresh" viewBox="0 0 24 24"><g class="rf-arrows"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></g><polyline class="rf-check" points="7 12.5 10.5 16 17 8.5"/></svg> Actualiser</button>
-      <button class="btn btn-sm btn-danger" id="btnReset" data-edit><svg class="ib ib-trash" viewBox="0 0 24 24"><g class="tr-can"><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></g><g class="tr-lid"><polyline points="3 6 5 6 21 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></g><circle class="tr-item" cx="12" cy="2" r="1.7" fill="currentColor" stroke="none"/></svg> Reset</button>
-      <button class="btn btn-sm btn-primary" onclick="openAddOffi()" data-edit><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-pen"><path class="pl-pen-body" d="M14.5 4.5l5 5L9 20l-5.5 1L5 15.5z"/><path class="pl-pen-nib" d="M12.5 6.5l5 5"/></g><path class="pl-pen-line" d="M4 21.5h15"/></svg> Officiel</button>
+      <button class="btn btn-sm" id="btnRefresh" title="Recharger les données"><svg class="ib ib-refresh" viewBox="0 0 24 24"><g class="rf-arrows"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></g><polyline class="rf-check" points="7 12.5 10.5 16 17 8.5"/></svg> Actualiser</button>
+      <button class="btn btn-sm btn-primary" onclick="openAddOffi()" data-edit><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-pen"><path class="pl-pen-body" d="M14.5 4.5l5 5L9 20l-5.5 1L5 15.5z"/><path class="pl-pen-nib" d="M12.5 6.5l5 5"/></g><path class="pl-pen-line" d="M4 21.5h15"/></svg> Match officiel</button>
     </div>
   </div>
 
   <div class="today" id="todayPanel"></div>
 
-  <div class="kpis" id="kpis"></div>
-
-  <!-- CETTE SEMAINE (agrégé du Planning) -->
+  <!-- CETTE SEMAINE : sessions du Planning + état des CR -->
   <div class="panel">
     <div class="panel-h">
-      <div class="card-title">Cette semaine</div>
-      <span class="plink" onclick="location.href='plazma-schedule.html'">Planning →</span>
+      <div class="card-title">Cette semaine <span class="panel-sub" id="wkSub"></span></div>
+      <a class="plink" href="plazma-schedule.html">Planning →</a>
     </div>
     <div id="weekBox"></div>
   </div>
 
+  <!-- PERFORMANCE : calculée depuis les CR de scrim et le Planning -->
+  <div class="panel">
+    <div class="panel-h">
+      <div class="card-title">Performance <span class="panel-sub">calculée depuis les CR et le Planning</span></div>
+      <a class="plink" href="plazma-scrim.html">CR de scrim →</a>
+    </div>
+    <div id="perfBox"></div>
+  </div>
+
   <div class="grid2">
-    <!-- RÉSULTATS (scrims lus des CR + officiels) -->
     <div class="panel">
-      <div class="panel-h">
-        <div class="card-title">Résultats récents</div>
-        <span class="plink" onclick="location.href='plazma-scrim.html'">CR de scrim →</span>
-      </div>
+      <div class="panel-h"><div class="card-title">Résultats récents</div></div>
       <div id="resultsBox"></div>
     </div>
-
-    <!-- PROCHAIN ADVERSAIRE (agrégé du Scouting) -->
     <div class="panel">
       <div class="panel-h">
-        <div class="card-title">Prochain adversaire</div>
-        <span class="plink" onclick="location.href='plazma-scouting.html'">Scouting →</span>
+        <div class="card-title">Objectifs de la saison</div>
+        <button class="btn btn-sm" onclick="openAddObj()" data-edit><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-pen"><path class="pl-pen-body" d="M14.5 4.5l5 5L9 20l-5.5 1L5 15.5z"/><path class="pl-pen-nib" d="M12.5 6.5l5 5"/></g><path class="pl-pen-line" d="M4 21.5h15"/></svg> Ajouter</button>
       </div>
-      <div id="oppBox"></div>
+      <div class="objs" id="objList"></div>
     </div>
   </div>
 
-  <!-- ROSTER SOLOQ -->
   <div class="panel">
-    <div class="panel-h">
-      <div class="card-title">Roster — Rangs SoloQ EUW</div>
-      <button class="btn btn-sm" onclick="saveRanks()" data-edit>Enregistrer les rangs</button>
-    </div>
-    <div class="roster" id="roster"></div>
+    <div class="panel-h"><div class="card-title">Roster</div></div>
+    <div class="rlist" id="roster"></div>
   </div>
 
-  <!-- OBJECTIFS -->
-  <div class="panel">
-    <div class="panel-h">
-      <div class="card-title">Objectifs de la saison</div>
-      <button class="btn btn-sm" onclick="openAddObj()" data-edit><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-pen"><path class="pl-pen-body" d="M14.5 4.5l5 5L9 20l-5.5 1L5 15.5z"/><path class="pl-pen-nib" d="M12.5 6.5l5 5"/></g><path class="pl-pen-line" d="M4 21.5h15"/></svg> Ajouter</button>
-    </div>
-    <div class="objs" id="objList"></div>
-  </div>
-
-  <details class="panel">
-    <summary style="cursor:pointer;font-family:var(--font-display);font-weight:600">Paramètres</summary>
+  <details class="panel" id="settings">
+    <summary style="cursor:pointer;font-weight:600">Paramètres</summary>
     <div class="settings-grid" style="margin-top:14px">
       <div>
         <div class="eyebrow" style="margin-bottom:10px">Prochain événement</div>
@@ -212,7 +205,7 @@
         </div>
       </div>
       <div>
-        <div class="eyebrow" style="margin-bottom:10px">Identifiants op.gg (format PseudoTag-EUW)</div>
+        <div class="eyebrow" style="margin-bottom:10px">Comptes op.gg (format Pseudo-TAG)</div>
         <div id="rosterConfig"></div>
       </div>
     </div>
@@ -264,327 +257,266 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="assets/plazma.js?v=20260930b" data-section="dashboard"></script>
+<script src="assets/plazma.js?v=20260923pro" data-section="dashboard"></script>
 <script>
 'use strict';
 PZ.mountNav('dashboard', '#nav');
 let _editId = null;
 
-// Tiers SoloQ (roster)
-const TIER = {
-  IRON:{fr:'FER',color:'#9ca3af'}, BRONZE:{fr:'BRONZE',color:'#b45309'}, SILVER:{fr:'ARGENT',color:'#94a3b8'},
-  GOLD:{fr:'OR',color:'#f59e0b'}, PLATINUM:{fr:'PLATINE',color:'#06b6d4'}, EMERALD:{fr:'ÉMERAUDE',color:'#22c55e'},
-  DIAMOND:{fr:'DIAMANT',color:'#3b82f6'}, MASTER:{fr:'MASTER',color:'#a855f7'}, GRANDMASTER:{fr:'GRAND MAÎTRE',color:'#ef4444'},
-  CHALLENGER:{fr:'CHALLENGER',color:'#f59e0b'}, UNRANKED:{fr:'NON CLASSÉ',color:'#64748b'},
-};
-// Types de session (Planning) — pour les puces « Cette semaine »
 const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 const PTYPES = {
   scrim:{l:'Scrim',c:'#3b82f6'}, soloq:{l:'SoloQ',c:'#ef4444'}, repos:{l:'Repos',c:'#22c55e'},
-  match:{l:'Match Offi',c:'#f97316'}, coaching:{l:'Coaching',c:'#ec4899'}, review:{l:'Review VOD',c:'#a855f7'},
+  match:{l:'Match officiel',c:'#f97316'}, coaching:{l:'Coaching',c:'#ec4899'}, review:{l:'Review VOD',c:'#a855f7'},
   flexq:{l:'FlexQ',c:'#f59e0b'}, atelier:{l:'Atelier',c:'#2dd4bf'}, autre:{l:'Autre',c:'#94a3b8'},
 };
 
-let state = {
-  nextEvent:'', nextEventDate:'', goal:'',
-  roster:[
-    {id:'boulou', name:'Boulou', role:'Top', emoji:'👍', color:'#f59e0b', opgg:'', tier:'UNRANKED', rank:'', lp:0, wr:null},
-    {id:'zugu', name:'Zugu', role:'Jungle', emoji:'🕊️', color:'#22c55e', opgg:'', tier:'UNRANKED', rank:'', lp:0, wr:null},
-    {id:'lakrael', name:'Lakraël', role:'Mid', emoji:'👀', color:'#3b82f6', opgg:'', tier:'UNRANKED', rank:'', lp:0, wr:null},
-    {id:'ke1do', name:'Ke1do', role:'ADC', emoji:'🐯', color:'#ef4444', opgg:'', tier:'UNRANKED', rank:'', lp:0, wr:null},
-    {id:'sayro', name:'Joordy', role:'Support', emoji:'🥀', color:'#a855f7', opgg:'', tier:'UNRANKED', rank:'', lp:0, wr:null},
-  ],
-  objectives:[], officials:[],
-};
-// Données agrégées (lues ailleurs, non stockées ici)
-let agg = { scrims:null, scrimsDenied:false, scoutLatest:null, scoutDenied:false, week:null, weekDenied:false, loaded:false };
+// Doc « dashboard » : événement, objectifs, officiels, comptes op.gg.
+// (Les anciens champs de rang SoloQ saisis à la main sont conservés tels quels mais plus affichés.)
+let state = { nextEvent:'', nextEventDate:'', goal:'', roster:[], objectives:[], officials:[] };
+// Données agrégées (lues ailleurs, jamais stockées ici)
+let agg = null;   // null = chargement ; sinon { stats, week, weekDenied, avail, scoutLatest, scoutDenied }
 
-// ── Helpers date / semaine ──
+// ── Helpers date ──
 const _now = () => new Date();
+const todayIso = () => { const d=_now(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
 function getWeekNum(d){ d=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); const day=d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-day); const y1=new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d-y1)/86400000)+1)/7); }
-function currentWeekValue(){ const n=new Date(); return `${n.getFullYear()}-W${String(getWeekNum(n)).padStart(2,'0')}`; }
-function mondayOfCurrentWeek(){ const n=new Date(); const day=n.getDay(); const mon=new Date(n); mon.setDate(n.getDate()-(day===0?6:day-1)); mon.setHours(0,0,0,0); return mon; }
+function currentWeekValue(){ return PZ.stats.isoWeek(_now()); }
 const parseHM = t => (/^\d{1,2}:\d{2}$/.test(t||'') ? (+t.split(':')[0])*60 + (+t.split(':')[1]) : null);
 function slotDurMin(s){ const a=parseHM(s.start), b=parseHM(s.end); if(a==null||b==null) return null; let d=b-a; if(d<0) d+=1440; return d; }
 function fmtDur(min){ if(!min||min<=0) return ''; const h=Math.floor(min/60), m=min%60; return h ? (m?`${h}h${String(m).padStart(2,'0')}`:`${h}h`) : `${m}min`; }
+const fmtDay = ds => ds ? new Date(ds+'T12:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}) : '—';
 
-// ── Résultats (scrims des CR + officiels) ──
-function scrimResult(s){ const a=+(s.s_plazma), b=+(s.s_adv); if(!isFinite(a)||!isFinite(b)||(a+b)===0) return null; return a>b?'W':a<b?'L':'D'; }
-function scrimRows(){ return (agg.scrims||[]).map(s=>({date:s.m_date||'', opp:s.m_adv||'—', score:(s.s_plazma||'0')+'–'+(s.s_adv||'0'), result:scrimResult(s), type:'Scrim'})).filter(r=>r.result); }
+// ── Résultats (CR de scrim + officiels) ──
+const crs = () => (agg && agg.stats && agg.stats.crs) || [];
+function scrimRows(){ return crs().map(s=>({id:s.id, date:s.m_date||'', opp:s.m_adv||'—', score:(s.s_plazma||'0')+'–'+(s.s_adv||'0'), result:PZ.stats.scrimResult(s), type:'Scrim'})).filter(r=>r.result); }
 function offiRows(){ return (state.officials||[]).map(o=>({id:o.id, date:o.date||'', opp:o.opp||'—', score:o.score||'—', result:o.result, type:'Officiel'})); }
 function allRows(){ return [...scrimRows(), ...offiRows()].sort((a,b)=>(a.date>b.date?-1:a.date<b.date?1:0)); }
 function record(rows){ const w=rows.filter(r=>r.result==='W').length, l=rows.filter(r=>r.result==='L').length, d=rows.filter(r=>r.result==='D').length; const t=w+l; return {w,l,d,total:t,wr:t?Math.round(w/t*100):null}; }
-function streak(rows){ let n=0,ty=''; for(const r of rows){ if(!ty){ty=r.result;n=1;} else if(r.result===ty) n++; else break; } return {n,ty}; }
+
+// ── Sessions de la semaine, avec le CR rattaché ──
+function weekSessions(){
+  const wk=(agg&&agg.week)||{}; const w=currentWeekValue(); const now=_now();
+  const links = PZ.stats.linkWeek(w, wk, crs());
+  const out=[];
+  DAYS.forEach((day,di)=>(wk[day]||[]).forEach((s,idx)=>{
+    const date=PZ.stats.slotDate(w,day); const hm=parseHM(s.start);
+    const dt=new Date(date+'T00:00'); if(hm!=null) dt.setHours(Math.floor(hm/60),hm%60,0,0); else dt.setHours(23,59,0,0);
+    out.push({day,di,idx,slot:s,date,dt,past:dt<now,cr:links[s.id||(day+'#'+idx)]||null});
+  }));
+  return out.sort((a,b)=>a.dt-b.dt);
+}
+function nextSession(){ return weekSessions().find(x=>!x.past) || null; }
 
 // ── RENDER ──
-function render(){ renderToday(); renderKPIs(); renderWeek(); renderResults(); renderOpp(); renderRoster(); renderObjectives(); renderSettingsForm(); }
+function render(){ renderHeader(); renderToday(); renderWeek(); renderPerf(); renderResults(); renderObjectives(); renderRoster(); renderSettingsForm(); }
 
-// ── Panneau « Aujourd'hui » ──
+function renderHeader(){
+  const el=document.getElementById('evtLine');
+  if(!state.nextEvent){ el.innerHTML=''; return; }
+  const days=state.nextEventDate?Math.ceil((new Date(state.nextEventDate+'T12:00')-_now())/86400000):null;
+  el.innerHTML=`Prochain événement : <b>${esc(state.nextEvent)}</b>${state.nextEventDate?' · '+fmtDay(state.nextEventDate):''}${days!=null&&days>=0?' · J-'+days:''}${state.goal?' · objectif '+esc(state.goal):''}`;
+}
+
 function topObjective(){
   const order={high:0,medium:1,low:2};
-  return [...(state.objectives||[])].filter(o=>o.status!=='done')
-    .sort((a,b)=>(order[a.priority??'medium'])-(order[b.priority??'medium']))[0] || null;
-}
-// Catégorie d'erreur la plus fréquente (pondérée par gravité) — graine de l'Analytics.
-function topErrorCategory(){
-  const freq={};
-  (agg.scrims||[]).forEach(s=>{ const e=s.errors||{}; ['g1','g2','g3','g4','g5'].forEach(g=>{ (e[g]||[]).forEach(x=>{
-    const w = x.sev==='high'?3:x.sev==='low'?1:2; const c=x.cat||'Autre'; freq[c]=(freq[c]||0)+w; }); }); });
-  const arr=Object.entries(freq).sort((a,b)=>b[1]-a[1]); return arr.length?arr[0]:null;
+  return [...(state.objectives||[])].filter(o=>o.status!=='done').sort((a,b)=>(order[a.priority??'medium'])-(order[b.priority??'medium']))[0] || null;
 }
 function renderToday(){
-  const el=document.getElementById('todayPanel'); if(!el) return;
-  const wk=agg.week||{};
-  const nx=(agg.week && typeof nextSession==='function')?nextSession(wk):null;
+  const el=document.getElementById('todayPanel');
+  if(!agg){ el.innerHTML='<div class="empty" style="grid-column:1/-1">Chargement…</div>'; return; }
+  const nx=agg.weekDenied?null:nextSession();
   const sc=record(scrimRows());
   const opp=(agg.scoutLatest && (agg.scoutLatest.m_team||'').trim())?agg.scoutLatest:null;
   const obj=topObjective();
-  const prob=topErrorCategory();
+  const prob=agg.stats.topErrors[0]||null;
   const rSize=agg.rosterSize||5;
-
-  // Hero : prochaine session (créneau 21h)
   let heroMain, heroSub;
   if(nx){ const t=(PTYPES[nx.slot.type]||PTYPES.autre);
-    heroMain = `${t.l} · ${nx.day}`;
-    heroSub = `${nx.slot.start?'<b>'+nx.slot.start+'</b> · ':''}${nx.slot.note?esc(nx.slot.note):(opp&&nx.slot.type==='scrim'?'vs '+esc(opp.m_team):'Créneau prévu')}`;
+    heroMain=`${t.l} · ${nx.day}`;
+    heroSub=`${nx.slot.start?'<b>'+esc(nx.slot.start)+'</b> · ':''}${nx.slot.note?esc(nx.slot.note):(opp&&nx.slot.type==='scrim'?'vs '+esc(opp.m_team):'Créneau prévu')}`;
+    if(PZ.stats.isLinkable(nx.slot)) heroSub+=` · <a class="plink" href="${crHref(nx)}">${nx.cr?'Ouvrir le CR':'Préparer le CR'}</a>`;
   } else { heroMain='Rien de prévu'; heroSub=agg.weekDenied?'Accès Planning requis':'Aucune session à venir cette semaine'; }
-
-  // Dispo pour le jour de la prochaine session
-  let dispoVal='—', dispoSub='du prochain créneau', dispoColor='var(--text)';
-  if(nx){ const n=(agg.avail||{})[nx.day]||0; dispoVal=n+'/'+rSize; dispoColor = n>=rSize?'var(--ok)':n>=rSize-1?'var(--warn)':'var(--err)';
-    dispoSub = n>=rSize?'effectif complet':(rSize-n)+' joueur'+((rSize-n)>1?'s':'')+' manquant'+((rSize-n)>1?'s':''); }
-
-  const formeVal = sc.total? (sc.w+'V'+' – '+sc.l+'D') : '—';
-  const formeColor = sc.wr===null?'var(--text)':sc.wr>=50?'var(--ok)':'var(--err)';
-
-  el.innerHTML = `
+  let dispoVal='—', dispoSub='prochain créneau', dispoColor='';
+  if(nx){ const n=(agg.avail||{})[nx.day]||0; dispoVal=n+'/'+rSize; dispoColor=n>=rSize?'ok-t':n>=rSize-1?'warn-t':'err-t';
+    dispoSub=n>=rSize?'effectif complet':(rSize-n)+' manquant'+((rSize-n)>1?'s':''); }
+  el.innerHTML=`
     <div class="today-hero">
       <span class="today-eyebrow">Prochain rendez-vous</span>
       <div class="today-main">${esc(heroMain)}</div>
       <div class="today-sub">${heroSub}</div>
     </div>
     <div class="today-tiles">
-      <div class="ttile"><div class="ttile-lbl"><i style="--tc:var(--ok)"></i>Dispo à 21h</div>
-        <div class="ttile-val" style="color:${dispoColor}">${dispoVal}</div><div class="ttile-sub">${dispoSub}</div></div>
-      <div class="ttile"><div class="ttile-lbl"><i style="--tc:var(--warn)"></i>Forme scrims</div>
-        <div class="ttile-val" style="color:${formeColor}">${formeVal}</div><div class="ttile-sub">${sc.total?sc.total+' scrim'+(sc.total>1?'s':''):'aucun scrim'}</div></div>
-      <div class="ttile"><div class="ttile-lbl"><i style="--tc:var(--accent)"></i>Adversaire</div>
-        <div class="ttile-val sm">${opp?esc(opp.m_team):'—'}</div><div class="ttile-sub">${opp?({low:'menace faible',med:'menace moyenne',high:'menace élevée'}[opp.threatLevel]||'à scouter'):'aucune fiche'}</div></div>
-      <div class="ttile"><div class="ttile-lbl"><i style="--tc:var(--err)"></i>Point à travailler</div>
+      <a class="ttile" href="plazma-schedule.html"><div class="ttile-lbl">Disponibles</div>
+        <div class="ttile-val ${dispoColor}">${dispoVal}</div><div class="ttile-sub">${dispoSub}</div></a>
+      <div class="ttile"><div class="ttile-lbl">Forme scrims</div>
+        <div class="ttile-val ${sc.wr==null?'':sc.wr>=50?'ok-t':'err-t'}">${sc.total?sc.w+'V – '+sc.l+'D':'—'}</div><div class="ttile-sub">${sc.total?(sc.wr+'% de victoires'):'aucun scrim'}</div></div>
+      <a class="ttile" href="plazma-scouting.html"><div class="ttile-lbl">Adversaire</div>
+        <div class="ttile-val sm">${opp?esc(opp.m_team):'—'}</div><div class="ttile-sub">${opp?({low:'menace faible',med:'menace moyenne',high:'menace élevée'}[opp.threatLevel]||'fiche de scouting'):'aucune fiche'}</div></a>
+      <div class="ttile"><div class="ttile-lbl">Point à travailler</div>
         <div class="ttile-val sm">${prob?esc(prob[0]):(obj?esc(obj.name):'—')}</div><div class="ttile-sub">${prob?'erreur la plus fréquente':(obj?'objectif prioritaire':'pas encore de données')}</div></div>
     </div>`;
 }
 
-function renderKPIs(){
-  const sc=record(scrimRows()), off=record(offiRows());
-  const st=streak(allRows());
-  const sTxt = st.n===0?'—':(st.n+(st.ty==='W'?'V':st.ty==='L'?'D':'N'));
-  const sCls = st.ty==='W'?'up':st.ty==='L'?'dn':'neu';
-  const evtName=state.nextEvent||'Non configuré';
-  const evtDate=state.nextEventDate?new Date(state.nextEventDate+'T12:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}):'';
-  const daysLeft=state.nextEventDate?Math.ceil((new Date(state.nextEventDate+'T12:00')-_now())/86400000):null;
-  const scWrTxt = agg.scrimsDenied?'—':(sc.wr!==null?sc.wr+'%':'—');
-  const scColor = sc.wr===null?'var(--text)':sc.wr>=50?'var(--ok)':'var(--err)';
-  document.getElementById('kpis').innerHTML=`
-    <div class="kpi" style="--kc:${sc.wr!==null&&sc.wr>=50?'var(--ok)':'var(--err)'}">
-      <div class="kpi-lbl">Winrate scrims</div>
-      <div class="kpi-val" style="color:${scColor}">${scWrTxt}</div>
-      <div class="kpi-sub">${agg.scrimsDenied?'Accès scrims requis':`<b>${sc.w}V</b> — <b>${sc.l}D</b> · ${sc.total} scrim${sc.total>1?'s':''}`}</div>
-    </div>
-    <div class="kpi" style="--kc:var(--support)">
-      <div class="kpi-lbl">Bilan officiel</div>
-      <div class="kpi-val">${off.total?`${off.w}–${off.l}`:'—'}</div>
-      <div class="kpi-sub">${off.total?`${off.wr}% WR · ${off.total} match${off.total>1?'s':''}`:'Aucun match officiel'}</div>
-    </div>
-    <div class="kpi" style="--kc:var(--warn)">
-      <div class="kpi-lbl">Forme récente</div>
-      <div class="kpi-val ${sCls}">${sTxt}</div>
-      <div class="kpi-sub">Série en cours</div>
-    </div>
-    <div class="kpi" style="--kc:var(--accent)">
-      <div class="kpi-lbl">Prochain événement</div>
-      <div class="kpi-val" style="font-size:${evtName.length>12?'1.1rem':'1.5rem'}">${esc(evtName)}</div>
-      <div class="kpi-sub">${evtDate?`${evtDate}${daysLeft!==null?' · <b>J-'+daysLeft+'</b>':''}`:'Configurer dans Paramètres'}</div>
+function crHref(x){
+  if(x.cr) return 'plazma-scrim.html#'+encodeURIComponent(x.cr.id);
+  const q=new URLSearchParams({date:x.date, adv:x.slot.note||'', week:currentWeekValue()});
+  if(x.slot.id) q.set('slot', x.slot.id);
+  return 'plazma-scrim.html#new?'+q.toString();
+}
+function renderWeek(){
+  const el=document.getElementById('weekBox'), sub=document.getElementById('wkSub');
+  if(!agg){ el.innerHTML='<div class="empty">Chargement…</div>'; sub.textContent=''; return; }
+  if(agg.weekDenied){ el.innerHTML='<div class="empty">Accès Planning requis pour ce module.</div>'; sub.textContent=''; return; }
+  const list=weekSessions();
+  if(!list.length){ sub.textContent=''; el.innerHTML='<div class="empty">Aucune session planifiée cette semaine. <a href="plazma-schedule.html">Ouvrir le Planning →</a></div>'; return; }
+  const total=list.reduce((m,x)=>m+(slotDurMin(x.slot)||0),0);
+  sub.textContent=list.length+' session'+(list.length>1?'s':'')+(total?' · '+fmtDur(total):'');
+  const canCR=PZ.stats.canSeeScrims();
+  el.innerHTML='<div class="wk-list">'+list.map(x=>{
+    const t=PTYPES[x.slot.type]||PTYPES.autre;
+    let cr='';
+    if(canCR && PZ.stats.isLinkable(x.slot)){
+      if(x.cr){ const r=PZ.stats.scrimResult(x.cr);
+        cr=`<span class="wk-cr ok"><a href="${crHref(x)}">CR${r?' · '+esc((x.cr.s_plazma||0)+'–'+(x.cr.s_adv||0)):' en cours'}</a></span>`; }
+      else cr=`<span class="wk-cr${x.past?' todo':''}"><a href="${crHref(x)}">${x.past?'CR à remplir':'Préparer le CR'}</a></span>`;
+    }
+    return `<div class="wk-row${x.past?' past':''}">
+      <span class="wk-day">${x.day}</span>
+      <span class="wk-time">${esc(x.slot.start||'—')}</span>
+      <span class="wk-type" style="--wc:${t.c}"><i></i><span>${t.l}${x.slot.note?' · '+esc(x.slot.note):''}</span></span>
+      ${cr||'<span></span>'}
     </div>`;
+  }).join('')+'</div>';
 }
 
-function renderWeek(){
-  const el=document.getElementById('weekBox');
-  if(agg.weekDenied){ el.innerHTML='<div class="empty">Accès Planning requis pour ce module.</div>'; return; }
-  if(agg.week===null){ el.innerHTML='<div class="empty">Chargement…</div>'; return; }
-  const wk=agg.week;
-  let sessions=0, totalMin=0; const per={};
-  DAYS.forEach(d=>(wk[d]||[]).forEach(s=>{ sessions++; const m=slotDurMin(s)||0; totalMin+=m; const k=s.type||'autre'; per[k]=per[k]||{n:0,min:0}; per[k].n++; per[k].min+=m; }));
-  if(!sessions){ el.innerHTML='<div class="empty">Aucune session planifiée cette semaine. <a onclick="location.href=\'plazma-schedule.html\'">Ouvrir le Planning →</a></div>'; return; }
-  let html=`<div class="wk-chips"><span class="wk-total"><b>${sessions}</b> session${sessions>1?'s':''}${totalMin?` · <b>${fmtDur(totalMin)}</b>`:''}</span>`;
-  html+=Object.keys(PTYPES).filter(k=>per[k]).map(k=>{ const p=per[k],t=PTYPES[k]; return `<span class="wk-chip" style="--wc:${t.c}"><span>${p.n}</span> ${t.l}${p.min?` · ${fmtDur(p.min)}`:''}</span>`; }).join('');
-  html+=`</div>`;
-  // Prochaine session
-  const nx=nextSession(wk);
-  html+=`<div class="wk-next">${nx?`Prochaine session : <b>${nx.day} ${nx.slot.start||''}</b> · ${(PTYPES[nx.slot.type]||PTYPES.autre).l}${nx.slot.note?` — ${esc(nx.slot.note)}`:''}`:'<span class="none">Plus de session à venir cette semaine.</span>'}</div>`;
+function renderPerf(){
+  const el=document.getElementById('perfBox');
+  if(!agg){ el.innerHTML='<div class="empty">Chargement…</div>'; return; }
+  const st=agg.stats;
+  if(!st.canScrim){ el.innerHTML='<div class="empty">Accès aux CR de scrim requis pour les statistiques.</div>'; return; }
+  const off=record(offiRows());
+  const cls=v=>v==null?'':v>=50?'ok-t':'err-t';
+  const cov=st.coverage;
+  const covPct=cov.planned?Math.round(cov.withCr/cov.planned*100):null;
+  let html=`<div class="perf">
+    <div class="pt"><div class="pt-lbl">Winrate scrims</div><div class="pt-val ${cls(st.scrims.wr)}">${st.scrims.wr==null?'—':st.scrims.wr+'%'}</div><div class="pt-sub">${st.scrims.w}V · ${st.scrims.l}D · ${st.crs.length} CR</div></div>
+    <div class="pt"><div class="pt-lbl">Games gagnées</div><div class="pt-val ${cls(st.games.wr)}">${st.games.total?st.games.w+'/'+st.games.total:'—'}</div><div class="pt-sub">${st.games.wr==null?'aucune game notée':st.games.wr+'% des games'}</div></div>
+    <div class="pt"><div class="pt-lbl">Officiels</div><div class="pt-val">${off.total?off.w+'–'+off.l:'—'}</div><div class="pt-sub">${off.total?off.wr+'% de victoires':'aucun match officiel'}</div></div>
+    <div class="pt"><div class="pt-lbl">CR remplis · 4 sem.</div><div class="pt-val ${covPct==null?'':covPct>=80?'ok-t':covPct>=50?'warn-t':'err-t'}">${st.canPlan?(cov.planned?cov.withCr+'/'+cov.planned:'—'):'—'}</div><div class="pt-sub">${!st.canPlan?'accès Planning requis':st.presence.rate==null?'scrims planifiés passés':'présence '+st.presence.rate+'%'}</div></div>
+  </div>`;
+  // Détail : winrate par game + erreurs récurrentes + CR manquants
+  const games=Object.keys(st.perGame).sort();
+  const bars=games.length?'<div class="bars">'+games.map(g=>{ const p=st.perGame[g], t=p.w+p.l, pct=t?Math.round(p.w/t*100):0;
+    return `<div class="bar-row"><span class="lab">G${g}</span><span class="bar-track"><span class="bar-fill" style="display:block;width:${pct}%"></span></span><span class="v">${p.w}/${t}</span></div>`; }).join('')+'</div>'
+    :'<div class="empty" style="padding:10px;text-align:left">Renseigne le résultat de chaque game dans les CR.</div>';
+  const errs=st.topErrors.length?'<div class="err-list">'+st.topErrors.map(([c,n])=>`<div>${esc(c)}<span>poids ${n}</span></div>`).join('')+'</div>'
+    :'<div class="empty" style="padding:10px;text-align:left">Aucune erreur relevée dans les CR.</div>';
+  html+=`<div class="perf-extra"><div><div class="mini-h">Victoires par game</div>${bars}</div><div><div class="mini-h">Erreurs récurrentes</div>${errs}</div></div>`;
+  if(st.canPlan && cov.missing.length){
+    html+=`<div class="wk-foot">CR manquants : ${cov.missing.slice(-5).reverse().map(m=>{
+      const q=new URLSearchParams({date:m.date, adv:m.slot.note||'', week:m.week}); if(m.slot.id) q.set('slot',m.slot.id);
+      return `<a class="plink" href="plazma-scrim.html#new?${q.toString()}">${m.day.slice(0,3)}. ${fmtDay(m.date)}${m.slot.note?' · '+esc(m.slot.note):''}</a>`; }).join(' · ')}</div>`;
+  }
   el.innerHTML=html;
-}
-function nextSession(wk){
-  const mon=mondayOfCurrentWeek(), now=_now(); let best=null;
-  DAYS.forEach((day,di)=>(wk[day]||[]).forEach(s=>{
-    const hm=parseHM(s.start); if(hm==null) return;
-    const dt=new Date(mon); dt.setDate(mon.getDate()+di); dt.setHours(Math.floor(hm/60), hm%60, 0, 0);
-    if(dt>=now && (!best||dt<best.dt)) best={dt,day,slot:s};
-  }));
-  return best;
 }
 
 function renderResults(){
   const el=document.getElementById('resultsBox');
-  if(agg.scrimsDenied && !state.officials.length){ el.innerHTML='<div class="empty">Accès aux CR de scrim requis pour le bilan.</div>'; return; }
+  if(!agg){ el.innerHTML='<div class="empty">Chargement…</div>'; return; }
   const rows=allRows();
-  if(!rows.length){ el.innerHTML=`<div class="empty">Aucun résultat. Les scrims arrivent des <a onclick="location.href='plazma-scrim.html'">CR de scrim</a>, les officiels via « <svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-pen"><path class="pl-pen-body" d="M14.5 4.5l5 5L9 20l-5.5 1L5 15.5z"/><path class="pl-pen-nib" d="M12.5 6.5l5 5"/></g><path class="pl-pen-line" d="M4 21.5h15"/></svg> Officiel ».</div>`; return; }
-  const recent=rows.slice(0,10);
-  const forme=rows.slice(0,8);
+  if(!rows.length){ el.innerHTML='<div class="empty">Aucun résultat. Les scrims viennent des <a href="plazma-scrim.html">CR</a>, les officiels du bouton « Match officiel ».</div>'; return; }
+  const forme=rows.slice(0,10);
   let html=`<div class="forme"><span class="forme-lbl">Forme</span>${forme.slice().reverse().map(r=>`<span class="wl-dot" title="${esc(r.opp)} (${r.type})" style="background:${r.result==='W'?'var(--ok)':r.result==='L'?'var(--err)':'var(--muted)'}">${r.result==='W'?'V':r.result==='L'?'D':'N'}</span>`).join('')}</div>`;
-  html+=`<table class="mtable"><thead><tr><th>Date</th><th>Adversaire</th><th>Type</th><th>Score</th><th>Rés.</th></tr></thead><tbody>${
-    recent.map(r=>{
-      const clickable=r.type==='Officiel';
-      return `<tr ${clickable?`data-row onclick="openEditOffi('${r.id}')"`:''}>
-        <td style="color:var(--muted)">${r.date?new Date(r.date+'T12:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}):'—'}</td>
-        <td style="font-weight:600">${esc(r.opp)}</td>
-        <td><span class="mtype${r.type==='Officiel'?' offi':''}">${r.type}</span></td>
-        <td style="color:var(--dim)">${esc(r.score)}</td>
+  html+=`<table class="mtable"><thead><tr><th>Date</th><th>Adversaire</th><th>Type</th><th>Score</th><th></th></tr></thead><tbody>${
+    rows.slice(0,8).map(r=>`<tr data-row onclick="${r.type==='Officiel'?`openEditOffi('${r.id}')`:`location.href='plazma-scrim.html#${encodeURIComponent(r.id)}'`}">
+        <td style="color:var(--muted)">${fmtDay(r.date)}</td>
+        <td style="font-weight:500">${esc(r.opp)}</td>
+        <td><span class="mtype">${r.type}</span></td>
+        <td class="mono" style="color:var(--dim)">${esc(r.score)}</td>
         <td><span class="mres ${r.result}">${r.result==='W'?'V':r.result==='L'?'D':'N'}</span></td>
-      </tr>`;
-    }).join('')}</tbody></table>`;
+      </tr>`).join('')}</tbody></table>`;
   el.innerHTML=html;
 }
 
-function renderOpp(){
-  const el=document.getElementById('oppBox');
-  if(agg.scoutDenied){ el.innerHTML='<div class="empty">Accès Scouting requis pour ce module.</div>'; return; }
-  if(agg.scoutLatest===null){ el.innerHTML='<div class="empty">Chargement…</div>'; return; }
-  const s=agg.scoutLatest;
-  if(!s || !(s.m_team||'').trim()){ el.innerHTML=`<div class="empty">Aucune fiche de scouting. <a onclick="location.href='plazma-scouting.html'">Créer une fiche →</a></div>`; return; }
-  const TH={low:{l:'Menace faible',c:'var(--ok)'}, med:{l:'Menace moyenne',c:'var(--warn)'}, high:{l:'Menace élevée',c:'var(--err)'}};
-  const th=TH[s.threatLevel];
-  el.innerHTML=`
-    <div class="opp-name">${esc(s.m_team)}</div>
-    <div class="opp-meta">
-      ${s.m_rank?`<span><b>Rang :</b> ${esc(s.m_rank)}</span>`:''}
-      ${s.m_tournoi?`<span><b>Échéance :</b> ${esc(s.m_tournoi)}</span>`:''}
-    </div>
-    ${th?`<div class="threat" style="color:${th.c};background:color-mix(in srgb,${th.c} 15%,transparent)">${th.l}</div>`:''}
-    <div style="margin-top:14px"><span class="plink" onclick="location.href='plazma-scouting.html'">Ouvrir la fiche complète →</span></div>`;
-}
-
-function renderRoster(){
-  const grid=document.getElementById('roster'); grid.innerHTML='';
-  state.roster.forEach(p=>{
-    const tc=TIER[p.tier||'UNRANKED'];
-    const wrColor=p.wr>=55?'var(--ok)':p.wr>=50?'var(--warn)':'var(--err)';
-    const url=p.opgg?`https://www.op.gg/summoners/euw/${encodeURIComponent(p.opgg)}`:'';
-    const card=document.createElement('div'); card.className='pcard';
-    card.innerHTML=`
-      <div class="pc-strip" style="background:${p.color}"></div>
-      <div class="pc-head"><div class="pc-emo">${p.emoji}</div><div><div class="pc-name">${esc(p.name)}</div><div class="pc-role" style="color:${p.color}">${p.role}</div></div></div>
-      <div class="pc-body">
-        <div><div class="pc-lbl">Rang SoloQ</div>
-          <select onchange="setRF('${p.id}','tier',this.value)">${Object.entries(TIER).map(([k,v])=>`<option value="${k}"${p.tier===k?' selected':''}>${v.fr}</option>`).join('')}</select></div>
-        <div class="pc-row">
-          <div><div class="pc-lbl">Div.</div><select onchange="setRF('${p.id}','rank',this.value)"><option value="">-</option>${['IV','III','II','I'].map(r=>`<option value="${r}"${p.rank===r?' selected':''}>${r}</option>`).join('')}</select></div>
-          <div><div class="pc-lbl">LP</div><input type="number" min="0" max="100" placeholder="0" value="${p.lp||''}" oninput="setRF('${p.id}','lp',+this.value)"></div>
-          <div><div class="pc-lbl">WR%</div><input type="number" min="0" max="100" placeholder="—" value="${p.wr??''}" oninput="setRF('${p.id}','wr',+this.value)"></div>
-        </div>
-        <div style="padding-top:6px;border-top:1px solid var(--border)">
-          <div class="pc-rank" style="color:${tc.color}">${tc.fr}${p.rank?' '+p.rank:''}</div>
-          <div class="pc-lp">${p.lp||0} LP${p.wr!=null&&p.wr>0?' · <span style="color:'+wrColor+';font-weight:700">'+p.wr+'% WR</span>':''}</div>
-        </div>
-        ${url?`<a class="btn-opgg" href="${url}" target="_blank" rel="noopener">op.gg →</a>`
-             :`<button class="btn-opgg off" onclick="document.querySelector('details').open=true;showToast('Configure l\\'id op.gg dans Paramètres')">Configurer op.gg</button>`}
-      </div>`;
-    grid.appendChild(card);
-  });
-}
-function setRF(id,f,v){ const p=state.roster.find(x=>x.id===id); if(p)p[f]=v; }
-function saveRanks(){ render(); sync.save(); showToast('Rangs enregistrés ✓'); }
-
 function renderObjectives(){
   const list=document.getElementById('objList');
-  if(!state.objectives.length){ list.innerHTML='<div class="empty">Aucun objectif. Clique sur <svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-pen"><path class="pl-pen-body" d="M14.5 4.5l5 5L9 20l-5.5 1L5 15.5z"/><path class="pl-pen-nib" d="M12.5 6.5l5 5"/></g><path class="pl-pen-line" d="M4 21.5h15"/></svg> Ajouter.</div>'; return; }
+  if(!state.objectives.length){ list.innerHTML='<div class="empty">Aucun objectif pour l’instant.</div>'; return; }
   const order={high:0,medium:1,low:2};
   const sorted=[...state.objectives].sort((a,b)=>(order[a.priority??'medium'])-(order[b.priority??'medium']));
-  const today=new Date().toISOString().split('T')[0];
+  const today=todayIso();
   list.innerHTML=sorted.map(o=>{
     const color=o.priority==='high'?'var(--err)':o.priority==='low'?'var(--ok)':'var(--warn)';
     const stLbl=o.status==='done'?'Terminé':o.status==='progress'?'En cours':'À faire';
     const overdue=o.deadline&&o.deadline<today&&o.status!=='done';
-    return `<div class="obj" style="--oc:${color}" onclick="openEditObj('${o.id}')">
+    return `<div class="obj" onclick="openEditObj('${o.id}')">
       <div class="obj-top"><div class="obj-name">${esc(o.name)}</div>
         <div class="obj-badges"><span class="badge" style="color:${color}">${o.priority==='high'?'Urgent':o.priority==='low'?'Faible':'Normal'}</span><span class="badge">${stLbl}</span></div></div>
-      <div class="obj-bar"><div class="obj-track"><div class="obj-fill" style="width:${o.pct||0}%;background:${color}"></div></div><div class="obj-pct" style="color:${color}">${o.pct||0}%</div></div>
+      <div class="obj-bar"><div class="obj-track"><div class="obj-fill" style="width:${o.pct||0}%;background:${color}"></div></div><div class="obj-pct">${o.pct||0}%</div></div>
       ${o.deadline?`<div class="obj-dl" style="color:${overdue?'var(--err)':'var(--muted)'}">${overdue?'En retard · ':''}Échéance ${new Date(o.deadline).toLocaleDateString('fr-FR',{day:'2-digit',month:'long'})}</div>`:''}
     </div>`;
   }).join('');
 }
 
+// Roster : joueurs du roster central + lien op.gg (le rang se lit sur op.gg, plus de saisie manuelle).
+function opggOf(id){ const r=(state.roster||[]).find(x=>x.id===id); return r&&r.opgg||''; }
+function rosterPlayers(){ return PZ.getRoster ? PZ.getRoster() : []; }
+function renderRoster(){
+  const el=document.getElementById('roster');
+  el.innerHTML=rosterPlayers().map(p=>{
+    const id=opggOf(p.id);
+    const url=id?`https://www.op.gg/summoners/euw/${encodeURIComponent(id)}`:'';
+    return `<div class="rrow"><span class="rrow-dot" style="background:${p.color}"></span>
+      <div class="rrow-main"><div class="rrow-name">${esc(p.name)}</div><div class="rrow-role">${esc(p.role)}</div></div>
+      ${url?`<a href="${url}" target="_blank" rel="noopener">op.gg →</a>`:`<span class="off" title="À renseigner dans Paramètres">op.gg —</span>`}</div>`;
+  }).join('');
+}
 function renderSettingsForm(){
   document.getElementById('p_nextEvent').value=state.nextEvent||'';
   document.getElementById('p_nextEventDate').value=state.nextEventDate||'';
   document.getElementById('p_goal').value=state.goal||'';
-  document.getElementById('rosterConfig').innerHTML=state.roster.map(p=>`
-    <div class="rcr"><div>${p.emoji}</div><div style="font-size:12px;color:var(--dim)">${esc(p.name)} <span style="color:${p.color};font-size:10px">${p.role}</span></div>
-    <input id="opgg_${p.id}" value="${esc(p.opgg||'')}" placeholder="PseudoTag-EUW"></div>`).join('');
+  const cfg=document.getElementById('rosterConfig');
+  if(cfg.contains(document.activeElement)) return;
+  cfg.innerHTML=rosterPlayers().map(p=>`
+    <div class="rcr"><div style="font-size:12.5px;color:var(--dim)">${esc(p.name)} <span style="color:var(--muted)">· ${esc(p.role)}</span></div>
+    <input id="opgg_${p.id}" value="${esc(opggOf(p.id))}" placeholder="Pseudo-TAG"></div>`).join('');
 }
 
 // ── SYNC (doc dashboard) ──
 function getState(){ return {nextEvent:state.nextEvent,nextEventDate:state.nextEventDate,goal:state.goal,roster:state.roster,objectives:state.objectives,officials:state.officials}; }
 function applyState(s){
-  if(!s)return;
+  if(!s) return;
   Object.assign(state,{nextEvent:s.nextEvent||'',nextEventDate:s.nextEventDate||'',goal:s.goal||'',
-    objectives:s.objectives??[], officials:s.officials??[]});
-  if(s.roster?.length){ s.roster.forEach((sr,i)=>{ if(state.roster[i])Object.assign(state.roster[i],{opgg:sr.opgg||'',tier:sr.tier||'UNRANKED',rank:sr.rank||'',lp:sr.lp||0,wr:sr.wr??null}); }); }
+    roster:Array.isArray(s.roster)?s.roster:[], objectives:s.objectives??[], officials:s.officials??[]});
 }
 const sync = PZ.sync({ docId:'dashboard', getState, applyState, onData:render });
+PZ.onRoster(()=>render());
 
-// Nom/emoji depuis le roster central (mercato) ; les rangs restent liés à l'id
-PZ.onRoster(r => {
-  r.forEach(rp => { const p = state.roster.find(x => x.id === rp.id); if (p) { p.name = rp.name; p.emoji = rp.emoji; } });
-  render();
-});
-
-// ── Agrégation (Scrim CR · Scouting · Planning) ──
+// ── Agrégation (CR · Planning · Scouting) ──
 async function loadAggregates(){
-  const db=PZ.db; if(!db){ agg.loaded=true; return; }
+  const db=PZ.db;
   const can = s => !(PZ.auth && PZ.auth.can) || PZ.auth.can(s);
-  // Scrims (CR)
-  if(can('scrim')){
+  const a={ stats:null, week:{}, weekDenied:!can('planning'), avail:{}, scoutLatest:false, scoutDenied:!can('scouting') };
+  try{ a.stats=await PZ.stats.load({weeks:4}); }
+  catch(e){ console.error('stats',e); a.stats={crs:[],scrims:{w:0,l:0,d:0,total:0,wr:null},games:{w:0,l:0,total:0,wr:null},perGame:{},coverage:{planned:0,withCr:0,missing:[]},presence:{rate:null},topErrors:[],canScrim:false,canPlan:false}; }
+  if(db && !a.weekDenied){
+    try{ const d=await db.collection(PZ.COLLECTION).doc('schedule-'+currentWeekValue()).get(); a.week=(d.exists&&d.data().schedule)||{}; }
+    catch(e){ console.error('planning',e); }
     try{
-      let snap;
-      try{ snap=await db.collection('plazma-scrims').orderBy('_savedAt','desc').limit(100).get(); }
-      catch(e){ snap=await db.collection('plazma-scrims').get(); }
-      const arr=[]; snap.forEach(d=>arr.push({id:d.id,...d.data()})); agg.scrims=arr;
-    }catch(e){ console.error('scrims',e); agg.scrims=[]; }
-  } else { agg.scrimsDenied=true; agg.scrims=[]; }
-  // Scouting (dernière fiche)
-  if(can('scouting')){
+      const snap=await db.collection('plazma-availability').where('week','==',currentWeekValue()).get();
+      snap.forEach(dd=>{ const days=(dd.data()||{}).days||{}; Object.keys(days).forEach(day=>{ if(days[day]==='yes') a.avail[day]=(a.avail[day]||0)+1; }); });
+    }catch(e){ console.error('avail',e); }
+  }
+  if(db && !a.scoutDenied){
     try{
       let snap;
       try{ snap=await db.collection('plazma-scouting').orderBy('_savedAt','desc').limit(1).get(); }
       catch(e){ snap=await db.collection('plazma-scouting').get(); }
       let best=null; snap.forEach(d=>{ const x={id:d.id,...d.data()}; const t=x._savedAt&&x._savedAt.toMillis?x._savedAt.toMillis():0; if(!best||t>best._t) best=Object.assign(x,{_t:t}); });
-      agg.scoutLatest=best||false;   // false = chargé mais vide
-    }catch(e){ console.error('scouting',e); agg.scoutLatest=false; }
-  } else { agg.scoutDenied=true; agg.scoutLatest=false; }
-  // Planning (semaine courante)
-  if(can('planning')){
-    try{ const d=await db.collection(PZ.COLLECTION).doc('schedule-'+currentWeekValue()).get(); agg.week=(d.exists&&d.data().schedule)||{}; agg.presence=(d.exists&&d.data().presence)||{}; }
-    catch(e){ console.error('planning',e); agg.week={}; }
-    // Disponibilités (collection dédiée) → total « dispo » par jour
-    try{
-      const snap=await db.collection('plazma-availability').where('week','==',currentWeekValue()).get();
-      const perDay={}; snap.forEach(dd=>{ const days=(dd.data()||{}).days||{}; Object.keys(days).forEach(day=>{ if(days[day]==='yes') perDay[day]=(perDay[day]||0)+1; }); });
-      agg.avail=perDay;
-    }catch(e){ console.error('avail',e); agg.avail={}; }
-  } else { agg.weekDenied=true; agg.week={}; }
-  agg.rosterSize = (PZ.getRoster?PZ.getRoster().length:5);
-  agg.loaded=true; render();
+      a.scoutLatest=best||false;
+    }catch(e){ console.error('scouting',e); }
+  }
+  a.rosterSize=rosterPlayers().length||5;
+  agg=a; render();
 }
 
 // ── MODAL OFFICIEL ──
@@ -646,18 +578,18 @@ function saveSettings(){
   state.nextEvent=document.getElementById('p_nextEvent').value.trim();
   state.nextEventDate=document.getElementById('p_nextEventDate').value;
   state.goal=document.getElementById('p_goal').value.trim();
-  state.roster.forEach(p=>{ const e=document.getElementById('opgg_'+p.id); p.opgg=e?e.value.trim():''; });
-  render(); sync.save(); showToast('Paramètres enregistrés ✓');
+  rosterPlayers().forEach(p=>{
+    const e=document.getElementById('opgg_'+p.id); if(!e) return;
+    let r=state.roster.find(x=>x.id===p.id); if(!r){ r={id:p.id}; state.roster.push(r); }
+    r.opgg=e.value.trim();
+  });
+  render(); sync.save(); showToast('Paramètres enregistrés');
 }
 
 // ── Toolbar ──
-document.getElementById('btnRefresh').addEventListener('click',()=>{ agg={scrims:null,scrimsDenied:false,scoutLatest:null,scoutDenied:false,week:null,weekDenied:false,loaded:false}; render(); loadAggregates(); showToast('Données actualisées'); });
-document.getElementById('btnReset').addEventListener('click',()=>{
-  if(!confirm('Réinitialiser les données du dashboard (officiels, objectifs, rangs) ?'))return;
-  state.officials=[]; state.objectives=[];
-  state.roster.forEach(p=>Object.assign(p,{tier:'UNRANKED',rank:'',lp:0,wr:null}));
-  render(); sync.save(); showToast('Réinitialisé');
-});
+document.getElementById('btnRefresh').addEventListener('click',()=>{ agg=null; render(); loadAggregates(); showToast('Données actualisées'); });
+// Retour depuis un CR ou le Planning : on rafraîchit les agrégats.
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden && agg) loadAggregates(); });
 
 // ── Utils ──
 let _uidC=0; function uid(){ return Date.now().toString(36)+(++_uidC).toString(36); }
