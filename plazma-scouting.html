@@ -7,8 +7,8 @@
 <title>ARCHI — Scouting</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260930b">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css?v=20260923pro">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -19,7 +19,7 @@
 
   .scout-head{border-top:3px solid var(--accent);padding:20px 22px;border-bottom:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
   .threat-badges{display:flex;gap:6px}
-  .tb{padding:5px 13px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;cursor:pointer;border:1px solid;transition:opacity .15s}
+  .tb{padding:5px 13px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.03em;cursor:pointer;border:1px solid;transition:opacity .15s}
   .meta{display:grid;grid-template-columns:2fr 1fr 1.4fr;gap:14px;padding:16px 22px;border-bottom:1px solid var(--border)}
 
   /* Onglets */
@@ -71,7 +71,7 @@
   .pcard .h .role-badge{--role:var(--rc)}
   .pcard input{padding:7px 10px;font-size:13px}
   .pf{margin-bottom:10px}
-  .pf label{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+  .pf label{font-size:10px;letter-spacing:.01em;color:var(--muted);margin-bottom:5px}
   .threat-dots{display:flex;gap:4px}
   .tdot{width:20px;height:12px;border-radius:3px;background:var(--border-2);cursor:pointer;transition:background .1s}
   .tdot.on{background:var(--td,var(--warn))}
@@ -83,7 +83,7 @@
   .role-row{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
   .role-row:last-child{border-bottom:none}
   .cp-table{width:100%;border-collapse:collapse}
-  .cp-table th{text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border)}
+  .cp-table th{text-align:left;font-size:10px;letter-spacing:.01em;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border)}
   .cp-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
   .cp-table tr:last-child td{border-bottom:none}
   .cp-table td input{border:none;background:transparent;padding:8px 0}
@@ -113,7 +113,7 @@
   .db-bans{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;padding:14px;border-bottom:1px solid var(--border);align-items:center}
   .db-bans-side{display:flex;gap:6px;flex-wrap:wrap}
   .db-bans-side.red{justify-content:flex-end}
-  .db-bans-lbl{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center}
+  .db-bans-lbl{font-size:10px;letter-spacing:.01em;color:var(--muted);text-align:center}
   .ban-slot{width:40px;height:40px;border-radius:8px;border:1px solid var(--border-2);background:var(--surface);cursor:pointer;
     display:flex;align-items:center;justify-content:center;position:relative;overflow:visible;color:var(--muted);font-size:16px}
   .ban-slot img{width:100%;height:100%;border-radius:8px;object-fit:cover;filter:grayscale(.4)}
@@ -144,7 +144,7 @@
   .foot .brand{font-size:12px;color:var(--muted)}
 
   /* Drawer historique */
-  .drawer-ov{position:fixed;inset:0;background:rgba(6,10,14,.6);backdrop-filter:blur(4px);z-index:180;opacity:0;pointer-events:none;transition:opacity .2s}
+  .drawer-ov{position:fixed;inset:0;background:rgba(6,10,14,.6);backdrop-filter:blur(2px);z-index:180;opacity:0;pointer-events:none;transition:opacity .2s}
   .drawer-ov.open{opacity:1;pointer-events:auto}
   .drawer{position:fixed;top:0;right:0;bottom:0;width:390px;max-width:94vw;background:var(--surface);border-left:1px solid var(--border-2);z-index:181;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
   .drawer.open{transform:none}
@@ -539,7 +539,7 @@ function applyState(d){
 
 const newDocId = () => 'scout-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);
 function readInputs(){ state.m_team=val('m_team'); state.m_rank=val('m_rank'); state.m_tournoi=val('m_tournoi'); state.f_note=val('f_note'); state.f_comment=val('f_comment'); }
-function updateChip(){ const t=state.m_team||'Sans nom'; document.getElementById('sheetChip').textContent='📄 '+t+(state.m_tournoi?' — '+state.m_tournoi:''); }
+function updateChip(){ const t=state.m_team||'Sans nom'; document.getElementById('sheetChip').textContent=t+(state.m_tournoi?' — '+state.m_tournoi:''); }
 // Signature des données (sans _savedAt) pour distinguer un vrai changement distant de nos propres échos.
 function sig(o){ const c=JSON.parse(JSON.stringify(o||{})); delete c._savedAt; return JSON.stringify(c); }
 let lastSavedSig=null, suppressUntil=0;

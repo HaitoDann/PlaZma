@@ -7,8 +7,8 @@
 <title>ARCHI — Fiche Coach</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260930b">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css?v=20260923pro">
 <link rel="stylesheet" href="assets/perf.css">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -21,7 +21,7 @@
   .cat-name{font-family:var(--font-display);font-size:15px;font-weight:600}
   .cat-sub{font-size:11px;color:var(--muted);margin-top:1px}
   .cat-avg{font-family:var(--font-mono);font-size:1.5rem;font-weight:700;line-height:1;margin-left:auto;text-align:right}
-  .cat-avg small{display:block;font-family:var(--font);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:400}
+  .cat-avg small{display:block;font-family:var(--font);font-size:10px;letter-spacing:.01em;color:var(--muted);font-weight:400}
   .cat-items{display:flex;flex-direction:column;gap:0}
   .cat-items .jr{border:none;border-top:1px solid var(--border);border-radius:0;border-left:none;background:transparent}
   .cat-items .jr:hover{background:var(--surface-2)}
@@ -92,11 +92,11 @@
       <div>
         <div class="perf-sec-title"><span class="d" style="background:var(--coach)"></span>Analyse</div>
         <div class="obs-grid three">
-          <div class="obs-card" style="--oc:var(--ok)"><div class="obs-lbl">✦ Points forts</div>
+          <div class="obs-card" style="--oc:var(--ok)"><div class="obs-lbl">Points forts</div>
             <textarea id="t_forces" placeholder="Ce que le coach maîtrise déjà bien…"></textarea></div>
-          <div class="obs-card" style="--oc:var(--err)"><div class="obs-lbl">✦ Points à améliorer</div>
+          <div class="obs-card" style="--oc:var(--err)"><div class="obs-lbl">Points à améliorer</div>
             <textarea id="t_weak" placeholder="Faiblesses avec impact sur l'équipe…"></textarea></div>
-          <div class="obs-card" style="--oc:var(--accent)"><div class="obs-lbl">✦ Observations générales</div>
+          <div class="obs-card" style="--oc:var(--accent)"><div class="obs-lbl">Observations générales</div>
             <textarea id="t_obs" placeholder="Comportement, relation joueurs, régularité…"></textarea></div>
         </div>
       </div>
@@ -133,31 +133,31 @@
 PZ.mountNav('coach', '#nav');
 
 const CATS = [
-  { id:'prep', icon:'🔬', name:'Préparation & Analyse', col:'#06b6d4', sub:'VOD reviews · scouting · sessions · méta', items:[
+  { id:'prep', icon:'', name:'Préparation & Analyse', col:'var(--accent)', sub:'VOD reviews · scouting · sessions · méta', items:[
     {id:'p1', l:'Qualité et régularité des reviews VOD', s:"Fréquence, profondeur, identification des patterns d'erreur"},
     {id:'p2', l:'Préparation structurée des sessions', s:'Chaque session a un objectif clair et des exercices ciblés'},
     {id:'p3', l:'Scouting adversaires avant les officiels', s:'Fiches préparées, tendances de draft et faiblesses connues'},
     {id:'p4', l:'Lecture et adaptation à la méta', s:"Savoir ce qui est fort, nerf, et adapter le jeu de l'équipe"},
   ]},
-  { id:'draft', icon:'📋', name:'Draft & Stratégie', col:'#a855f7', sub:'Book de draft · win condition · pool · adaptation', items:[
+  { id:'draft', icon:'', name:'Draft & Stratégie', col:'var(--accent)', sub:'Book de draft · win condition · pool · adaptation', items:[
     {id:'d1', l:'Maîtrise des fondamentaux de la draft', s:'Match-ups, synergie, type de composition'},
     {id:'d2', l:'Identification des win conditions', s:'Les 5 joueurs savent comment la compo veut gagner'},
     {id:'d3', l:"Adaptation de la draft face à l'adversaire", s:'Réagir aux picks adverses, switcher de plan si besoin'},
     {id:'d4', l:'Maîtrise du champion pool de chaque joueur', s:'Savoir quoi mettre à qui, dans quel contexte'},
   ]},
-  { id:'coaching', icon:'🎙️', name:'Coaching & Feedback', col:'#f97316', sub:'Feedback individuel · développement · pédagogie', items:[
+  { id:'coaching', icon:'', name:'Coaching & Feedback', col:'var(--accent)', sub:'Feedback individuel · développement · pédagogie', items:[
     {id:'c1', l:'Qualité du feedback individuel post-game', s:'Retours précis, constructifs, actionnables'},
     {id:'c2', l:'Clarté des consignes pendant les sessions', s:'Instructions comprises et appliquées immédiatement'},
     {id:'c3', l:'Suivi et progression individuelle', s:'Chaque joueur a des axes définis, suivis et mesurés'},
     {id:'c4', l:'Pédagogie et capacité à expliquer simplement', s:'Expliquer correctement les différents concepts'},
   ]},
-  { id:'leadership', icon:'🤝', name:'Leadership & Gestion du groupe', col:'#22c55e', sub:'Cohésion · autorité · tilt · conflits', items:[
+  { id:'leadership', icon:'', name:'Leadership & Gestion du groupe', col:'var(--accent)', sub:'Cohésion · autorité · tilt · conflits', items:[
     {id:'l1', l:'Autorité naturelle et confiance des joueurs', s:'Être écouté et suivi — les consignes sont appliquées'},
     {id:'l2', l:"Maintien de la cohésion d'équipe", s:'Dynamique positive, tensions gérées à temps'},
     {id:'l3', l:'Remotivation après défaite et gestion du tilt', s:'Rebond mental rapide, recadrage serein, pas de blame'},
     {id:'l4', l:'Gestion des conflits entre joueurs', s:'Identifier les tensions, intervenir au bon moment'},
   ]},
-  { id:'tournoi', icon:'🏆', name:'Performance en matchs officiels', col:'#ef4444', sub:'Préparation mentale · pauses · adaptations', items:[
+  { id:'tournoi', icon:'', name:'Performance en matchs officiels', col:'var(--accent)', sub:'Préparation mentale · pauses · adaptations', items:[
     {id:'t1', l:"Préparation mentale de l'équipe pré-match", s:"Routines, focus, confiance — le bon état d'esprit"},
     {id:'t2', l:'Gestion des pauses et temps morts', s:'Infos claires et actionnables, pas de panique'},
     {id:'t3', l:'Adaptations tactiques entre les games', s:"Corriger, anticiper les ajustements adverses"},
@@ -175,7 +175,7 @@ CATS.forEach(cat => {
   const block = document.createElement('div');
   block.className = 'cat-block';
   block.innerHTML = `<div class="cat-head">
-      <div class="cat-ico" style="background:${cat.col}22">${cat.icon}</div>
+      
       <div><div class="cat-name" style="color:${cat.col}">${cat.name}</div><div class="cat-sub">${cat.sub}</div></div>
       <div class="cat-avg" id="ca_${cat.id}" style="color:${cat.col}">—<small>Moyenne</small></div>
     </div><div class="cat-items" id="ci_${cat.id}"></div>`;
@@ -211,7 +211,7 @@ function updateScore(){
     document.getElementById('ca_' + cat.id).innerHTML = (avg>0?avg.toFixed(1):'—') + '<small>Moyenne</small>';
     if (avg>0){ catAvgs.push(avg);
       const p = document.createElement('span'); p.className='cp'; p.style.cssText=`background:${cat.col}22;color:${cat.col}`;
-      p.textContent = cat.icon + ' ' + avg.toFixed(1); pills.appendChild(p); }
+      p.textContent = avg.toFixed(1); pills.appendChild(p); }
   });
   const g = catAvgs.length ? catAvgs.reduce((a,b)=>a+b,0)/catAvgs.length : 0;
   const col = g>=8?'var(--ok)':g>=6?'var(--coach)':g>=4?'var(--warn)':g>0?'var(--err)':'var(--coach)';

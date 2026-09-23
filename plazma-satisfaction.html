@@ -7,8 +7,8 @@
 <title>ARCHI — Satisfaction Joueurs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260930b">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css?v=20260923pro">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -25,10 +25,10 @@
 
 .site-header{padding:20px 32px 0;display:flex;align-items:center;justify-content:space-between}
 .header-pill{background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:999px;padding:5px 14px;
-  font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+  font-size:11px;font-weight:600;letter-spacing:.01em;color:var(--accent)}
 
 .hero{text-align:center;padding:40px 32px 32px}
-.hero-eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:14px}
+.hero-eyebrow{font-size:11px;letter-spacing:.01em;color:var(--muted);font-weight:600;margin-bottom:14px}
 .hero-title{font-family:var(--font-display);font-size:clamp(38px,7vw,62px);font-weight:700;letter-spacing:-.01em;line-height:1.02;margin-bottom:14px;color:var(--text)}
 .hero-sub{font-size:15px;color:var(--dim);max-width:520px;margin:0 auto;line-height:1.6}
 
@@ -39,8 +39,8 @@
 .player-btn.active{border-color:var(--role-color);box-shadow:0 0 0 1px var(--role-color)}
 .pb-emoji{font-size:22px}
 .pb-name{font-family:var(--font-display);font-size:14px;font-weight:600}
-.pb-role{font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
-.selector-eyebrow{text-align:center;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+.pb-role{font-size:10px;letter-spacing:.01em;font-weight:600}
+.selector-eyebrow{text-align:center;font-size:11px;font-weight:700;letter-spacing:.01em;color:var(--muted);margin:0 0 12px}
 .staff-selector{display:flex;justify-content:center;gap:10px;padding:0 32px 16px;flex-wrap:wrap}
 .player-btn.staff-card{text-decoration:none}
 
@@ -50,7 +50,7 @@
 .fh-inner{display:flex;align-items:center;gap:13px}
 .fh-avatar{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid;flex-shrink:0}
 .fh-name{font-family:var(--font-display);font-size:22px;font-weight:600}
-.fh-role{font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-top:2px;color:var(--muted)}
+.fh-role{font-size:11px;letter-spacing:.01em;margin-top:2px;color:var(--muted)}
 .fh-date{margin-left:auto;font-size:12px;color:var(--muted);flex-shrink:0}
 .form-body{padding:26px;display:flex;flex-direction:column;gap:28px}
 .form-section{display:flex;flex-direction:column;gap:14px}
@@ -127,7 +127,7 @@
 .btn-admin-view:hover,.btn-admin-view.active{background:#3fdcf4;box-shadow:0 6px 22px -4px color-mix(in srgb,var(--accent) 70%,transparent)}
 .btn-admin-view:active{transform:translateY(1px)}
 
-.results-panel{position:fixed;inset:0;z-index:200;background:rgba(6,10,14,.95);backdrop-filter:blur(12px);display:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.results-panel{position:fixed;inset:0;z-index:200;background:rgba(6,10,14,.95);backdrop-filter:blur(2px);display:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .results-panel.open{display:block}
 .rp-header{position:sticky;top:0;z-index:1;padding:18px 26px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface)}
 .rp-title{font-family:var(--font-display);font-size:17px;font-weight:600;color:var(--text)}
@@ -141,7 +141,7 @@
 .rp-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:6px}
 .rp-kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center}
 .rp-kpi-val{font-family:var(--font-display);font-size:1.7rem;font-weight:700;color:var(--accent)}
-.rp-kpi-lbl{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+.rp-kpi-lbl{font-size:11px;letter-spacing:.01em;color:var(--muted);margin-top:3px}
 .resp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
 .rc-head{padding:12px 16px;background:var(--surface-2);display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
 .resp-card.open .rc-head{border-bottom:1px solid var(--border)}
@@ -196,7 +196,7 @@
 <div class="selector-eyebrow">Staff</div>
 <div class="staff-selector">
   <a class="player-btn staff-card" href="plazma-satisfaction-coach.html" style="--role-color:#22d3ee" title="Questionnaire du Head Coach">
-    <div class="pb-emoji">🧠</div>
+    
     <div class="pb-name" style="color:#22d3ee">Coach</div>
     <div class="pb-role" style="color:#22d3ee">Head Coach</div>
   </a>
@@ -211,7 +211,7 @@
   </div>
 </div>
 <div class="success-screen" id="successScreen">
-  <div class="success-icon">🏆</div>
+  
   <div class="success-title">Merci !</div>
   <div class="success-sub">Ton questionnaire a bien été envoyé au staff PlaZma. Chaque retour compte pour faire progresser le club.</div>
   <button class="btn-new" onclick="resetForm()">← Soumettre un autre avis</button>
@@ -366,7 +366,7 @@ const SINGLE_BARS=[
 
 // ─── Note /10 couleurs par valeur
 const BAR10_COLORS=['#ef4444','#ef4444','#f97316','#f97316','#f59e0b','#f59e0b','#84cc16','#22c55e','#22c55e','#06b6d4'];
-const NOTE10_LABELS={1:'😞 Décevant',2:'😕 Insuffisant',3:'😐 Passable',4:'🙂 Correct',5:'👍 Bien',6:'😊 Assez bien',7:'😄 Bon',8:'🔥 Très bien',9:'⭐ Excellent',10:'🏆 Exceptionnel'};
+const NOTE10_LABELS={1:'Décevant',2:'Insuffisant',3:'Passable',4:'Correct',5:'Bien',6:'Assez bien',7:'Bon',8:'Très bien',9:'Excellent',10:'Exceptionnel'};
 
 // ═══════════════════════════════════════════
 // BUILD UI
@@ -506,7 +506,7 @@ async function submitForm(){
   ans.q14=document.getElementById('q14').value.trim();
   ans.q15=document.getElementById('q15').value.trim();
   const errs=validate(); const errEl=document.getElementById('submitError');
-  if(errs.length){errEl.textContent='⚠ Réponses obligatoires manquantes : '+errs.join(' · ');errEl.classList.add('show');errEl.scrollIntoView({behavior:'smooth',block:'center'});return;}
+  if(errs.length){errEl.textContent='Réponses obligatoires manquantes : '+errs.join(' · ');errEl.classList.add('show');errEl.scrollIntoView({behavior:'smooth',block:'center'});return;}
   errEl.classList.remove('show');
   const btn=document.getElementById('submitBtn'); btn.disabled=true; btn.textContent='⏳ Envoi…';
   const data={
@@ -600,7 +600,7 @@ function trendCard(rows,metrics){
       <div style="font-family:var(--font-display);font-size:18px;font-weight:700;color:${m.color}">${cur.toFixed(1)}<span style="font-size:11px;color:var(--text3)">/${m.max}</span> <span style="font-size:11px;color:${col};font-weight:600">${arr}</span></div></div>
       <div style="flex:1;min-width:0">${spark(s,m.color,m.max)}</div></div>`; }).filter(Boolean).join('');
   return blocks?`<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:4px">
-    <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;font-weight:600">📈 Évolution dans le temps</div>${blocks}</div>`:'';
+    <div style="font-size:11px;letter-spacing:.01em;color:var(--text3);margin-bottom:8px;font-weight:600">Évolution dans le temps</div>${blocks}</div>`:'';
 }
 
 function renderAdmin(){
@@ -617,7 +617,7 @@ function renderAdmin(){
 </div>
 ${trendCard(f, PLAYER_TREND)}
 <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:4px">
-  <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;font-weight:600">Moyennes évaluation par critère</div>
+  <div style="font-size:11px;letter-spacing:.01em;color:var(--text3);margin-bottom:12px;font-weight:600">Moyennes évaluation par critère</div>
   ${CRITERIA.map(c=>`<div style="display:flex;align-items:center;gap:12px;margin-bottom:7px">
     <div style="font-size:13px;color:var(--text2);min-width:220px">${c.label.replace('&amp;','&')}</div>
     <div style="display:flex;gap:3px;flex:1">${Array.from({length:5},(_,i)=>`<div style="flex:1;height:6px;border-radius:2px;background:${c.color};opacity:${parseFloat(avgCrit(c.id))>i?1:.14}"></div>`).join('')}</div>
@@ -658,7 +658,7 @@ function rCard(r){
     </div>
     <div class="rc-body">
       ${mainRows.map(([q,a])=>`<div class="rc-row"><div class="rc-q">${q}</div><div class="rc-a">${a}</div></div>`).join('')}
-      <div class="rc-row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:8px;flex-direction:column;gap:6px"><div class="rc-q" style="color:var(--v6);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:11px">Critères</div>${critRows}</div>
+      <div class="rc-row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:8px;flex-direction:column;gap:6px"><div class="rc-q" style="color:var(--v6);font-weight:700;letter-spacing:.01em;font-size:11px">Critères</div>${critRows}</div>
     </div>
   </div>`;
 }

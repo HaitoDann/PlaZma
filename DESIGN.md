@@ -79,3 +79,10 @@ hey.com « Spot the Slop », Shuffle, Claude Code « Unslop UI ».
 
 Palette **plafonnée** : accent unique + états + rôles LoL. Toute nouvelle
 couleur doit se justifier par un sens, pas par l'esthétique.
+
+## 8. v4 « Pro » (sept. 2026)
+- Couche finale `PRO — v4` en fin de `assets/theme.css` : elle prime sur tout le reste.
+- Typo unique **IBM Plex Sans / IBM Plex Mono** ; titres en 600, sans police display.
+- Neutres froids, accent `#4cb8cc` désaturé, arrondis 4–8px, cartes à filet fin sans ombre.
+- Aucune animation décorative (particules, étoiles, curseur, halos, icônes animées, ripple).
+- Pas d'emoji d'interface ; seuls restent les emojis d'identité du roster et ceux des embeds Discord.

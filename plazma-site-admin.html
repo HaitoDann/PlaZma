@@ -7,8 +7,8 @@
 <title>ARCHI — Système</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260930b">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css?v=20260923pro">
 <style>
   .wrap{max-width:1100px;margin:0 auto;padding:26px var(--gut) 70px}
   .pagehead{margin:8px 0 8px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
@@ -16,7 +16,7 @@
   .pagehead p{color:var(--muted);font-size:13.5px;margin-top:4px}
   .sec{margin-top:26px}
   .sec-title{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:1.05rem;font-weight:600;margin-bottom:14px}
-  .sec-title .line{flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+  .sec-title .line{flex:1;height:1px;background:var(--border)}
 
   /* Vue d'ensemble */
   .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
@@ -33,9 +33,9 @@
   .ga-max{color:var(--muted);font-weight:500}
   .ga-bar{height:9px;border-radius:99px;background:var(--surface-2);overflow:hidden}
   .ga-fill{height:100%;width:0;border-radius:99px;transition:width 1s cubic-bezier(.16,1,.3,1)}
-  .ga-fill.ok{background:linear-gradient(90deg,#22d3ee,#0891b2)}
-  .ga-fill.warn{background:linear-gradient(90deg,#fbbf24,#f59e0b)}
-  .ga-fill.crit{background:linear-gradient(90deg,#fb7185,#ef4444)}
+  .ga-fill.ok{background:#0891b2}
+  .ga-fill.warn{background:#f59e0b}
+  .ga-fill.crit{background:#ef4444}
   .ga-foot{display:flex;align-items:center;justify-content:space-between;margin-top:7px}
   .ga-pct{font-size:11.5px;font-weight:700}
   .ga-pct.ok{color:var(--accent)}.ga-pct.warn{color:var(--warn)}.ga-pct.crit{color:var(--err)}
@@ -55,7 +55,7 @@
   .uinfo{flex:1;min-width:0}
   .uname{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .umeta{font-size:11.5px;color:var(--muted);margin-top:2px}
-  .urole{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:var(--surface-2);color:var(--dim);margin-left:6px}
+  .urole{font-size:10px;font-weight:700;letter-spacing:.04em;padding:2px 7px;border-radius:20px;background:var(--surface-2);color:var(--dim);margin-left:6px}
   .urole.admin{background:var(--accent-soft);color:var(--accent)}
   .ustat{text-align:right;flex-shrink:0}
   .ustat-n{font-family:var(--font-display);font-size:1.3rem;font-weight:700;line-height:1}
@@ -125,7 +125,7 @@
 
   <!-- Quotas -->
   <div class="sec">
-    <div class="sec-title">🩺 Quotas &amp; santé — plan gratuit Firebase (Spark) <span class="line"></span></div>
+    <div class="sec-title">Quotas &amp; santé — plan gratuit Firebase (Spark) <span class="line"></span></div>
     <div class="gauges" id="gauges"></div>
     <div class="hint" id="quota-hint">
       Les compteurs sont <b>estimés dans l'app</b> (chaque lecture/écriture/connexion est comptabilisée et agrégée dans <b>plazma/_usage</b>), pas via l'API de facturation Google. Ils reflètent l'activité réelle mais peuvent légèrement sous-estimer. Les limites Spark se réinitialisent chaque jour (à minuit, heure du Pacifique). Reste sous <b>~80 %</b> pour garder de la marge.
@@ -134,13 +134,13 @@
 
   <!-- Utilisateurs -->
   <div class="sec">
-    <div class="sec-title">👥 Utilisateurs — activité <span class="line"></span></div>
+    <div class="sec-title">Utilisateurs — activité <span class="line"></span></div>
     <div class="users" id="users"><div class="empty">Chargement…</div></div>
   </div>
 
   <!-- Boîte à idées -->
   <div class="sec">
-    <div class="sec-title">💡 Boîte à idées <span class="line"></span></div>
+    <div class="sec-title">Boîte à idées <span class="line"></span></div>
     <div class="ideas" id="ideas"><div class="empty">Chargement…</div></div>
   </div>
 
@@ -148,7 +148,7 @@
     <div class="grid2">
       <!-- Annonce -->
       <div class="card2">
-        <div class="sec-title" style="margin-bottom:14px">📣 Bandeau d'annonce <span class="line"></span></div>
+        <div class="sec-title" style="margin-bottom:14px">Bandeau d'annonce <span class="line"></span></div>
         <div class="field">
           <label for="an_text">Message (vide = pas de bandeau)</label>
           <textarea id="an_text" rows="2" placeholder="Ex : Maintenance prévue ce soir à 22h…"></textarea>
@@ -175,7 +175,7 @@
 
       <!-- Modules / maintenance -->
       <div class="card2">
-        <div class="sec-title" style="margin-bottom:14px">🧩 Modules &amp; maintenance <span class="line"></span></div>
+        <div class="sec-title" style="margin-bottom:14px">Modules &amp; maintenance <span class="line"></span></div>
         <div class="switch-list" id="sections"></div>
         <div class="switch-row" style="margin-top:8px;border-top:1px solid var(--border);border-bottom:0">
           <div class="switch-name">Mode maintenance <small>Bloque l'accès aux non-admins</small></div>
@@ -293,7 +293,7 @@ function previewAnnounce(){
   const t=$('an_text').value.trim();
   const box=$('an_preview');
   if(!t||!anOn){ box.innerHTML=''; return; }
-  const ico = anType==='warn'?'⚠️':anType==='ok'?'✅':'ℹ️';
+  const ico = anType==='warn'?'!':anType==='ok'?'✓':'i';
   box.innerHTML = `<div class="pz-announce ${anType}" style="border-radius:10px;animation:none"><span class="pz-announce-ico">${ico}</span><span></span></div>`;
   box.querySelector('.pz-announce span:nth-child(2)').textContent = t;
 }

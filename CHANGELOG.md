@@ -15,6 +15,21 @@ bas de la fenêtre **Paramètres**.
 
 ---
 
+## 3.x — Interface pro
+
+### 3.0.0 — Refonte visuelle sobre et minimaliste
+- Nouveau socle visuel sur toutes les pages : neutres froids, un seul accent,
+  typo IBM Plex Sans / Mono, cartes à plat avec filet fin, arrondis discrets.
+- Accueil et connexion réécrits : plus de logo « forgé », bulles, étoiles,
+  effet verre ni ondes au clic.
+- Décor retiré : particules, étoiles, curseur lumineux, halos, dégradés,
+  majuscules très espacées, emojis d'interface (restent ceux du roster et des
+  embeds Discord).
+- Conservées : les micro-animations des icônes au survol (déconnexion,
+  Discord, idées, boutons d'action).
+
+---
+
 ## 2.x — Refonte visuelle & administration
 
 ### 2.12.1 — Planning : menus corrigés + dates butoir
