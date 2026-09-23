@@ -1128,8 +1128,7 @@ h1{font-size:1.45rem} h2{font-size:1.1rem} h3{font-size:.98rem}
 
 /* Aucune animation décorative : seules les transitions d'état restent */
 .content>*,.content,.tools.revealed .tool,.roster.revealed .pcard,.staff.revealed .pcard{animation:none !important;opacity:1 !important}
-[class^="ib-"],[class*=" ib-"],.tool-ico svg,.tool-ico svg *,.pz-nav-ico svg,.pz-nav-ico .bulb-rays,
-.pz-power-bar,.pz-power-ring,.pz-emoji-shake,.sync-dot::before,.sync-dot::after,.sync-dot.connected,
+.tool-ico svg *,.pz-emoji-shake,.sync-dot::before,.sync-dot::after,.sync-dot.connected,
 .pz-brand-mark img,.pz-brand-mark,.pz-daynight *,.pz-maint-logo::before,.pz-maint-logo::after{animation:none !important}
 .sync-dot.connected{box-shadow:none !important}
 *{text-shadow:none !important}
