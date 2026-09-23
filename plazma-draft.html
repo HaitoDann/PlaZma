@@ -7,8 +7,8 @@
 <title>ARCHI — Draft</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260818">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css?v=20260923pro">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -34,7 +34,7 @@
 .bans-row{display:grid;grid-template-columns:1fr 68px 1fr;gap:6px;padding:9px 16px;background:rgba(0,0,0,.18);border-bottom:1px solid var(--border)}
 .bans-side{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
 .bans-side.red{justify-content:flex-end}
-.bans-lbl{display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:center;line-height:1.3}
+.bans-lbl{display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;letter-spacing:.01em;color:var(--muted);text-align:center;line-height:1.3}
 .ban-slot{width:36px;height:36px;border-radius:8px;border:1px solid var(--border-2);background:var(--surface-2);
   cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;
   color:var(--muted);font-size:13px;transition:border-color .15s,box-shadow .2s;flex-shrink:0}
@@ -96,7 +96,7 @@
 .analysis-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;position:sticky;top:68px}
 .ap-section{margin-bottom:16px}
 .ap-section:last-child{margin-bottom:0}
-.ap-title{font-size:10.5px;font-weight:700;letter-spacing:.10em;text-transform:uppercase;color:var(--muted);margin-bottom:9px;display:flex;align-items:center;gap:5px}
+.ap-title{font-size:10.5px;font-weight:700;letter-spacing:.01em;color:var(--muted);margin-bottom:9px;display:flex;align-items:center;gap:5px}
 .ap-title::before{content:'';width:3px;height:10px;border-radius:2px;background:currentColor;flex-shrink:0}
 
 /* Pool chips */
@@ -114,10 +114,10 @@
 .comp-name{font-family:var(--font-display);font-weight:700;font-size:.95rem;color:var(--accent);margin:7px 0 4px;min-height:1.2em}
 .comp-name.red{color:#f87171}
 .gap-line{font-size:11.5px;color:var(--warn);margin-bottom:4px;padding-left:14px;position:relative}
-.gap-line::before{content:'⚠';position:absolute;left:0;font-size:10px}
+.gap-line::before{content:'–';position:absolute;left:0;font-size:10px}
 
 /* Drawer */
-.drawer-ov{position:fixed;inset:0;background:rgba(6,10,14,.6);backdrop-filter:blur(4px);z-index:180;opacity:0;pointer-events:none;transition:opacity .2s}
+.drawer-ov{position:fixed;inset:0;background:rgba(6,10,14,.6);backdrop-filter:blur(2px);z-index:180;opacity:0;pointer-events:none;transition:opacity .2s}
 .drawer-ov.open{opacity:1;pointer-events:auto}
 .drawer{position:fixed;top:0;right:0;bottom:0;width:370px;max-width:94vw;background:var(--surface);
   border-left:1px solid var(--border-2);z-index:181;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
@@ -147,7 +147,7 @@
 .timing-row{display:flex;gap:3px;margin:6px 0 2px}
 .timing-cell{flex:1;text-align:center;font-size:9.5px;font-weight:700;padding:4px 2px;border-radius:6px;
   background:var(--surface-2);border:1px solid var(--border-2);color:var(--muted);
-  text-transform:uppercase;letter-spacing:.06em;transition:all .2s}
+  letter-spacing:.01em;transition:all .2s}
 .timing-cell.peak{background:rgba(34,211,238,.14);border-color:rgba(34,211,238,.3);color:#67e8f9}
 
 /* Win condition */
@@ -155,10 +155,10 @@
 
 /* Cross-analysis */
 .threat-line{font-size:11px;color:var(--err);margin-bottom:4px;padding-left:15px;position:relative;line-height:1.4}
-.threat-line::before{content:'⚡';position:absolute;left:0;font-size:10px;top:1px}
+.threat-line::before{content:'–';position:absolute;left:0;font-size:10px;top:1px}
 .adv-line{font-size:11px;color:var(--ok);margin-bottom:4px;padding-left:15px;position:relative;line-height:1.4}
 .adv-line::before{content:'✓';position:absolute;left:0;font-size:10px;font-weight:700;top:1px}
-.cross-sep{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:7px 0 4px}
+.cross-sep{font-size:10px;font-weight:700;letter-spacing:.01em;color:var(--muted);margin:7px 0 4px}
 
 /* Pool fit */
 .pool-chip{position:relative}
@@ -701,8 +701,8 @@ function renderStepNav() {
   const cur = SEQ[step];
   const s = scn();
   const teamName = cur.team === 'blue'
-    ? (s.blueTeam || '🔵 Bleu')
-    : (s.redTeam   || '🔴 Rouge');
+    ? (s.blueTeam || 'Bleu')
+    : (s.redTeam   || 'Rouge');
   const typeFr = cur.type === 'ban' ? 'Ban' : 'Pick';
   const roleFr = cur.type === 'pick' ? ' · ' + ROLES[cur.ri].label : '';
   numEl.textContent = `Étape ${step + 1} / ${SEQ.length}`;

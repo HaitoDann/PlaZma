@@ -7,339 +7,46 @@
 <title>ARCHI — Connexion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260930b">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css?v=20260923pro">
 <style>
-  /* ============================================================
-     ARCHI — Connexion
-     Socle rond glassmorphism + ambiance aquarium (étoiles, bulles,
-     anneaux du loader, caustique). Light/dark adapté.
-     Identité PlaZma conservée : accent cyan.
-     ============================================================ */
-
-  /* Variables locales — valeurs sombres par défaut, surchargées en clair */
-  :root{
-    --lg-glass-bg:linear-gradient(155deg, rgba(24,34,46,.6), rgba(12,18,26,.48));
-    --lg-glass-border:rgba(255,255,255,.10);
-    --lg-glass-sheen:rgba(255,255,255,.14);
-    --lg-field-bg:rgba(9,14,20,.55);
-    --lg-field-bg-focus:rgba(9,14,20,.7);
-    --lg-field-border:rgba(255,255,255,.10);
-    --lg-grid-dot:rgba(159,176,192,.08);
-    --lg-h1:linear-gradient(180deg,#ffffff,#b9e9f4 90%);
-    --lg-star:#cfe9f5;
-    --lg-bubble:radial-gradient(circle at 34% 30%, rgba(200,244,252,.5), rgba(34,211,238,.13) 58%, transparent 72%);
-    --lg-ring:rgba(34,211,238,1);
-  }
-  [data-theme="light"]{
-    --lg-glass-bg:linear-gradient(155deg, rgba(255,255,255,.74), rgba(233,240,248,.62));
-    --lg-glass-border:rgba(15,25,35,.12);
-    --lg-glass-sheen:rgba(255,255,255,.7);
-    --lg-field-bg:rgba(255,255,255,.72);
-    --lg-field-bg-focus:rgba(255,255,255,.92);
-    --lg-field-border:rgba(15,25,35,.14);
-    --lg-grid-dot:rgba(30,41,59,.16);
-    --lg-h1:linear-gradient(180deg,#0f1923,#0e7490 96%);
-    --lg-star:#1e293b;
-    --lg-bubble:radial-gradient(circle at 34% 30%, rgba(8,145,178,.30), rgba(8,145,178,.10) 58%, transparent 72%);
-    --lg-ring:rgba(8,145,178,1);
-  }
-
-  html,body{height:100%}
-  body{
-    display:flex;align-items:center;justify-content:center;
-    padding:24px;position:relative;overflow:hidden;
-    background:
-      radial-gradient(1100px 700px at 78% -10%, rgba(34,211,238,.16), transparent 60%),
-      radial-gradient(900px 640px at 12% 112%, rgba(8,145,178,.20), transparent 62%),
-      linear-gradient(160deg, #060a10 0%, #0a1017 46%, #070c12 100%);
-  }
-  [data-theme="light"] body{
-    background:
-      radial-gradient(1100px 700px at 78% -10%, rgba(8,145,178,.12), transparent 60%),
-      radial-gradient(900px 640px at 12% 112%, rgba(14,116,144,.10), transparent 62%),
-      linear-gradient(160deg, #eef3f8 0%, #e1e9f2 48%, #eaf1f7 100%);
-  }
-
-  /* ---- Décor : grille technique + anneaux (motif loader Archi) ---- */
-  .scene{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-
-  /* Grille de points discrète, estompée vers les bords */
-  .grid-bg{
-    position:absolute;inset:0;
-    background-image:radial-gradient(circle at 1px 1px, var(--lg-grid-dot) 1px, transparent 1.6px);
-    background-size:30px 30px;
-    -webkit-mask:radial-gradient(closest-side at 50% 46%, #000 22%, transparent 82%);
-    mask:radial-gradient(closest-side at 50% 46%, #000 22%, transparent 82%);
-  }
-
-  /* Anneaux concentriques fins, centrés derrière le socle */
-  .rings{
-    position:absolute;top:50%;left:50%;width:min(96vw,1120px);aspect-ratio:1;
-    transform:translate(-50%,-50%);
-  }
-  .rings span{position:absolute;inset:0;margin:auto;border-radius:50%;border:1px solid transparent}
-  .r1{width:52%;height:52%;border-color:rgba(34,211,238,.14)}
-  .r2{width:74%;height:74%;border-color:rgba(34,211,238,.10)}
-  .r3{width:98%;height:98%;border-color:rgba(34,211,238,.06)}
-  /* Arcs lumineux qui tournent lentement — écho du loader */
-  .arc{border-width:1.5px}
-  .a1{width:74%;height:74%;border-top-color:rgba(34,211,238,.42);border-right-color:rgba(34,211,238,.12);animation:ring-cw 26s linear infinite}
-  .a2{width:98%;height:98%;border-top-color:rgba(45,212,191,.30);border-left-color:rgba(34,211,238,.08);animation:ring-ccw 40s linear infinite}
-  @keyframes ring-cw{to{transform:rotate(360deg)}}
-  @keyframes ring-ccw{to{transform:rotate(-360deg)}}
-
-  /* Halo cyan diffus derrière le socle */
-  .scene::after{
-    content:"";position:absolute;top:50%;left:50%;width:660px;height:660px;
-    transform:translate(-50%,-50%);
-    background:radial-gradient(circle, rgba(34,211,238,.10), transparent 62%);
-  }
-
-  /* Étoiles en fond (légère parallaxe à la souris) */
-  .stars{position:absolute;inset:0;overflow:hidden}
-  .star-layer{position:absolute;inset:-40px;will-change:transform;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
-  .st{position:absolute;border-radius:50%;background:var(--lg-star);animation:twinkle ease-in-out infinite}
-  @keyframes twinkle{0%,100%{opacity:var(--o,.5)}50%{opacity:calc(var(--o,.5) * .32)}}
-  /* En clair : étoiles sombres, plus marquées */
-  [data-theme="light"] .st{animation-name:twinkle-light}
-  @keyframes twinkle-light{0%,100%{opacity:var(--o,.6)}50%{opacity:calc(var(--o,.6) * .6)}}
-
-  /* Anneaux plus discrets en clair */
-  [data-theme="light"] .r1{border-color:rgba(8,145,178,.16)}
-  [data-theme="light"] .r2{border-color:rgba(8,145,178,.11)}
-  [data-theme="light"] .r3{border-color:rgba(8,145,178,.06)}
-  [data-theme="light"] .a1{border-top-color:rgba(8,145,178,.34);border-right-color:rgba(8,145,178,.10)}
-  [data-theme="light"] .a2{border-top-color:rgba(13,148,136,.24);border-left-color:rgba(8,145,178,.07)}
-
-  /* Bulles d'aquarium qui remontent doucement */
-  .bubbles{position:absolute;inset:0;overflow:hidden}
-  .bubble{
-    position:absolute;bottom:-60px;border-radius:50%;pointer-events:none;
-    background:var(--lg-bubble);
-    box-shadow:0 0 8px rgba(34,211,238,.14);
-    opacity:0;will-change:transform,opacity;
-    animation:bubble-rise linear infinite;
-  }
-  @keyframes bubble-rise{
-    0%{transform:translate(0,0) scale(.9);opacity:0}
-    12%{opacity:var(--op,.5)}
-    50%{transform:translate(var(--sway,12px),-52vh) scale(1)}
-    88%{opacity:calc(var(--op,.5) * .7)}
-    100%{transform:translate(0,-104vh) scale(1.04);opacity:0}
-  }
-
-  /* Ripple goutte d'eau au clic (écho de l'accueil) */
-  .wd-ring{
-    position:fixed;border-radius:50%;pointer-events:none;z-index:9997;
-    border:1px solid rgba(34,211,238,.6);transform:scale(0);
-  }
-  @keyframes water-rip{
-    0%{transform:scale(0);opacity:var(--op,.6)}
-    15%{opacity:var(--op,.6)}
-    100%{transform:scale(1);opacity:0}
-  }
-
-  /* ---- Socle rond glassmorphism ---- */
-  .login{width:520px;max-width:100%;position:relative;z-index:1;animation:socle-float 9s ease-in-out infinite}
-  .login .glass{
-    aspect-ratio:1;border-radius:50%;padding:0 114px;
-    display:flex;flex-direction:column;justify-content:center;
-    background:var(--lg-glass-bg);
-    backdrop-filter:blur(22px) saturate(150%);
-    -webkit-backdrop-filter:blur(22px) saturate(150%);
-    border:1px solid var(--lg-glass-border);
-    box-shadow:
-      0 30px 80px rgba(0,0,0,.5),
-      0 0 0 1px rgba(34,211,238,.06),
-      inset 0 1px 0 var(--lg-glass-sheen),
-      inset 0 -40px 80px rgba(6,58,71,.14);
-    position:relative;overflow:hidden;
-  }
-  /* Léger éclat cyan en haut du socle */
-  .login .glass::before{
-    content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
-    background:radial-gradient(120% 70% at 50% -6%, rgba(103,232,249,.16), transparent 46%);
-    z-index:2;
-  }
-  /* Caustique : lumière d'eau qui dérive lentement sur le verre */
-  .login .glass::after{
-    content:"";position:absolute;inset:-30%;border-radius:50%;pointer-events:none;z-index:1;
-    background:
-      radial-gradient(38% 30% at 32% 30%, rgba(103,232,249,.10), transparent 60%),
-      radial-gradient(30% 26% at 72% 64%, rgba(45,212,191,.08), transparent 62%);
-    filter:blur(6px);
-    animation:caustic 16s ease-in-out infinite;
-  }
-  .login .glass > *{position:relative;z-index:3}
-  @keyframes socle-float{
-    0%,100%{transform:translateY(0)}
-    50%{transform:translateY(-9px)}
-  }
-  @keyframes caustic{
-    0%,100%{transform:translate(0,0) rotate(0deg);opacity:.9}
-    50%{transform:translate(3%,-2%) rotate(8deg);opacity:1}
-  }
-
-  .login-brand{display:flex;flex-direction:column;align-items:center;gap:7px;margin-bottom:16px}
-  .login-mark{width:64px;height:62px;position:relative;perspective:620px;
-    animation:logo-float 7s ease-in-out infinite 1.5s}
-  @keyframes logo-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-
-  /* ── Formation « forge énergétique » du logo ──
-     Deux lames arrivent de loin en 3D, se percutent au centre (léger
-     dépassement) → flash + onde de choc + éclat balayé. */
-  .lf-half{
-    position:absolute;top:0;bottom:0;width:50%;
-    background-image:url(assets/logo-plazma.png);
-    background-repeat:no-repeat;background-size:64px auto;background-position-y:center;
-    opacity:0;
-  }
-  .lf-left{left:0;background-position-x:left;
-    animation:lf-left 1s cubic-bezier(.2,.8,.2,1.25) both .2s}
-  .lf-right{left:50%;background-position-x:right;
-    animation:lf-right 1s cubic-bezier(.2,.8,.2,1.25) both .28s}
-  @keyframes lf-left{
-    0%{transform:translate3d(-150px,-46px,-140px) rotateY(88deg) rotateZ(-24deg) scale(1.7);opacity:0;filter:blur(7px)}
-    45%{opacity:1;filter:blur(1px)}
-    70%{transform:translate3d(7px,0,0) rotateY(-10deg) scale(1.04);filter:blur(0)}   /* dépassement */
-    100%{transform:none;opacity:1;filter:blur(0)}
-  }
-  @keyframes lf-right{
-    0%{transform:translate3d(150px,-46px,-140px) rotateY(-88deg) rotateZ(24deg) scale(1.7);opacity:0;filter:blur(7px)}
-    45%{opacity:1;filter:blur(1px)}
-    70%{transform:translate3d(-7px,0,0) rotateY(10deg) scale(1.04);filter:blur(0)}
-    100%{transform:none;opacity:1;filter:blur(0)}
-  }
-  /* Onde de choc à l'impact */
-  .lf-wave{
-    position:absolute;left:50%;top:52%;width:64px;height:64px;z-index:-1;pointer-events:none;
-    transform:translate(-50%,-50%) scale(.15);border-radius:50%;
-    border:2px solid rgba(34,211,238,.75);opacity:0;
-    animation:lf-wave .7s cubic-bezier(.16,1,.3,1) both .92s;
-  }
-  @keyframes lf-wave{0%{opacity:0;transform:translate(-50%,-50%) scale(.15)}22%{opacity:.9}100%{opacity:0;transform:translate(-50%,-50%) scale(2.6)}}
-  /* Flash lumineux du logo à l'impact */
-  .lf-flash{
-    position:absolute;inset:0;pointer-events:none;opacity:0;background:#eafcff;mix-blend-mode:screen;
-    -webkit-mask:url(assets/logo-plazma.png) center/64px auto no-repeat;
-    mask:url(assets/logo-plazma.png) center/64px auto no-repeat;
-    animation:lf-flash .55s ease .9s both;
-  }
-  @keyframes lf-flash{0%{opacity:0}20%{opacity:.95}100%{opacity:0}}
-  /* Éclat qui balaie le logo assemblé */
-  .lf-glint{
-    position:absolute;inset:0;pointer-events:none;opacity:0;transform:translateX(-120%);
-    background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.9) 50%,transparent 58%);
-    -webkit-mask:url(assets/logo-plazma.png) center/64px auto no-repeat;
-    mask:url(assets/logo-plazma.png) center/64px auto no-repeat;
-    animation:lf-glint 1s ease-out 1.25s;
-  }
-  @keyframes lf-glint{0%{opacity:0;transform:translateX(-120%)}30%{opacity:1}100%{opacity:0;transform:translateX(120%)}}
-  .login h1{
-    font-size:2rem;letter-spacing:.14em;font-weight:800;
-    background:var(--lg-h1);
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-    text-shadow:0 0 30px rgba(34,211,238,.2);
-  }
-  .login-sub{font-size:11.5px;color:var(--dim);letter-spacing:.16em;text-transform:uppercase}
-
-  .login label{display:block;margin:12px 0 6px;font-size:12px;color:var(--dim);font-weight:600;letter-spacing:.02em}
-
-  /* Champs sur mesure pour l'effet verre */
+  body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg)}
+  .scene{display:none}
+  .login{width:360px;max-width:100%}
+  .login .glass{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:32px 28px 26px}
+  .login-brand{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:22px;text-align:center}
+  .login-mark{width:44px;height:36px;background:url(assets/logo-plazma.png) center/contain no-repeat;margin-bottom:6px}
+  .login-mark span{display:none}
+  .login h1{font-size:20px;font-weight:600;letter-spacing:.02em}
+  .login-sub{font-size:13px;color:var(--muted)}
+  .login label{display:block;margin:14px 0 6px;font-size:12.5px;color:var(--dim);font-weight:500}
   .login .field{position:relative}
-  .login .field svg{
-    position:absolute;left:15px;top:50%;transform:translateY(-50%);
-    width:17px;height:17px;color:var(--muted);pointer-events:none;transition:color .2s;
-  }
-  .login input{
-    width:100%;padding:12px 15px 12px 42px;
-    background:var(--lg-field-bg);
-    border:1px solid var(--lg-field-border);
-    border-radius:14px;color:var(--text);font-size:14px;font-family:var(--font);
-    transition:border-color .2s, box-shadow .2s, background .2s;
-  }
+  .login .field svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted);pointer-events:none}
+  .login input{width:100%;padding:10px 12px 10px 36px;background:var(--bg);border:1px solid var(--border-2);
+    border-radius:var(--r);color:var(--text);font-size:14px;font-family:var(--font)}
   .login input::placeholder{color:var(--muted)}
-  .login input:focus{
-    outline:none;background:var(--lg-field-bg-focus);
-    border-color:rgba(34,211,238,.55);
-    box-shadow:0 0 0 4px rgba(34,211,238,.12), 0 0 24px rgba(34,211,238,.14);
-  }
-  .login .field:focus-within svg{color:var(--accent)}
-
-  /* Bouton œil afficher/masquer */
-  .login input.has-eye{padding-right:44px}
-  .login .eye{
-    position:absolute;right:6px;top:50%;transform:translateY(-50%);
-    width:32px;height:32px;display:flex;align-items:center;justify-content:center;
-    background:none;border:0;cursor:pointer;color:var(--muted);border-radius:9px;padding:0;
-    transition:color .2s,background .2s;
-  }
-  .login .eye:hover{color:var(--accent);background:rgba(34,211,238,.08)}
-  .login .eye svg{position:static;left:auto;top:auto;transform:none;width:18px;height:18px;color:inherit}
+  .login input:focus{outline:none}
+  .login input.has-eye{padding-right:40px}
+  .login .eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+    background:none;border:0;cursor:pointer;color:var(--muted);border-radius:var(--r-sm);padding:0}
+  .login .eye:hover{color:var(--text)}
+  .login .eye svg{position:static;transform:none;width:16px;height:16px;color:inherit}
   .login .eye .eye-off{display:none}
   .login .eye.on .eye-on{display:none}
   .login .eye.on .eye-off{display:block}
-
-  /* Bouton succès (login réussi) */
-  .login .btn.ok{
-    background:linear-gradient(180deg,#6ee7b7,#22c55e 58%,#16a34a);
-    color:#04321f;pointer-events:none;
-    box-shadow:0 12px 30px rgba(34,197,94,.34), inset 0 1px 0 rgba(255,255,255,.5);
-    animation:btn-win .8s ease;
-  }
-  @keyframes btn-win{
-    0%{box-shadow:0 0 0 0 rgba(34,197,94,.55), 0 12px 30px rgba(34,197,94,.34)}
-    70%{box-shadow:0 0 0 22px rgba(34,197,94,0), 0 12px 30px rgba(34,197,94,.34)}
-    100%{box-shadow:0 0 0 0 rgba(34,197,94,0), 0 12px 30px rgba(34,197,94,.34)}
-  }
-  .login .btn .chk{width:20px;height:20px;margin-right:2px;vertical-align:-4px;
-    animation:chk-pop .5s cubic-bezier(.34,1.56,.64,1)}
-  .login .btn .chk path{stroke-dasharray:26;stroke-dashoffset:26;animation:chk-draw .45s ease .08s forwards}
-  @keyframes chk-draw{to{stroke-dashoffset:0}}
-  @keyframes chk-pop{0%{transform:scale(0) rotate(-25deg)}100%{transform:scale(1) rotate(0)}}
-  /* Petit rebond de tout le socle au succès */
-  .login.win .glass{animation:win-pop .75s cubic-bezier(.16,1,.3,1)}
-  @keyframes win-pop{0%{transform:scale(1)}34%{transform:scale(1.025)}100%{transform:scale(1)}}
-
-  /* Transition de sortie vers l'accueil : le socle plonge et le fond se fond */
-  body{transition:opacity .5s ease, filter .5s ease}
-  body.pz-leaving{opacity:0;filter:blur(7px)}
-  .login{transition:transform .55s cubic-bezier(.6,.02,.9,.3), opacity .5s ease}
-  body.pz-leaving .login{animation:none;transform:scale(1.12);opacity:0}
-
-  .err{min-height:16px;text-align:center;font-size:12.5px;color:var(--err);margin-top:10px;opacity:0;transition:opacity .2s}
+  .err{min-height:16px;text-align:center;font-size:12.5px;color:var(--err);margin-top:10px;opacity:0}
   .err.show{opacity:1}
-  .msg{min-height:0;text-align:center;font-size:12.5px;color:var(--ok,#4ade80);margin-top:0;opacity:0;transition:opacity .2s,min-height .2s,margin .2s}
-  .msg.show{opacity:1;min-height:14px;margin-top:6px}
-
-  .login .btn{
-    width:100%;margin-top:16px;padding:13px;border:0;cursor:pointer;
-    border-radius:14px;font-family:var(--font-display);font-weight:700;font-size:15px;letter-spacing:.02em;
-    color:#04252d;
-    background:linear-gradient(180deg, #7ce9f6, #22d3ee 55%, #0aa9c9);
-    box-shadow:0 12px 30px rgba(34,211,238,.32), inset 0 1px 0 rgba(255,255,255,.5);
-    transition:transform .12s ease, box-shadow .2s ease, filter .2s;
-  }
-  .login .btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 16px 40px rgba(34,211,238,.42), inset 0 1px 0 rgba(255,255,255,.5);filter:brightness(1.04)}
-  .login .btn:active:not(:disabled){transform:translateY(0)}
+  .msg{text-align:center;font-size:12.5px;color:var(--ok);opacity:0}
+  .msg.show{opacity:1;margin-top:6px}
+  .login .btn{width:100%;margin-top:12px;padding:10px;border:0;cursor:pointer;border-radius:var(--r);
+    font-family:var(--font);font-weight:600;font-size:14px;color:#fff;background:var(--accent);transition:background .12s}
+  .login .btn:hover:not(:disabled){background:var(--accent-2)}
   .login .btn:disabled{opacity:.7;cursor:default}
-
-  .forgot{display:block;text-align:center;margin:12px auto 0;max-width:210px;font-size:11.5px;line-height:1.5;color:var(--muted);background:none;border:0}
-
-  @media (max-width:600px){
-    .login{width:100%}
-    /* Sur petit écran : on relâche le cercle en carte arrondie pour ne rien rogner */
-    .login .glass{aspect-ratio:auto;border-radius:34px;padding:36px 28px 30px}
-    .login .glass::before{border-radius:34px}
-    .login h1{font-size:1.8rem}
-  }
-  @media (prefers-reduced-motion:reduce){
-    .arc,.bubble,.login,.login-mark,.login .glass::after,.st,.lf-half,.lf-wave,.lf-flash,.lf-glint{animation:none}
-    .lf-half{opacity:1;transform:none;filter:none}
-    .lf-wave,.lf-flash,.lf-glint{display:none}
-    .bubbles{display:none}
-  }
+  .login .btn.ok{background:var(--ok);pointer-events:none}
+  .login .btn .chk{width:16px;height:16px;margin-right:4px;vertical-align:-3px}
+  body{transition:opacity .25s ease}
+  body.pz-leaving{opacity:0}
+  .forgot{display:block;text-align:center;margin:14px auto 0;font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -361,18 +68,6 @@
   <span class="dn-clouds"></span>
   <span class="dn-knob"></span>
 </button>
-<div class="scene" aria-hidden="true">
-  <div class="stars" id="stars"></div>
-  <div class="grid-bg"></div>
-  <div class="rings">
-    <span class="r3"></span>
-    <span class="r2"></span>
-    <span class="r1"></span>
-    <span class="arc a2"></span>
-    <span class="arc a1"></span>
-  </div>
-  <div class="bubbles" id="bubbles"></div>
-</div>
 <div class="login">
   <div class="glass">
     <div class="login-brand">
@@ -453,12 +148,12 @@ function login(){
       try { sessionStorage.setItem('pz-just-logged-in', '1'); } catch (e) {}
       // Moment de succès : coche animée + rebond du socle, puis redirection.
       btn.classList.add('ok');
-      btn.innerHTML = '<svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5 11-11"/></svg> Connecté';
+      btn.innerHTML = '<svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5 11-11"/></svg> Connecté';
       const card = document.querySelector('.login');
       if (card) card.classList.add('win');
       // On laisse admirer la coche, puis fondu/plongée avant de basculer sur l'accueil.
-      setTimeout(() => document.body.classList.add('pz-leaving'), 950);
-      setTimeout(() => location.replace('index.html'), 1500);
+      setTimeout(() => document.body.classList.add('pz-leaving'), 400);
+      setTimeout(() => location.replace('index.html'), 650);
     })
     .catch(e => { showErr(frError(e)); btn.disabled = false; btn.textContent = 'Se connecter'; $('pw').value=''; $('pw').focus(); });
 }
@@ -466,28 +161,9 @@ function login(){
 </script>
 
 <script>
-/* ── Ambiance aquarium (script indépendant : tourne même si Firebase échoue)
-   Respecte prefers-reduced-motion : aucun effet si l'utilisateur
-   a demandé à réduire les animations. */
-(function(){
-const $ = id => document.getElementById(id);
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-// Densité des effets adaptée à la puissance de l'appareil (comme plazma.js)
-const PERF = (function(){ try{
-  if(reduceMotion) return 'off';
-  const cores=navigator.hardwareConcurrency||8, mem=(typeof navigator.deviceMemory==='number')?navigator.deviceMemory:8;
-  const coarse=window.matchMedia&&matchMedia('(pointer: coarse)').matches;
-  if(coarse&&innerWidth<760) return 'low';
-  if(cores<=4&&mem<=4) return 'low';
-  if(cores<=4||mem<=4) return 'medium';
-  if(cores>=8&&mem>=8&&innerWidth>=1024) return 'high';
-  return 'medium';
-}catch(e){return 'medium';} })();
-const perfCount = n => Math.round(n * ({off:0,low:.35,medium:.6,high:1})[PERF]);
-
 // Afficher / masquer le mot de passe (UI pure, indépendant de Firebase)
 (function(){
-  const inp = $('pw'), eye = $('eye');
+  const inp = document.getElementById('pw'), eye = document.getElementById('eye');
   if (!inp || !eye) return;
   eye.addEventListener('click', () => {
     const show = inp.type === 'password';
@@ -497,90 +173,6 @@ const perfCount = n => Math.round(n * ({off:0,low:.35,medium:.6,high:1})[PERF]);
     eye.setAttribute('aria-label', show ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
     inp.focus();
   });
-})();
-
-// Étoiles en fond (3 couches, parallaxe légère)
-(function stars(){
-  const host = $('stars');
-  if (!host) return;
-  const rnd = (a,b) => a + Math.random() * (b - a);
-  const layers = [
-    { count: perfCount(34), depth: 6,  smax: 1.3, op:[.20,.45] },
-    { count: perfCount(22), depth: 14, smax: 1.9, op:[.30,.6] },
-    { count: perfCount(12), depth: 26, smax: 2.6, op:[.4,.75] },
-  ];
-  const els = [];
-  layers.forEach(cfg => {
-    const layer = document.createElement('div');
-    layer.className = 'star-layer';
-    for (let i = 0; i < cfg.count; i++){
-      const s = document.createElement('span');
-      s.className = 'st';
-      const size = (0.8 + Math.random() * cfg.smax).toFixed(1);
-      const op = rnd(cfg.op[0], cfg.op[1]).toFixed(2);
-      s.style.cssText =
-        `left:${rnd(0,100).toFixed(2)}%;top:${rnd(0,100).toFixed(2)}%;` +
-        `width:${size}px;height:${size}px;--o:${op};` +
-        `animation-duration:${rnd(3,8).toFixed(1)}s;animation-delay:${(-rnd(0,8)).toFixed(1)}s;`;
-      layer.appendChild(s);
-    }
-    host.appendChild(layer);
-    els.push({ el: layer, depth: cfg.depth });
-  });
-  if (!reduceMotion && PERF !== 'low'){
-    let tx = 0, ty = 0, queued = false;
-    const apply = () => { queued = false; els.forEach(l => { l.el.style.transform = `translate(${(tx*l.depth).toFixed(1)}px,${(ty*l.depth).toFixed(1)}px)`; }); };
-    window.addEventListener('mousemove', e => {
-      tx = (e.clientX / window.innerWidth - 0.5) * -2;
-      ty = (e.clientY / window.innerHeight - 0.5) * -2;
-      if (!queued){ queued = true; requestAnimationFrame(apply); }
-    }, { passive: true });
-  }
-})();
-
-if (!reduceMotion) {
-  // Bulles qui remontent doucement
-  (function bubbles(){
-    const host = $('bubbles');
-    if (!host) return;
-    const COUNT = perfCount(window.innerWidth < 600 ? 9 : 16);
-    const rnd = (a,b) => a + Math.random() * (b - a);
-    for (let i = 0; i < COUNT; i++){
-      const b = document.createElement('span');
-      b.className = 'bubble';
-      const size = rnd(4, 13);
-      b.style.width = b.style.height = size.toFixed(1) + 'px';
-      b.style.left = rnd(0, 100).toFixed(2) + '%';
-      b.style.setProperty('--op', rnd(.18, .5).toFixed(2));
-      b.style.setProperty('--sway', (rnd(-22, 22)).toFixed(0) + 'px');
-      b.style.animationDuration = rnd(15, 30).toFixed(1) + 's';
-      b.style.animationDelay = (-rnd(0, 26)).toFixed(1) + 's';
-      host.appendChild(b);
-    }
-  })();
-
-  // Ripple goutte d'eau au clic sur le vide (comme l'accueil)
-  (function ripple(){
-    const SKIP = 'a,button,input,select,textarea,label,[onclick]';
-    const rings = [
-      {sz:56,  delay:0,   dur:750, op:.5},
-      {sz:104, delay:70,  dur:860, op:.28},
-      {sz:150, delay:145, dur:970, op:.15},
-    ];
-    document.addEventListener('click', e => {
-      if (e.target.closest(SKIP)) return;
-      rings.forEach(({sz, delay, dur, op}) => {
-        const r = document.createElement('div');
-        r.className = 'wd-ring';
-        r.style.cssText = `width:${sz}px;height:${sz}px;left:${e.clientX - sz/2}px;top:${e.clientY - sz/2}px;--op:${op};`;
-        document.body.appendChild(r);
-        r.getBoundingClientRect();
-        r.style.animation = `water-rip ${dur}ms ${delay}ms cubic-bezier(0,.55,.45,1) both`;
-        setTimeout(() => r.remove(), delay + dur + 60);
-      });
-    });
-  })();
-}
 })();
 </script>
 </body>

@@ -7,8 +7,8 @@
 <title>ARCHI — Statistiques du club</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260930b">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css?v=20260923pro">
 <style>
   .wrap{max-width:1080px;margin:0 auto;padding:26px var(--gut) 70px}
   .pagehead{margin:8px 0 6px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
@@ -27,7 +27,7 @@
   .sec{margin-top:24px}
   .sec-title{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:1.05rem;font-weight:600;margin-bottom:14px}
   .sec-title svg{width:18px;height:18px;fill:none;stroke:var(--accent);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-  .sec-title .line{flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+  .sec-title .line{flex:1;height:1px;background:var(--border)}
 
   .grid2{display:grid;grid-template-columns:1fr;gap:16px}
   @media(min-width:820px){.grid2{grid-template-columns:1fr 1fr}}
@@ -69,7 +69,7 @@
   .hist{margin-top:14px;overflow-x:auto}
   .hist table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:440px}
   .hist th,.hist td{text-align:right;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
-  .hist th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+  .hist th{color:var(--muted);font-weight:600;font-size:11px;letter-spacing:.04em}
   .hist td:first-child,.hist th:first-child{text-align:left;font-family:var(--font-mono)}
   .hist .empty{text-align:center;color:var(--muted);padding:20px}
 </style>
@@ -125,7 +125,7 @@
         <div class="mini-tile"><div class="mini-val" id="e_staff">—</div><div class="mini-lab">Staff</div></div>
         <div class="mini-tile"><div class="mini-val" id="e_total">—</div><div class="mini-lab">Total membres</div></div>
       </div>
-      <div class="auto-note">🟢 <b>Calculé automatiquement</b> à partir des comptes créés dans « Comptes &amp; accès ». Pour ajuster l'effectif, gère les membres là-bas.</div>
+      <div class="auto-note"><b>Calculé automatiquement</b> à partir des comptes créés dans « Comptes &amp; accès ». Pour ajuster l'effectif, gère les membres là-bas.</div>
     </div>
   </div>
 

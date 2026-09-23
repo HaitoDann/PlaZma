@@ -198,7 +198,7 @@
     '<div style="font-size:13px;color:var(--muted,#8b90a0)">Vérification de l\'accès…</div></div>' +
     '<style>@keyframes pzspin{to{transform:rotate(360deg)}}</style>';
   function deniedHtml(msg) {
-    return '<div style="max-width:420px"><div style="font-size:40px;margin-bottom:10px">🔒</div>' +
+    return '<div style="max-width:420px">' +
       '<h2 style="font-family:var(--font-display,inherit);margin:0 0 8px">Accès restreint</h2>' +
       '<p style="color:var(--muted,#8b90a0);font-size:14px;line-height:1.5;margin:0 0 20px">' + msg + '</p>' +
       '<div style="display:flex;gap:10px;justify-content:center">' +
@@ -245,7 +245,7 @@
       'position:fixed;left:12px;bottom:12px;z-index:900;background:var(--warn,#e7a03a);color:#1a1205;' +
       'border-radius:8px;padding:7px 12px;font-family:var(--font,system-ui),sans-serif;font-size:12px;' +
       'font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.3)');
-    b.textContent = '👁 Lecture seule — consultation autorisée, modification non.';
+    b.textContent = 'Lecture seule — consultation autorisée, modification non.';
     document.body.appendChild(b);
   }
 
@@ -685,7 +685,7 @@
         await u.reauthenticateWithCredential(cred);
         await u.updatePassword(nw);
         msg('');
-        ov.querySelector('div').innerHTML = '<div style="text-align:center;padding:6px 0"><div style="font-size:34px;margin-bottom:8px">✅</div><div style="margin-bottom:16px">Mot de passe mis à jour.</div><button type="button" id="pz_cp_done" style="padding:8px 16px;border-radius:9px;border:0;background:var(--accent,#6ea8fe);color:#06101f;font-weight:700;cursor:pointer">Fermer</button></div>';
+        ov.querySelector('div').innerHTML = '<div style="text-align:center;padding:6px 0"><div style="margin-bottom:16px">Mot de passe mis à jour.</div><button type="button" id="pz_cp_done" style="padding:8px 16px;border-radius:9px;border:0;background:var(--accent,#6ea8fe);color:#06101f;font-weight:700;cursor:pointer">Fermer</button></div>';
         ov.querySelector('#pz_cp_done').addEventListener('click', close);
       } catch (e) {
         console.error(e);
@@ -714,8 +714,8 @@
 
   // ---- Boîte à idées — tout utilisateur peut proposer ----
   const IDEA_CATS = [
-    ['feature', '✨ Fonctionnalité'], ['improve', '⚡ Amélioration'],
-    ['bug', '🐞 Bug / souci'], ['team', '🎯 Équipe / staff'], ['other', '💬 Autre']
+    ['feature', 'Fonctionnalité'], ['improve', 'Amélioration'],
+    ['bug', 'Bug / souci'], ['team', 'Équipe / staff'], ['other', 'Autre']
   ];
   const IDEA_CAT_LABEL = Object.fromEntries(IDEA_CATS);
   function _myIdeas() { try { return JSON.parse(localStorage.getItem('pz-my-ideas') || '[]') || []; } catch (e) { return []; } }
@@ -780,7 +780,7 @@
       (i === 0 ? 'background:var(--accent-soft);color:var(--accent);border-color:transparent' : 'background:transparent;color:var(--muted)') + '">' + l + '</button>').join('');
     const tab = (id, l, on) => '<button type="button" class="pz-idea-tab" data-tab="' + id + '" style="flex:1;padding:9px 6px;border:0;background:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;border-bottom:2px solid ' + (on ? 'var(--accent)' : 'transparent') + ';color:' + (on ? 'var(--text)' : 'var(--muted)') + '">' + l + '</button>';
     const { ov, close } = _overlay(
-      '<h3 style="font-family:var(--font-display,inherit);margin:0 0 3px;font-size:17px">💡 Boîte à idées</h3>' +
+      '<h3 style="font-family:var(--font-display,inherit);margin:0 0 3px;font-size:17px">Boîte à idées</h3>' +
       '<p style="color:var(--muted);font-size:12.5px;margin:0 0 12px">Propose une idée, un axe d\'amélioration ou signale un souci. Le staff les consulte dans l\'administration.</p>' +
       '<div style="display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:14px">' + tab('new', 'Proposer', true) + tab('mine', 'Mes idées', false) + '</div>' +
       // --- Onglet Proposer ---
@@ -820,7 +820,7 @@
         const d = new Date(o.ts); const when = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
         return '<div style="border:1px solid var(--border);border-radius:11px;padding:10px 13px;margin-bottom:8px;background:var(--surface)">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:5px">' +
-          '<span style="font-size:11px;font-weight:700;color:var(--accent)">' + (IDEA_CAT_LABEL[o.category] || '💬 Autre') + '</span>' +
+          '<span style="font-size:11px;font-weight:700;color:var(--accent)">' + (IDEA_CAT_LABEL[o.category] || 'Autre') + '</span>' +
           '<span style="font-size:11px;color:var(--muted)">' + when + '</span></div>' +
           '<div style="font-size:13px;color:var(--text);line-height:1.45;white-space:pre-wrap">' + escHtml(o.text) + '</div></div>';
       }).join('');
@@ -894,7 +894,7 @@
     const bar = document.createElement('div');
     bar.id = 'pz-announce';
     bar.className = 'pz-announce ' + (a.type || 'info');
-    bar.innerHTML = '<span class="pz-announce-ico">' + (a.type === 'warn' ? '⚠️' : a.type === 'ok' ? '✅' : 'ℹ️') + '</span><span></span><button type="button" class="pz-announce-x" aria-label="Fermer">✕</button>';
+    bar.innerHTML = '<span class="pz-announce-ico">' + (a.type === 'warn' ? '!' : a.type === 'ok' ? '✓' : 'i') + '</span><span></span><button type="button" class="pz-announce-x" aria-label="Fermer">✕</button>';
     bar.querySelector('span:nth-child(2)').textContent = a.text;
     bar.querySelector('.pz-announce-x').onclick = () => bar.remove();
     document.body.prepend(bar);
@@ -972,7 +972,7 @@
         `<div id="pzdc_msg" style="font-size:12.5px;min-height:16px;margin-top:12px;color:var(--err,#f38b8b)"></div>` +
         `<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">` +
         `<button id="pzdc_cancel" style="${_dcGhost}">Annuler</button>` +
-        `<button id="pzdc_send" style="${_dcPrimary}">📢 Publier</button></div>`);
+        `<button id="pzdc_send" style="${_dcPrimary}">Publier</button></div>`);
       ov.querySelector('#pzdc_cancel').onclick = close;
       ov.querySelector('#pzdc_send').onclick = async () => {
         const url = discordWebhook(channel);
@@ -988,12 +988,12 @@
               if (i < embeds.length - 1) await new Promise(r => setTimeout(r, 350)); // évite le rate-limit
             }
           }
-          box('<div style="text-align:center;padding:12px 0"><div style="font-size:38px;margin-bottom:8px">✅</div><div style="margin-bottom:18px">Publié sur Discord.</div><button id="pzdc_done" style="' + _dcPrimary + '">Fermer</button></div>');
+          box('<div style="text-align:center;padding:12px 0"><div style="margin-bottom:18px">Publié sur Discord.</div><button id="pzdc_done" style="' + _dcPrimary + '">Fermer</button></div>');
           ov.querySelector('#pzdc_done').onclick = close;
         } catch (e) {
           console.error(e);
           const m = ov.querySelector('#pzdc_msg'); if (m) m.textContent = 'Échec de la publication : ' + e.message;
-          btn.disabled = false; btn.textContent = '📢 Publier';
+          btn.disabled = false; btn.textContent = 'Publier';
         }
       };
     }
@@ -1065,18 +1065,13 @@
 
   // ---- Command Palette (Ctrl+K / Cmd+K) ----
   function _initCmdPalette() {
-    const ICONS = {
-      home:'🏠', schedule:'📅', scrim:'⚔️', scouting:'🔍',
-      draft:'🎯', wiki:'📚', team:'👥', dashboard:'📊',
-      coach:'🎙️', satisfaction:'⭐', 'satisfaction-coach':'📋', admin:'🔧'
-    };
     const ov = document.createElement('div');
     ov.className = 'cmd-overlay';
     ov.id = 'pzCmdOv';
     ov.innerHTML =
       '<div class="cmd-palette">' +
         '<div class="cmd-search-wrap">' +
-          '<span class="cmd-search-icon">🔍</span>' +
+          '<span class="cmd-search-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>' +
           '<input class="cmd-input" id="pzCmdInput" type="text" placeholder="Naviguer vers…" autocomplete="off">' +
           '<span class="cmd-shortcut-hint">Esc pour fermer</span>' +
         '</div>' +
@@ -1112,8 +1107,7 @@
       resultsEl.innerHTML = (q ? '' : '<div class="cmd-section-label">Pages</div>') +
         currentItems.map((n, i) =>
           '<a class="cmd-item' + (i === 0 ? ' sel' : '') + '" href="' + n.href + '" data-idx="' + i + '">' +
-            '<span class="cmd-item-icon">' + (ICONS[n.key] || '📄') + '</span>' +
-            '<span class="cmd-item-label">' + n.label + '</span>' +
+                        '<span class="cmd-item-label">' + n.label + '</span>' +
             '<span class="cmd-item-arrow">→</span>' +
           '</a>'
         ).join('');
@@ -1321,11 +1315,9 @@
   (function() {
     const reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
     function _boot() {
-      _initParticles();
-      if (!reduce) { _initStars(); }
+      // Décor (particules, étoiles, emoji animé) désactivé : interface sobre.
       _initCounters(reduce);
       _initCmdPalette();
-      _initEmojiShake();
       // Présence : compte les connexions (global + par utilisateur) et l'activité.
       _trackPresence();
       // Badge « idées non lues » sur le bouton Système (admins).

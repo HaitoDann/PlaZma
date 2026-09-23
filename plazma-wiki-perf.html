@@ -7,8 +7,8 @@
 <title>ARCHI — Encyclopédie</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260831">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css?v=20260923pro">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -27,7 +27,7 @@
   .wk-cat{margin-top:6px}
   .wk-cat-h{display:flex;align-items:center;gap:8px;width:100%;text-align:left;
     background:none;border:0;cursor:pointer;color:var(--dim);
-    font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    font-size:11.5px;font-weight:700;letter-spacing:.01em;
     padding:8px 6px;border-radius:8px;transition:color .15s,background .15s}
   .wk-cat-h:hover{color:var(--text);background:var(--surface-2)}
   .wk-cat-h .ic{font-size:14px}
@@ -36,7 +36,7 @@
   .wk-cat-h .chev{transition:transform .18s;font-size:10px;color:var(--muted)}
   .wk-cat.collapsed .chev{transform:rotate(-90deg)}
   .wk-cat.collapsed .wk-links{display:none}
-  .wk-sub{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  .wk-sub{font-size:10px;font-weight:700;letter-spacing:.01em;
     color:var(--muted);padding:8px 10px 3px}
   .wk-link{display:block;padding:6px 10px;border-radius:7px;font-size:13px;color:var(--dim);
     border-left:2px solid transparent;transition:color .12s,background .12s,border-color .12s;cursor:pointer}
@@ -96,7 +96,7 @@
   /* ---- Badges ---- */
   /* Version complète — header article uniquement */
   .wk-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:999px;
-    font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;flex-shrink:0;vertical-align:middle}
+    font-size:10px;font-weight:700;letter-spacing:.01em;flex-shrink:0;vertical-align:middle}
   .wk-badge.new{background:color-mix(in srgb,var(--accent) 12%,transparent);
     border:1px solid var(--accent-line);color:var(--accent)}
   .wk-badge.updated{background:color-mix(in srgb,var(--warn) 12%,transparent);
@@ -119,7 +119,7 @@
 
   /* ---- Sommaire (rail droit) ---- */
   .wk-toc{position:sticky;top:74px;align-self:start;padding:28px 20px;width:210px;font-size:12.5px}
-  .wk-toc-h{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .wk-toc-h{font-size:10.5px;font-weight:700;letter-spacing:.01em;color:var(--muted);margin-bottom:10px}
   .wk-toc a{display:block;padding:4px 0 4px 10px;color:var(--muted);border-left:2px solid var(--border);
     transition:color .12s,border-color .12s;line-height:1.35}
   .wk-toc a.sub{padding-left:22px;font-size:12px}
@@ -260,7 +260,7 @@ PZ.mountNav('wikiperf', '#nav');
     let head = `<button class="wk-back" onclick="location.hash=''">← Accueil</button>`
       + `<div class="wk-crumb"><span class="ic">${cat ? cat.icon : ''}</span>${esc(a.catName)}${a.sub ? ' · ' + esc(a.sub) : ''}</div>`;
     let meta = `<div class="wk-meta">${dateLabel}<span>${a.words} mots</span><span>~${Math.max(1, Math.round(a.words / 200))} min de lecture</span></div>`;
-    let banner = a.stub ? '<div class="wk-stub-banner">🚧 Note en cours de rédaction — contenu à compléter.</div>' : '';
+    let banner = a.stub ? '<div class="wk-stub-banner">Note en cours de rédaction — contenu à compléter.</div>' : '';
     docEl.innerHTML = head + banner + a.html + meta;
     addHeadingIds();
     buildToc();
@@ -281,7 +281,7 @@ PZ.mountNav('wikiperf', '#nav');
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">${links}</div>
       </section>`;
     }).join('');
-    docEl.innerHTML = `<div class="wk-crumb"><span class="ic">📚</span>Accueil</div>
+    docEl.innerHTML = `<div class="wk-crumb">Accueil</div>
       <h1 style="margin-bottom:6px">Encyclopédie ARCHI</h1>
       <p class="muted" style="margin-bottom:26px">${W.articles.length} articles répartis en ${W.categories.length} catégories. Cherche un sujet ou choisis une note.</p>
       ${cards}`;

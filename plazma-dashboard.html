@@ -7,8 +7,8 @@
 <title>ARCHI — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260930b">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css?v=20260923pro">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -25,13 +25,13 @@
     display:grid;grid-template-columns:minmax(220px,1.1fr) 2fr;gap:20px;align-items:stretch}
   .today::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
   .today-hero{display:flex;flex-direction:column;justify-content:center;gap:7px}
-  .today-eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .today-eyebrow{font-size:11px;letter-spacing:.01em;color:var(--muted)}
   .today-main{font-family:var(--font-display);font-size:1.65rem;font-weight:700;line-height:1.1;letter-spacing:-.01em}
   .today-sub{font-size:13px;color:var(--muted)}
   .today-sub b{color:var(--dim);font-weight:600}
   .today-tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
   .ttile{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:13px 15px}
-  .ttile-lbl{display:flex;align-items:center;gap:7px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+  .ttile-lbl{display:flex;align-items:center;gap:7px;font-size:10.5px;letter-spacing:.01em;color:var(--muted);margin-bottom:9px}
   .ttile-lbl i{width:8px;height:8px;border-radius:50%;background:var(--tc,var(--accent));flex-shrink:0}
   .ttile-val{font-family:var(--font-display);font-size:1.45rem;font-weight:700;line-height:1;letter-spacing:-.01em}
   .ttile-val.sm{font-size:1.05rem}
@@ -76,9 +76,9 @@
   .pc-head{display:flex;align-items:center;gap:9px;padding:12px 13px;border-bottom:1px solid var(--border)}
   .pc-emo{font-size:20px}
   .pc-name{font-family:var(--font-display);font-weight:600;font-size:15px}
-  .pc-role{font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+  .pc-role{font-size:10px;letter-spacing:.01em;font-weight:600}
   .pc-body{padding:11px 13px;display:flex;flex-direction:column;gap:9px}
-  .pc-lbl{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+  .pc-lbl{font-size:10px;letter-spacing:.01em;color:var(--muted);margin-bottom:4px}
   .pc-row{display:flex;gap:6px}
   .pc-row>div{flex:1}
   .pc-rank{font-family:var(--font-display);font-weight:600;font-size:15px}
@@ -89,10 +89,10 @@
 
   /* Résultats */
   .forme{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
-  .forme-lbl{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+  .forme-lbl{font-size:11px;letter-spacing:.01em;color:var(--muted);margin-right:4px}
   .wl-dot{width:16px;height:16px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff}
   .mtable{width:100%;border-collapse:collapse;font-size:13px}
-  .mtable th{text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border)}
+  .mtable th{text-align:left;font-size:10px;letter-spacing:.01em;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border)}
   .mtable td{padding:9px 10px;border-bottom:1px solid var(--border)}
   .mtable tr[data-row]{cursor:pointer}
   .mtable tr[data-row]:hover td{background:var(--surface-2)}
@@ -229,7 +229,7 @@
       <div class="field"><label>Date</label><input type="date" id="mDate"></div>
     </div>
     <div class="field-row">
-      <div class="field"><label>Résultat</label><select id="mRes"><option value="W">✅ Victoire</option><option value="L">❌ Défaite</option><option value="D">〰 Nul</option></select></div>
+      <div class="field"><label>Résultat</label><select id="mRes"><option value="W">Victoire</option><option value="L">Défaite</option><option value="D">Nul</option></select></div>
       <div class="field"><label>Score (ex : 2-1)</label><input type="text" id="mScore" placeholder="—"></div>
     </div>
     <div class="field"><label>Note</label><textarea id="mNote" rows="2" placeholder="Compétition, faits marquants…"></textarea></div>
@@ -247,7 +247,7 @@
     <div class="modal-title" id="oTitle">Ajouter un objectif</div>
     <div class="field"><label>Objectif *</label><input type="text" id="oName" placeholder="ex : Atteindre 8.5 CS/min"></div>
     <div class="field-row">
-      <div class="field"><label>Priorité</label><select id="oPrio"><option value="high">🔴 Urgent</option><option value="medium">🟠 Normal</option><option value="low">🟢 Faible</option></select></div>
+      <div class="field"><label>Priorité</label><select id="oPrio"><option value="high">Urgent</option><option value="medium">Normal</option><option value="low">Faible</option></select></div>
       <div class="field"><label>Statut</label><select id="oStatus"><option value="todo">À faire</option><option value="progress">En cours</option><option value="done">Terminé</option></select></div>
     </div>
     <div class="field-row">
@@ -404,7 +404,7 @@ function renderKPIs(){
     <div class="kpi" style="--kc:var(--accent)">
       <div class="kpi-lbl">Prochain événement</div>
       <div class="kpi-val" style="font-size:${evtName.length>12?'1.1rem':'1.5rem'}">${esc(evtName)}</div>
-      <div class="kpi-sub">${evtDate?`📅 ${evtDate}${daysLeft!==null?' · <b>J-'+daysLeft+'</b>':''}`:'Configurer dans Paramètres'}</div>
+      <div class="kpi-sub">${evtDate?`${evtDate}${daysLeft!==null?' · <b>J-'+daysLeft+'</b>':''}`:'Configurer dans Paramètres'}</div>
     </div>`;
 }
 
@@ -519,7 +519,7 @@ function renderObjectives(){
       <div class="obj-top"><div class="obj-name">${esc(o.name)}</div>
         <div class="obj-badges"><span class="badge" style="color:${color}">${o.priority==='high'?'Urgent':o.priority==='low'?'Faible':'Normal'}</span><span class="badge">${stLbl}</span></div></div>
       <div class="obj-bar"><div class="obj-track"><div class="obj-fill" style="width:${o.pct||0}%;background:${color}"></div></div><div class="obj-pct" style="color:${color}">${o.pct||0}%</div></div>
-      ${o.deadline?`<div class="obj-dl" style="color:${overdue?'var(--err)':'var(--muted)'}">${overdue?'⚠ En retard · ':'📅 '}Échéance ${new Date(o.deadline).toLocaleDateString('fr-FR',{day:'2-digit',month:'long'})}</div>`:''}
+      ${o.deadline?`<div class="obj-dl" style="color:${overdue?'var(--err)':'var(--muted)'}">${overdue?'En retard · ':''}Échéance ${new Date(o.deadline).toLocaleDateString('fr-FR',{day:'2-digit',month:'long'})}</div>`:''}
     </div>`;
   }).join('');
 }

@@ -7,8 +7,8 @@
 <title>ARCHI — Comptes & accès</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260930b">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css?v=20260923pro">
 <style>
   .wrap{max-width:960px;margin:0 auto;padding:26px var(--gut) 60px}
   .pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:8px 0 20px}
@@ -34,8 +34,8 @@
   .tab.on .n{background:var(--accent-soft);color:var(--accent)}
 
   /* Groupes */
-  .group-head{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:700;letter-spacing:.05em;
-    text-transform:uppercase;color:var(--muted);margin:22px 0 10px}
+  .group-head{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:700;letter-spacing:.01em;
+    color:var(--muted);margin:22px 0 10px}
   .group-head:first-child{margin-top:0}
   .group-head .n{font-size:11px;background:var(--surface-2);padding:1px 8px;border-radius:20px}
   .group-head .line{flex:1;height:1px;background:var(--border)}
@@ -55,7 +55,7 @@
   .uname{font-weight:700;font-size:15px}
   .uemail{font-size:12.5px;color:var(--muted);margin-top:2px}
   .uaccess{font-size:12px;color:var(--dim);margin-top:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  .badge{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:20px;line-height:1}
+  .badge{font-size:10px;font-weight:700;letter-spacing:.01em;padding:3px 8px;border-radius:20px;line-height:1}
   .badge.admin{background:var(--accent-soft);color:var(--accent)}
   .badge.staff{background:var(--surface-2);color:var(--dim);border:1px solid var(--border)}
   .badge.off{background:rgba(220,80,80,.16);color:#f38b8b}
@@ -255,7 +255,7 @@ const SECTIONS = [
   ['planning','Planning'], ['scrim','Scrim (CR)'], ['scouting','Scouting'],
   ['team','Équipe'], ['dashboard','Dashboard'], ['coach','Coach'],
   ['satisfaction','Satisfaction (questionnaires)'],
-  ['satisfactionResults','Résultats satisfaction 🔒'], ['perf','Fiches perf']
+  ['satisfactionResults','Résultats satisfaction (privé)'], ['perf','Fiches perf']
 ];
 const PRESETS = {
   'Staff complet': ['planning','scrim','scouting','team','dashboard','coach','satisfaction','satisfactionResults','perf'],
@@ -360,7 +360,7 @@ async function createUser(){
       name, username, role, group, playerId, disabled:false, sections,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    $('createOut').innerHTML = `<div class="cred">✅ Compte créé.<br>Nom d'utilisateur : ${esc(username)}<br>Mot de passe provisoire : ${esc(pw)}</div>`;
+    $('createOut').innerHTML = `<div class="cred">Compte créé.<br>Nom d'utilisateur : ${esc(username)}<br>Mot de passe provisoire : ${esc(pw)}</div>`;
     $('n_name').value=''; $('n_user').value=''; $('n_pw').value=''; $('n_player').value='';
     applyPreset('Aucun');
     toast('Compte créé.');
@@ -448,7 +448,7 @@ function renderUser(u){
         <button onclick="toggleRole('${u.uid}','${admin?'staff':'admin'}')">${admin?'↓ Retirer admin':'↑ Passer admin'}</button>
         ${isMe?'':`<button onclick="toggleDisabled('${u.uid}',${u.disabled?'false':'true'})">${u.disabled?'✓ Réactiver':'⏸ Désactiver'}</button>`}
         ${isMe?'':'<div class="menu-sep"></div>'}
-        ${isMe?'':`<button class="danger" onclick="removeUser('${u.uid}','${esc(u.name||u.email)}')">🗑 Retirer l'accès</button>`}
+        ${isMe?'':`<button class="danger" onclick="removeUser('${u.uid}','${esc(u.name||u.email)}')">Retirer l'accès</button>`}
       </div>
     </div>
   </div>`;

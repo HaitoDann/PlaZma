@@ -7,8 +7,8 @@
 <title>ARCHI — Review individuelle</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260930b">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css?v=20260923pro">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -24,7 +24,7 @@
   .rev-player-block{display:flex;align-items:center;gap:14px}
   .rev-emo{font-size:32px}
   .rev-player-name{font-family:var(--font-display);font-size:1.6rem;font-weight:700;line-height:1.1;color:var(--accent)}
-  .rev-role-badge{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+  .rev-role-badge{font-size:10px;letter-spacing:.01em;color:var(--muted);margin-top:2px}
 
   /* Méta */
   .meta{display:grid;grid-template-columns:180px 1fr 160px 170px;gap:12px;padding:14px 22px;border-bottom:1px solid var(--border)}
@@ -64,10 +64,10 @@
   .stat-input{width:72px;padding:5px 8px;font-size:13px}
   .game-stats{display:flex;align-items:center;gap:14px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
   .stat-block{display:flex;flex-direction:column;gap:3px}
-  .stat-block label{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:0}
+  .stat-block label{font-size:10px;letter-spacing:.01em;color:var(--muted);margin:0}
   .errs{padding:12px 14px}
   .errs-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
-  .errs-head .lbl{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .errs-head .lbl{font-size:11px;letter-spacing:.01em;color:var(--muted);font-weight:600}
   .err-row{display:grid;grid-template-columns:70px 130px 1fr 30px 30px;gap:8px;align-items:center;margin-bottom:6px}
   .err-row input,.err-row select{padding:7px 9px;font-size:13px}
   .err-del{background:none;border:1px solid var(--border);border-radius:7px;height:34px;color:var(--muted);cursor:pointer}
@@ -112,10 +112,10 @@
   .sigs{display:flex;gap:26px}
   .sig{display:flex;flex-direction:column;gap:6px;align-items:center}
   .sig-line{width:110px;height:1px;background:var(--border-2)}
-  .sig-lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .sig-lbl{font-size:11px;letter-spacing:.01em;color:var(--muted)}
 
   /* Drawer historique */
-  .drawer-ov{position:fixed;inset:0;background:rgba(6,10,14,.6);backdrop-filter:blur(4px);z-index:180;opacity:0;pointer-events:none;transition:opacity .2s}
+  .drawer-ov{position:fixed;inset:0;background:rgba(6,10,14,.6);backdrop-filter:blur(2px);z-index:180;opacity:0;pointer-events:none;transition:opacity .2s}
   .drawer-ov.open{opacity:1;pointer-events:auto}
   .drawer{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:94vw;background:var(--surface);border-left:1px solid var(--border-2);
     z-index:181;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
@@ -128,7 +128,7 @@
   .sess-main{display:flex;gap:11px;padding:12px 13px}
   .sess-date{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 10px;text-align:center;min-width:46px}
   .sess-date .d{font-family:var(--font-display);font-size:1.3rem;font-weight:700;line-height:1}
-  .sess-date .m{font-size:9px;text-transform:uppercase;color:var(--muted)}
+  .sess-date .m{font-size:9px;color:var(--muted)}
   .sess-info{flex:1}
   .sess-player{font-family:var(--font-display);font-weight:600}
   .sess-meta{font-size:11px;color:var(--muted);margin-top:2px}
@@ -206,12 +206,12 @@
       <div>
         <div class="sec-title"><span class="d" style="background:var(--top)"></span>Analyse qualitative</div>
         <div class="ana-grid">
-          <div class="ana" style="--ac:var(--ok)"><div class="t">✦ Points forts</div>
+          <div class="ana" style="--ac:var(--ok)"><div class="t">Points forts</div>
             <textarea id="t_forces" placeholder="Phases réussies, mécaniques propres, prises de décision correctes…"></textarea></div>
-          <div class="ana" style="--ac:var(--err)"><div class="t">✦ À améliorer</div>
+          <div class="ana" style="--ac:var(--err)"><div class="t">À améliorer</div>
             <textarea id="t_corriger" placeholder="Patterns d'erreurs, habitudes à corriger, points de vigilance…"></textarea></div>
         </div>
-        <div class="ana" style="--ac:var(--accent)"><div class="t">✦ Observations générales</div>
+        <div class="ana" style="--ac:var(--accent)"><div class="t">Observations générales</div>
           <textarea id="t_obs" placeholder="Comportement, communication, régularité, attitude dans les moments difficiles…"></textarea></div>
       </div>
 

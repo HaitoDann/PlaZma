@@ -118,7 +118,7 @@ h3{font-size:1.02rem}
   color:var(--muted);background:var(--surface-2);border:1px solid var(--border);border-radius:20px;
   padding:1.5px 6px;vertical-align:middle;position:relative;top:-1px}
 @media(max-width:560px){.pz-ver{display:none}}
-.pz-brand-sub{font-size:10px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;font-family:var(--font)}
+.pz-brand-sub{font-size:10px;color:var(--muted);letter-spacing:.01em;font-family:var(--font)}
 .pz-nav{display:flex;align-items:center;gap:2px;flex-wrap:wrap}
 .pz-nav a{
   font-size:13px;font-weight:500;color:var(--dim);
@@ -168,7 +168,7 @@ h3{font-size:1.02rem}
 .pz-logout:hover{
   color:var(--err);background:var(--surface-3,var(--surface-2));
   transform:scale(1.1);
-  box-shadow:0 0 14px rgba(239,68,68,.4);
+  
 }
 .pz-logout:active{transform:scale(.92)}
 /* Icône power décomposée : anneau = « 0 », barre = « 1 » */
@@ -248,7 +248,7 @@ h3{font-size:1.02rem}
 }
 .role-badge{
   display:inline-flex;align-items:center;
-  font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  font-size:11px;font-weight:700;letter-spacing:.01em;
   padding:3px 10px;border-radius:999px;
   color:var(--role,var(--accent));
   background:color-mix(in srgb,var(--role,var(--accent)) 12%,transparent);
@@ -284,8 +284,8 @@ h3{font-size:1.02rem}
   .sync-dot.syncing::before{animation:sync-spin .8s linear infinite}
 }
 @keyframes sync-beat{
-  0%,100%{transform:scale(1);box-shadow:0 0 4px rgba(34,197,94,.45)}
-  50%{transform:scale(1.18);box-shadow:0 0 10px rgba(34,197,94,.9)}
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.18);}
 }
 @keyframes sync-ring{
   0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}
@@ -318,7 +318,7 @@ select option{background:var(--surface)}
 /* ---- Tableaux ---- */
 .table{width:100%;border-collapse:collapse;font-size:14px}
 .table th{
-  text-align:left;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  text-align:left;font-size:11px;font-weight:600;letter-spacing:.01em;
   color:var(--muted);padding:10px 14px;border-bottom:1px solid var(--border);
 }
 .table td{padding:12px 14px;border-bottom:1px solid var(--border)}
@@ -351,8 +351,8 @@ select option{background:var(--surface)}
 @keyframes loader-spin-cw {to{transform:rotate(360deg)}}
 @keyframes loader-spin-ccw{to{transform:rotate(-360deg)}}
 @keyframes loader-logo-in{from{opacity:0;transform:scale(.75)}to{opacity:1;transform:scale(1)}}
-@keyframes loader-text-in{from{opacity:0;letter-spacing:.32em}to{opacity:.75;letter-spacing:.18em}}
-@keyframes loader-glow{0%,100%{box-shadow:0 0 0 0 rgba(34,211,238,0)}50%{box-shadow:0 0 36px 10px rgba(34,211,238,.15)}}
+@keyframes loader-text-in{from{opacity:0;letter-spacing:.01em}to{opacity:.75;letter-spacing:.01em}}
+@keyframes loader-glow{0%,100%{box-shadow:0 0 0 0 rgba(34,211,238,0)}50%{}}
 .loader{
   position:fixed;inset:0;z-index:900;background:var(--bg);
   display:flex;align-items:center;justify-content:center;
@@ -388,7 +388,7 @@ select option{background:var(--surface)}
 }
 .loader-mark{
   font-family:var(--font-display);font-size:12px;font-weight:600;
-  letter-spacing:.18em;text-transform:uppercase;color:var(--accent);
+  letter-spacing:.01em;color:var(--accent);
   animation:loader-text-in .7s cubic-bezier(.16,1,.3,1) both .28s;
 }
 
@@ -599,7 +599,7 @@ body{
 .cmd-shortcut-hint{font-size:11px;color:var(--muted);flex-shrink:0}
 .cmd-results{max-height:320px;overflow-y:auto;padding:6px}
 .cmd-section-label{
-  font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  font-size:10px;font-weight:600;letter-spacing:.01em;
   color:var(--muted);padding:8px 12px 4px;
 }
 .cmd-item{
@@ -713,7 +713,7 @@ a[href="plazma-wiki-perf.html"]:hover .tool-ico svg{animation:tool-read .8s ease
 #pz-particles{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:-1;contain:layout paint style}
 .pz-particle{
   position:absolute;bottom:-6px;border-radius:50%;will-change:transform,opacity;
-  box-shadow:0 0 6px currentColor;animation:pz-rise linear infinite;
+  animation:pz-rise linear infinite;
 }
 @keyframes pz-rise{
   0%  {opacity:0;transform:translateY(0) translateX(0) scale(.9)}
@@ -738,17 +738,17 @@ a[href="plazma-wiki-perf.html"]:hover .tool-ico svg{animation:tool-read .8s ease
 }
 #pz-cur-dot{
   position:fixed;top:0;left:0;width:8px;height:8px;border-radius:50%;
-  background:#22d3ee;box-shadow:0 0 10px rgba(34,211,238,.9);
+  background:#22d3ee;
   pointer-events:none;z-index:2147483647;transform:translate(-50%,-50%);
   mix-blend-mode:screen;transition:width .15s,height .15s,box-shadow .15s,opacity .2s;
 }
-#pz-cur-dot.pz-hot{width:14px;height:14px;box-shadow:0 0 16px rgba(34,211,238,1)}
+#pz-cur-dot.pz-hot{width:14px;height:14px;}
 #pz-cur-dot.pz-hide{opacity:0}
 /* Curseur en mode clair : couleur sombre + blend normal (screen le rendrait invisible sur fond clair) */
 [data-theme="light"] #pz-cur-dot{
-  background:#0e7490;box-shadow:0 0 8px rgba(14,116,144,.5);mix-blend-mode:normal;
+  background:#0e7490;mix-blend-mode:normal;
 }
-[data-theme="light"] #pz-cur-dot.pz-hot{box-shadow:0 0 14px rgba(14,116,144,.7)}
+[data-theme="light"] #pz-cur-dot.pz-hot{}
 
 body{isolation:isolate}
 body::before,body::after{content:'';position:fixed;border-radius:50%;pointer-events:none;z-index:-1;filter:blur(110px)}
@@ -881,7 +881,7 @@ body::after{
 [data-theme="light"] .pz-daynight .dn-knob{
   transform:translateX(0);
   background:radial-gradient(circle at 40% 36%,#fff2a8,#ffd93b 55%,#f5b52e);
-  box-shadow:0 0 8px 2px rgba(255,206,59,.55), 0 2px 4px rgba(0,0,0,.2);
+  
 }
 [data-theme="light"] .pz-daynight .dn-knob::before{opacity:0}
 
@@ -917,9 +917,9 @@ body::after{
   max-width:100%;
 }
 .pz-toast.out{animation:pz-toast-out .38s ease forwards}
-.pz-toast-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;box-shadow:0 0 8px var(--accent)}
-.pz-toast.ok .pz-toast-dot{background:var(--ok);box-shadow:0 0 8px var(--ok)}
-.pz-toast.err .pz-toast-dot{background:var(--err);box-shadow:0 0 8px var(--err)}
+.pz-toast-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+.pz-toast.ok .pz-toast-dot{background:var(--ok);}
+.pz-toast.err .pz-toast-dot{background:var(--err);}
 @keyframes pz-toast-in{
   0%{opacity:0;transform:translateX(28px) scale(.96)}
   60%{opacity:1;transform:translateX(-4px) scale(1.02)}
@@ -974,7 +974,7 @@ body::after{
 .pz-maint-logo::after{inset:12px;border-width:1.5px;animation-duration:1.8s;animation-direction:reverse;opacity:.6}
 @keyframes pz-maint-spin{to{transform:rotate(360deg)}}
 .pz-maint-tag{
-  display:inline-block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  display:inline-block;font-size:11px;font-weight:700;letter-spacing:.01em;
   color:var(--accent);background:var(--accent-soft);border-radius:20px;padding:4px 12px;margin-bottom:14px;
 }
 .pz-maint-box h2{font-family:var(--font-display);font-size:1.5rem;margin-bottom:10px}
@@ -1094,3 +1094,93 @@ html.pz-theme-anim::view-transition-old(root){ z-index:1 }
   .pz-nav-ico:hover .bulb-rays{animation:bulb-rays 1.1s ease-in-out infinite}
 }
 @keyframes bulb-rays{0%,100%{opacity:0}30%{opacity:.95}65%{opacity:.4}}
+
+/* ════════════════════════════════════════════════════════
+   PRO — v4 : couche finale sobre (prend le pas sur tout ce qui précède)
+   Neutres froids, un accent, aucune décoration, typo IBM Plex.
+   ════════════════════════════════════════════════════════ */
+:root{
+  --bg:#0e1013; --surface:#15181c; --surface-2:#1a1e23; --elevated:#20252b;
+  --border:#262b32; --border-2:#323841;
+  --text:#e7e9ec; --dim:#a4abb4; --muted:#6e7681;
+  --accent:#4cb8cc; --accent-2:#2f93a6;
+  --accent-soft:rgba(76,184,204,.10); --accent-line:rgba(76,184,204,.28);
+  --ok:#3fa66b; --warn:#c9912e; --err:#d0534f;
+  --top:#c9912e; --jungle:#3fa66b; --mid:#4f86c6; --adc:#d0534f; --support:#9b7fc9; --coach:#4cb8cc;
+  --r:6px; --r-sm:4px; --r-lg:8px;
+  --shadow-1:none; --shadow-2:0 1px 2px rgba(0,0,0,.25); --shadow-3:0 8px 24px rgba(0,0,0,.35);
+  --font:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-display:var(--font);
+  --font-mono:'IBM Plex Mono',ui-monospace,'SFMono-Regular',monospace;
+}
+[data-theme="light"]{
+  --bg:#f6f7f8; --surface:#ffffff; --surface-2:#f1f3f5; --elevated:#e9ecef;
+  --border:#e1e4e8; --border-2:#cfd4da;
+  --text:#16191d; --dim:#4a525c; --muted:#7a828c;
+  --accent:#1f7f91; --accent-2:#176676;
+  --accent-soft:rgba(31,127,145,.08); --accent-line:rgba(31,127,145,.25);
+}
+body{font-size:14px;line-height:1.5;background:var(--bg) !important;background-image:none !important}
+body::before,body::after,#pz-particles,#pz-stars,#pz-cur-dot{display:none !important}
+html.pz-cursor,html.pz-cursor *{cursor:auto}
+h1,h2,h3,h4{font-family:var(--font);font-weight:600;letter-spacing:-.005em}
+h1{font-size:1.45rem} h2{font-size:1.1rem} h3{font-size:.98rem}
+
+/* Aucune animation décorative : seules les transitions d'état restent */
+.content>*,.content,.tools.revealed .tool,.roster.revealed .pcard,.staff.revealed .pcard{animation:none !important;opacity:1 !important}
+[class^="ib-"],[class*=" ib-"],.tool-ico svg,.tool-ico svg *,.pz-nav-ico svg,.pz-nav-ico .bulb-rays,
+.pz-power-bar,.pz-power-ring,.pz-emoji-shake,.sync-dot::before,.sync-dot::after,.sync-dot.connected,
+.pz-brand-mark img,.pz-brand-mark,.pz-daynight *,.pz-maint-logo::before,.pz-maint-logo::after{animation:none !important}
+.sync-dot.connected{box-shadow:none !important}
+*{text-shadow:none !important}
+::view-transition-old(root),::view-transition-new(root){animation:none !important}
+
+/* Topbar */
+.pz-topbar{background:var(--surface);border-bottom:1px solid var(--border)}
+.pz-brand{font-family:var(--font);font-weight:600}
+.pz-brand-name{letter-spacing:.01em}
+.pz-brand-sub{letter-spacing:.02em;text-transform:none}
+
+/* Surfaces : à plat, filet fin, pas d'ombre */
+.card,.panel{background:var(--surface);border:1px solid var(--border) !important;box-shadow:none !important;border-radius:var(--r-lg)}
+.card::before,.panel::before,.pcard::before,.pcard::after{display:none !important}
+.card:hover,.panel:hover{transform:none !important}
+
+/* Boutons */
+.btn{border-radius:var(--r);font-weight:500;box-shadow:none;transform:none !important}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-2);border-color:var(--accent-2)}
+[data-theme="light"] .btn-primary{color:#fff}
+
+/* Badges & labels : casse normale, pas de tracking */
+.badge,.role-badge{border-radius:var(--r-sm);letter-spacing:0;text-transform:none;font-weight:500}
+th{letter-spacing:.02em !important;text-transform:none !important}
+[class*="sec-title"] .line{background:var(--border) !important}
+
+/* Formulaires */
+input,select,textarea{border-radius:var(--r) !important;box-shadow:none}
+input:focus,select:focus,textarea:focus{box-shadow:0 0 0 2px var(--accent-soft) !important;border-color:var(--accent) !important}
+
+/* Modales, palette, toasts */
+.modal,.drawer,.cmd-palette{border-radius:var(--r-lg) !important;box-shadow:var(--shadow-3) !important}
+.pz-toast{box-shadow:var(--shadow-3) !important;border-radius:var(--r) !important}
+.pz-toast-dot,.pz-toast.ok .pz-toast-dot,.pz-toast.err .pz-toast-dot{box-shadow:none !important}
+.cmd-item-icon{display:none}
+
+/* Bandeau d'annonce : aplat discret */
+.pz-announce{background:var(--accent-soft) !important;color:var(--text) !important;border-bottom:1px solid var(--accent-line);animation:none !important}
+.pz-announce.warn{background:color-mix(in srgb,var(--warn) 14%,var(--surface)) !important}
+.pz-announce.ok{background:color-mix(in srgb,var(--ok) 14%,var(--surface)) !important}
+
+/* Skeleton : aplat sans reflet */
+.skel,[class*="skel"]{background:var(--surface-2) !important;animation:none !important}
+
+@media(prefers-reduced-motion:no-preference){.btn,.card,a{transition:background-color .12s,border-color .12s,color .12s}}
+/* Sélecteur de thème : interrupteur neutre */
+.pz-daynight,[data-theme="light"] .pz-daynight{background:var(--surface-2) !important;border:1px solid var(--border-2) !important;box-shadow:none !important}
+.pz-daynight .dn-stars,.pz-daynight .dn-clouds{display:none !important}
+.pz-daynight .dn-knob,[data-theme="light"] .pz-daynight .dn-knob{background:var(--dim) !important;box-shadow:none !important}
+.pz-daynight .dn-knob::before{display:none !important}
+/* Pas d'ombres portées lourdes, liserés d'accent affinés */
+.content [class]{box-shadow:none}
+.content [style*="border-top:3px"],.content [style*="border-left:3px"]{border-top-width:2px !important;border-left-width:2px !important}
