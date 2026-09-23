@@ -55,7 +55,7 @@
   // ---- Version de l'application (SemVer) ----
   // MAJEUR.MINEUR.CORRECTIF — MINEUR à chaque lot de fonctionnalités,
   // CORRECTIF pour les corrections. Affichée discrètement dans Paramètres.
-  const VERSION = '2.12.0';
+  const VERSION = '2.12.1';
 
   // ---- Niveau de performance : adapte la densité des effets ----
   // Full sur machine puissante (rendu identique), réduit sur mobile/appareil

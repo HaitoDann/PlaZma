@@ -8,13 +8,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=20260930a">
+<link rel="stylesheet" href="assets/theme.css?v=20260930b">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
   .content{max-width:1180px;margin:0 auto;padding:22px var(--gut) 80px}
-  .toolbar{justify-content:space-between}
+  /* z-index : sort les menus déroulants au-dessus des cartes (qui deviennent
+     des contextes d'empilement à cause de l'animation d'entrée .content>*). */
+  .toolbar{justify-content:space-between;position:relative;z-index:30}
   .week-nav{display:flex;align-items:center;gap:6px}
   .week-nav input[type=week]{width:auto}
   .btn-wk{width:34px;height:34px;padding:0}
@@ -216,12 +218,14 @@
     <div class="card-head">
       <div><div class="eyebrow">PlaZma Esport · Calendrier</div>
         <div class="card-title">Historique &amp; échéances</div></div>
+      <div class="wk-label" id="calHint">Clic droit sur un jour → date butoir</div>
     </div>
     <div class="cal-grid" id="calGrid"></div>
     <div class="cal-legend">
       <span class="lg"><span class="sw" style="background:var(--ok)"></span> Scrim gagné</span>
       <span class="lg"><span class="sw" style="background:var(--err)"></span> Scrim perdu</span>
       <span class="lg"><span class="sw" style="background:var(--warn)"></span> Échéance objectif</span>
+      <span class="lg"><span class="sw" style="background:#c084fc"></span> Date butoir</span>
       <span class="lg"><span class="sw" style="background:var(--accent)"></span> Événement</span>
       <span class="lg"><span class="sw" style="background:var(--mid)"></span> Session planifiée</span>
     </div>
@@ -245,7 +249,7 @@
   </div>
 </div>
 
-<script src="assets/plazma.js?v=20260930a" data-section="planning"></script>
+<script src="assets/plazma.js?v=20260930b" data-section="planning"></script>
 <script>
 PZ.mountNav('schedule', '#nav');
 const db = PZ.db;
@@ -610,6 +614,8 @@ const calGrid = document.getElementById('calGrid');
 let view = 'week';
 let monthCursor = (() => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), 1); })();
 const calCache = { scrims:null, dashboard:null, weeks:{} };
+let deadlines = [];            // dates butoir personnalisées : [{date:'YYYY-MM-DD', label}]
+let deadlinesLoaded = false;
 const pad2 = n => String(n).padStart(2,'0');
 const fmtISO = d => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
 const canSec = s => !(PZ.auth && PZ.auth.can) || PZ.auth.can(s);
@@ -649,6 +655,15 @@ async function ensureCalData(){
     try{ const d=await db.collection(PZ.COLLECTION).doc('dashboard').get(); calCache.dashboard=(d.exists&&d.data())||{}; }
     catch(e){ console.error('dashboard',e); calCache.dashboard={}; }
   } else if(!canSec('dashboard')) calCache.dashboard={};
+  if(canSec('planning') && !deadlinesLoaded){
+    try{ const d=await db.collection(PZ.COLLECTION).doc('schedule-deadlines').get(); deadlines=(d.exists&&Array.isArray(d.data().items))?d.data().items:[]; }
+    catch(e){ console.error('deadlines',e); deadlines=[]; }
+    deadlinesLoaded=true;
+  }
+}
+async function saveDeadlines(){
+  try{ await db.collection(PZ.COLLECTION).doc('schedule-deadlines').set({items:deadlines}); }
+  catch(e){ console.error(e); alert('Enregistrement de la date butoir impossible.'); }
 }
 async function loadMonthWeeks(weeks){
   if(!canSec('planning')) return;
@@ -665,6 +680,7 @@ function buildByDay(){
   const dash=calCache.dashboard||{};
   (dash.objectives||[]).forEach(o=>{ if(o.deadline && o.status!=='done') push(o.deadline,{kind:'deadline',label:'⚑ '+(o.name||'Objectif'),color:'var(--warn)'}); });
   if(dash.nextEventDate) push(dash.nextEventDate,{kind:'event',label:'★ '+(dash.nextEvent||'Événement'),color:'var(--accent)'});
+  (deadlines||[]).forEach((m,idx)=>{ if(m&&m.date) push(m.date,{kind:'butoir',label:'📌 '+(m.label||'Date butoir'),color:'#c084fc',didx:idx}); });
   Object.keys(calCache.weeks).forEach(wv=>{ const sched=calCache.weeks[wv]||{}; const [y,w]=wv.split('-W').map(Number); if(!y||!w)return;
     const mon=mondayOfIsoWeek(y,w);
     DAYS.forEach((day,di)=>{ (sched[day]||[]).forEach(sl=>{ const dt=new Date(mon); dt.setUTCDate(mon.getUTCDate()+di);
@@ -698,9 +714,25 @@ calGrid.addEventListener('click',e=>{
   if(chip){ e.stopPropagation(); const ev=(calGrid._byDay[cell.dataset.ds]||[])[+chip.dataset.i]; if(ev)onCalEvent(ev); return; }
   picker.value=cell.dataset.week; setView('week'); picker.dispatchEvent(new Event('change'));   // case → semaine
 });
+// Clic droit sur un jour → ajouter une date butoir (ex. « Fin des inscriptions à la Ouat »)
+calGrid.addEventListener('contextmenu',e=>{
+  const cell=e.target.closest('.cal-cell'); if(!cell)return;
+  e.preventDefault();
+  if(typeof canEdit==='function' && !canEdit()){ alert('Tu n’as pas les droits pour modifier le planning.'); return; }
+  const ds=cell.dataset.ds; if(!ds)return;
+  const label=prompt('Date butoir le '+frLong(ds)+' :\n(ex. Fin des inscriptions à la Ouat)','');
+  if(label==null)return; const t=label.trim(); if(!t)return;
+  deadlines.push({date:ds,label:t}); saveDeadlines(); renderMonth();
+});
+function frLong(ds){ try{ return new Date(ds+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}); }catch(e){ return ds; } }
 function onCalEvent(ev){
   if(ev.kind==='scrim') location.href='plazma-scrim.html'+(ev.id?('#'+ev.id):'');
   else if(ev.kind==='session'){ picker.value=ev.week; setView('week'); picker.dispatchEvent(new Event('change')); }
+  else if(ev.kind==='butoir'){
+    if(typeof canEdit==='function' && !canEdit())return;
+    const name=(ev.label||'').replace(/^📌\s*/,'');
+    if(confirm('Supprimer la date butoir « '+name+' » ?')){ deadlines.splice(ev.didx,1); saveDeadlines(); renderMonth(); }
+  }
   else location.href='plazma-dashboard.html';
 }
 function setView(v){
@@ -718,6 +750,7 @@ function setView(v){
   const pub = document.getElementById('pubDiscordBtn'); if(pub) pub.style.display = weekV ? '' : 'none';
   const fm = document.getElementById('fillMenu');       if(fm)  fm.style.display  = (weekV && canE) ? '' : 'none';
   const mm = document.getElementById('moreMenu');        if(mm)  mm.style.display  = (weekV && canE) ? '' : 'none';
+  const ch = document.getElementById('calHint');         if(ch)  ch.style.display  = (!weekV && canE) ? '' : 'none';
   closeMenus();
   if(v==='month') renderMonth();
 }

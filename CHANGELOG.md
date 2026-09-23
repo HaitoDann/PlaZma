@@ -17,6 +17,16 @@ bas de la fenêtre **Paramètres**.
 
 ## 2.x — Refonte visuelle & administration
 
+### 2.12.1 — Planning : menus corrigés + dates butoir
+- **Correctif d'empilement** : les menus « Pré-remplir » et « … » passaient
+  derrière les cartes (les cartes deviennent des contextes d'empilement à cause
+  de l'animation d'entrée `.content>*`). La barre d'outils est remontée
+  (`z-index`), les popovers s'affichent bien au-dessus.
+- **Dates butoir** : en vue Calendrier, **clic droit sur un jour** pour ajouter
+  une échéance (ex. « Fin des inscriptions à la Ouat ») ; clic sur la pastille
+  pour la supprimer. Stockées dans `plazma/schedule-deadlines` (droit Planning,
+  aucune règle Firestore à redéployer). Nouvelle entrée de légende « Date butoir ».
+
 ### 2.12.0 — Statistiques du club (tableau de bord chiffré)
 - **Nouvelle page admin `Statistiques du club`** (`plazma-stats.html`),
   complément quantitatif du Pilotage :
