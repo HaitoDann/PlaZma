@@ -17,6 +17,20 @@ bas de la fenêtre **Paramètres**.
 
 ## 3.x — Interface pro
 
+### 3.1.0 — Dashboard recentré, page Club unifiée, Planning ↔ CR ↔ Stats
+- **Liens automatiques Planning → CR → Stats** : chaque créneau Scrim / Match
+  officiel affiche l'état de son compte rendu (« Préparer le CR », « CR à remplir »,
+  « CR · 2–1 »). Un clic crée le CR pré-rempli (date, adversaire) et rattaché au
+  créneau ; les CR existants sont reliés automatiquement par date.
+- **Dashboard** recentré sur la semaine : prochain rendez-vous, sessions avec
+  état des CR, bloc Performance calculé (winrate scrims et par game, CR remplis
+  sur 4 semaines, présence, erreurs récurrentes, CR manquants), résultats,
+  objectifs, roster avec liens op.gg. Fin de la saisie manuelle des rangs SoloQ.
+- **Club** : « Pilotage du club » et « Statistiques du club » fusionnés en une
+  page à onglets (Pilotage · Chiffres), avec un bloc Sportif calculé depuis les CR.
+  L'ancienne adresse `plazma-stats.html` redirige vers l'onglet Chiffres.
+- **Theorycraft retiré** (remplacé par Draft sur l'accueil).
+
 ### 3.0.0 — Refonte visuelle sobre et minimaliste
 - Nouveau socle visuel sur toutes les pages : neutres froids, un seul accent,
   typo IBM Plex Sans / Mono, cartes à plat avec filet fin, arrondis discrets.

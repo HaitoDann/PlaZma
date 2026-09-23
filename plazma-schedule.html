@@ -67,6 +67,10 @@
     padding:2px 7px;border-radius:5px;margin-bottom:5px;color:var(--sc);background:color-mix(in srgb,var(--sc) 15%,transparent)}
   .slot-time{font-size:11px;color:var(--muted);margin-bottom:2px}
   .slot-note{font-size:12.5px;color:var(--dim);line-height:1.4}
+  .slot-cr{display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-size:11.5px;font-weight:500;color:var(--muted);text-decoration:none}
+  .slot-cr:hover{color:var(--text)}
+  .slot-cr.todo{color:var(--warn)}
+  .slot-cr i{width:7px;height:7px;border-radius:50%;display:inline-block}
   .slot-del{position:absolute;top:5px;right:6px;background:none;border:none;color:var(--muted);cursor:pointer;
     font-size:11px;opacity:0;transition:opacity .12s}
   .slot:hover .slot-del{opacity:1}
@@ -318,6 +322,37 @@ let avMode = 'dispo';
 let myUid = null, myPlayerId = null;
 const avRoster = () => (PZ.getPlayers ? PZ.getPlayers() : PZ.getRoster());
 
+// ---- CR de scrim (liens créneau ↔ compte rendu) ----
+let weekCRs = null;          // liste des CR (null = pas encore chargée)
+async function loadWeekCRs(){
+  if(!db || !(PZ.auth && PZ.auth.can && PZ.auth.can('scrim')) || !PZ.stats){ weekCRs = []; return; }
+  try{ weekCRs = await PZ.stats.loadScrimCRs(); }catch(e){ console.error('scrims',e); weekCRs = []; }
+  renderGrid();
+}
+function crLinkHtml(slot, day, idx, links){
+  if(!PZ.stats || !PZ.stats.isLinkable(slot) || weekCRs === null) return '';
+  if(!(PZ.auth && PZ.auth.can && PZ.auth.can('scrim'))) return '';
+  const cr = links[slot.id || (day + '#' + idx)];
+  if(cr){
+    const r = PZ.stats.scrimResult(cr);
+    const score = (cr.s_plazma||0) + '–' + (cr.s_adv||0);
+    const col = r==='W' ? 'var(--ok)' : r==='L' ? 'var(--err)' : 'var(--muted)';
+    return `<a class="slot-cr done" data-noexport href="plazma-scrim.html#${encodeURIComponent(cr.id)}" title="Ouvrir le compte rendu"><i style="background:${col}"></i>CR · ${r ? score : 'en cours'}</a>`;
+  }
+  const date = PZ.stats.slotDate(picker.value, day);
+  const past = date && date <= new Date().toISOString().slice(0,10);
+  return `<a class="slot-cr${past ? ' todo' : ''}" data-noexport href="#" data-crday="${day}" data-cridx="${idx}">${past ? 'CR à remplir' : 'Préparer le CR'} →</a>`;
+}
+/** Ouvre (ou crée) le CR rattaché au créneau. Pose un id stable sur le créneau si besoin. */
+function openSlotCR(day, idx){
+  const slot = (schedule[day]||[])[idx]; if(!slot) return;
+  if(!slot.id && canEdit()){ slot.id = PZ.stats.newSlotId(); sync.save(); }
+  const q = new URLSearchParams({ date: PZ.stats.slotDate(picker.value, day), adv: slot.note || '', week: picker.value });
+  if(slot.id) q.set('slot', slot.id);
+  // Laisse partir la sauvegarde du créneau avant de changer de page.
+  setTimeout(() => { location.href = 'plazma-scrim.html#new?' + q.toString(); }, slot.id ? 350 : 0);
+}
+
 // ---- Sync (planning + présence) ----
 const sync = PZ.sync({
   docId: () => 'schedule-' + (picker.value || 'default'),
@@ -409,6 +444,7 @@ function renderGrid(){
   grid.innerHTML = '';
   const isCurrentWeek = picker.value === currentWeekValue();
   const ti = todayIdx();
+  const links = (PZ.stats && weekCRs) ? PZ.stats.linkWeek(picker.value, schedule, weekCRs) : {};
   DAYS.forEach((day, di) => {
     const slots = schedule[day] || [];
     slots.sort((a,b) => slotStartKey(a).localeCompare(slotStartKey(b)));   // tri par heure de début
@@ -440,7 +476,13 @@ function renderGrid(){
       el.innerHTML = `${editable ? '<button class="slot-del" data-noexport title="Supprimer">✕</button><span class="slot-grip" data-noexport>⠿</span>' : ''}
         <span class="slot-type">${t.label}</span>
         ${time ? `<div class="slot-time">⏱ ${time}</div>` : ''}
-        ${slot.note ? `<div class="slot-note">${escHtml(slot.note)}</div>` : ''}`;
+        ${slot.note ? `<div class="slot-note">${escHtml(slot.note)}</div>` : ''}
+        ${crLinkHtml(slot, day, idx, links)}`;
+      const crA = el.querySelector('.slot-cr');
+      if(crA) crA.addEventListener('click', e => {
+        e.stopPropagation();
+        if(crA.dataset.crday){ e.preventDefault(); openSlotCR(crA.dataset.crday, +crA.dataset.cridx); }
+      });
       if(editable){
         el.draggable = true;
         el.addEventListener('dragstart', e => { dragSrc = {day, idx}; el.classList.add('dragging'); try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain', day+':'+idx); }catch(_){}; });
@@ -509,6 +551,8 @@ document.getElementById('saveSlotBtn').addEventListener('click', () => {
     alert('L\'heure de fin doit être différente de l\'heure de début.'); return;
   }
   const slot = { type: document.getElementById('mType').value, start, end, note: document.getElementById('mNote').value };
+  const prevId = !_mNew && schedule[_mDay][_mIdx] && schedule[_mDay][_mIdx].id;
+  slot.id = prevId || PZ.stats.newSlotId();
   if(_mNew) (schedule[_mDay] = schedule[_mDay] || []).push(slot);
   else schedule[_mDay][_mIdx] = slot;
   closeModal(); renderGrid(); sync.save();
@@ -549,6 +593,9 @@ document.getElementById('fillList').addEventListener('click', e => {
   else if(act==='savetmpl') saveCurrentAsTemplate();
 });
 
+// Copie profonde d'une semaine avec de nouveaux identifiants de créneau.
+const freshIds = sched => { const c = JSON.parse(JSON.stringify(sched||{}));
+  Object.keys(c).forEach(d => (c[d]||[]).forEach(sl => { if(sl) sl.id = PZ.stats.newSlotId(); })); return c; };
 const hasSessions = obj => Object.values(obj||{}).some(a => a && a.length);
 
 async function copyPrevWeek(){
@@ -559,7 +606,7 @@ async function copyPrevWeek(){
   catch(e){ console.error(e); alert('Lecture de la semaine précédente impossible.'); return; }
   if(!hasSessions(sched)){ alert('La semaine précédente est vide, rien à copier.'); return; }
   if(!confirm('Remplacer le planning de cette semaine par une copie de la semaine précédente ?')) return;
-  schedule = JSON.parse(JSON.stringify(sched)); renderGrid(); sync.save();
+  schedule = freshIds(sched); renderGrid(); sync.save();
 }
 
 // Modèles stockés dans plazma/schedule-templates : { templates: { nom: {schedule} } }
@@ -584,7 +631,7 @@ async function saveCurrentAsTemplate(){
 async function applyTemplate(name){
   const t = templates[name]; if(!t) return;
   if(!confirm(`Remplacer le planning de cette semaine par le modèle « ${name} » ?`)) return;
-  schedule = JSON.parse(JSON.stringify(t)); renderGrid(); sync.save();
+  schedule = freshIds(t); renderGrid(); sync.save();
 }
 async function deleteTemplate(name){
   if(!confirm(`Supprimer le modèle « ${name} » ?`)) return;
@@ -772,7 +819,10 @@ if(PZ.auth && PZ.auth.ready) PZ.auth.ready.then(res=>{
   myUid = (res && res.user && res.user.uid) || null;
   myPlayerId = (res && res.profile && res.profile.playerId) || null;
   loadAvail();
+  loadWeekCRs();
 });
+// Retour depuis un CR : on rafraîchit l'état des liens.
+document.addEventListener('visibilitychange', () => { if(!document.hidden && weekCRs !== null) loadWeekCRs(); });
 
 // Lecture seule : masque les commandes d'édition si pas de droit « Modifier » sur le Planning.
 function applyPlanningRO(){

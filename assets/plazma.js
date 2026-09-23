@@ -55,7 +55,7 @@
   // ---- Version de l'application (SemVer) ----
   // MAJEUR.MINEUR.CORRECTIF — MINEUR à chaque lot de fonctionnalités,
   // CORRECTIF pour les corrections. Affichée discrètement dans Paramètres.
-  const VERSION = '3.0.0';
+  const VERSION = '3.1.0';
 
   // ---- Niveau de performance : adapte la densité des effets ----
   // Full sur machine puissante (rendu identique), réduit sur mobile/appareil
@@ -385,7 +385,6 @@
     { key: 'review',       href: 'plazma-review-individuelle.html', label: 'Review', section: 'scrim' },
     { key: 'scouting',     href: 'plazma-scouting.html',    label: 'Scouting',     section: 'scouting' },
     { key: 'draft',        href: 'plazma-draft.html',       label: 'Draft',        section: 'scouting' },
-    { key: 'theory',       href: 'plazma-theory.html',      label: 'Theorycraft' },
     { key: 'wikiperf',     href: 'plazma-wiki-perf.html',   label: 'Encyclopédie' },
     { key: 'team',         href: 'plazma-team.html',        label: 'Équipe',       section: 'team' },
     { key: 'dashboard',    href: 'plazma-dashboard.html',   label: 'Dashboard',    section: 'dashboard' },
@@ -1023,6 +1022,142 @@
   }
   const discord = { publish: discordPublish, ensureConfig: discordEnsureCfg, webhook: discordWebhook, setWebhook: discordSetWebhook };
 
+
+  // ---- Liens Planning ↔ CR de scrim ↔ Stats ----
+  // Un créneau « scrim » ou « match » du Planning est rattaché à un CR :
+  //  1) par identifiant (CR.slotId === créneau.id), posé quand on crée le CR depuis le Planning ;
+  //  2) sinon, automatiquement par date (CR du même jour pas encore rattaché).
+  // Les stats (Dashboard, Club) sont calculées à la volée depuis ces CR : rien à ressaisir.
+  const LINK_TYPES = ['scrim', 'match'];
+  const DAY_NAMES = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+  const _p2 = n => String(n).padStart(2, '0');
+  function _isoWeekOf(d) {
+    const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day);
+    const y1 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+    return t.getUTCFullYear() + '-W' + _p2(Math.ceil((((t - y1) / 86400000) + 1) / 7));
+  }
+  function _weekShift(week, delta) {
+    const [y, w] = week.split('-W').map(Number);
+    const jan4 = new Date(Date.UTC(y, 0, 4)); const dow = jan4.getUTCDay() || 7;
+    const mon = new Date(jan4); mon.setUTCDate(jan4.getUTCDate() - (dow - 1) + (w - 1) * 7 + delta * 7);
+    return _isoWeekOf(new Date(mon.getUTCFullYear(), mon.getUTCMonth(), mon.getUTCDate()));
+  }
+  /** Date ISO (AAAA-MM-JJ) d'un jour ('Lundi'…) dans une semaine ISO ('2026-W39'). */
+  function slotDate(week, day) {
+    const [y, w] = String(week || '').split('-W').map(Number); const di = DAY_NAMES.indexOf(day);
+    if (!y || !w || di < 0) return '';
+    const jan4 = new Date(Date.UTC(y, 0, 4)); const dow = jan4.getUTCDay() || 7;
+    const d = new Date(jan4); d.setUTCDate(jan4.getUTCDate() - (dow - 1) + (w - 1) * 7 + di);
+    return d.getUTCFullYear() + '-' + _p2(d.getUTCMonth() + 1) + '-' + _p2(d.getUTCDate());
+  }
+  const newSlotId = () => 'sl-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const isLinkable = slot => !!slot && LINK_TYPES.indexOf(slot.type) !== -1;
+  function scrimResult(cr) {
+    const a = +cr.s_plazma, b = +cr.s_adv;
+    if (!isFinite(a) || !isFinite(b) || (a + b) === 0) return null;
+    return a > b ? 'W' : a < b ? 'L' : 'D';
+  }
+  /** Associe les créneaux d'une semaine à leurs CR. Retourne { slotId|clé → CR }. */
+  function linkWeek(week, schedule, crs) {
+    const out = {}; const used = new Set();
+    const slots = [];
+    DAY_NAMES.forEach(day => (schedule && schedule[day] || []).forEach((sl, idx) => {
+      if (isLinkable(sl)) slots.push({ sl, key: sl.id || (day + '#' + idx), date: slotDate(week, day) });
+    }));
+    // 1) lien explicite
+    slots.forEach(x => {
+      const cr = x.sl.id && crs.find(c => c.slotId === x.sl.id && (!c.slotWeek || c.slotWeek === week));
+      if (cr) { out[x.key] = cr; used.add(cr.id); }
+    });
+    // 2) lien automatique par date
+    slots.forEach(x => {
+      if (out[x.key] || !x.date) return;
+      const cr = crs.find(c => !used.has(c.id) && !c.slotId && c.m_date === x.date);
+      if (cr) { out[x.key] = cr; used.add(cr.id); }
+    });
+    return out;
+  }
+  async function loadScrimCRs() {
+    if (!db) return [];
+    let snap;
+    try { snap = await db.collection('plazma-scrims').orderBy('_savedAt', 'desc').get(); }
+    catch (e) { snap = await db.collection('plazma-scrims').get(); }
+    const arr = []; snap.forEach(d => arr.push(Object.assign({ id: d.id }, d.data())));
+    return arr;
+  }
+  async function loadWeeks(weeks) {
+    const out = {};
+    await Promise.all(weeks.map(async w => {
+      try { const d = await db.collection(COLLECTION).doc('schedule-' + w).get();
+        out[w] = d.exists ? (d.data() || {}) : {}; }
+      catch (e) { out[w] = {}; }
+    }));
+    return out;
+  }
+  /** Calcule les stats sportives à partir des CR et des 4 dernières semaines de Planning. */
+  async function statsLoad(opts) {
+    opts = opts || {};
+    const nWeeks = opts.weeks || 4;
+    const canScrim = isAdmin() || can('scrim'), canPlan = isAdmin() || can('planning');
+    const crs = canScrim ? await loadScrimCRs() : [];
+    const today = new Date(); const todayIso = today.getFullYear() + '-' + _p2(today.getMonth() + 1) + '-' + _p2(today.getDate());
+    const month = todayIso.slice(0, 7);
+    // Séries & games
+    const rec = { w: 0, l: 0, d: 0 }, games = { w: 0, l: 0 }, perGame = {};
+    const errFreq = {};
+    crs.forEach(cr => {
+      const r = scrimResult(cr); if (r === 'W') rec.w++; else if (r === 'L') rec.l++; else if (r === 'D') rec.d++;
+      for (let g = 1; g <= 5; g++) {
+        const gr = cr['g' + g + '_result']; if (!gr) continue;
+        perGame[g] = perGame[g] || { w: 0, l: 0 };
+        if (gr === 'V') { games.w++; perGame[g].w++; } else { games.l++; perGame[g].l++; }
+      }
+      const e = cr.errors || {};
+      Object.keys(e).forEach(gk => (e[gk] || []).forEach(x => {
+        const wgt = x.sev === 'high' ? 3 : x.sev === 'low' ? 1 : 2; const c = x.cat || 'Autre';
+        errFreq[c] = (errFreq[c] || 0) + wgt;
+      }));
+    });
+    const rt = rec.w + rec.l;
+    // Couverture Planning → CR et présence sur les N dernières semaines
+    const cur = _isoWeekOf(today); const weeks = [];
+    for (let i = nWeeks - 1; i >= 0; i--) weeks.push(_weekShift(cur, -i));
+    const coverage = { planned: 0, withCr: 0, missing: [] };
+    const presence = { present: 0, late: 0, absent: 0 };
+    if (canPlan && db) {
+      const docs = await loadWeeks(weeks);
+      weeks.forEach(w => {
+        const sched = docs[w].schedule || {}; const links = linkWeek(w, sched, crs);
+        DAY_NAMES.forEach(day => (sched[day] || []).forEach((sl, idx) => {
+          const date = slotDate(w, day);
+          if (!isLinkable(sl) || !date || date > todayIso) return;
+          coverage.planned++;
+          const cr = links[sl.id || (day + '#' + idx)];
+          if (cr) coverage.withCr++; else coverage.missing.push({ week: w, day, date, slot: sl });
+        }));
+        const pr = docs[w].presence || {};
+        Object.keys(pr).forEach(pid => Object.keys(pr[pid] || {}).forEach(day => {
+          const v = pr[pid][day]; if (presence[v] != null) presence[v]++;
+        }));
+      });
+    }
+    const pTot = presence.present + presence.late + presence.absent;
+    return {
+      crs,
+      scrims: Object.assign({ total: rt, wr: rt ? Math.round(rec.w / rt * 100) : null }, rec),
+      games: { w: games.w, l: games.l, total: games.w + games.l, wr: (games.w + games.l) ? Math.round(games.w / (games.w + games.l) * 100) : null },
+      perGame,
+      monthScrims: crs.filter(c => (c.m_date || '').slice(0, 7) === month).length,
+      coverage,
+      presence: Object.assign({ total: pTot, rate: pTot ? Math.round((presence.present + presence.late * .5) / pTot * 100) : null }, presence),
+      topErrors: Object.entries(errFreq).sort((a, b) => b[1] - a[1]).slice(0, 3),
+      weeks, canScrim, canPlan
+    };
+  }
+  const canSeeScrims = () => isAdmin() || can('scrim');
+  const stats = { load: statsLoad, canSeeScrims, linkWeek, slotDate, newSlotId, isLinkable, scrimResult, loadScrimCRs, isoWeek: _isoWeekOf, weekShift: _weekShift, LINK_TYPES };
+
   // ---- API publique ----
   window.PZ = {
     db, COLLECTION, NAV, FIREBASE_CONFIG, VERSION,
@@ -1034,7 +1169,7 @@
     getUsage, flushUsage, SPARK_LIMITS,
     // Configuration du site
     siteEnsureCfg, siteGet, siteSave,
-    USER_DOMAIN, discord,
+    USER_DOMAIN, discord, stats,
     // Roster central
     getRoster, getCoach, getExtras, getPlayers, player, onRoster, setPlayer, addPlayer, removePlayer, saveRoster,
     ROSTER_SLOTS, COACH_SLOT,
