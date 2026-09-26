@@ -17,6 +17,12 @@ bas de la fenêtre **Paramètres**.
 
 ## 3.x — Interface pro
 
+### 3.2.0 — CR de scrim : débrief libre par game
+- Chaque game du compte rendu a désormais un champ **« Débrief de la game »** :
+  une appréciation libre du déroulé, sans timer ni catégorie, en complément des
+  erreurs et points forts. Idée proposée par le staff.
+- Ces débriefs sont inclus dans la publication Discord du CR.
+
 ### 3.1.0 — Dashboard recentré, page Club unifiée, Planning ↔ CR ↔ Stats
 - **Liens automatiques Planning → CR → Stats** : chaque créneau Scrim / Match
   officiel affiche l'état de son compte rendu (« Préparer le CR », « CR à remplir »,
