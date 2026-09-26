@@ -52,6 +52,9 @@
   .err-flag:hover{color:#fbbf24;border-color:rgba(251,191,36,.4)}
   .err-flag.active{color:#fbbf24;border-color:rgba(251,191,36,.5)}
   .no-err{font-size:12px;color:var(--muted);font-style:italic}
+  .gdebrief{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+  .gdebrief label{display:block;font-size:11px;letter-spacing:.01em;color:var(--muted);font-weight:600;margin-bottom:6px}
+  .gdebrief textarea{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--text);min-height:52px;resize:vertical;line-height:1.5}
   .note-btns{display:flex;gap:6px}
   .btn-ok{background:transparent;border-color:var(--border);color:var(--muted)}
   .btn-ok:hover{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.4);color:var(--ok)}
@@ -192,7 +195,7 @@
   <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
 </div>
 
-<script src="assets/plazma.js?v=20260930b" data-section="scrim"></script>
+<script src="assets/plazma.js?v=20260923pro" data-section="scrim"></script>
 <script>
 'use strict';
 PZ.mountNav('scrim', '#nav');
@@ -249,6 +252,10 @@ function buildGames(){
             <button class="btn btn-sm btn-ok" onclick="addStrength('g${g}')">+ Point fort</button>
           </div></div>
         <div id="notelist_g${g}"><div class="no-err" id="noteEmpty_g${g}">Aucune note pour l'instant.</div></div>
+        <div class="gdebrief">
+          <label for="g${g}_debrief">Débrief de la game</label>
+          <textarea id="g${g}_debrief" rows="2" placeholder="Comment s'est passée la game ? Déroulé, ambiance, ressenti global — libre, sans catégorie." oninput="queueSave()"></textarea>
+        </div>
       </div>`;
     host.appendChild(b);
   }
@@ -365,7 +372,7 @@ function getState(){
   const s={ m_date:val('m_date'), m_adv:val('m_adv'), s_plazma:val('s_plazma'), s_adv:val('s_adv'),
     t_bien:val('t_bien'), t_corriger:val('t_corriger'), f_note:val('f_note'), f_comment:val('f_comment'),
     errors:JSON.parse(JSON.stringify(errors)), strengths:JSON.parse(JSON.stringify(strengths)) };
-  for(let g=1;g<=5;g++) s[`g${g}_result`]=val(`g${g}_result`);
+  for(let g=1;g<=5;g++){ s[`g${g}_result`]=val(`g${g}_result`); s[`g${g}_debrief`]=val(`g${g}_debrief`); }
   ROSTER.forEach(p=>s['rem_'+p.id]=val('rem_'+p.id));
   if(crLink){ s.slotId=crLink.slotId; s.slotWeek=crLink.slotWeek; }
   return s;
@@ -374,7 +381,7 @@ function applyState(s){
   if(!s) return;
   crLink = s.slotId ? { slotId:s.slotId, slotWeek:s.slotWeek||'' } : null;
   ['m_date','m_adv','s_plazma','s_adv','t_bien','t_corriger','f_note','f_comment'].forEach(k=>set(k,s[k]));
-  for(let g=1;g<=5;g++){ set(`g${g}_result`,s[`g${g}_result`]); const sel=document.getElementById(`g${g}_result`); if(sel)styleResult(sel); }
+  for(let g=1;g<=5;g++){ set(`g${g}_result`,s[`g${g}_result`]); set(`g${g}_debrief`,s[`g${g}_debrief`]); const sel=document.getElementById(`g${g}_result`); if(sel)styleResult(sel); }
   ROSTER.forEach(p=>set('rem_'+p.id,s['rem_'+p.id]));
   document.getElementById('advLabel').textContent = s.m_adv || 'Adversaire';
   document.getElementById('advTitle').textContent = s.m_adv ? 'Match vs ' + s.m_adv : 'Match';
@@ -427,7 +434,7 @@ function blankForm(){
   strengths={g1:[],g2:[],g3:[],g4:[],g5:[]}; renderNotes();
   ['m_adv','t_bien','t_corriger','f_comment'].forEach(k=>set(k,''));
   set('s_plazma','0'); set('s_adv','0'); set('f_note','—');
-  for(let g=1;g<=5;g++){ set(`g${g}_result`,''); const s=document.getElementById(`g${g}_result`); if(s)styleResult(s); }
+  for(let g=1;g<=5;g++){ set(`g${g}_result`,''); set(`g${g}_debrief`,''); const s=document.getElementById(`g${g}_result`); if(s)styleResult(s); }
   ROSTER.forEach(p=>set('rem_'+p.id,''));
   set('m_date', new Date().toISOString().split('T')[0]);
   document.getElementById('advLabel').textContent='Adversaire';
@@ -541,6 +548,9 @@ function buildScrimMessages(s){
   ];
   const games=[]; for(let g=1;g<=5;g++){ const r=s['g'+g+'_result']; if(r) games.push(`G${g} ${r==='V'?'✅':'❌'}`); }
   if(games.length) fields.push({name:'🎮 Games', value:games.join('   ·   ')});
+  let db='';
+  for(let g=1;g<=5;g++){ const d=(s['g'+g+'_debrief']||'').trim(); if(d) db+=`**Game ${g}** — ${d}\n`; }
+  if(db.trim()) pushLong(fields,'📝 Débrief par game',db);
   let et='';
   for(let g=1;g<=5;g++){ const arr=(s.errors&&s.errors['g'+g])||[]; if(arr.length){
     et+=`**Game ${g}**\n`+arr.map(e=>`• \`${e.timer||'--:--'}\` **${e.cat}**${e.desc?' — '+e.desc:''}`).join('\n')+'\n'; } }
