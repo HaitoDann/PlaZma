@@ -17,6 +17,21 @@ bas de la fenêtre **Paramètres**.
 
 ## 3.x — Interface pro
 
+### 3.3.0 — CR de scrim : import .rofl optionnel + moyennes
+- **Import de replay `.rofl`** (facultatif) dans le compte rendu : glisser-déposer
+  ou bouton par game. Le fichier est lu **localement dans le navigateur** (rien
+  n'est envoyé), même si le patch a expiré.
+- Remplit automatiquement, par game : **champions, KDA, CS, gold, dégâts, vision**
+  et la **durée**, plus le **résultat V/D** et le **score** du match.
+- Détection du **camp de PlaZma** via les comptes op.gg du roster (sinon choix
+  Bleu/Rouge dans l'aperçu avant validation).
+- Bloc **« Moyennes »** sur les games importées du CR : victoires, **diff. de gold
+  de fin de partie**, KDA équipe, CS/min, durée, dégâts, vision.
+- Moyennes reprises dans la publication Discord du CR.
+- Limite : le `.rofl` ne contient que les stats de **fin de partie** (pas de
+  timeline), donc pas de « gold @15 » ; et le format peut évoluer côté Riot, la
+  lecture échoue proprement si un fichier n'est pas reconnu.
+
 ### 3.2.0 — CR de scrim : débrief libre par game
 - Chaque game du compte rendu a désormais un champ **« Débrief de la game »** :
   une appréciation libre du déroulé, sans timer ni catégorie, en complément des
