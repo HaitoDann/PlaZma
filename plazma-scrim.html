@@ -55,6 +55,50 @@
   .gdebrief{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
   .gdebrief label{display:block;font-size:11px;letter-spacing:.01em;color:var(--muted);font-weight:600;margin-bottom:6px}
   .gdebrief textarea{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--text);min-height:52px;resize:vertical;line-height:1.5}
+
+  /* ── Import .rofl (optionnel) : dropzone, stats par game, moyennes ── */
+  .rofl-drop{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px dashed var(--border-2);border-radius:var(--r);
+    background:var(--surface-2);padding:12px 14px;margin-bottom:14px;transition:border-color .12s,background .12s}
+  .rofl-drop.over{border-color:var(--accent);background:var(--accent-soft)}
+  .rofl-drop .ri-txt{flex:1;min-width:180px;font-size:12.5px;color:var(--muted);line-height:1.45}
+  .rofl-drop .ri-txt b{color:var(--dim);font-weight:600}
+  .grofl{display:flex;align-items:center;gap:8px;margin-left:auto}
+  .grofl .mini{font-size:11px;color:var(--muted)}
+  .gstats{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+  .gstats-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;font-size:12px;color:var(--muted)}
+  .gstats-head .pill{font-weight:600;color:var(--dim);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:2px 9px}
+  .gstats-head .rm{margin-left:auto;background:none;border:1px solid var(--border);border-radius:7px;color:var(--muted);cursor:pointer;font-size:11px;padding:3px 8px}
+  .gstats-head .rm:hover{color:var(--err);border-color:rgba(239,68,68,.4)}
+  .stat-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+  .stat-tbl th{text-align:right;font-weight:500;color:var(--muted);font-size:11px;padding:4px 7px;border-bottom:1px solid var(--border)}
+  .stat-tbl th:first-child,.stat-tbl td:first-child{text-align:left}
+  .stat-tbl td{padding:5px 7px;border-bottom:1px solid var(--border);white-space:nowrap}
+  .stat-tbl td.mono,.stat-tbl th.mono{font-family:var(--font-mono);text-align:right}
+  .stat-tbl tr:last-child td{border-bottom:0}
+  .stat-champ{font-weight:600}
+  .gold-pos{color:var(--ok)} .gold-neg{color:var(--err)}
+
+  .rofl-agg{background:var(--surface);border:1px solid var(--border-2);border-radius:var(--r-lg);padding:16px 18px;margin-bottom:14px}
+  .rofl-agg h3{font-family:var(--font-display);font-size:14px;font-weight:600;margin-bottom:4px}
+  .rofl-agg .sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .agg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+  .agg-tile{background:var(--surface-2);border-radius:var(--r);padding:11px 13px}
+  .agg-val{font-family:var(--font-mono);font-size:1.35rem;font-weight:500;line-height:1.05}
+  .agg-lab{font-size:11px;color:var(--muted);margin-top:5px}
+
+  /* Modal d'aperçu .rofl */
+  .rofl-ov{position:fixed;inset:0;background:rgba(6,10,14,.6);backdrop-filter:blur(2px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+  .rofl-ov.open{display:flex}
+  .rofl-modal{background:var(--surface);border:1px solid var(--border-2);border-radius:var(--r-lg);max-width:560px;width:100%;max-height:90vh;overflow:auto;padding:20px 22px}
+  .rofl-modal h3{font-family:var(--font-display);font-size:1.1rem;margin-bottom:4px}
+  .rofl-modal .sub{font-size:12.5px;color:var(--muted);margin-bottom:16px}
+  .rofl-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .rofl-row label{font-size:12.5px;color:var(--dim);font-weight:500}
+  .side-toggle{display:inline-flex;border:1px solid var(--border-2);border-radius:var(--r);overflow:hidden}
+  .side-toggle button{border:0;background:var(--surface-2);color:var(--muted);padding:7px 14px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:500}
+  .side-toggle button.on[data-side="blue"]{background:#3b82f6;color:#fff}
+  .side-toggle button.on[data-side="red"]{background:#ef4444;color:#fff}
+  .rofl-modal .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
   .note-btns{display:flex;gap:6px}
   .btn-ok{background:transparent;border-color:var(--border);color:var(--muted)}
   .btn-ok:hover{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.4);color:var(--ok)}
@@ -152,6 +196,12 @@
     <div class="body">
       <div>
         <div class="sec-title"><span class="d" style="background:var(--mid)"></span>Games — erreurs &amp; points forts</div>
+        <div class="rofl-drop" id="roflDrop" data-noexport>
+          <div class="ri-txt"><b>Import .rofl (optionnel)</b> — dépose le replay d'une game pour remplir automatiquement champions, KDA, CS, gold et durée. Rien n'est envoyé : le fichier est lu dans ton navigateur.</div>
+          <button class="btn btn-sm" type="button" onclick="document.getElementById('roflAny').click()">Choisir un .rofl</button>
+          <input type="file" id="roflAny" accept=".rofl" hidden>
+        </div>
+        <div id="roflAgg"></div>
         <div id="games"></div>
       </div>
 
@@ -189,6 +239,29 @@
 
 <!-- Drawer historique -->
 <div class="drawer-ov" id="drawerOv" onclick="closeHistory()"></div>
+<div class="rofl-ov" id="roflOv">
+  <div class="rofl-modal">
+    <h3>Importer les stats du .rofl</h3>
+    <div class="sub" id="roflSub">—</div>
+    <div class="rofl-row">
+      <label>Camp de PlaZma :</label>
+      <span class="side-toggle" id="roflSide">
+        <button type="button" data-side="blue" onclick="roflPick('blue')">Bleu</button>
+        <button type="button" data-side="red" onclick="roflPick('red')">Rouge</button>
+      </span>
+      <span class="mini" id="roflSideHint" style="font-size:11px;color:var(--muted)"></span>
+    </div>
+    <div class="rofl-row">
+      <label for="roflGame">Remplir la game :</label>
+      <select id="roflGame"></select>
+    </div>
+    <div id="roflPreview"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" type="button" onclick="roflClose()">Annuler</button>
+      <button class="btn btn-primary" type="button" id="roflConfirm" onclick="roflApply()">Remplir la game</button>
+    </div>
+  </div>
+</div>
 <div class="drawer" id="drawer">
   <div class="drawer-head"><h2 style="font-size:1.1rem">Historique</h2><button class="btn btn-icon btn-ghost" onclick="closeHistory()">✕</button></div>
   <div style="padding:14px 14px 0"><button class="btn btn-primary" style="width:100%" onclick="newSession();closeHistory()"><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-pen"><path class="pl-pen-body" d="M14.5 4.5l5 5L9 20l-5.5 1L5 15.5z"/><path class="pl-pen-nib" d="M12.5 6.5l5 5"/></g><path class="pl-pen-line" d="M4 21.5h15"/></svg> Nouveau compte rendu</button></div>
@@ -211,6 +284,7 @@ function sevOptions(v){ return ERR_SEV.map(([k,l])=>`<option value="${k}"${(v||'
 function playerOptions(v){ return '<option value="">Équipe</option>'+ROSTER.map(p=>`<option value="${p.id}"${v===p.id?' selected':''}>${esc(p.name)}</option>`).join(''); }
 
 let errors = {g1:[],g2:[],g3:[],g4:[],g5:[]};
+let gstats = {g1:null,g2:null,g3:null,g4:null,g5:null};   // stats parsées depuis les .rofl (optionnel)
 // Créneau du Planning rattaché à ce CR ({slotId, slotWeek} ou null).
 let crLink = null;
 let strengths = {g1:[],g2:[],g3:[],g4:[],g5:[]};   // points forts (time-codés, par game)
@@ -255,6 +329,11 @@ function buildGames(){
         <div class="gdebrief">
           <label for="g${g}_debrief">Débrief de la game</label>
           <textarea id="g${g}_debrief" rows="2" placeholder="Comment s'est passée la game ? Déroulé, ambiance, ressenti global — libre, sans catégorie." oninput="queueSave()"></textarea>
+        </div>
+        <div id="gstats_g${g}"></div>
+        <div class="grofl" data-noexport>
+          <button class="btn btn-sm btn-ghost" type="button" onclick="document.getElementById('rofl_g${g}').click()">Importer le .rofl de cette game</button>
+          <input type="file" id="rofl_g${g}" accept=".rofl" hidden>
         </div>
       </div>`;
     host.appendChild(b);
@@ -372,7 +451,7 @@ function getState(){
   const s={ m_date:val('m_date'), m_adv:val('m_adv'), s_plazma:val('s_plazma'), s_adv:val('s_adv'),
     t_bien:val('t_bien'), t_corriger:val('t_corriger'), f_note:val('f_note'), f_comment:val('f_comment'),
     errors:JSON.parse(JSON.stringify(errors)), strengths:JSON.parse(JSON.stringify(strengths)) };
-  for(let g=1;g<=5;g++){ s[`g${g}_result`]=val(`g${g}_result`); s[`g${g}_debrief`]=val(`g${g}_debrief`); }
+  for(let g=1;g<=5;g++){ s[`g${g}_result`]=val(`g${g}_result`); s[`g${g}_debrief`]=val(`g${g}_debrief`); s[`g${g}_stats`]=gstats['g'+g]; }
   ROSTER.forEach(p=>s['rem_'+p.id]=val('rem_'+p.id));
   if(crLink){ s.slotId=crLink.slotId; s.slotWeek=crLink.slotWeek; }
   return s;
@@ -389,7 +468,9 @@ function applyState(s){
   if(s.errors) Object.keys(s.errors).forEach(gk=>{ if(s.errors[gk]) errors[gk]=[...s.errors[gk]]; });
   strengths={g1:[],g2:[],g3:[],g4:[],g5:[]};
   if(s.strengths) Object.keys(s.strengths).forEach(gk=>{ if(s.strengths[gk]) strengths[gk]=[...s.strengths[gk]]; });
-  renderNotes();
+  gstats={g1:null,g2:null,g3:null,g4:null,g5:null};
+  for(let g=1;g<=5;g++){ gstats['g'+g]=s['g'+g+'_stats']||null; }
+  renderNotes(); renderAllStats();
 }
 
 // ── Firestore (multi-doc + historique) ──
@@ -431,7 +512,9 @@ function startSync(docId){
 function blankForm(){
   crLink = null;
   errors={g1:[],g2:[],g3:[],g4:[],g5:[]};
-  strengths={g1:[],g2:[],g3:[],g4:[],g5:[]}; renderNotes();
+  strengths={g1:[],g2:[],g3:[],g4:[],g5:[]};
+  gstats={g1:null,g2:null,g3:null,g4:null,g5:null};
+  renderNotes(); renderAllStats();
   ['m_adv','t_bien','t_corriger','f_comment'].forEach(k=>set(k,''));
   set('s_plazma','0'); set('s_adv','0'); set('f_note','—');
   for(let g=1;g<=5;g++){ set(`g${g}_result`,''); set(`g${g}_debrief`,''); const s=document.getElementById(`g${g}_result`); if(s)styleResult(s); }
@@ -548,6 +631,17 @@ function buildScrimMessages(s){
   ];
   const games=[]; for(let g=1;g<=5;g++){ const r=s['g'+g+'_result']; if(r) games.push(`G${g} ${r==='V'?'✅':'❌'}`); }
   if(games.length) fields.push({name:'🎮 Games', value:games.join('   ·   ')});
+  // Moyennes issues des .rofl (si importés)
+  try{
+    const gs=[]; for(let g=1;g<=5;g++){ const st=s['g'+g+'_stats']; if(st) gs.push(st); }
+    if(gs.length){
+      let w=0,gold=0,k=0,d=0,a=0,durv=0;
+      gs.forEach(st=>{ const der=gameDerived(st); if(st.win) w++; gold+=der.goldDiff; k+=der.us.k; d+=der.us.d; a+=der.us.a; durv+=st.durationSec||0; });
+      const n=gs.length;
+      fields.push({name:'📊 Moyennes .rofl ('+n+' game'+(n>1?'s':'')+')',
+        value:`Victoires ${w}/${n} · Diff. gold moy. ${((gold/n)>=0?'+':'')+fmtK(gold/n)} · KDA équipe ${((k+a)/Math.max(1,d)).toFixed(2)} · Durée moy. ${fmtDur(Math.round(durv/n))}`});
+    }
+  }catch(e){}
   let db='';
   for(let g=1;g<=5;g++){ const d=(s['g'+g+'_debrief']||'').trim(); if(d) db+=`**Game ${g}** — ${d}\n`; }
   if(db.trim()) pushLong(fields,'📝 Débrief par game',db);
@@ -596,7 +690,238 @@ async function openFromSlot(q){
 }
 
 // Init
+
+// ════════════════════════════════════════════════════════════
+//  Import .rofl (optionnel) — lecture locale, stats par game + moyennes
+//  Un .rofl = une game. Le header contient les stats de fin de partie
+//  (champions, KDA, CS, gold, dégâts, vision, durée). Aucune donnée n'est
+//  envoyée : tout est lu dans le navigateur. Les timelines (gold @15, etc.)
+//  ne sont PAS dans le fichier → on expose le gold de FIN de partie.
+// ════════════════════════════════════════════════════════════
+
+// --- Parseur : ArrayBuffer -> { durationSec, patch, players:[...] } ---
+function parseRofl(buf){
+  const bytes = new Uint8Array(buf);
+  // Décodage tolérant : la zone JSON est de l'UTF-8 valide, le reste (binaire)
+  // devient des caractères de remplacement sans gêner l'extraction.
+  const text = new TextDecoder('utf-8', {fatal:false}).decode(bytes);
+  // 1) on localise l'objet de métadonnées via la clé "gameLength"
+  let kw = text.indexOf('"gameLength"');
+  if(kw < 0) kw = text.indexOf('"statsJson"');
+  if(kw < 0) throw new Error('métadonnées introuvables');
+  const open = text.lastIndexOf('{', kw);
+  if(open < 0) throw new Error('métadonnées illisibles');
+  const metaStr = extractBalanced(text, open);
+  if(!metaStr) throw new Error('métadonnées incomplètes');
+  const meta = JSON.parse(metaStr);
+  const rawStats = typeof meta.statsJson === 'string' ? JSON.parse(meta.statsJson) : meta.statsJson;
+  if(!Array.isArray(rawStats) || !rawStats.length) throw new Error('aucune stat joueur');
+  const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+  const players = rawStats.map(p => ({
+    name: (p.RIOT_ID_GAME_NAME || p.NAME || '').trim(),
+    tag: (p.RIOT_ID_TAG_LINE || '').trim(),
+    champ: p.SKIN || '—',
+    team: String(p.TEAM) === '200' ? 'red' : 'blue',
+    win: /^win$/i.test(p.WIN || ''),
+    k: num(p.CHAMPIONS_KILLED), d: num(p.NUM_DEATHS), a: num(p.ASSISTS),
+    cs: num(p.MINIONS_KILLED) + num(p.NEUTRAL_MINIONS_KILLED),
+    gold: num(p.GOLD_EARNED),
+    dmg: num(p.TOTAL_DAMAGE_DEALT_TO_CHAMPIONS),
+    vision: num(p.VISION_SCORE),
+  }));
+  return { durationSec: Math.round(num(meta.gameLength)/1000), patch: meta.gameVersion || '', players };
+}
+// Extrait l'objet JSON { ... } à partir de l'accolade ouvrante, en respectant
+// les chaînes (les accolades de statsJson sont dans une chaîne échappée).
+function extractBalanced(str, start){
+  let depth=0, inStr=false, esc=false;
+  for(let i=start;i<str.length;i++){
+    const c=str[i];
+    if(inStr){ if(esc) esc=false; else if(c==='\\') esc=true; else if(c==='"') inStr=false; }
+    else { if(c==='"') inStr=true; else if(c==='{') depth++; else if(c==='}'){ if(--depth===0) return str.slice(start,i+1); } }
+  }
+  return null;
+}
+
+// --- Détection du camp de PlaZma via les comptes op.gg (doc dashboard) ---
+let _handles = null;   // Set de pseudos normalisés
+async function loadHandles(){
+  if(_handles) return _handles;
+  _handles = new Set();
+  try{
+    const d = await db.collection(PZ.COLLECTION).doc('dashboard').get();
+    const roster = (d.exists && d.data().roster) || [];
+    roster.forEach(r => { if(r && r.opgg){
+      const h = String(r.opgg).toLowerCase().replace(/\s/g,'');
+      _handles.add(h);                       // "pseudo-tag"
+      _handles.add(h.split('-')[0]);         // "pseudo"
+    }});
+  }catch(e){ /* pas grave : on demandera le camp manuellement */ }
+  // Filet de sécurité : les noms du roster central.
+  ROSTER.forEach(p => { if(p.name) _handles.add(p.name.toLowerCase().replace(/\s/g,'')); });
+  return _handles;
+}
+function detectSide(parsed, handles){
+  const norm = pl => (pl.name+'-'+pl.tag).toLowerCase().replace(/\s/g,'');
+  let blue=0, red=0;
+  parsed.players.forEach(pl => {
+    const hit = handles.has(norm(pl)) || handles.has((pl.name||'').toLowerCase().replace(/\s/g,''));
+    if(hit){ if(pl.team==='blue') blue++; else red++; }
+  });
+  if(blue>red && blue>=2) return 'blue';
+  if(red>blue && red>=2) return 'red';
+  return null;
+}
+
+// --- Dérivés d'une game (côté PlaZma) ---
+function sideTeam(st, side){ return st.players.filter(p=>p.team===side); }
+function teamAgg(arr){
+  const sum=(f)=>arr.reduce((m,p)=>m+(p[f]||0),0);
+  return { k:sum('k'), d:sum('d'), a:sum('a'), cs:sum('cs'), gold:sum('gold'), dmg:sum('dmg'), vision:sum('vision') };
+}
+function gameDerived(st){
+  const us=teamAgg(sideTeam(st, st.side)), them=teamAgg(sideTeam(st, st.side==='blue'?'red':'blue'));
+  const min=(st.durationSec||0)/60;
+  return { us, them, goldDiff:us.gold-them.gold, csmin: min? us.cs/min : 0, min };
+}
+
+// --- Flux d'import : fichier -> aperçu -> remplissage ---
+let _pending = null;   // { parsed, side, targetGk }
+function fmtDur(sec){ if(!sec) return '—'; const m=Math.floor(sec/60), s=sec%60; return m+':'+String(s).padStart(2,'0'); }
+function fmtK(n){ return n>=1000 ? (n/1000).toFixed(1).replace('.0','')+'k' : String(Math.round(n)); }
+
+async function handleRoflFile(file, preferGk){
+  if(!file) return;
+  if(!/\.rofl$/i.test(file.name)){ PZ.toast && PZ.toast('Ce n\'est pas un fichier .rofl.'); return; }
+  let parsed;
+  try{ parsed = parseRofl(await file.arrayBuffer()); }
+  catch(e){ console.error('rofl', e); PZ.toast && PZ.toast('Lecture du .rofl impossible (format non reconnu).'); return; }
+  if(parsed.players.length < 2){ PZ.toast && PZ.toast('Stats introuvables dans ce .rofl.'); return; }
+  const handles = await loadHandles();
+  const side = detectSide(parsed, handles) || 'blue';
+  // game cible : celle demandée, sinon le prochain emplacement sans stats
+  let target = preferGk;
+  if(!target){ for(let g=1;g<=5;g++){ if(!gstats['g'+g]){ target='g'+g; break; } } target = target||'g1'; }
+  _pending = { parsed, side, detected: detectSide(parsed, handles), fileName:file.name };
+  openRoflModal(target);
+}
+function openRoflModal(targetGk){
+  const sel=document.getElementById('roflGame');
+  sel.innerHTML=[1,2,3,4,5].map(g=>`<option value="g${g}"${('g'+g)===targetGk?' selected':''}>Game ${g}${gstats['g'+g]?' (déjà remplie)':''}</option>`).join('');
+  roflPick(_pending.side);
+  document.getElementById('roflSideHint').textContent = _pending.detected ? 'détecté automatiquement' : 'non détecté — choisis le camp';
+  document.getElementById('roflSub').textContent = `${_pending.fileName} · durée ${fmtDur(_pending.parsed.durationSec)}${_pending.parsed.patch?' · patch '+_pending.parsed.patch:''}`;
+  renderRoflPreview();
+  document.getElementById('roflOv').classList.add('open');
+}
+function roflPick(side){
+  _pending.side=side;
+  document.querySelectorAll('#roflSide button').forEach(b=>b.classList.toggle('on', b.dataset.side===side));
+  renderRoflPreview();
+}
+function renderRoflPreview(){
+  const st={...(_pending.parsed), side:_pending.side};
+  const arr=sideTeam(st, _pending.side);
+  const win = arr.length && arr[0].win;
+  const d=gameDerived(st);
+  document.getElementById('roflPreview').innerHTML =
+    `<div class="gstats-head"><span class="pill">${win?'Victoire':'Défaite'}</span>`+
+    `<span>Gold : <b class="${d.goldDiff>=0?'gold-pos':'gold-neg'}">${d.goldDiff>=0?'+':''}${fmtK(d.goldDiff)}</b></span>`+
+    `<span>KDA équipe ${d.us.k}/${d.us.d}/${d.us.a}</span></div>`+
+    statTable(arr);
+  document.getElementById('roflConfirm').textContent = gstats[document.getElementById('roflGame').value] ? 'Remplacer la game' : 'Remplir la game';
+}
+function roflApply(){
+  const gk=document.getElementById('roflGame').value;
+  const st={...(_pending.parsed), side:_pending.side, win:(sideTeam(_pending.parsed,_pending.side)[0]||{}).win||false, file:_pending.fileName, v:1};
+  gstats[gk]=st;
+  // Résultat V/D déduit du camp
+  set(gk+'_result', st.win?'V':'D');
+  const selEl=document.getElementById(gk+'_result'); if(selEl) styleResult(selEl);
+  roflClose(); renderStats(gk); renderAggregate();
+  recomputeScore();
+  queueSave();
+  PZ.toast && PZ.toast('Stats importées dans la '+gk.toUpperCase().replace('G','Game '));
+}
+function roflClose(){ document.getElementById('roflOv').classList.remove('open'); _pending=null; }
+
+// Score du match recalculé depuis les games qui ont des stats (V/D).
+function recomputeScore(){
+  let w=0,l=0,any=false;
+  for(let g=1;g<=5;g++){ const st=gstats['g'+g]; if(st){ any=true; if(st.win) w++; else l++; } }
+  if(any){ set('s_plazma', String(w)); set('s_adv', String(l)); }
+}
+
+// --- Rendu ---
+function statTable(arr){
+  let h='<table class="stat-tbl"><thead><tr><th>Champion</th><th>Joueur</th><th class="mono">KDA</th><th class="mono">CS</th><th class="mono">Gold</th><th class="mono">Dmg</th><th class="mono">Vision</th></tr></thead><tbody>';
+  arr.forEach(p=>{ h+=`<tr><td class="stat-champ">${esc(p.champ)}</td><td>${esc(p.name||'—')}</td>`+
+    `<td class="mono">${p.k}/${p.d}/${p.a}</td><td class="mono">${p.cs}</td><td class="mono">${fmtK(p.gold)}</td><td class="mono">${fmtK(p.dmg)}</td><td class="mono">${p.vision}</td></tr>`; });
+  return h+'</tbody></table>';
+}
+function renderStats(gk){
+  const host=document.getElementById('gstats_'+gk); if(!host) return;
+  const st=gstats[gk];
+  if(!st){ host.innerHTML=''; return; }
+  const arr=sideTeam(st, st.side); const d=gameDerived(st);
+  host.innerHTML=`<div class="gstats">
+    <div class="gstats-head">
+      <span class="pill">${st.win?'Victoire':'Défaite'}</span>
+      <span>Durée ${fmtDur(st.durationSec)}</span>
+      <span>Gold <b class="${d.goldDiff>=0?'gold-pos':'gold-neg'}">${d.goldDiff>=0?'+':''}${fmtK(d.goldDiff)}</b></span>
+      <span>CS/min ${d.csmin.toFixed(1)}</span>
+      <button class="rm" data-noexport onclick="removeStats('${gk}')">Retirer</button>
+    </div>
+    ${statTable(arr)}
+  </div>`;
+}
+function removeStats(gk){ gstats[gk]=null; renderStats(gk); renderAggregate(); queueSave(); }
+function renderAllStats(){ for(let g=1;g<=5;g++) renderStats('g'+g); renderAggregate(); }
+
+function renderAggregate(){
+  const host=document.getElementById('roflAgg'); if(!host) return;
+  const games=[]; for(let g=1;g<=5;g++){ if(gstats['g'+g]) games.push(gstats['g'+g]); }
+  if(!games.length){ host.innerHTML=''; return; }
+  let w=0, dur=0, gold=0, k=0,dd=0,a=0, csmin=0, dmg=0, vis=0;
+  games.forEach(st=>{ const der=gameDerived(st); if(st.win) w++;
+    dur+=st.durationSec||0; gold+=der.goldDiff; k+=der.us.k; dd+=der.us.d; a+=der.us.a; csmin+=der.csmin; dmg+=der.us.dmg; vis+=der.us.vision; });
+  const n=games.length, avg=x=>x/n;
+  const kda=((k+a)/Math.max(1,dd)).toFixed(2);
+  const gd=avg(gold);
+  const tile=(v,l)=>`<div class="agg-tile"><div class="agg-val">${v}</div><div class="agg-lab">${l}</div></div>`;
+  host.innerHTML=`<div class="rofl-agg">
+    <h3>Moyennes sur ${n} game${n>1?'s':''} importée${n>1?'s':''}</h3>
+    <div class="sub">Calculé depuis les .rofl de ce CR — stats de fin de partie, côté PlaZma.</div>
+    <div class="agg-grid">
+      ${tile(w+'/'+n, 'Victoires')}
+      ${tile('<span class="'+(gd>=0?'gold-pos':'gold-neg')+'">'+(gd>=0?'+':'')+fmtK(gd)+'</span>', 'Diff. gold (fin) moy.')}
+      ${tile(kda, 'KDA équipe moy.')}
+      ${tile(avg(csmin).toFixed(1), 'CS/min moy.')}
+      ${tile(fmtDur(Math.round(avg(dur))), 'Durée moy.')}
+      ${tile(fmtK(avg(dmg)), 'Dégâts équipe moy.')}
+      ${tile(Math.round(avg(vis)), 'Vision équipe moy.')}
+      ${tile((k/n).toFixed(1)+' / '+(dd/n).toFixed(1)+' / '+(a/n).toFixed(1), 'K / D / A équipe moy.')}
+    </div>
+  </div>`;
+}
+
+// --- Branchement des entrées fichier + dropzone ---
+function wireRofl(){
+  const any=document.getElementById('roflAny');
+  if(any) any.addEventListener('change', e=>{ handleRoflFile(e.target.files[0]); e.target.value=''; });
+  for(let g=1;g<=5;g++){ const inp=document.getElementById('rofl_g'+g);
+    if(inp) inp.addEventListener('change', e=>{ handleRoflFile(e.target.files[0], 'g'+g); e.target.value=''; }); }
+  const dz=document.getElementById('roflDrop');
+  if(dz){
+    ['dragover','dragenter'].forEach(ev=>dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.add('over'); }));
+    ['dragleave','dragend'].forEach(ev=>dz.addEventListener(ev, e=>{ if(!dz.contains(e.relatedTarget)) dz.classList.remove('over'); }));
+    dz.addEventListener('drop', e=>{ e.preventDefault(); dz.classList.remove('over'); const f=e.dataTransfer.files[0]; if(f) handleRoflFile(f); });
+  }
+  document.getElementById('roflOv').addEventListener('click', e=>{ if(e.target.id==='roflOv') roflClose(); });
+}
+
 buildGames(); buildPlayers();
+wireRofl();
 (async()=>{
   if(!db){ PZ.status('error','Firebase indisponible'); PZ.loadingDone(); blankForm(); return; }
   // Lien profond depuis le calendrier : #<docId> ouvre ce CR précis.
