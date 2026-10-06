@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.5.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.6.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -64,7 +64,8 @@
   .rofl-drop .ri-txt b{color:var(--dim);font-weight:600}
   .grofl{display:flex;align-items:center;gap:8px;margin-left:auto}
   .grofl .mini{font-size:11px;color:var(--muted)}
-  .gstats{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+  .gstats{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);overflow-x:auto}
+  .gstats .stat-tbl{min-width:560px}
   .gstats-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;font-size:12px;color:var(--muted)}
   .gstats-head .pill{font-weight:600;color:var(--dim);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:2px 9px}
   .gstats-head .rm{margin-left:auto;background:none;border:1px solid var(--border);border-radius:7px;color:var(--muted);cursor:pointer;font-size:11px;padding:3px 8px}
@@ -78,14 +79,13 @@
   .stat-champ{font-weight:600}
   .gold-pos{color:var(--ok)} .gold-neg{color:var(--err)}
 
-  .rofl-agg{background:var(--surface);border:1px solid var(--border-2);border-radius:var(--r-lg);padding:16px 18px;margin-bottom:14px}
-  .rofl-agg h3{font-family:var(--font-display);font-size:14px;font-weight:600;margin-bottom:4px}
-  .rofl-agg .sub{font-size:12px;color:var(--muted);margin-bottom:14px}
-  .agg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
-  .agg-tile{background:var(--surface-2);border-radius:var(--r);padding:11px 13px}
-  .agg-val{font-family:var(--font-mono);font-size:1.35rem;font-weight:500;line-height:1.05}
-  .agg-val .kda3{font-size:1.05rem;white-space:nowrap}
-  .agg-lab{font-size:11px;color:var(--muted);margin-top:5px}
+  .rofl-agg{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:13px 16px;margin-bottom:14px}
+  .agg-head{font-size:13px;font-weight:600;margin-bottom:10px}
+  .agg-head .agg-meta{font-weight:400;color:var(--muted);font-size:11.5px}
+  .agg-line{display:flex;flex-wrap:wrap;gap:8px}
+  .agg-chip{display:inline-flex;align-items:baseline;gap:6px;background:var(--surface-2);border-radius:999px;padding:5px 12px;font-size:12px;color:var(--muted)}
+  .agg-chip b{font-family:var(--font-mono);font-size:13.5px;font-weight:600;color:var(--text)}
+  .agg-chip .al{font-size:11px}
 
   /* Modal d'aperçu .rofl */
   .rofl-ov{position:fixed;inset:0;background:rgba(6,10,14,.6);backdrop-filter:blur(2px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
@@ -160,6 +160,15 @@
   .drawer-empty{text-align:center;color:var(--muted);font-size:13px;padding:40px 20px}
 
   @media(max-width:760px){.meta{grid-template-columns:1fr}.ana-grid{grid-template-columns:1fr}.players{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:620px){
+    .body{padding:16px}
+    .score{gap:16px;padding:16px}
+    .err-row,.err-row.note-err{display:flex;flex-wrap:wrap;gap:6px}
+    .err-row>select,.err-row>input{flex:1 1 42%;min-width:0}
+    .err-row input[id^=errd],.err-row input[id^=strd]{flex:1 1 100%}
+    .err-del,.err-flag{flex:0 0 34px}
+    .players{grid-template-columns:1fr}
+  }
 </style>
 </head>
 <body>
@@ -269,7 +278,7 @@
   <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
 </div>
 
-<script src="assets/plazma.js?v=3.5.0" data-section="scrim"></script>
+<script src="assets/plazma.js?v=3.6.0" data-section="scrim"></script>
 <script>
 'use strict';
 PZ.mountNav('scrim', '#nav');
@@ -910,19 +919,18 @@ function renderAggregate(){
   const n=games.length, avg=x=>x/n;
   const kda=((k+a)/Math.max(1,dd)).toFixed(2);
   const gd=avg(gold);
-  const tile=(v,l)=>`<div class="agg-tile"><div class="agg-val">${v}</div><div class="agg-lab">${l}</div></div>`;
+  const one = n===1;
+  const chip=(l,v,cls)=>`<span class="agg-chip"><span class="al">${l}</span><b class="${cls||''}">${v}</b></span>`;
   host.innerHTML=`<div class="rofl-agg">
-    <h3>Moyennes sur ${n} game${n>1?'s':''} importée${n>1?'s':''}</h3>
-    <div class="sub">Calculé depuis les .rofl de ce CR — stats de fin de partie, côté PlaZma.</div>
-    <div class="agg-grid">
-      ${tile(w+'/'+n, 'Victoires')}
-      ${tile('<span class="'+(gd>=0?'gold-pos':'gold-neg')+'">'+(gd>=0?'+':'')+fmtK(gd)+'</span>', 'Diff. gold (fin) moy.')}
-      ${tile(kda, 'KDA équipe moy.')}
-      ${tile(avg(csmin).toFixed(1), 'CS/min équipe moy.')}
-      ${tile(fmtDur(Math.round(avg(dur))), 'Durée moy.')}
-      ${tile(fmtK(avg(dmg)), 'Dégâts équipe moy.')}
-      ${tile(Math.round(avg(vis)), 'Vision équipe moy.')}
-      ${tile('<span class="kda3">'+(k/n).toFixed(1)+' / '+(dd/n).toFixed(1)+' / '+(a/n).toFixed(1)+'</span>', 'K / D / A équipe moy.')}
+    <div class="agg-head">${one?'Synthèse de la game':'Synthèse · '+n+' games'} <span class="agg-meta">côté PlaZma${one?' — fin de partie':' · moyennes de fin de partie'}</span></div>
+    <div class="agg-line">
+      ${chip('WR', w+'/'+n, w*2>=n?'gold-pos':'gold-neg')}
+      ${chip('Gold', (gd>=0?'+':'')+fmtK(gd), gd>=0?'gold-pos':'gold-neg')}
+      ${chip('KDA', kda)}
+      ${chip('CS/min', avg(csmin).toFixed(1))}
+      ${chip('Durée', fmtDur(Math.round(avg(dur))))}
+      ${chip('Dégâts', fmtK(avg(dmg)))}
+      ${chip('Vision', Math.round(avg(vis)))}
     </div>
   </div>`;
 }

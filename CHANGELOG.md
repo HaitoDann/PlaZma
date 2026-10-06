@@ -17,6 +17,15 @@ bas de la fenêtre **Paramètres**.
 
 ## 3.x — Interface pro
 
+### 3.6.0 — Rappels Discord, synthèse .rofl, interface & mobile
+- **Rappels Discord** (Planning, bouton « Rappel ») : « Dispos à remplir » (liste
+  les joueurs qui n'ont pas renseigné leurs dispos de la semaine) et « Prochaine
+  session » (jour, heure, type) — un clic, publié sur Discord.
+- CR de scrim : les moyennes .rofl deviennent une **synthèse compacte** (une ligne
+  de puces : WR, gold, KDA, CS/min, durée, dégâts, vision) au lieu du gros bloc.
+- **Vue mobile soignée** : barre de navigation défilante, tableaux de stats
+  scrollables, notes et cartes joueurs réagencées, pas de débordement horizontal.
+
 ### 3.5.0 — Analyse .rofl : par joueur, champions, lane
 - CR de scrim : colonne **±Gold** par joueur dans le tableau de chaque game
   (différentiel de gold sur la lane, quand la position est dans le .rofl).
