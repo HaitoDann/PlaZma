@@ -700,6 +700,16 @@ async function openFromSlot(q){
 //  ne sont PAS dans le fichier → on expose le gold de FIN de partie.
 // ════════════════════════════════════════════════════════════
 
+// Normalise la position/lane renvoyée par le .rofl (quand présente).
+function normPos(v){
+  v=String(v||'').toUpperCase();
+  if(v==='TOP') return 'top';
+  if(v==='JUNGLE') return 'jungle';
+  if(v==='MIDDLE'||v==='MID') return 'mid';
+  if(v==='BOTTOM'||v==='BOT'||v==='ADC'||v==='DUO_CARRY') return 'adc';
+  if(v==='UTILITY'||v==='SUPPORT'||v==='DUO_SUPPORT') return 'support';
+  return '';
+}
 // --- Parseur : ArrayBuffer -> { durationSec, patch, players:[...] } ---
 function parseRofl(buf){
   const bytes = new Uint8Array(buf);
@@ -722,6 +732,7 @@ function parseRofl(buf){
     name: (p.RIOT_ID_GAME_NAME || p.NAME || '').trim(),
     tag: (p.RIOT_ID_TAG_LINE || '').trim(),
     champ: p.SKIN || '—',
+    pos: normPos(p.TEAM_POSITION || p.INDIVIDUAL_POSITION || p.POSITION || p.LANE || ''),
     team: String(p.TEAM) === '200' ? 'red' : 'blue',
     win: /^win$/i.test(p.WIN || ''),
     k: num(p.CHAMPIONS_KILLED), d: num(p.NUM_DEATHS), a: num(p.ASSISTS),
@@ -829,7 +840,7 @@ function renderRoflPreview(){
     `<div class="gstats-head"><span class="pill">${win?'Victoire':'Défaite'}</span>`+
     `<span>Gold : <b class="${d.goldDiff>=0?'gold-pos':'gold-neg'}">${d.goldDiff>=0?'+':''}${fmtK(d.goldDiff)}</b></span>`+
     `<span>KDA équipe ${d.us.k}/${d.us.d}/${d.us.a}</span></div>`+
-    statTable(arr);
+    statTable(st);
   document.getElementById('roflConfirm').textContent = gstats[document.getElementById('roflGame').value] ? 'Remplacer la game' : 'Remplir la game';
 }
 function roflApply(){
@@ -854,17 +865,27 @@ function recomputeScore(){
 }
 
 // --- Rendu ---
-function statTable(arr){
-  let h='<table class="stat-tbl"><thead><tr><th>Champion</th><th>Joueur</th><th class="mono">KDA</th><th class="mono">CS</th><th class="mono">Gold</th><th class="mono">Dmg</th><th class="mono">Vision</th></tr></thead><tbody>';
-  arr.forEach(p=>{ h+=`<tr><td class="stat-champ">${esc(p.champ)}</td><td>${esc(p.name||'—')}</td>`+
-    `<td class="mono">${p.k}/${p.d}/${p.a}</td><td class="mono">${p.cs}</td><td class="mono">${fmtK(p.gold)}</td><td class="mono">${fmtK(p.dmg)}</td><td class="mono">${p.vision}</td></tr>`; });
+function statTable(st){
+  const us=sideTeam(st, st.side), them=sideTeam(st, st.side==='blue'?'red':'blue');
+  const byPos={}; them.forEach(e=>{ if(e.pos && !byPos[e.pos]) byPos[e.pos]=e; });
+  const hasLane = us.some(p=>p.pos && byPos[p.pos]);
+  let h='<table class="stat-tbl"><thead><tr><th>Champion</th><th>Joueur</th><th class="mono">KDA</th><th class="mono">CS</th><th class="mono">Gold</th>'+
+    (hasLane?'<th class="mono">±Gold</th>':'')+'<th class="mono">Dmg</th><th class="mono">Vision</th></tr></thead><tbody>';
+  us.forEach(p=>{
+    let lane='';
+    if(hasLane){ const e=p.pos&&byPos[p.pos]; const diff=e?p.gold-e.gold:null;
+      lane=`<td class="mono ${diff==null?'':diff>=0?'gold-pos':'gold-neg'}">${diff==null?'—':(diff>=0?'+':'')+fmtK(diff)}</td>`; }
+    h+=`<tr><td class="stat-champ">${esc(p.champ)}</td><td>${esc(p.name||'—')}</td>`+
+    `<td class="mono">${p.k}/${p.d}/${p.a}</td><td class="mono">${p.cs}</td><td class="mono">${fmtK(p.gold)}</td>`+
+    lane+`<td class="mono">${fmtK(p.dmg)}</td><td class="mono">${p.vision}</td></tr>`;
+  });
   return h+'</tbody></table>';
 }
 function renderStats(gk){
   const host=document.getElementById('gstats_'+gk); if(!host) return;
   const st=gstats[gk];
   if(!st){ host.innerHTML=''; return; }
-  const arr=sideTeam(st, st.side); const d=gameDerived(st);
+  const d=gameDerived(st);
   host.innerHTML=`<div class="gstats">
     <div class="gstats-head">
       <span class="pill">${st.win?'Victoire':'Défaite'}</span>
@@ -873,7 +894,7 @@ function renderStats(gk){
       <span>CS/min ${d.csmin.toFixed(1)}</span>
       <button class="rm" data-noexport onclick="removeStats('${gk}')">Retirer</button>
     </div>
-    ${statTable(arr)}
+    ${statTable(st)}
   </div>`;
 }
 function removeStats(gk){ gstats[gk]=null; renderStats(gk); renderAggregate(); queueSave(); }
