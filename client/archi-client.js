@@ -22,6 +22,7 @@ const { parseRofl } = require('./rofl');
 const { pushStats } = require('./push');
 const { startServer } = require('./ui');
 const tray = require('./tray');
+const { buildWiki } = require('./gamedata');
 const { exec, execFile } = require('child_process');
 const APP_NAME = 'ARCHI Link';
 
@@ -274,16 +275,23 @@ async function dumpGameData(lock) {
   catch (e) { log('⚠ données de jeu indisponibles :', e.message, '— réessai au prochain cycle.'); return; }
   writeJson(path.join(dir, 'champion-summary.json'), summary);
   const ids = (summary || []).map(c => c.id).filter(id => id && id > 0);
-  // Échantillons variés (par id numérique) pour voir toutes les formes de sorts.
-  const samples = [266, 99, 222, 412, 64].filter(id => ids.includes(id));
-  for (const id of samples) {
-    try { const c = await lcuGet(lock, '/lol-game-data/assets/v1/champions/' + id + '.json');
-      writeJson(path.join(dir, 'champion-' + id + '.json'), c); }
-    catch (e) { log('⚠ champion', id, ':', e.message); }
+  // Détail de chaque champion (un à un pour ménager le client, ~170 requêtes locales).
+  const detailsById = {};
+  let ok = 0, patch = '';
+  for (const id of ids) {
+    try {
+      const c = await lcuGet(lock, '/lol-game-data/assets/v1/champions/' + id + '.json');
+      detailsById[id] = c; ok++;
+    } catch (e) { /* un champion manquant n'empêche pas le reste */ }
   }
-  _gameDataDone = true;
-  log('📘 données de jeu extraites (' + ids.length + ' champions) → archi-data/gamedata/ · échantillons :', samples.join(', '));
-  log('   Envoie-moi champion-summary.json + un champion-<id>.json pour que je bâtisse le wiki.');
+  // Fichier consolidé compact prêt pour le wiki d'ARCHI.
+  try {
+    const wiki = buildWiki(summary, detailsById, patch);
+    writeJson(path.join(dir, 'champions-wiki.json'), wiki);
+    _gameDataDone = true;
+    log('📘 wiki généré : ' + wiki.count + ' champions (' + ok + ' détaillés) → archi-data/gamedata/champions-wiki.json');
+    log('   Copie ce fichier dans assets/ du dépôt ARCHI (assets/champions-wiki.json) pour alimenter la page Wiki.');
+  } catch (e) { log('⚠ consolidation wiki impossible :', e.message); }
 }
 
 async function maybePush(rank, recent) {
