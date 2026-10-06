@@ -55,7 +55,7 @@
   // ---- Version de l'application (SemVer) ----
   // MAJEUR.MINEUR.CORRECTIF — MINEUR à chaque lot de fonctionnalités,
   // CORRECTIF pour les corrections. Affichée discrètement dans Paramètres.
-  const VERSION = '3.8.0';
+  const VERSION = '3.9.0';
 
   // ---- Niveau de performance : adapte la densité des effets ----
   // Full sur machine puissante (rendu identique), réduit sur mobile/appareil
@@ -339,6 +339,11 @@
     id: e.id, roleKey: 'extra', role: (e.role && e.role.trim()) || 'Joueur', color: 'var(--muted)',
     name: (e.name && e.name.trim()) || 'Joueur', emoji: (e.emoji && e.emoji.trim()) || '🎮', extra: true
   }));
+  // Icônes de rôles et d'elo (fichiers dans assets/). '' si pas d'icône dispo.
+  const ROLE_ICONS = { top:'assets/Top_icon.webp', jungle:'assets/Jungle_icon.webp', mid:'assets/Middle_icon.webp', adc:'assets/Bottom_icon.webp', support:'assets/Support_icon.png' };
+  const roleIconUrl = rk => ROLE_ICONS[rk] || '';
+  const TIER_ICONS = { PLATINUM:'assets/icone_platine.png', DIAMOND:'assets/icone_diamant.png' };
+  const tierIconUrl = t => TIER_ICONS[String(t||'').toUpperCase()] || '';
   const getSubs = () => SUB_SLOTS.map(slot => Object.assign(resolveSlot(slot), { sub: true }));
   /** Effectif complet : 5 postes + coach + remplaçants + joueurs additionnels. */
   const getPlayers = () => getRoster().concat([getCoach()]).concat(getSubs()).concat(getExtras());
@@ -1201,6 +1206,7 @@
     USER_DOMAIN, discord, stats,
     // Roster central
     getRoster, getCoach, getSubs, getExtras, getPlayers, player, onRoster, setPlayer, addPlayer, removePlayer, saveRoster,
+    roleIconUrl, tierIconUrl,
     ROSTER_SLOTS, COACH_SLOT, SUB_SLOTS,
     // Authentification & accès
     auth: {

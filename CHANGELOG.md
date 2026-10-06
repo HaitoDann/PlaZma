@@ -17,6 +17,18 @@ bas de la fenêtre **Paramètres**.
 
 ## 3.x — Interface pro
 
+### 3.9.0 — Visuels (rôles, elo, champions) + client en .exe
+- **Icônes de rôles** (Top/Jungle/Mid/ADC/Support) sur les cartes du roster
+  (accueil) et les lignes du Dashboard.
+- **Icône d'elo** devant le rang SoloQ dans le Dashboard (Platine, Diamant ;
+  d'autres paliers s'ajoutent en déposant `assets/icone_<palier>.png`).
+- **CR de match** : le nom du champion est remplacé par son **icône** dans le
+  tableau de stats de chaque game (repli sur le texte si l'image manque). Icônes
+  aussi dans « Champions les plus joués » du Dashboard.
+- **Client local** : build **`.exe`** (sans installer Node) via GitHub Actions
+  (`Build client Windows`), chemins compatibles exe (config.json et archi-data à
+  côté de l'exécutable).
+
 ### 3.8.0 — Rang SoloQ dans ARCHI (client local branché)
 - Le **Dashboard** lit la collection `plazma-stats` (un doc par joueur) et affiche
   le **rang SoloQ** (tier, division, LP, winrate) + une **mini-courbe de LP** dans

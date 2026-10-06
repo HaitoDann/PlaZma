@@ -1,0 +1,28 @@
+name: Build client Windows (.exe)
+
+# Construit automatiquement client/dist/archi-client.exe à chaque modif du client,
+# et sur demande manuelle. L'exe est téléchargeable dans l'onglet Actions du dépôt
+# (run → section « Artifacts »).
+on:
+  push:
+    paths: ['client/**']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: archi-client-windows
+          path: client/dist/archi-client.exe
+          if-no-files-found: error

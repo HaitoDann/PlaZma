@@ -74,6 +74,21 @@ Le client se connecte alors à ARCHI comme le site (HTTPS) et écrit **ton** doc
 `plazma-stats/<playerId>`. Les règles Firestore n'autorisent que ton propre joueur
 (ou un admin). Rien d'autre n'est touché.
 
+## Version `.exe` (sans installer Node)
+Pour les joueurs qui ne veulent pas installer Node, une version `.exe` est générée
+automatiquement :
+1. Sur GitHub, onglet **Actions** → dernier run **« Build client Windows (.exe) »**
+   → section **Artifacts** → télécharge **archi-client-windows** (contient
+   `archi-client.exe`).
+2. Mets `archi-client.exe` dans un dossier, place le **`config.json`** (voir plus
+   haut) **à côté de l'exe**, puis double-clique sur l'exe.
+   - Le dossier `archi-data/` et le `config.json` sont lus/écrits **à côté de l'exe**.
+   - Windows SmartScreen peut afficher un avertissement (exe non signé) :
+     « Informations complémentaires » → « Exécuter quand même ».
+
+Construire l'exe soi-même (optionnel) : `npm install` puis `npm run build`
+(génère `dist/archi-client.exe`).
+
 ## Reste à faire ensuite
 - Historique SoloQ enrichi (courbe de LP sur la durée) et import auto des `.rofl` vers les CR.
-- **Packaging en `.exe`** (double-clic, sans installer Node) + lancement au démarrage de Windows.
+- Lancement automatique au démarrage de Windows.
