@@ -4,15 +4,18 @@
 'use strict';
 const http = require('http');
 const fs = require('fs');
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
 const push = require('./push');
 const PAGE = require('./ui-page');
 
 function openBrowser(url) {
-  const cmd = process.platform === 'win32' ? `start "" "${url}"`
-            : process.platform === 'darwin' ? `open "${url}"`
-            : `xdg-open "${url}"`;
-  exec(cmd, () => {});
+  try {
+    const child = process.platform === 'win32'
+      ? spawn('cmd', ['/c', 'start', '', url], { windowsHide: true, detached: true, stdio: 'ignore' })
+      : spawn(process.platform === 'darwin' ? 'open' : 'xdg-open', [url], { detached: true, stdio: 'ignore' });
+    child.on('error', () => {});   // navigateur absent : on ignore
+    child.unref();
+  } catch (e) {}
 }
 function readBody(req) {
   return new Promise(resolve => {
@@ -42,8 +45,7 @@ function startServer(opts) {
         });
       }
       if (req.method === 'GET' && url === '/api/status') {
-        let auto = null; try { auto = opts.isAutostart ? await opts.isAutostart() : null; } catch (e) {}
-        return json(res, 200, Object.assign({ autostart: auto }, opts.getStatus ? opts.getStatus() : {}));
+        return json(res, 200, opts.getStatus ? opts.getStatus() : {});
       }
       if (req.method === 'POST' && url === '/api/test') {
         const b = await readBody(req);
