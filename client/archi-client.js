@@ -40,13 +40,18 @@ function loadConfig() {
   const expand = s => typeof s === 'string'
     ? s.replace(/%([^%]+)%/g, (_, v) => process.env[v] || _)
     : s;
-  try {
-    const c = JSON.parse(fs.readFileSync(path.join(HERE, 'config.json'), 'utf8'));
-    const merged = Object.assign(defaults, c);
-    merged.lockfile = expand(merged.lockfile);
-    merged.replaysDir = expand(merged.replaysDir);
-    return merged;
-  } catch (e) { return defaults; }
+  const cfgPath = path.join(HERE, 'config.json');
+  let raw;
+  try { raw = fs.readFileSync(cfgPath, 'utf8'); }
+  catch (e) { defaults._configFound = false; return defaults; }
+  let c;
+  try { c = JSON.parse(raw); }
+  catch (e) { defaults._configFound = true; defaults._configError = e.message; return defaults; }
+  const merged = Object.assign(defaults, c);
+  merged._configFound = true;
+  merged.lockfile = expand(merged.lockfile);
+  merged.replaysDir = expand(merged.replaysDir);
+  return merged;
 }
 const CFG = loadConfig();
 
@@ -215,12 +220,16 @@ async function maybePush(rank, recent) {
 function main() {
   ensureDirs();
   console.log('========================================================');
-  console.log(' ARCHI — client local (premier jet, validation)');
-  console.log(' Sorties écrites dans :', OUT);
-  console.log(' Rien n\'est envoyé à ARCHI pour l\'instant.');
+  console.log(' ARCHI — client local');
+  console.log(' Sorties locales :', OUT);
   console.log('========================================================');
   log('Lockfile attendu :', CFG.lockfile);
   log('Dossier Replays  :', CFG.replaysDir);
+  if (CFG._configError) log('❌ config.json illisible (erreur JSON) :', CFG._configError, '— valeurs par défaut utilisées, PUSH DÉSACTIVÉ. Vérifie le fichier (virgule en trop ?).');
+  else if (!CFG._configFound) log('ℹ config.json absent — valeurs par défaut, push désactivé. Crée-le depuis config.example.json pour envoyer à ARCHI.');
+  const p = CFG.push || {};
+  if (p.enabled) log('☁ Push ARCHI : ACTIVÉ (joueur «', p.playerId || '?', '», compte «', p.username || '?', '»).');
+  else log('☁ Push ARCHI : désactivé (push.enabled = false dans config.json).');
   watchReplays();
   cycle();
   setInterval(cycle, Math.max(1, +CFG.pollMinutes || 5) * 60 * 1000);
