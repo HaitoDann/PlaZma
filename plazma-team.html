@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.10.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.11.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -60,6 +60,45 @@
   .tl-hint{font-size:12px;color:var(--muted);margin:8px 0 12px}
 
   @media(max-width:760px){.style-grid{grid-template-columns:1fr}.redit-row{grid-template-columns:52px 1fr}.redit-row .role-badge{display:none}.tl-label{width:92px}}
+
+  /* ── Suivi SoloQ (fusionné depuis l'ancienne page SoloQ) ── */
+  .sq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;margin-top:18px}
+  .sq-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+  .sq-head{display:flex;align-items:center;gap:11px}
+  .sq-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;
+    background:var(--surface-2);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--role,var(--accent)) 55%,transparent)}
+  .sq-id{flex:1;min-width:0}
+  .sq-name{font-weight:600;font-size:15px}
+  .sq-role{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}
+  .sq-role img{width:13px;height:13px;object-fit:contain}
+
+  .sq-rank{display:flex;align-items:center;gap:12px}
+  .sq-rank .tic{width:40px;height:40px;object-fit:contain;flex-shrink:0}
+  .sq-rank .noic{width:40px;height:40px;border-radius:8px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:10px;flex-shrink:0}
+  .sq-tier{font-size:1.15rem;font-weight:600;line-height:1.1}
+  .sq-sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .sq-sub .mono{font-family:var(--font-mono)}
+
+  .sq-curve{background:var(--surface-2);border-radius:var(--r);padding:10px 12px}
+  .sq-curve-top{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px}
+  .sq-curve svg{width:100%;height:52px;display:block;overflow:visible}
+  .sq-curve .ln{fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .sq-curve .ar{fill:var(--accent);opacity:.08}
+  .sq-curve .dot{fill:var(--accent)}
+  .sq-empty{font-size:12px;color:var(--muted);padding:6px 0}
+
+  .sq-recent{display:flex;flex-direction:column;gap:3px}
+  .sq-recent-h{font-size:11px;color:var(--muted);margin-bottom:3px}
+  .sq-games{display:flex;gap:5px;flex-wrap:wrap}
+  .sq-g{position:relative;width:34px;height:34px;border-radius:7px;overflow:hidden;border:2px solid var(--border)}
+  .sq-g.win{border-color:color-mix(in srgb,var(--ok) 70%,transparent)}
+  .sq-g.loss{border-color:color-mix(in srgb,var(--err) 70%,transparent)}
+  .sq-g img{width:100%;height:100%;object-fit:cover;display:block}
+  .sq-g .kda{position:absolute;left:0;right:0;bottom:0;font-size:8px;text-align:center;background:rgba(0,0,0,.6);color:#fff;font-family:var(--font-mono);line-height:1.3}
+
+  .sq-foot{font-size:11px;color:var(--muted)}
+  .sq-off{color:var(--muted);font-size:12.5px;padding:8px 0;line-height:1.5}
+  .legend{font-size:12px;color:var(--muted);margin-top:16px;line-height:1.6}
 </style>
 </head>
 <body>
@@ -82,6 +121,15 @@
       <button class="btn btn-sm btn-danger" id="resetBtn" data-edit><svg class="ib ib-trash" viewBox="0 0 24 24"><g class="tr-can"><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></g><g class="tr-lid"><polyline points="3 6 5 6 21 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></g><circle class="tr-item" cx="12" cy="2" r="1.7" fill="currentColor" stroke="none"/></svg> Reset</button>
     </div>
   </div>
+
+  <!-- SUIVI SOLOQ -->
+  <div class="sec-head" style="display:flex;align-items:baseline;gap:12px;margin:4px 0 12px">
+    <h2 style="font-family:var(--font-display);font-size:15px">Niveau SoloQ</h2>
+    <span style="flex:1;height:1px;background:var(--border)"></span>
+    <button class="btn btn-sm" id="sqRefresh" data-noexport>Actualiser</button>
+  </div>
+  <div class="sq-grid" id="grid"></div>
+  <div class="legend" style="margin-bottom:26px">Alimenté automatiquement par ARCHI Link (aucune saisie). Un joueur sans données n'a pas encore lancé le client.</div>
 
   <!-- ROSTER / MERCATO -->
   <div class="sec-head" style="display:flex;align-items:baseline;gap:12px;margin:4px 0 14px">
@@ -118,10 +166,119 @@
   <div class="tierlist" id="tierlist"></div>
 </div>
 
-<script src="assets/plazma.js?v=3.10.0" data-section="team"></script>
-<script src="assets/champions.js?v=3.10.0"></script>
+<script src="assets/plazma.js?v=3.11.0" data-section="team"></script>
+<script src="assets/champions.js?v=3.11.0"></script>
 <script>
 PZ.mountNav('team', '#nav');
+
+/* ===== Suivi SoloQ (fusionné, isolé) ===== */
+(function(){
+
+const db = PZ.db;
+const players = () => PZ.getRoster().concat(PZ.getSubs ? PZ.getSubs() : []);
+const initials = n => { n=(n||'').trim(); if(!n) return '•'; const w=n.split(/\s+/); return (w.length>1?w[0][0]+w[1][0]:n.slice(0,2)).toUpperCase(); };
+
+const TIER_FR = { IRON:'Fer', BRONZE:'Bronze', SILVER:'Argent', GOLD:'Or', PLATINUM:'Platine', EMERALD:'Émeraude', DIAMOND:'Diamant', MASTER:'Master', GRANDMASTER:'Grand Maître', CHALLENGER:'Challenger', UNRANKED:'Non classé' };
+const TIER_IDX = { IRON:0, BRONZE:1, SILVER:2, GOLD:3, PLATINUM:4, EMERALD:5, DIAMOND:6, MASTER:7, GRANDMASTER:8, CHALLENGER:9 };
+const DIV_IDX = { IV:0, III:1, II:2, I:3 };
+// Valeur « échelle » absolue pour tracer une progression cohérente entre divisions.
+function ladderValue(h){
+  const t = TIER_IDX[h.tier]; if (t == null || h.tier === 'UNRANKED') return null;
+  const base = t * 400;
+  if (t >= 7) return base + (+h.lp || 0);                 // Master+ : pas de division
+  return base + (DIV_IDX[h.division] || 0) * 100 + (+h.lp || 0);
+}
+
+let STATS = {};   // playerId -> doc
+
+// Résolution championId numérique -> champion (via Champions.list).
+let champMap = null;
+function champByKey(key){
+  if (!champMap && window.Champions && Champions.list && Champions.list.length) {
+    champMap = {}; Champions.list.forEach(c => { if (c.key) champMap[String(c.key)] = c; });
+  }
+  return champMap ? champMap[String(key)] : null;
+}
+function champIcon(championId){
+  const c = champByKey(championId);
+  if (c && window.Champions) return { url: Champions.iconUrl(c.id), id: c.id, name: c.name };
+  return { url: `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/${championId}.png`, id: null, name: '#'+championId };
+}
+
+function timeAgo(iso){
+  if (!iso) return '';
+  const d = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (d < 90) return 'à l\'instant';
+  if (d < 5400) return 'il y a ' + Math.round(d/60) + ' min';
+  if (d < 172800) return 'il y a ' + Math.round(d/3600) + ' h';
+  return 'il y a ' + Math.round(d/86400) + ' j';
+}
+
+function curve(hist){
+  const vals = (hist||[]).map(ladderValue).filter(v => v != null);
+  if (vals.length < 2) return '<div class="sq-empty">Pas encore assez de relevés pour une courbe.</div>';
+  const w = 100, h = 48, mx = Math.max(...vals), mn = Math.min(...vals), rg = (mx-mn) || 1;
+  const pts = vals.map((v,i) => [ (i/(vals.length-1))*w, h - ((v-mn)/rg)*h ]);
+  const ln = pts.map((p,i) => (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const ar = `M0 ${h} ` + pts.map(p=>'L'+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ') + ` L${w} ${h} Z`;
+  const last = pts[pts.length-1];
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><path class="ar" d="${ar}"/><path class="ln" d="${ln}"/><circle class="dot" cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="1.9"/></svg>`;
+}
+
+function render(){
+  const grid = document.getElementById('grid');
+  grid.innerHTML = players().map(p => {
+    const d = STATS[p.id];
+    const s = d && d.solo;
+    const rIc = PZ.roleIconUrl(p.roleKey);
+    const head = `<div class="sq-head">
+        <div class="sq-av" style="--role:${p.color}">${initials(p.name)}</div>
+        <div class="sq-id"><div class="sq-name">${esc(p.name)}</div>
+          <div class="sq-role">${rIc?`<img src="${rIc}" alt="">`:''}${esc(p.role)}</div></div>
+      </div>`;
+    if (!s) {
+      return `<div class="sq-card" style="--role:${p.color}">${head}
+        <div class="sq-off">Aucune donnée SoloQ pour l'instant.<br>Ce joueur n'a pas encore lancé le client local (ou pas lié son compte).</div></div>`;
+    }
+    const tIc = PZ.tierIconUrl(s.tier);
+    const tot = (s.wins||0)+(s.losses||0);
+    const rankBlock = `<div class="sq-rank">
+        ${tIc?`<img class="tic" src="${tIc}" alt="">`:`<div class="noic">${esc((TIER_FR[s.tier]||'?').slice(0,3))}</div>`}
+        <div><div class="sq-tier">${esc(TIER_FR[s.tier]||s.tier)}${s.division?' '+esc(s.division):''}</div>
+          <div class="sq-sub"><span class="mono">${s.lp} LP</span>${tot?` · <span class="mono">${s.wins}V ${s.losses}D</span>${s.wr!=null?` · <b style="color:${s.wr>=50?'var(--ok)':'var(--err)'}">${s.wr}%</b>`:''}`:''}</div>
+          <div class="sq-sub">maj ${timeAgo(d.updatedAt)}</div></div>
+      </div>`;
+    const curveBlock = `<div class="sq-curve"><div class="sq-curve-top"><span>Progression</span><span>${(d.history||[]).length} relevés</span></div>${curve(d.history)}</div>`;
+    const recent = (d.recent||[]).slice(0,10);
+    const recentBlock = recent.length ? `<div class="sq-recent"><div class="sq-recent-h">Dernières parties classées</div>
+        <div class="sq-games">${recent.map(g => { const c = champIcon(g.champ);
+          return `<div class="sq-g ${g.win?'win':'loss'}" title="${esc(c.name)} · ${g.k}/${g.d}/${g.a}${g.win?' · Victoire':' · Défaite'}">
+            <img src="${c.url}" alt="" ${c.id?`onerror="Champions.imgFallback(this,'${c.id}')"`:'onerror="this.style.visibility=\'hidden\'"'}>
+            <span class="kda">${g.k}/${g.d}/${g.a}</span></div>`; }).join('')}</div></div>` : '';
+    return `<div class="sq-card" style="--role:${p.color}">${head}${rankBlock}${curveBlock}${recentBlock}</div>`;
+  }).join('');
+}
+
+async function load(){
+  if (!db) { render(); return; }
+  STATS = {};
+  await Promise.all(players().map(async p => {
+    try { const doc = await db.collection('plazma-stats').doc(p.id).get(); if (doc.exists) STATS[p.id] = doc.data(); }
+    catch (e) {}
+  }));
+  render();
+}
+
+document.getElementById('sqRefresh').addEventListener('click', load);
+if (PZ.onRoster) PZ.onRoster(() => render());
+if (window.Champions && Champions.ready) Champions.ready.then(render).catch(()=>{});
+render();
+if (PZ.auth && PZ.auth.ready) PZ.auth.ready.then(load); else load();
+
+
+})();
+/* ===== fin SoloQ ===== */
+
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
 
 // ---- Éditeur de roster (mercato) ----
