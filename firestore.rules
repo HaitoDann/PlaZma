@@ -107,6 +107,14 @@ service cloud.firestore {
       allow delete: if canWrite('planning') || (active() && resource.data.uid == request.auth.uid);
     }
 
+    // ---- Stats joueur (rang SoloQ, historique) poussées par le client local ----
+    // Un document par joueur (docId == playerId). Lecture par tout membre actif ;
+    // écriture par l'admin ou par le joueur dont le compte porte ce playerId.
+    match /plazma-stats/{pid} {
+      allow read:  if active();
+      allow write: if active() && (isAdmin() || profile().get('playerId', '') == pid);
+    }
+
     // ---- Satisfaction Head Coach ----
     match /plazma-satisfaction-coach/{id} {
       allow create: if true;

@@ -64,9 +64,16 @@ Les variables `%USERPROFILE%` etc. sont développées automatiquement.
 node test-rofl.js "C:\...\Replays\EUW1-1234567890.rofl"
 ```
 
-## Après validation
-Une fois qu'on a confirmé que `rank.json` et les `replays/*.json` sont corrects
-sur de vraies données, j'ajoute :
-- l'**envoi vers ARCHI** (connexion avec le compte ARCHI du joueur) ;
-- l'affichage du rang et des courbes dans le Dashboard ;
-- un **packaging en `.exe`** (double-clic, sans installer Node) + lancement au démarrage.
+## Envoi vers ARCHI (optionnel)
+Pour que ton rang s'affiche dans le Dashboard d'ARCHI, active le `push` dans
+`config.json` :
+```json
+"push": { "enabled": true, "username": "<ta connexion ARCHI>", "password": "<ton mot de passe ARCHI>", "playerId": "haito" }
+```
+Le client se connecte alors à ARCHI comme le site (HTTPS) et écrit **ton** document
+`plazma-stats/<playerId>`. Les règles Firestore n'autorisent que ton propre joueur
+(ou un admin). Rien d'autre n'est touché.
+
+## Reste à faire ensuite
+- Historique SoloQ enrichi (courbe de LP sur la durée) et import auto des `.rofl` vers les CR.
+- **Packaging en `.exe`** (double-clic, sans installer Node) + lancement au démarrage de Windows.

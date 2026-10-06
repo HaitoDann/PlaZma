@@ -17,6 +17,17 @@ bas de la fenêtre **Paramètres**.
 
 ## 3.x — Interface pro
 
+### 3.8.0 — Rang SoloQ dans ARCHI (client local branché)
+- Le **Dashboard** lit la collection `plazma-stats` (un doc par joueur) et affiche
+  le **rang SoloQ** (tier, division, LP, winrate) + une **mini-courbe de LP** dans
+  le roster, dès que le client local a envoyé les données.
+- **Client local** (`client/`) : nouvelle option `push` qui envoie le rang et
+  l'historique à ARCHI, authentifié avec le compte ARCHI du joueur (HTTPS, comme
+  le site). Chaque joueur n'écrit que son propre document.
+- **Règles Firestore** : nouvelle section `plazma-stats` — lecture par les membres
+  actifs, écriture réservée au joueur concerné (ou admin). À redéployer dans la
+  console Firebase.
+
 ### 3.7.0 — Remplaçant « Haito » (6e joueur)
 - Nouveau poste **remplaçant** structurel (toujours présent, nom/emoji éditables) :
   **Haito**. Visible dans une section « Remplaçants » sur l'accueil, dans le roster

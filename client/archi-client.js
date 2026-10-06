@@ -20,6 +20,7 @@ const os = require('os');
 const path = require('path');
 const https = require('https');
 const { parseRofl } = require('./rofl');
+const { pushStats } = require('./push');
 
 const HERE = __dirname;
 const OUT = path.join(HERE, 'archi-data');
@@ -34,6 +35,7 @@ function loadConfig() {
     lockfile: 'C:\\Riot Games\\League of Legends\\lockfile',
     replaysDir: path.join(os.homedir(), 'Documents', 'League of Legends', 'Replays'),
     pollMinutes: 5,
+    push: { enabled: false, username: '', password: '', playerId: '' },
   };
   const expand = s => typeof s === 'string'
     ? s.replace(/%([^%]+)%/g, (_, v) => process.env[v] || _)
@@ -188,8 +190,26 @@ async function cycle() {
     log('👤', rank.riotId, '—', rankLabel(rank.solo));
     const recent = await fetchRecentRanked(lock);
     if (recent) writeJson(path.join(OUT, 'recent-ranked.json'), recent);
+    await maybePush(rank, recent);
   } catch (e) { log('⚠ lecture LCU impossible :', e.message); }
   scanReplays();
+}
+
+async function maybePush(rank, recent) {
+  const p = CFG.push || {};
+  if (!p.enabled) return;
+  if (!p.username || !p.password || !p.playerId) { log('⚠ push activé mais username/password/playerId manquant dans config.json'); return; }
+  if (!rank || !rank.solo) return;
+  try {
+    await pushStats(p, {
+      riotId: rank.riotId, puuid: rank.puuid,
+      solo: rank.solo,
+      history: readJson(HISTORY_FILE, []).slice(-60),
+      recent: (recent || []).slice(0, 10),
+      updatedAt: rank.updatedAt,
+    });
+    log('☁ envoyé à ARCHI (plazma-stats/' + p.playerId + ')');
+  } catch (e) { log('⚠ envoi ARCHI impossible :', e.message); }
 }
 
 function main() {
