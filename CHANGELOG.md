@@ -17,6 +17,11 @@ bas de la fenêtre **Paramètres**.
 
 ## 3.x — Interface pro
 
+### 3.11.0 — Fusion SoloQ ↔ Équipe
+- Le **suivi SoloQ** (rang, courbe, parties récentes) est intégré en haut de la
+  page **Équipe** ; la page SoloQ autonome est supprimée (redirection) et retirée
+  de la navigation et de l'accueil — une page de moins.
+
 ### 3.10.0 — Page « Suivi SoloQ »
 - Nouvelle page **SoloQ** (nav + accueil) dédiée au suivi des joueurs : une carte
   par joueur avec rang + icône d'elo, **courbe de progression** sur l'échelle
