@@ -241,17 +241,22 @@ async function cycle() {
   }
   STATE.leagueOpen = true;
   warnedClosed = false;
+  // Chaque étape est isolée : si l'une échoue, les autres continuent
+  // (p. ex. l'historique de parties peut manquer sans bloquer l'envoi ou le wiki).
+  let rank = null, recent = null;
   try {
-    const rank = await fetchRank(lock);
+    rank = await fetchRank(lock);
     writeJson(RANK_FILE, rank);
     appendHistory(rank);
     STATE.riotId = rank.riotId; STATE.rankLabel = rankLabel(rank.solo);
     log('👤', rank.riotId, '—', rankLabel(rank.solo));
-    const recent = await fetchRecentRanked(lock);
+  } catch (e) { log('⚠ lecture du rang impossible :', e.message); }
+  try {
+    recent = await fetchRecentRanked(lock);
     if (recent) writeJson(path.join(OUT, 'recent-ranked.json'), recent);
-    await maybePush(rank, recent);
-    await dumpGameData(lock);
-  } catch (e) { log('⚠ lecture LCU impossible :', e.message); }
+  } catch (e) { log('⚠ parties récentes indisponibles :', e.message); }
+  if (rank) { try { await maybePush(rank, recent); } catch (e) { log('⚠ envoi ARCHI :', e.message); } }
+  try { await dumpGameData(lock); } catch (e) { log('⚠ extraction wiki :', e.message); }
   scanReplays();
 }
 
@@ -263,9 +268,10 @@ async function dumpGameData(lock) {
   if (!(CFG.features && CFG.features.wiki)) return;   // option "wiki" désactivée
   const dir = path.join(OUT, 'gamedata');
   try { fs.mkdirSync(dir, { recursive: true }); } catch (e) {}
+  log('📘 extraction des données de jeu (wiki) en cours…');
   let summary;
   try { summary = await lcuGet(lock, '/lol-game-data/assets/v1/champion-summary.json'); }
-  catch (e) { log('⚠ données de jeu indisponibles :', e.message); return; }
+  catch (e) { log('⚠ données de jeu indisponibles :', e.message, '— réessai au prochain cycle.'); return; }
   writeJson(path.join(dir, 'champion-summary.json'), summary);
   const ids = (summary || []).map(c => c.id).filter(id => id && id > 0);
   // Échantillons variés (par id numérique) pour voir toutes les formes de sorts.
@@ -323,7 +329,8 @@ async function main() {
   try {
     _server = await startServer({
       configPath: path.join(HERE, 'config.json'), appName: APP_NAME,
-      getConfig: () => CFG, getStatus, onSaved: () => reloadConfig(),
+      getConfig: () => CFG, getStatus,
+      onSaved: () => { reloadConfig(); _gameDataDone = false; cycle(); },   // relance immédiate (envoi + wiki)
       isAutostart, setAutostart, onQuit: quit,
     });
     try { fs.writeFileSync(path.join(OUT, 'port.txt'), String(_server.port)); } catch (e) {}
