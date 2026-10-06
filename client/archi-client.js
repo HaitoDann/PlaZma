@@ -198,8 +198,33 @@ async function cycle() {
     const recent = await fetchRecentRanked(lock);
     if (recent) writeJson(path.join(OUT, 'recent-ranked.json'), recent);
     await maybePush(rank, recent);
+    await dumpGameData(lock);
   } catch (e) { log('⚠ lecture LCU impossible :', e.message); }
   scanReplays();
+}
+
+let _gameDataDone = false;
+// Extrait les données de champions/sorts depuis le client League (LCU, local).
+// Source brute, sans intermédiaire ni clé, alignée sur le patch installé.
+async function dumpGameData(lock) {
+  if (_gameDataDone) return;
+  const dir = path.join(OUT, 'gamedata');
+  try { fs.mkdirSync(dir, { recursive: true }); } catch (e) {}
+  let summary;
+  try { summary = await lcuGet(lock, '/lol-game-data/assets/v1/champion-summary.json'); }
+  catch (e) { log('⚠ données de jeu indisponibles :', e.message); return; }
+  writeJson(path.join(dir, 'champion-summary.json'), summary);
+  const ids = (summary || []).map(c => c.id).filter(id => id && id > 0);
+  // Échantillons variés (par id numérique) pour voir toutes les formes de sorts.
+  const samples = [266, 99, 222, 412, 64].filter(id => ids.includes(id));
+  for (const id of samples) {
+    try { const c = await lcuGet(lock, '/lol-game-data/assets/v1/champions/' + id + '.json');
+      writeJson(path.join(dir, 'champion-' + id + '.json'), c); }
+    catch (e) { log('⚠ champion', id, ':', e.message); }
+  }
+  _gameDataDone = true;
+  log('📘 données de jeu extraites (' + ids.length + ' champions) → archi-data/gamedata/ · échantillons :', samples.join(', '));
+  log('   Envoie-moi champion-summary.json + un champion-<id>.json pour que je bâtisse le wiki.');
 }
 
 async function maybePush(rank, recent) {
