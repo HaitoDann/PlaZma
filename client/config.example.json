@@ -1,0 +1,9 @@
+{
+  "_aide": "Copie ce fichier en config.json et ajuste si besoin. Supprime les lignes _aide.",
+  "_lockfile": "Chemin du fichier lockfile du client League. Défaut : installation standard.",
+  "lockfile": "C:\\Riot Games\\League of Legends\\lockfile",
+  "_replaysDir": "Dossier où League enregistre les replays .rofl.",
+  "replaysDir": "%USERPROFILE%\\Documents\\League of Legends\\Replays",
+  "_pollMinutes": "Fréquence de lecture du rang (minutes).",
+  "pollMinutes": 5
+}

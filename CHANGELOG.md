@@ -17,6 +17,13 @@ bas de la fenêtre **Paramètres**.
 
 ## 3.x — Interface pro
 
+### Client local — premier jet (client/, v0.1.0)
+- Nouveau dossier `client/` : programme Windows (Node.js) qui, sans clé Riot,
+  lit le **rang SoloQ** (API locale du client League), parse automatiquement les
+  **replays .rofl** et tient un **historique du rang**. Ne touche pas au jeu
+  (aucun risque Vanguard). Ce premier jet écrit en local (`archi-data/`) et
+  n'envoie encore rien à ARCHI : but = valider les données sur un vrai PC.
+
 ### 3.6.0 — Rappels Discord, synthèse .rofl, interface & mobile
 - **Rappels Discord** (Planning, bouton « Rappel ») : « Dispos à remplir » (liste
   les joueurs qui n'ont pas renseigné leurs dispos de la semaine) et « Prochaine

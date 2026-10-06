@@ -1,0 +1,4 @@
+# Sorties locales et config personnelle du client (ne pas versionner)
+archi-data/
+config.json
+node_modules/
