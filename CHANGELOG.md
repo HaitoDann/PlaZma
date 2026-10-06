@@ -17,6 +17,16 @@ bas de la fenêtre **Paramètres**.
 
 ## 3.x — Interface pro
 
+### 3.5.0 — Analyse .rofl : par joueur, champions, lane
+- CR de scrim : colonne **±Gold** par joueur dans le tableau de chaque game
+  (différentiel de gold sur la lane, quand la position est dans le .rofl).
+- Dashboard : nouveau panneau **« Analyse des games »** (dépliable) calculé sur
+  tous les CR qui ont des .rofl :
+  - **Par joueur** : games, winrate, KDA, CS/min, **±Gold lane**, dégâts, vision ;
+  - **Champions les plus joués** avec leur winrate.
+- Association automatique des joueurs du .rofl au roster via les comptes op.gg
+  (les smurfs/adversaires non reconnus sont ignorés).
+
 ### 3.4.0 — Moyennes .rofl dans le Dashboard + finitions
 - Le Dashboard agrège désormais les stats **.rofl de tous les CR** dans le bloc
   Performance : **diff. de gold de fin moyenne, KDA équipe, CS/min, durée moyenne**
