@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.7.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.8.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -119,6 +119,8 @@
   .rrow-name{font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .rrow-role{font-size:12px;color:var(--muted)}
   .rrow a{font-size:12px;color:var(--accent);white-space:nowrap}
+  .rrow-rank{font-size:12px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:2px;flex-wrap:wrap}
+  .lp-spark{vertical-align:middle;opacity:.8}
   .rrow .off{font-size:12px;color:var(--muted)}
   @media(max-width:900px){.rlist{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:480px){.rlist{grid-template-columns:1fr}}
@@ -277,7 +279,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="assets/plazma.js?v=3.7.0" data-section="dashboard"></script>
+<script src="assets/plazma.js?v=3.8.0" data-section="dashboard"></script>
 <script>
 'use strict';
 PZ.mountNav('dashboard', '#nav');
@@ -570,13 +572,32 @@ function opggOf(id){ const r=(state.roster||[]).find(x=>x.id===id); return r&&r.
 function rosterPlayers(){ if(!PZ.getRoster) return []; return PZ.getRoster().concat(PZ.getSubs?PZ.getSubs():[]); }
 function renderRoster(){
   const el=document.getElementById('roster');
+  const ps=(agg&&agg.pstats)||{};
   el.innerHTML=rosterPlayers().map(p=>{
     const id=opggOf(p.id);
     const url=id?`https://www.op.gg/summoners/euw/${encodeURIComponent(id)}`:'';
+    const st=ps[p.id]&&ps[p.id].solo;
+    const rank = st ? `<div class="rrow-rank">${soloLabel(st)}${lpSpark(ps[p.id].history)}</div>` : '';
     return `<div class="rrow"><span class="rrow-dot" style="background:${p.color}"></span>
-      <div class="rrow-main"><div class="rrow-name">${esc(p.name)}</div><div class="rrow-role">${esc(p.role)}</div></div>
+      <div class="rrow-main"><div class="rrow-name">${esc(p.name)}</div><div class="rrow-role">${esc(p.role)}</div>${rank}</div>
       ${url?`<a href="${url}" target="_blank" rel="noopener">op.gg →</a>`:`<span class="off" title="À renseigner dans Paramètres">op.gg —</span>`}</div>`;
   }).join('');
+}
+// Rang SoloQ : libellé FR court + couleur du tier.
+const TIER_FR={IRON:['Fer','#7c7c84'],BRONZE:['Bronze','#b06b3a'],SILVER:['Argent','#9aa6b2'],GOLD:['Or','#e0a526'],PLATINUM:['Platine','#3fbfb0'],EMERALD:['Émeraude','#27a567'],DIAMOND:['Diamant','#4f86c6'],MASTER:['Master','#9b59b6'],GRANDMASTER:['Grand Maître','#d0534f'],CHALLENGER:['Challenger','#f1c40f'],UNRANKED:['Non classé','var(--muted)']};
+function soloLabel(st){
+  if(!st||st.tier==='UNRANKED'){ return '<span style="color:var(--muted)">Non classé</span>'; }
+  const t=TIER_FR[st.tier]||[st.tier,'var(--dim)'];
+  const wr = st.wr!=null ? ` · <span class="${st.wr>=50?'ok-t':'err-t'}">${st.wr}%</span>` : '';
+  return `<b style="color:${t[1]}">${t[0]}${st.division?' '+st.division:''}</b> · ${st.lp} LP${wr}`;
+}
+// Mini-courbe de LP cumulés (approx : LP + 100*(paliers) impossible sans tier→valeur,
+// donc on trace juste le LP intra-palier des derniers relevés).
+function lpSpark(hist){
+  if(!Array.isArray(hist)||hist.length<2) return '';
+  const pts=hist.slice(-12).map(h=>+h.lp||0); const mx=Math.max(...pts),mn=Math.min(...pts),rg=(mx-mn)||1;
+  const w=70,h=16; const d=pts.map((v,i)=>`${(i/(pts.length-1)*w).toFixed(1)},${(h-(v-mn)/rg*h).toFixed(1)}`).join(' ');
+  return ` <svg class="lp-spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${d}" fill="none" stroke="var(--accent)" stroke-width="1.5"/></svg>`;
 }
 function renderSettingsForm(){
   document.getElementById('p_nextEvent').value=state.nextEvent||'';
@@ -622,6 +643,14 @@ async function loadAggregates(){
       let best=null; snap.forEach(d=>{ const x={id:d.id,...d.data()}; const t=x._savedAt&&x._savedAt.toMillis?x._savedAt.toMillis():0; if(!best||t>best._t) best=Object.assign(x,{_t:t}); });
       a.scoutLatest=best||false;
     }catch(e){ console.error('scouting',e); }
+  }
+  // Stats SoloQ poussées par le client local (collection plazma-stats, 1 doc/joueur)
+  a.pstats={};
+  if(db){
+    await Promise.all(rosterPlayers().map(async p=>{
+      try{ const d=await db.collection('plazma-stats').doc(p.id).get(); if(d.exists) a.pstats[p.id]=d.data(); }
+      catch(e){}
+    }));
   }
   a.rosterSize=rosterPlayers().length||5;
   agg=a; render();

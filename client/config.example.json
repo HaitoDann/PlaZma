@@ -1,9 +1,14 @@
 {
-  "_aide": "Copie ce fichier en config.json et ajuste si besoin. Supprime les lignes _aide.",
-  "_lockfile": "Chemin du fichier lockfile du client League. Défaut : installation standard.",
+  "_aide": "Copie ce fichier en config.json et ajuste. Supprime les lignes _aide.",
   "lockfile": "C:\\Riot Games\\League of Legends\\lockfile",
-  "_replaysDir": "Dossier où League enregistre les replays .rofl.",
   "replaysDir": "%USERPROFILE%\\Documents\\League of Legends\\Replays",
-  "_pollMinutes": "Fréquence de lecture du rang (minutes).",
-  "pollMinutes": 5
+  "pollMinutes": 5,
+
+  "_push": "Mets enabled=true pour envoyer le rang/historique à ARCHI. username+password = ta connexion ARCHI ; playerId = ton identifiant joueur dans ARCHI (ex. haito).",
+  "push": {
+    "enabled": false,
+    "username": "",
+    "password": "",
+    "playerId": ""
+  }
 }
