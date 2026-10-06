@@ -89,6 +89,14 @@ automatiquement :
 Construire l'exe soi-même (optionnel) : `npm install` puis `npm run build`
 (génère `dist/archi-client.exe`).
 
+## Données de jeu (wiki champions)
+Quand le client League est ouvert, le client extrait aussi les données de
+champions/sorts **directement depuis le client installé** (API locale, sans
+intermédiaire ni clé) dans `archi-data/gamedata/` :
+- `champion-summary.json` (liste complète) ;
+- quelques `champion-<id>.json` d'exemple.
+Ces fichiers servent à bâtir le wiki champions dans ARCHI (dégâts, ratios…).
+
 ## Reste à faire ensuite
 - Historique SoloQ enrichi (courbe de LP sur la durée) et import auto des `.rofl` vers les CR.
 - Lancement automatique au démarrage de Windows.
