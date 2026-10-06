@@ -284,6 +284,8 @@ function currentWeekValue(){ return PZ.stats.isoWeek(_now()); }
 const parseHM = t => (/^\d{1,2}:\d{2}$/.test(t||'') ? (+t.split(':')[0])*60 + (+t.split(':')[1]) : null);
 function slotDurMin(s){ const a=parseHM(s.start), b=parseHM(s.end); if(a==null||b==null) return null; let d=b-a; if(d<0) d+=1440; return d; }
 function fmtDur(min){ if(!min||min<=0) return ''; const h=Math.floor(min/60), m=min%60; return h ? (m?`${h}h${String(m).padStart(2,'0')}`:`${h}h`) : `${m}min`; }
+function fmtK(n){ n=+n||0; return Math.abs(n)>=1000 ? (n/1000).toFixed(1).replace('.0','')+'k' : String(Math.round(n)); }
+function fmtSec(sec){ sec=Math.round(+sec||0); const m=Math.floor(sec/60), s=sec%60; return sec? m+':'+String(s).padStart(2,'0') : '—'; }
 const fmtDay = ds => ds ? new Date(ds+'T12:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}) : '—';
 
 // ── Résultats (CR de scrim + officiels) ──
@@ -412,6 +414,19 @@ function renderPerf(){
   const errs=st.topErrors.length?'<div class="err-list">'+st.topErrors.map(([c,n])=>`<div>${esc(c)}<span>poids ${n}</span></div>`).join('')+'</div>'
     :'<div class="empty" style="padding:10px;text-align:left">Aucune erreur relevée dans les CR.</div>';
   html+=`<div class="perf-extra"><div><div class="mini-h">Victoires par game</div>${bars}</div><div><div class="mini-h">Erreurs récurrentes</div>${errs}</div></div>`;
+  // Moyennes issues des .rofl importés (sur tous les CR)
+  const rf=st.rofl;
+  if(rf && rf.n){
+    const gd=rf.goldDiff;
+    const rt=(v,l)=>`<div class="pt"><div class="pt-lbl">${l}</div><div class="pt-val">${v}</div></div>`;
+    html+=`<div class="mini-h" style="margin-top:16px">Stats de game (.rofl) · moyennes sur ${rf.n} game${rf.n>1?'s':''}</div>
+      <div class="perf">
+        ${rt('<span class="'+(gd>=0?'ok-t':'err-t')+'">'+(gd>=0?'+':'')+fmtK(gd)+'</span>','Diff. gold (fin)')}
+        ${rt(rf.kda.toFixed(2),'KDA équipe')}
+        ${rt(rf.csmin.toFixed(1),'CS/min équipe')}
+        ${rt(fmtSec(rf.dur),'Durée moy.')}
+      </div>`;
+  }
   if(st.canPlan && cov.missing.length){
     html+=`<div class="wk-foot">CR manquants : ${cov.missing.slice(-5).reverse().map(m=>{
       const q=new URLSearchParams({date:m.date, adv:m.slot.note||'', week:m.week}); if(m.slot.id) q.set('slot',m.slot.id);

@@ -17,6 +17,12 @@ bas de la fenêtre **Paramètres**.
 
 ## 3.x — Interface pro
 
+### 3.4.0 — Moyennes .rofl dans le Dashboard + finitions
+- Le Dashboard agrège désormais les stats **.rofl de tous les CR** dans le bloc
+  Performance : **diff. de gold de fin moyenne, KDA équipe, CS/min, durée moyenne**
+  (visible dès qu'au moins un `.rofl` est importé).
+- CR de scrim : moyennes mieux présentées (K/D/A sur une ligne, libellés clarifiés).
+
 ### 3.3.0 — CR de scrim : import .rofl optionnel + moyennes
 - **Import de replay `.rofl`** (facultatif) dans le compte rendu : glisser-déposer
   ou bouton par game. Le fichier est lu **localement dans le navigateur** (rien
