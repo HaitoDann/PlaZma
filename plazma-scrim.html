@@ -84,6 +84,7 @@
   .agg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
   .agg-tile{background:var(--surface-2);border-radius:var(--r);padding:11px 13px}
   .agg-val{font-family:var(--font-mono);font-size:1.35rem;font-weight:500;line-height:1.05}
+  .agg-val .kda3{font-size:1.05rem;white-space:nowrap}
   .agg-lab{font-size:11px;color:var(--muted);margin-top:5px}
 
   /* Modal d'aperçu .rofl */
@@ -896,11 +897,11 @@ function renderAggregate(){
       ${tile(w+'/'+n, 'Victoires')}
       ${tile('<span class="'+(gd>=0?'gold-pos':'gold-neg')+'">'+(gd>=0?'+':'')+fmtK(gd)+'</span>', 'Diff. gold (fin) moy.')}
       ${tile(kda, 'KDA équipe moy.')}
-      ${tile(avg(csmin).toFixed(1), 'CS/min moy.')}
+      ${tile(avg(csmin).toFixed(1), 'CS/min équipe moy.')}
       ${tile(fmtDur(Math.round(avg(dur))), 'Durée moy.')}
       ${tile(fmtK(avg(dmg)), 'Dégâts équipe moy.')}
       ${tile(Math.round(avg(vis)), 'Vision équipe moy.')}
-      ${tile((k/n).toFixed(1)+' / '+(dd/n).toFixed(1)+' / '+(a/n).toFixed(1), 'K / D / A équipe moy.')}
+      ${tile('<span class="kda3">'+(k/n).toFixed(1)+' / '+(dd/n).toFixed(1)+' / '+(a/n).toFixed(1)+'</span>', 'K / D / A équipe moy.')}
     </div>
   </div>`;
 }

@@ -55,7 +55,7 @@
   // ---- Version de l'application (SemVer) ----
   // MAJEUR.MINEUR.CORRECTIF — MINEUR à chaque lot de fonctionnalités,
   // CORRECTIF pour les corrections. Affichée discrètement dans Paramètres.
-  const VERSION = '3.3.0';
+  const VERSION = '3.4.0';
 
   // ---- Niveau de performance : adapte la densité des effets ----
   // Full sur machine puissante (rendu identique), réduit sur mobile/appareil
@@ -1152,11 +1152,35 @@
       coverage,
       presence: Object.assign({ total: pTot, rate: pTot ? Math.round((presence.present + presence.late * .5) / pTot * 100) : null }, presence),
       topErrors: Object.entries(errFreq).sort((a, b) => b[1] - a[1]).slice(0, 3),
+      rofl: roflAggregate(crs),
       weeks, canScrim, canPlan
     };
   }
+  // Agrégation des stats .rofl présentes dans les CR (champions/KDA/gold/…).
+  function roflGameDerived(st){
+    if(!st || !Array.isArray(st.players) || !st.players.length) return null;
+    const us = st.players.filter(p => p.team === st.side);
+    const them = st.players.filter(p => p.team !== st.side);
+    if(!us.length) return null;
+    const sum = (a,f) => a.reduce((m,p) => m + (+p[f]||0), 0);
+    const min = (st.durationSec||0)/60;
+    return { k:sum(us,'k'), d:sum(us,'d'), a:sum(us,'a'), cs:sum(us,'cs'),
+      gold:sum(us,'gold'), dmg:sum(us,'dmg'), vision:sum(us,'vision'),
+      goldDiff: sum(us,'gold') - sum(them,'gold'), csmin: min ? sum(us,'cs')/min : 0,
+      durationSec: st.durationSec||0, win: !!st.win };
+  }
+  function roflAggregate(crs){
+    const g = [];
+    (crs||[]).forEach(cr => { for(let i=1;i<=5;i++){ const d = roflGameDerived(cr['g'+i+'_stats']); if(d) g.push(d); } });
+    if(!g.length) return { n:0 };
+    const n = g.length, s = f => g.reduce((m,x) => m + x[f], 0);
+    return { n, wins: g.filter(x=>x.win).length,
+      goldDiff: s('goldDiff')/n, kda: (s('k')+s('a'))/Math.max(1,s('d')), csmin: s('csmin')/n,
+      dur: s('durationSec')/n, dmg: s('dmg')/n, vision: s('vision')/n,
+      k: s('k')/n, dd: s('d')/n, as: s('a')/n };
+  }
   const canSeeScrims = () => isAdmin() || can('scrim');
-  const stats = { load: statsLoad, canSeeScrims, linkWeek, slotDate, newSlotId, isLinkable, scrimResult, loadScrimCRs, isoWeek: _isoWeekOf, weekShift: _weekShift, LINK_TYPES };
+  const stats = { load: statsLoad, canSeeScrims, roflAggregate, roflGameDerived, linkWeek, slotDate, newSlotId, isLinkable, scrimResult, loadScrimCRs, isoWeek: _isoWeekOf, weekShift: _weekShift, LINK_TYPES };
 
   // ---- API publique ----
   window.PZ = {
