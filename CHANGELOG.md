@@ -17,6 +17,14 @@ bas de la fenêtre **Paramètres**.
 
 ## 3.x — Interface pro
 
+### 3.10.0 — Page « Suivi SoloQ »
+- Nouvelle page **SoloQ** (nav + accueil) dédiée au suivi des joueurs : une carte
+  par joueur avec rang + icône d'elo, **courbe de progression** sur l'échelle
+  (palier · division · LP) au fil des relevés, et **dernières parties classées**
+  (icônes de champions, KDA, victoire/défaite).
+- Alimentée automatiquement par le client local (collection `plazma-stats`),
+  aucune saisie. Visible par tous les membres connectés.
+
 ### 3.9.0 — Visuels (rôles, elo, champions) + client en .exe
 - **Icônes de rôles** (Top/Jungle/Mid/ADC/Support) sur les cartes du roster
   (accueil) et les lignes du Dashboard.
