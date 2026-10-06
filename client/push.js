@@ -41,15 +41,61 @@ function toValue(v) {
 }
 function toFields(obj) { const f = {}; for (const k of Object.keys(obj)) f[k] = toValue(obj[k]); return f; }
 
-let _token = null, _tokenExp = 0;
+let _token = null, _tokenExp = 0, _tokenUser = '';
+function resetToken() { _token = null; _tokenExp = 0; _tokenUser = ''; }
 async function getToken(username, password) {
-  if (_token && Date.now() < _tokenExp) return _token;
+  if (_token && Date.now() < _tokenExp && _tokenUser === username) return _token;
+  const r = await login(username, password);
+  _token = r.idToken; _tokenUser = username;
+  _tokenExp = Date.now() + (Math.max(60, (+r.expiresIn || 3600) - 300)) * 1000;
+  return _token;
+}
+
+// Connexion ARCHI (Firebase Auth). Renvoie { idToken, localId, expiresIn }.
+async function login(username, password) {
   const email = normUser(username) + '@' + USER_DOMAIN;
   const r = await postJson(
     'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + FIREBASE.apiKey,
     { email, password, returnSecureToken: true });
-  _token = r.idToken; _tokenExp = Date.now() + (Math.max(60, (+r.expiresIn || 3600) - 300)) * 1000;
-  return _token;
+  return { idToken: r.idToken, localId: r.localId, expiresIn: r.expiresIn };
+}
+
+// ---- Décodage valeur REST Firestore -> JS ----
+function fromValue(v) {
+  if (!v || typeof v !== 'object') return v;
+  if ('stringValue' in v) return v.stringValue;
+  if ('integerValue' in v) return +v.integerValue;
+  if ('doubleValue' in v) return v.doubleValue;
+  if ('booleanValue' in v) return v.booleanValue;
+  if ('nullValue' in v) return null;
+  if ('mapValue' in v) return fromFields((v.mapValue && v.mapValue.fields) || {});
+  if ('arrayValue' in v) return ((v.arrayValue && v.arrayValue.values) || []).map(fromValue);
+  return null;
+}
+function fromFields(f) { const o = {}; for (const k in f) o[k] = fromValue(f[k]); return o; }
+function getDoc(docPath, idToken) {
+  return new Promise((resolve, reject) => {
+    const u = new URL('https://firestore.googleapis.com/v1/projects/' + FIREBASE.projectId + '/databases/(default)/documents/' + docPath);
+    const req = https.request({ hostname: u.hostname, path: u.pathname + u.search, method: 'GET', headers: { Authorization: 'Bearer ' + idToken }, timeout: 10000 }, res => {
+      let b = ''; res.on('data', d => b += d);
+      res.on('end', () => { if (res.statusCode >= 300) return reject(new Error('HTTP ' + res.statusCode)); try { const j = JSON.parse(b); resolve(j.fields ? fromFields(j.fields) : null); } catch (e) { reject(e); } });
+    });
+    req.on('error', reject); req.on('timeout', () => req.destroy(new Error('timeout')));
+    req.end();
+  });
+}
+
+// Teste les identifiants ARCHI et lit le profil (nom, playerId lié, rôle).
+async function checkAccount(username, password) {
+  const { idToken, localId } = await login(username, password);
+  let profile = null;
+  try { profile = await getDoc('users/' + localId, idToken); } catch (e) {}
+  return {
+    ok: true, localId,
+    name: profile && profile.name || '',
+    playerId: profile && profile.playerId || '',
+    role: profile && profile.role || '',
+  };
 }
 
 // Écrit (remplace) le document plazma-stats/<playerId>.
@@ -69,4 +115,4 @@ async function pushStats(cfg, doc) {
   });
 }
 
-module.exports = { pushStats };
+module.exports = { pushStats, login, checkAccount, resetToken };

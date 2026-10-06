@@ -1,15 +1,14 @@
 #!/usr/bin/env node
 /*
- * ARCHI — client local (premier jet / validation)
- * -----------------------------------------------
- * Fait 3 choses, en local, sans aucune clé Riot :
- *   1) lit le rang SoloQ du compte connecté (API locale du client League, « LCU ») ;
- *   2) parse automatiquement les replays .rofl du dossier Replays ;
- *   3) tient un historique du rang SoloQ dans le temps.
+ * ARCHI Link — client local d'ARCHI
+ * ---------------------------------
+ * En local, sans aucune clé Riot :
+ *   1) lit le rang SoloQ (API locale du client League, « LCU ») ;
+ *   2) parse les replays .rofl ; 3) tient l'historique SoloQ ;
+ *   4) extrait les données de champions pour le wiki.
  *
- * CE PREMIER JET N'ENVOIE RIEN À ARCHI. Il écrit tout dans ./archi-data/ et
- * l'affiche, pour qu'on valide sur un vrai PC que les données lues sont bonnes
- * avant de brancher l'envoi vers ARCHI (Firestore).
+ * Le joueur choisit ce qu'il partage via la fenêtre de configuration
+ * (lancer avec --setup). Chaque option est optionnelle.
  *
  * Ne touche jamais au jeu : aucune injection, aucune lecture mémoire, aucun
  * overlay. Rien que Vanguard puisse considérer comme de la triche.
@@ -21,6 +20,7 @@ const path = require('path');
 const https = require('https');
 const { parseRofl } = require('./rofl');
 const { pushStats } = require('./push');
+const APP_NAME = 'ARCHI Link';
 
 // En .exe (pkg), les fichiers (config.json, archi-data) sont à côté de l'exécutable ;
 // en Node classique, à côté du script.
@@ -37,7 +37,9 @@ function loadConfig() {
     lockfile: 'C:\\Riot Games\\League of Legends\\lockfile',
     replaysDir: path.join(os.homedir(), 'Documents', 'League of Legends', 'Replays'),
     pollMinutes: 5,
-    push: { enabled: false, username: '', password: '', playerId: '' },
+    auth: { username: '', password: '' },
+    playerId: '',
+    features: { rank: true, soloq: true, wiki: false },
   };
   const expand = s => typeof s === 'string'
     ? s.replace(/%([^%]+)%/g, (_, v) => process.env[v] || _)
@@ -49,13 +51,23 @@ function loadConfig() {
   let c;
   try { c = JSON.parse(raw); }
   catch (e) { defaults._configFound = true; defaults._configError = e.message; return defaults; }
-  const merged = Object.assign(defaults, c);
+  const merged = Object.assign({}, defaults, c);
+  // Migration de l'ancien bloc "push" vers auth/features.
+  if (c.push && !c.auth) {
+    merged.auth = { username: c.push.username || '', password: c.push.password || '' };
+    merged.playerId = c.push.playerId || '';
+    merged.features = { rank: !!c.push.enabled, soloq: !!c.push.enabled, wiki: false };
+  }
+  merged.auth = Object.assign({ username: '', password: '' }, merged.auth);
+  merged.features = Object.assign({ rank: true, soloq: true, wiki: false }, merged.features);
+  delete merged.push;
   merged._configFound = true;
   merged.lockfile = expand(merged.lockfile);
   merged.replaysDir = expand(merged.replaysDir);
   return merged;
 }
-const CFG = loadConfig();
+let CFG = loadConfig();
+function reloadConfig() { CFG = loadConfig(); log('⟳ configuration rechargée.'); logFeatures(); }
 
 function log(...a) { console.log(new Date().toLocaleTimeString('fr-FR'), '·', ...a); }
 function ensureDirs() { for (const d of [OUT, REPLAYS_OUT]) fs.mkdirSync(d, { recursive: true }); }
@@ -208,6 +220,7 @@ let _gameDataDone = false;
 // Source brute, sans intermédiaire ni clé, alignée sur le patch installé.
 async function dumpGameData(lock) {
   if (_gameDataDone) return;
+  if (!(CFG.features && CFG.features.wiki)) return;   // option "wiki" désactivée
   const dir = path.join(OUT, 'gamedata');
   try { fs.mkdirSync(dir, { recursive: true }); } catch (e) {}
   let summary;
@@ -228,35 +241,44 @@ async function dumpGameData(lock) {
 }
 
 async function maybePush(rank, recent) {
-  const p = CFG.push || {};
-  if (!p.enabled) return;
-  if (!p.username || !p.password || !p.playerId) { log('⚠ push activé mais username/password/playerId manquant dans config.json'); return; }
+  const f = CFG.features || {}, a = CFG.auth || {};
+  if (!(f.rank || f.soloq)) return;                  // aucune option d'envoi SoloQ cochée
+  if (!a.username || !a.password || !CFG.playerId) { log('⚠ envoi activé mais connexion non configurée — lance avec --setup.'); return; }
   if (!rank || !rank.solo) return;
+  const doc = { riotId: rank.riotId, puuid: rank.puuid, updatedAt: rank.updatedAt };
+  if (f.rank) doc.solo = rank.solo;                                   // elo + winrate
+  if (f.soloq) { doc.history = readJson(HISTORY_FILE, []).slice(-60); doc.recent = (recent || []).slice(0, 10); }  // historique + parties
   try {
-    await pushStats(p, {
-      riotId: rank.riotId, puuid: rank.puuid,
-      solo: rank.solo,
-      history: readJson(HISTORY_FILE, []).slice(-60),
-      recent: (recent || []).slice(0, 10),
-      updatedAt: rank.updatedAt,
-    });
-    log('☁ envoyé à ARCHI (plazma-stats/' + p.playerId + ')');
+    await pushStats({ username: a.username, password: a.password, playerId: CFG.playerId }, doc);
+    log('☁ envoyé à ARCHI (plazma-stats/' + CFG.playerId + ') · ' + [f.rank && 'rang', f.soloq && 'SoloQ'].filter(Boolean).join('+'));
   } catch (e) { log('⚠ envoi ARCHI impossible :', e.message); }
 }
 
+function logFeatures() {
+  if (CFG._configError) { log('❌ config.json illisible :', CFG._configError, '— lance avec --setup pour le régénérer.'); return; }
+  const f = CFG.features || {}, a = CFG.auth || {};
+  const on = []; if (f.rank) on.push('rang & winrate'); if (f.soloq) on.push('SoloQ & replays'); if (f.wiki) on.push('wiki');
+  if (a.username && CFG.playerId && on.length) log('☁ Partage ARCHI : ' + on.join(', ') + ' (joueur ' + CFG.playerId + ').');
+  else log('☁ Partage ARCHI : rien de configuré — lance avec --setup pour choisir.');
+}
+function openSetup() {
+  try { require('./ui').startSetup({ configPath: path.join(HERE, 'config.json'), config: CFG, appName: APP_NAME, onSaved: () => reloadConfig() }); }
+  catch (e) { log('⚠ fenêtre de configuration indisponible :', e.message); }
+}
 function main() {
   ensureDirs();
   console.log('========================================================');
-  console.log(' ARCHI — client local');
+  console.log(' ' + APP_NAME + ' — client local ARCHI');
   console.log(' Sorties locales :', OUT);
   console.log('========================================================');
   log('Lockfile attendu :', CFG.lockfile);
   log('Dossier Replays  :', CFG.replaysDir);
-  if (CFG._configError) log('❌ config.json illisible (erreur JSON) :', CFG._configError, '— valeurs par défaut utilisées, PUSH DÉSACTIVÉ. Vérifie le fichier (virgule en trop ?).');
-  else if (!CFG._configFound) log('ℹ config.json absent — valeurs par défaut, push désactivé. Crée-le depuis config.example.json pour envoyer à ARCHI.');
-  const p = CFG.push || {};
-  if (p.enabled) log('☁ Push ARCHI : ACTIVÉ (joueur «', p.playerId || '?', '», compte «', p.username || '?', '»).');
-  else log('☁ Push ARCHI : désactivé (push.enabled = false dans config.json).');
+  // Première utilisation (pas de config) ou lancement avec --setup : fenêtre de config.
+  if (process.argv.includes('--setup') || !CFG._configFound) {
+    log('⚙ Ouverture de la fenêtre de configuration…');
+    openSetup();
+  }
+  logFeatures();
   watchReplays();
   cycle();
   setInterval(cycle, Math.max(1, +CFG.pollMinutes || 5) * 60 * 1000);

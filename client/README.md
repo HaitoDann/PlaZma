@@ -64,15 +64,20 @@ Les variables `%USERPROFILE%` etc. sont développées automatiquement.
 node test-rofl.js "C:\...\Replays\EUW1-1234567890.rofl"
 ```
 
-## Envoi vers ARCHI (optionnel)
-Pour que ton rang s'affiche dans le Dashboard d'ARCHI, active le `push` dans
-`config.json` :
-```json
-"push": { "enabled": true, "username": "<ta connexion ARCHI>", "password": "<ton mot de passe ARCHI>", "playerId": "haito" }
-```
-Le client se connecte alors à ARCHI comme le site (HTTPS) et écrit **ton** document
-`plazma-stats/<playerId>`. Les règles Firestore n'autorisent que ton propre joueur
-(ou un admin). Rien d'autre n'est touché.
+## Configuration (fenêtre)
+Lance le client avec l'option **`--setup`** (ou simplement au **premier lancement**) :
+une fenêtre s'ouvre dans ton navigateur pour :
+- saisir ta **connexion ARCHI** (avec un bouton **« Tester la connexion »**) ;
+- choisir **ce que tu partages**, chaque option indiquant son **impact** sur ton PC :
+  - **Rang & winrate SoloQ** — impact quasi nul ;
+  - **Historique & suivi SoloQ (+ replays .rofl)** — impact léger ;
+  - **Participer au wiki ARCHI** — impact ponctuel (extraction au lancement).
+
+Tes choix sont écrits dans `config.json` (ton mot de passe reste **sur ton PC**).
+Pour rouvrir la fenêtre plus tard : relance avec `--setup`.
+
+Pré-requis côté ARCHI : ton compte doit être **lié à ton joueur** (page Comptes,
+côté admin) ou être **admin**, sinon l'envoi est refusé par les règles.
 
 ## Version `.exe` (sans installer Node)
 Pour les joueurs qui ne veulent pas installer Node, une version `.exe` est générée
