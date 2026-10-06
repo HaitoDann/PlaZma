@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.5.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.6.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -21,6 +21,7 @@
   .week-nav input[type=week]{width:auto}
   .btn-wk{width:34px;height:34px;padding:0}
   .actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  @media(max-width:760px){.toolbar{display:flex;flex-wrap:wrap;gap:10px}.tb-left{display:flex;flex-wrap:wrap;gap:10px}}
 
   .card-head .wk-label{font-family:var(--font-mono);color:var(--accent);font-weight:600;font-size:15px}
 
@@ -180,6 +181,14 @@
         <div class="menu-list" id="fillList"></div>
       </div>
       <button class="btn btn-sm btn-primary" id="pubDiscordBtn" title="Publier le programme sur Discord"><svg class="ib ib-discord" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Discord</button>
+      <div class="menu" id="remindMenu" data-noexport>
+        <button class="btn btn-sm" id="remindBtn" title="Envoyer un rappel sur Discord">Rappel ▾</button>
+        <div class="menu-list" id="remindList">
+          <div class="menu-label">Rappel Discord</div>
+          <button class="menu-item" data-rem="dispos">Dispos à remplir</button>
+          <button class="menu-item" data-rem="next">Prochaine session</button>
+        </div>
+      </div>
       <div class="menu" id="moreMenu">
         <button class="btn btn-sm" id="moreBtn" title="Plus d'actions">⋯</button>
         <div class="menu-list">
@@ -254,7 +263,7 @@
   </div>
 </div>
 
-<script src="assets/plazma.js?v=3.5.0" data-section="planning"></script>
+<script src="assets/plazma.js?v=3.6.0" data-section="planning"></script>
 <script>
 PZ.mountNav('schedule', '#nav');
 const db = PZ.db;
@@ -653,6 +662,44 @@ function buildWeekEmbed(){
   return { title:trunc(`📅 Programme — ${weekLabel(picker.value)}`,256), description:desc, color:0x5f84ff, fields, footer:{text:'ARCHI · PlaZma Esport'}, timestamp:new Date().toISOString() };
 }
 document.getElementById('pubDiscordBtn').addEventListener('click', () => PZ.discord.publish({ channel:'planning', embed: buildWeekEmbed() }));
+
+// ---- Rappels Discord ----
+document.getElementById('remindBtn').addEventListener('click', e => { e.stopPropagation(); toggleMenu('remindMenu'); });
+document.getElementById('remindList').addEventListener('click', e => {
+  const el = e.target.closest('[data-rem]'); if(!el) return; closeMenus();
+  if(el.dataset.rem==='dispos') PZ.discord.publish({ channel:'planning', embed: buildDisposReminder() });
+  else PZ.discord.publish({ channel:'planning', embed: buildNextReminder() });
+});
+// Prochaine session à venir de la semaine affichée.
+function nextSessionOfWeek(){
+  const [y,w]=(picker.value||'').split('-W').map(Number); if(!y||!w) return null;
+  const mon=mondayOfIsoWeek(y,w); const now=new Date(); let best=null;
+  DAYS.forEach((day,di)=>{ (schedule[day]||[]).forEach(sl=>{
+    const hm=parseHM(sl.start); const dt=new Date(mon); dt.setUTCDate(mon.getUTCDate()+di);
+    if(hm!=null) dt.setUTCHours(Math.floor(hm/60), hm%60, 0, 0); else dt.setUTCHours(23,59,0,0);
+    if(dt>=now && (!best||dt<best.dt)) best={dt,day,sl};
+  }); });
+  return best;
+}
+function buildDisposReminder(){
+  const roster=avRoster();
+  const manquants=roster.filter(p=>{ const d=(availDocs[p.id]||{}).days||{}; return !Object.keys(d).length; });
+  const label=weekLabel(picker.value);
+  const who = manquants.length ? manquants.map(p=>(p.emoji?p.emoji+' ':'')+p.name).join(', ')
+                               : 'Tout le monde a répondu ✅';
+  return { title:'⏰ Dispos à remplir — '+label, color:0xf59e0b,
+    description:'Pensez à indiquer vos disponibilités de la semaine sur ARCHI (créneau 21h).',
+    fields:[{ name: manquants.length ? 'En attente ('+manquants.length+')' : 'Statut', value: who }] };
+}
+function buildNextReminder(){
+  const nx=nextSessionOfWeek();
+  if(!nx) return { title:'📅 Prochaine session', color:0x22d3ee, description:'Aucune session à venir cette semaine.' };
+  const t=getType(nx.sl.type); const time=slotTimeText(nx.sl);
+  const dateStr=nx.dt.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  return { title:'📣 Prochaine session — '+t.label, color:0x22d3ee,
+    fields:[ {name:'Quand', value:dateStr+(time?' · '+time:''), inline:false},
+             nx.sl.note?{name:'Détail', value:nx.sl.note}:null ].filter(Boolean) };
+}
 
 // ---- Actions (menu ⋯) ----
 document.getElementById('resetBtn').addEventListener('click', () => sync.reset('Effacer le planning de cette semaine ?'));
