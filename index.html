@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.6.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.7.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -170,6 +170,12 @@
     </div>
   </section>
 
+  <!-- REMPLAÇANTS -->
+  <section class="sec" id="sec-subs" hidden>
+    <div class="sec-head"><h2>Remplaçants</h2><span class="line"></span></div>
+    <div class="roster" id="subsGrid"></div>
+  </section>
+
   <!-- STAFF -->
   <section class="sec" id="sec-staff">
     <div class="sec-head"><h2>Staff</h2><span class="line"></span></div>
@@ -191,7 +197,7 @@
   </footer>
 
 </div>
-<script src="assets/plazma.js?v=3.6.0"></script>
+<script src="assets/plazma.js?v=3.7.0"></script>
 <script>
   /* Normalise la longueur des tracés d'icônes → tracé uniforme au survol */
   document.querySelectorAll('.tool-ico svg *').forEach(el => el.setAttribute('pathLength', '100'));
@@ -225,7 +231,18 @@
   /* Roster & staff */
   const PERF_HREF = {top:'plazma-perf-top.html',jungle:'plazma-perf-jungler.html',mid:'plazma-perf-mid.html',adc:'plazma-perf-adc.html',support:'plazma-perf-supp.html'};
   const initialsOf = n => { n=(n||'').trim(); if(!n) return '•'; const w=n.split(/\s+/); return (w.length>1 ? w[0][0]+w[1][0] : n.slice(0,2)).toUpperCase(); };
-  PZ.onRoster((roster, coach) => {
+  PZ.onRoster((roster, coach, subs) => {
+    const subsSec = document.getElementById('sec-subs');
+    const subsGrid = document.getElementById('subsGrid');
+    if (subs && subs.length) {
+      subsSec.hidden = false;
+      subsGrid.innerHTML = subs.map(p => `
+        <div class="pcard" style="--role:${p.color}">
+          <div class="pcard-av">${initialsOf(p.name)}</div>
+          <span class="role-badge" style="--role:${p.color}">${p.role}</span>
+          <div class="pcard-name">${p.name}</div>
+        </div>`).join('');
+    } else { subsSec.hidden = true; }
     document.getElementById('rosterGrid').innerHTML = roster.map(p => `
       <a class="pcard" href="${PERF_HREF[p.roleKey]}" style="--role:${p.color}">
         <div class="pcard-av">${initialsOf(p.name)}</div>
@@ -242,7 +259,7 @@
           <div class="pcard-cta">Voir la fiche <span class="pcard-arrow">→</span></div>
         </div>
       </a>`;
-    document.querySelectorAll('#sec-roster,#sec-staff').forEach(s => revealObs.observe(s));
+    document.querySelectorAll('#sec-roster,#sec-subs,#sec-staff').forEach(s => revealObs.observe(s));
   });
 
   /* Bouton admin */

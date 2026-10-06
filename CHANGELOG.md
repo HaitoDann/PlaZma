@@ -17,6 +17,11 @@ bas de la fenêtre **Paramètres**.
 
 ## 3.x — Interface pro
 
+### 3.7.0 — Remplaçant « Haito » (6e joueur)
+- Nouveau poste **remplaçant** structurel (toujours présent, nom/emoji éditables) :
+  **Haito**. Visible dans une section « Remplaçants » sur l'accueil, dans le roster
+  du Dashboard, avec son propre champ op.gg, et dans les disponibilités du Planning.
+
 ### Client local — premier jet (client/, v0.1.0)
 - Nouveau dossier `client/` : programme Windows (Node.js) qui, sans clé Riot,
   lit le **rang SoloQ** (API locale du client League), parse automatiquement les
