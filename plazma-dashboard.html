@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.6.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.7.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -277,7 +277,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="assets/plazma.js?v=3.6.0" data-section="dashboard"></script>
+<script src="assets/plazma.js?v=3.7.0" data-section="dashboard"></script>
 <script>
 'use strict';
 PZ.mountNav('dashboard', '#nav');
@@ -567,7 +567,7 @@ function renderObjectives(){
 
 // Roster : joueurs du roster central + lien op.gg (le rang se lit sur op.gg, plus de saisie manuelle).
 function opggOf(id){ const r=(state.roster||[]).find(x=>x.id===id); return r&&r.opgg||''; }
-function rosterPlayers(){ return PZ.getRoster ? PZ.getRoster() : []; }
+function rosterPlayers(){ if(!PZ.getRoster) return []; return PZ.getRoster().concat(PZ.getSubs?PZ.getSubs():[]); }
 function renderRoster(){
   const el=document.getElementById('roster');
   el.innerHTML=rosterPlayers().map(p=>{

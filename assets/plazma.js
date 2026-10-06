@@ -55,7 +55,7 @@
   // ---- Version de l'application (SemVer) ----
   // MAJEUR.MINEUR.CORRECTIF — MINEUR à chaque lot de fonctionnalités,
   // CORRECTIF pour les corrections. Affichée discrètement dans Paramètres.
-  const VERSION = '3.6.0';
+  const VERSION = '3.7.0';
 
   // ---- Niveau de performance : adapte la densité des effets ----
   // Full sur machine puissante (rendu identique), réduit sur mobile/appareil
@@ -316,6 +316,10 @@
     { id:'sayro',   roleKey:'support', role:'Support', color:'var(--support)', defaultName:'Joordy',  defaultEmoji:'🥀' },
   ];
   const COACH_SLOT = { id:'coach', roleKey:'coach', role:'Head Coach', color:'var(--coach)', defaultName:'Coach', defaultEmoji:'♟️' };
+  // Remplaçants : postes structurels (toujours présents, nom/emoji éditables).
+  const SUB_SLOTS = [
+    { id:'haito', roleKey:'sub', role:'Remplaçant', color:'#8b93a7', defaultName:'Haito', defaultEmoji:'🎮' },
+  ];
 
   let rosterOverrides = {};            // { id: { name, emoji } }  (5 postes fixes + coach)
   let rosterExtras = [];               // [ { id, name, emoji, role } ]  joueurs additionnels (dynamique)
@@ -335,16 +339,17 @@
     id: e.id, roleKey: 'extra', role: (e.role && e.role.trim()) || 'Joueur', color: 'var(--muted)',
     name: (e.name && e.name.trim()) || 'Joueur', emoji: (e.emoji && e.emoji.trim()) || '🎮', extra: true
   }));
-  /** Effectif complet pour l'association de comptes : 5 postes + coach + joueurs additionnels. */
-  const getPlayers = () => getRoster().concat([getCoach()]).concat(getExtras());
+  const getSubs = () => SUB_SLOTS.map(slot => Object.assign(resolveSlot(slot), { sub: true }));
+  /** Effectif complet : 5 postes + coach + remplaçants + joueurs additionnels. */
+  const getPlayers = () => getRoster().concat([getCoach()]).concat(getSubs()).concat(getExtras());
   const player = id => getPlayers().find(p => p.id === id) || null;
 
   function notifyRoster() {
-    const r = getRoster(), c = getCoach();
-    rosterListeners.forEach(cb => { try { cb(r, c); } catch (e) { console.error(e); } });
+    const r = getRoster(), c = getCoach(), subs = getSubs();
+    rosterListeners.forEach(cb => { try { cb(r, c, subs); } catch (e) { console.error(e); } });
   }
-  /** Enregistre un callback (r, coach) appelé maintenant puis à chaque MAJ du roster. */
-  function onRoster(cb) { rosterListeners.push(cb); cb(getRoster(), getCoach()); }
+  /** Enregistre un callback (roster, coach, subs) appelé maintenant puis à chaque MAJ du roster. */
+  function onRoster(cb) { rosterListeners.push(cb); cb(getRoster(), getCoach(), getSubs()); }
   function setPlayer(id, patch) {
     const ex = rosterExtras.find(e => e.id === id);
     if (ex) { Object.assign(ex, patch); return; }
@@ -1195,8 +1200,8 @@
     siteEnsureCfg, siteGet, siteSave,
     USER_DOMAIN, discord, stats,
     // Roster central
-    getRoster, getCoach, getExtras, getPlayers, player, onRoster, setPlayer, addPlayer, removePlayer, saveRoster,
-    ROSTER_SLOTS, COACH_SLOT,
+    getRoster, getCoach, getSubs, getExtras, getPlayers, player, onRoster, setPlayer, addPlayer, removePlayer, saveRoster,
+    ROSTER_SLOTS, COACH_SLOT, SUB_SLOTS,
     // Authentification & accès
     auth: {
       get user() { return authUser; },
