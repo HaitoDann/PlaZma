@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.8.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.9.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -77,6 +77,7 @@
   .stat-tbl td.mono,.stat-tbl th.mono{font-family:var(--font-mono);text-align:right}
   .stat-tbl tr:last-child td{border-bottom:0}
   .stat-champ{font-weight:600}
+  .champ-ic{width:26px;height:26px;border-radius:5px;object-fit:cover;display:block}
   .gold-pos{color:var(--ok)} .gold-neg{color:var(--err)}
 
   .rofl-agg{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:13px 16px;margin-bottom:14px}
@@ -278,7 +279,7 @@
   <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
 </div>
 
-<script src="assets/plazma.js?v=3.8.0" data-section="scrim"></script>
+<script src="assets/plazma.js?v=3.9.0" data-section="scrim"></script>
 <script>
 'use strict';
 PZ.mountNav('scrim', '#nav');
@@ -884,7 +885,7 @@ function statTable(st){
     let lane='';
     if(hasLane){ const e=p.pos&&byPos[p.pos]; const diff=e?p.gold-e.gold:null;
       lane=`<td class="mono ${diff==null?'':diff>=0?'gold-pos':'gold-neg'}">${diff==null?'—':(diff>=0?'+':'')+fmtK(diff)}</td>`; }
-    h+=`<tr><td class="stat-champ">${esc(p.champ)}</td><td>${esc(p.name||'—')}</td>`+
+    h+=`<tr><td class="stat-champ"><img class="champ-ic" src="assets/champions/${encodeURIComponent(p.champ)}.png" alt="${esc(p.champ)}" title="${esc(p.champ)}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:this.alt}))"></td><td>${esc(p.name||'—')}</td>`+
     `<td class="mono">${p.k}/${p.d}/${p.a}</td><td class="mono">${p.cs}</td><td class="mono">${fmtK(p.gold)}</td>`+
     lane+`<td class="mono">${fmtK(p.dmg)}</td><td class="mono">${p.vision}</td></tr>`;
   });

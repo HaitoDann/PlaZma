@@ -22,7 +22,9 @@ const https = require('https');
 const { parseRofl } = require('./rofl');
 const { pushStats } = require('./push');
 
-const HERE = __dirname;
+// En .exe (pkg), les fichiers (config.json, archi-data) sont à côté de l'exécutable ;
+// en Node classique, à côté du script.
+const HERE = process.pkg ? path.dirname(process.execPath) : __dirname;
 const OUT = path.join(HERE, 'archi-data');
 const REPLAYS_OUT = path.join(OUT, 'replays');
 const HISTORY_FILE = path.join(OUT, 'soloq-history.json');

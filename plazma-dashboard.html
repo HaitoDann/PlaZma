@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.8.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.9.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -117,7 +117,10 @@
   .rrow-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
   .rrow-main{flex:1;min-width:0}
   .rrow-name{font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .rrow-role{font-size:12px;color:var(--muted)}
+  .rrow-role{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}
+  .rrow-ic{width:14px;height:14px;object-fit:contain}
+  .tier-ic{width:18px;height:18px;object-fit:contain;vertical-align:-4px;margin-right:4px}
+  .champ-ic{width:22px;height:22px;border-radius:5px;object-fit:cover;flex-shrink:0}
   .rrow a{font-size:12px;color:var(--accent);white-space:nowrap}
   .rrow-rank{font-size:12px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:2px;flex-wrap:wrap}
   .lp-spark{vertical-align:middle;opacity:.8}
@@ -279,7 +282,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="assets/plazma.js?v=3.8.0" data-section="dashboard"></script>
+<script src="assets/plazma.js?v=3.9.0" data-section="dashboard"></script>
 <script>
 'use strict';
 PZ.mountNav('dashboard', '#nav');
@@ -522,7 +525,7 @@ function renderRoflAnalysis(){
   }).join('');
   const champList=Object.entries(champs).sort((a,b)=>b[1].games-a[1].games||b[1].wins-a[1].wins).slice(0,12)
     .map(([c,v])=>{ const wr=Math.round(v.wins/v.games*100);
-      return `<div class="champ-row"><span class="cn">${esc(c)}</span><span class="cg">${v.games}g</span><span class="cw ${wr>=50?'ok-t':'err-t'}">${wr}%</span></div>`; }).join('');
+      return `<div class="champ-row"><img class="champ-ic" src="assets/champions/${encodeURIComponent(c)}.png" alt="" title="${esc(c)}" onerror="this.style.display='none'"><span class="cn">${esc(c)}</span><span class="cg">${v.games}g</span><span class="cw ${wr>=50?'ok-t':'err-t'}">${wr}%</span></div>`; }).join('');
   body.innerHTML=`
     <div class="rofl-sub-h">Par joueur <span style="color:var(--muted)">· ±Gold = différentiel de gold sur la lane (fin de game)</span></div>
     <div style="overflow-x:auto"><table class="rk-tbl"><thead><tr><th>Joueur</th><th class="mono">Games</th><th class="mono">WR</th><th class="mono">KDA</th><th class="mono">CS/min</th><th class="mono">±Gold lane</th><th class="mono">Dmg</th><th class="mono">Vision</th></tr></thead><tbody>${rows}</tbody></table></div>
@@ -577,9 +580,11 @@ function renderRoster(){
     const id=opggOf(p.id);
     const url=id?`https://www.op.gg/summoners/euw/${encodeURIComponent(id)}`:'';
     const st=ps[p.id]&&ps[p.id].solo;
-    const rank = st ? `<div class="rrow-rank">${soloLabel(st)}${lpSpark(ps[p.id].history)}</div>` : '';
+    const tIc=st?PZ.tierIconUrl(st.tier):'';
+    const rank = st ? `<div class="rrow-rank">${tIc?`<img class="tier-ic" src="${tIc}" alt="">`:''}${soloLabel(st)}${lpSpark(ps[p.id].history)}</div>` : '';
+    const rIc=PZ.roleIconUrl(p.roleKey);
     return `<div class="rrow"><span class="rrow-dot" style="background:${p.color}"></span>
-      <div class="rrow-main"><div class="rrow-name">${esc(p.name)}</div><div class="rrow-role">${esc(p.role)}</div>${rank}</div>
+      <div class="rrow-main"><div class="rrow-name">${esc(p.name)}</div><div class="rrow-role">${rIc?`<img class="rrow-ic" src="${rIc}" alt="">`:''}${esc(p.role)}</div>${rank}</div>
       ${url?`<a href="${url}" target="_blank" rel="noopener">op.gg →</a>`:`<span class="off" title="À renseigner dans Paramètres">op.gg —</span>`}</div>`;
   }).join('');
 }
