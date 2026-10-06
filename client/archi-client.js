@@ -20,6 +20,9 @@ const path = require('path');
 const https = require('https');
 const { parseRofl } = require('./rofl');
 const { pushStats } = require('./push');
+const { startServer } = require('./ui');
+const tray = require('./tray');
+const { exec } = require('child_process');
 const APP_NAME = 'ARCHI Link';
 
 // En .exe (pkg), les fichiers (config.json, archi-data) sont à côté de l'exécutable ;
@@ -30,6 +33,7 @@ const REPLAYS_OUT = path.join(OUT, 'replays');
 const HISTORY_FILE = path.join(OUT, 'soloq-history.json');
 const RANK_FILE = path.join(OUT, 'rank.json');
 const INDEX_FILE = path.join(OUT, 'replays-index.json');
+const LOG_FILE = path.join(OUT, 'log.txt');
 
 // ---- Config (client/config.json, sinon valeurs par défaut Windows) ----
 function loadConfig() {
@@ -69,7 +73,40 @@ function loadConfig() {
 let CFG = loadConfig();
 function reloadConfig() { CFG = loadConfig(); log('⟳ configuration rechargée.'); logFeatures(); }
 
-function log(...a) { console.log(new Date().toLocaleTimeString('fr-FR'), '·', ...a); }
+const LOG = [];                                   // dernières lignes (page d'état)
+function log(...a) {
+  const line = new Date().toLocaleTimeString('fr-FR') + ' · ' + a.map(x => typeof x === 'string' ? x : JSON.stringify(x)).join(' ');
+  console.log(line);
+  LOG.push(line); if (LOG.length > 80) LOG.shift();
+  try { fs.appendFileSync(LOG_FILE, line + '\n'); } catch (e) {}
+}
+
+// État courant (exposé à la page d'état).
+const STATE = { leagueOpen: false, riotId: '', rankLabel: '', lastPush: '', lastPushOk: false };
+function getStatus() {
+  const f = CFG.features || {}; const on = [];
+  if (f.rank) on.push('rang'); if (f.soloq) on.push('SoloQ/.rofl'); if (f.wiki) on.push('wiki');
+  return { appName: APP_NAME, leagueOpen: STATE.leagueOpen, riotId: STATE.riotId, rankLabel: STATE.rankLabel,
+    lastPush: STATE.lastPush, lastPushOk: STATE.lastPushOk, features: on, playerId: CFG.playerId || '',
+    log: LOG.slice(-40) };
+}
+
+// ---- Démarrage automatique avec Windows (clé de registre HKCU\...\Run) ----
+const RUN_KEY = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run';
+const RUN_NAME = 'ARCHI Link';
+function isAutostart() {
+  if (process.platform !== 'win32') return Promise.resolve(null);
+  return new Promise(resolve => exec('reg query "' + RUN_KEY + '" /v "' + RUN_NAME + '"', (err, out) => resolve(!err && /ARCHI Link/i.test(out || ''))));
+}
+function setAutostart(on) {
+  if (process.platform !== 'win32') return Promise.resolve();
+  const exe = process.execPath;   // en .exe : l'exécutable ; en dev : node (à documenter)
+  return new Promise((resolve, reject) => {
+    const cmd = on ? `reg add "${RUN_KEY}" /v "${RUN_NAME}" /t REG_SZ /d "\"${exe}\"" /f`
+                   : `reg delete "${RUN_KEY}" /v "${RUN_NAME}" /f`;
+    exec(cmd, err => err && !/supprimer|unable to find|introuvable/i.test(String(err)) ? reject(err) : resolve());
+  });
+}
 function ensureDirs() { for (const d of [OUT, REPLAYS_OUT]) fs.mkdirSync(d, { recursive: true }); }
 function readJson(f, fallback) { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch (e) { return fallback; } }
 function writeJson(f, v) { fs.writeFileSync(f, JSON.stringify(v, null, 2)); }
@@ -197,15 +234,18 @@ let warnedClosed = false;
 async function cycle() {
   const lock = readLockfile();
   if (!lock) {
+    STATE.leagueOpen = false;
     if (!warnedClosed) { log('⏳ client League fermé — en attente (ouvre le client pour lire le rang).'); warnedClosed = true; }
     scanReplays();                                // les .rofl se lisent même client fermé
     return;
   }
+  STATE.leagueOpen = true;
   warnedClosed = false;
   try {
     const rank = await fetchRank(lock);
     writeJson(RANK_FILE, rank);
     appendHistory(rank);
+    STATE.riotId = rank.riotId; STATE.rankLabel = rankLabel(rank.solo);
     log('👤', rank.riotId, '—', rankLabel(rank.solo));
     const recent = await fetchRecentRanked(lock);
     if (recent) writeJson(path.join(OUT, 'recent-ranked.json'), recent);
@@ -250,8 +290,9 @@ async function maybePush(rank, recent) {
   if (f.soloq) { doc.history = readJson(HISTORY_FILE, []).slice(-60); doc.recent = (recent || []).slice(0, 10); }  // historique + parties
   try {
     await pushStats({ username: a.username, password: a.password, playerId: CFG.playerId }, doc);
+    STATE.lastPush = new Date().toLocaleTimeString('fr-FR'); STATE.lastPushOk = true;
     log('☁ envoyé à ARCHI (plazma-stats/' + CFG.playerId + ') · ' + [f.rank && 'rang', f.soloq && 'SoloQ'].filter(Boolean).join('+'));
-  } catch (e) { log('⚠ envoi ARCHI impossible :', e.message); }
+  } catch (e) { STATE.lastPush = new Date().toLocaleTimeString('fr-FR'); STATE.lastPushOk = false; log('⚠ envoi ARCHI impossible :', e.message); }
 }
 
 function logFeatures() {
@@ -265,20 +306,37 @@ function openSetup() {
   try { require('./ui').startSetup({ configPath: path.join(HERE, 'config.json'), config: CFG, appName: APP_NAME, onSaved: () => reloadConfig() }); }
   catch (e) { log('⚠ fenêtre de configuration indisponible :', e.message); }
 }
-function main() {
+let _trayProc = null, _server = null;
+function quit() {
+  log('⏹ arrêt demandé.');
+  try { if (_trayProc) _trayProc.kill(); } catch (e) {}
+  try { if (_server && _server.server) _server.server.close(); } catch (e) {}
+  setTimeout(() => process.exit(0), 200);
+}
+async function main() {
   ensureDirs();
-  console.log('========================================================');
-  console.log(' ' + APP_NAME + ' — client local ARCHI');
-  console.log(' Sorties locales :', OUT);
-  console.log('========================================================');
-  log('Lockfile attendu :', CFG.lockfile);
-  log('Dossier Replays  :', CFG.replaysDir);
-  // Première utilisation (pas de config) ou lancement avec --setup : fenêtre de config.
-  if (process.argv.includes('--setup') || !CFG._configFound) {
-    log('⚙ Ouverture de la fenêtre de configuration…');
-    openSetup();
-  }
+  log('— ' + APP_NAME + ' démarre — sorties : ' + OUT);
+  log('Lockfile : ' + CFG.lockfile);
+  log('Replays  : ' + CFG.replaysDir);
   logFeatures();
+  // Serveur local (page d'état + configuration), toujours actif.
+  try {
+    _server = await startServer({
+      configPath: path.join(HERE, 'config.json'), appName: APP_NAME,
+      getConfig: () => CFG, getStatus, onSaved: () => reloadConfig(),
+      isAutostart, setAutostart, onQuit: quit,
+    });
+    try { fs.writeFileSync(path.join(OUT, 'port.txt'), String(_server.port)); } catch (e) {}
+    log('🔌 interface locale : ' + _server.url);
+    // Icône dans la barre des tâches (Windows).
+    _trayProc = tray.start(_server.url, { dir: OUT, appName: APP_NAME });
+    if (_trayProc) log('🔔 icône de barre des tâches active.');
+    // Fenêtre au premier lancement ou avec --setup.
+    if (process.argv.includes('--setup') || !CFG._configFound) {
+      log('⚙ Ouverture de la fenêtre de configuration…');
+      _server.open(_server.url + (CFG._configFound ? '' : '?setup=1'));
+    }
+  } catch (e) { log('⚠ interface locale indisponible :', e.message); }
   watchReplays();
   cycle();
   setInterval(cycle, Math.max(1, +CFG.pollMinutes || 5) * 60 * 1000);

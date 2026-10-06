@@ -1,11 +1,11 @@
 name: Build client Windows (.exe)
 
-# Construit automatiquement client/dist/archi-client.exe à chaque modif du client,
-# et sur demande manuelle. L'exe est téléchargeable dans l'onglet Actions du dépôt
-# (run → section « Artifacts »).
+# Construit client/dist/archi-client.exe à chaque modif du client, et sur demande.
+# L'exe est masqué (sous-système GUI : pas de fenêtre de terminal) et téléchargeable
+# dans l'onglet Actions (run → « Artifacts »).
 on:
   push:
-    paths: ['client/**']
+    paths: ['client/**', 'scripts/pe-gui.js', '.github/workflows/build-client.yml']
   workflow_dispatch:
 
 jobs:
@@ -21,6 +21,8 @@ jobs:
           node-version: '20'
       - run: npm install
       - run: npm run build
+      - name: Masquer la console (console -> GUI)
+        run: node ../scripts/pe-gui.js dist/archi-client.exe
       - uses: actions/upload-artifact@v4
         with:
           name: archi-client-windows

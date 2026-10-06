@@ -102,6 +102,18 @@ intermédiaire ni clé) dans `archi-data/gamedata/` :
 - quelques `champion-<id>.json` d'exemple.
 Ces fichiers servent à bâtir le wiki champions dans ARCHI (dégâts, ratios…).
 
+## Icône discrète (barre des tâches) & démarrage auto
+- L'`.exe` tourne **sans fenêtre** (console masquée). Il apparaît comme une **icône
+  dans la barre des tâches** (près de l'horloge).
+- **Clic gauche** sur l'icône : ouvre la page d'**état** (ce que fait ARCHI Link,
+  journal, partage actif). **Clic droit** : Ouvrir / Configuration / Quitter.
+- Dans la page d'état, une case **« Démarrer automatiquement avec Windows »**
+  ajoute/retire ARCHI Link du démarrage (clé de registre HKCU\…\Run).
+- Logs dans `archi-data/log.txt`.
+
+> En mode `node` (développement), l'icône tray et le masquage de console ne
+> s'appliquent pas (c'est propre à l'`.exe` Windows).
+
 ## Reste à faire ensuite
 - Historique SoloQ enrichi (courbe de LP sur la durée) et import auto des `.rofl` vers les CR.
 - Lancement automatique au démarrage de Windows.

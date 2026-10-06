@@ -1,6 +1,6 @@
 {
   "name": "archi-client",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "description": "Client local ARCHI (Windows) : rang SoloQ, import .rofl, historique SoloQ — sans clé Riot.",
   "bin": "archi-client.js",
@@ -10,12 +10,22 @@
     "build": "pkg . --targets node20-win-x64 --output dist/archi-client.exe"
   },
   "pkg": {
-    "scripts": ["rofl.js", "push.js"],
-    "targets": ["node20-win-x64"],
+    "scripts": [
+      "rofl.js",
+      "push.js",
+      "ui.js",
+      "ui-page.js",
+      "tray.js"
+    ],
+    "targets": [
+      "node20-win-x64"
+    ],
     "outputPath": "dist"
   },
   "devDependencies": {
     "@yao-pkg/pkg": "^6.3.0"
   },
-  "engines": { "node": ">=18" }
+  "engines": {
+    "node": ">=18"
+  }
 }
