@@ -22,7 +22,7 @@ const { parseRofl } = require('./rofl');
 const { pushStats } = require('./push');
 const { startServer } = require('./ui');
 const tray = require('./tray');
-const { exec } = require('child_process');
+const { exec, execFile } = require('child_process');
 const APP_NAME = 'ARCHI Link';
 
 // En .exe (pkg), les fichiers (config.json, archi-data) sont à côté de l'exécutable ;
@@ -82,13 +82,13 @@ function log(...a) {
 }
 
 // État courant (exposé à la page d'état).
-const STATE = { leagueOpen: false, riotId: '', rankLabel: '', lastPush: '', lastPushOk: false };
+const STATE = { leagueOpen: false, riotId: '', rankLabel: '', lastPush: '', lastPushOk: false, autostart: null };
 function getStatus() {
   const f = CFG.features || {}; const on = [];
   if (f.rank) on.push('rang'); if (f.soloq) on.push('SoloQ/.rofl'); if (f.wiki) on.push('wiki');
   return { appName: APP_NAME, leagueOpen: STATE.leagueOpen, riotId: STATE.riotId, rankLabel: STATE.rankLabel,
     lastPush: STATE.lastPush, lastPushOk: STATE.lastPushOk, features: on, playerId: CFG.playerId || '',
-    log: LOG.slice(-40) };
+    autostart: STATE.autostart, log: LOG.slice(-40) };
 }
 
 // ---- Démarrage automatique avec Windows (clé de registre HKCU\...\Run) ----
@@ -96,16 +96,16 @@ const RUN_KEY = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run';
 const RUN_NAME = 'ARCHI Link';
 function isAutostart() {
   if (process.platform !== 'win32') return Promise.resolve(null);
-  return new Promise(resolve => exec('reg query "' + RUN_KEY + '" /v "' + RUN_NAME + '"', (err, out) => resolve(!err && /ARCHI Link/i.test(out || ''))));
+  return new Promise(resolve => execFile('reg', ['query', RUN_KEY, '/v', RUN_NAME], { windowsHide: true },
+    (err, out) => resolve(!err && /ARCHI Link/i.test(out || ''))));
 }
 function setAutostart(on) {
-  if (process.platform !== 'win32') return Promise.resolve();
-  const exe = process.execPath;   // en .exe : l'exécutable ; en dev : node (à documenter)
-  return new Promise((resolve, reject) => {
-    const cmd = on ? `reg add "${RUN_KEY}" /v "${RUN_NAME}" /t REG_SZ /d "\"${exe}\"" /f`
-                   : `reg delete "${RUN_KEY}" /v "${RUN_NAME}" /f`;
-    exec(cmd, err => err && !/supprimer|unable to find|introuvable/i.test(String(err)) ? reject(err) : resolve());
-  });
+  if (process.platform !== 'win32') { STATE.autostart = !!on; return Promise.resolve(); }
+  const exe = process.execPath;   // en .exe : l'exécutable
+  const args = on ? ['add', RUN_KEY, '/v', RUN_NAME, '/t', 'REG_SZ', '/d', '"' + exe + '"', '/f']
+                  : ['delete', RUN_KEY, '/v', RUN_NAME, '/f'];
+  return new Promise((resolve, reject) => execFile('reg', args, { windowsHide: true },
+    err => { if (err && !/introuvable|unable to find|cannot find/i.test(String(err))) return reject(err); STATE.autostart = !!on; resolve(); }));
 }
 function ensureDirs() { for (const d of [OUT, REPLAYS_OUT]) fs.mkdirSync(d, { recursive: true }); }
 function readJson(f, fallback) { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch (e) { return fallback; } }
@@ -337,6 +337,7 @@ async function main() {
       _server.open(_server.url + (CFG._configFound ? '' : '?setup=1'));
     }
   } catch (e) { log('⚠ interface locale indisponible :', e.message); }
+  isAutostart().then(v => { STATE.autostart = v; }).catch(() => {});
   watchReplays();
   cycle();
   setInterval(cycle, Math.max(1, +CFG.pollMinutes || 5) * 60 * 1000);
