@@ -86,3 +86,10 @@ couleur doit se justifier par un sens, pas par l'esthétique.
 - Neutres froids, accent `#4cb8cc` désaturé, arrondis 4–8px, cartes à filet fin sans ombre.
 - Aucune animation décorative (particules, étoiles, curseur, halos, icônes animées, ripple).
 - Pas d'emoji d'interface ; seuls restent les emojis d'identité du roster et ceux des embeds Discord.
+
+## 9. Cache-busting des assets
+Toutes les pages chargent `assets/plazma.js`, `assets/theme.css`, `perf.*` et
+`champions.js` avec la **même** étiquette `?v=<version>` (le numéro de version
+courant, ex. `?v=3.5.0`). **À chaque release, incrémenter ce `?v=` partout**
+en même temps que `VERSION` dans `plazma.js`, sinon certaines pages servent une
+version en cache (badge de version incohérent d'une page à l'autre).
