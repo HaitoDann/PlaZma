@@ -21,8 +21,11 @@ const { parseRofl } = require('./rofl');
 const { pushStats } = require('./push');
 const { startServer } = require('./ui');
 const tray = require('./tray');
-const { exec, execFile } = require('child_process');
+const { execFile } = require('child_process');
 const APP_NAME = 'ARCHI Link';
+let VERSION = '0.0.0';
+try { VERSION = require('./package.json').version || VERSION; } catch (e) {}
+const REPO = 'HaitoDann/PlaZma';                     // pour la vérif de mise à jour
 
 // En .exe (pkg), les fichiers (config.json, archi-data) sont à côté de l'exécutable ;
 // en Node classique, à côté du script.
@@ -81,13 +84,36 @@ function log(...a) {
 }
 
 // État courant (exposé à la page d'état).
-const STATE = { leagueOpen: false, riotId: '', rankLabel: '', lastPush: '', lastPushOk: false, autostart: null };
+const STATE = { leagueOpen: false, riotId: '', rankLabel: '', lastPush: '', lastPushOk: false, autostart: null,
+  updateAvailable: false, latestVersion: '' };
 function getStatus() {
   const f = CFG.features || {}; const on = [];
   if (f.rank) on.push('rang'); if (f.soloq) on.push('SoloQ/.rofl');
-  return { appName: APP_NAME, leagueOpen: STATE.leagueOpen, riotId: STATE.riotId, rankLabel: STATE.rankLabel,
+  return { appName: APP_NAME, version: VERSION, leagueOpen: STATE.leagueOpen, riotId: STATE.riotId, rankLabel: STATE.rankLabel,
     lastPush: STATE.lastPush, lastPushOk: STATE.lastPushOk, features: on, playerId: CFG.playerId || '',
-    autostart: STATE.autostart, log: LOG.slice(-40) };
+    autostart: STATE.autostart, updateAvailable: STATE.updateAvailable, latestVersion: STATE.latestVersion,
+    log: LOG.slice(-40) };
+}
+
+// ---- Vérification de mise à jour (GitHub Releases, sans clé) ----
+function cmpVer(a, b) {
+  const pa = String(a).split('.').map(Number), pb = String(b).split('.').map(Number);
+  for (let i = 0; i < 3; i++) { if ((pa[i] || 0) > (pb[i] || 0)) return 1; if ((pa[i] || 0) < (pb[i] || 0)) return -1; }
+  return 0;
+}
+function checkUpdate() {
+  return new Promise(resolve => {
+    const req = https.request({
+      hostname: 'api.github.com', path: '/repos/' + REPO + '/releases/latest', method: 'GET',
+      headers: { 'User-Agent': 'ARCHI-Link', 'Accept': 'application/vnd.github+json' }, timeout: 6000,
+    }, res => {
+      let b = ''; res.on('data', d => b += d);
+      res.on('end', () => { try { const j = JSON.parse(b); resolve((j.tag_name || '').replace(/[^0-9.]/g, '') || null); } catch (e) { resolve(null); } });
+    });
+    req.on('error', () => resolve(null));
+    req.on('timeout', () => { req.destroy(); resolve(null); });
+    req.end();
+  });
 }
 
 // ---- Démarrage automatique avec Windows (clé de registre HKCU\...\Run) ----
@@ -111,10 +137,32 @@ function readJson(f, fallback) { try { return JSON.parse(fs.readFileSync(f, 'utf
 function writeJson(f, v) { fs.writeFileSync(f, JSON.stringify(v, null, 2)); }
 
 // ---- LCU : lecture du lockfile + requêtes locales ----
+// Le lockfile n'existe que lorsque le client League tourne. On essaie le chemin
+// configuré, puis les emplacements d'installation courants (toutes lettres de
+// lecteur), pour marcher même si League est installé ailleurs que C:\Riot Games.
+let _lockPath = null;
+function lockCandidates() {
+  const list = [];
+  if (CFG.lockfile) list.push(CFG.lockfile);
+  const subs = ['Riot Games\\League of Legends', 'Program Files\\Riot Games\\League of Legends',
+    'Program Files (x86)\\Riot Games\\League of Legends', 'Games\\Riot Games\\League of Legends'];
+  for (const d of ['C', 'D', 'E', 'F', 'G']) for (const s of subs) list.push(d + ':\\' + s + '\\lockfile');
+  return [...new Set(list)];
+}
+function findLockfile() {
+  if (_lockPath) { try { fs.accessSync(_lockPath); return _lockPath; } catch (e) { _lockPath = null; } }
+  for (const p of lockCandidates()) {
+    try { fs.accessSync(p); _lockPath = p; if (p !== CFG.lockfile) log('📁 client League détecté :', p); return p; }
+    catch (e) {}
+  }
+  return null;
+}
 function readLockfile() {
+  const file = findLockfile();
+  if (!file) return null;                          // client League fermé
   let raw;
-  try { raw = fs.readFileSync(CFG.lockfile, 'utf8'); }
-  catch (e) { return null; }                     // client League fermé
+  try { raw = fs.readFileSync(file, 'utf8'); }
+  catch (e) { return null; }
   const p = raw.trim().split(':');               // name:pid:port:password:protocol
   if (p.length < 5) return null;
   return { port: p[2], password: p[3] };
@@ -294,7 +342,7 @@ function quit() {
 }
 async function main() {
   ensureDirs();
-  log('— ' + APP_NAME + ' démarre — sorties : ' + OUT);
+  log('— ' + APP_NAME + ' v' + VERSION + ' démarre — sorties : ' + OUT);
   log('Lockfile : ' + CFG.lockfile);
   log('Replays  : ' + CFG.replaysDir);
   logFeatures();
@@ -303,7 +351,16 @@ async function main() {
     _server = await startServer({
       configPath: path.join(HERE, 'config.json'), appName: APP_NAME,
       getConfig: () => CFG, getStatus,
-      onSaved: () => { reloadConfig(); cycle(); },   // relance immédiate après enregistrement
+      onSaved: async () => {
+        const firstSetup = !(CFG.auth && CFG.auth.username);   // non configuré avant cet enregistrement
+        reloadConfig();
+        // À la première configuration, on active le démarrage auto pour que
+        // « ça tourne tout seul » (le joueur peut le retirer depuis la page d'état).
+        if (firstSetup && STATE.autostart !== true) {
+          try { await setAutostart(true); log('🔁 démarrage automatique activé.'); } catch (e) {}
+        }
+        cycle();
+      },
       isAutostart, setAutostart, onQuit: quit,
     });
     try { fs.writeFileSync(path.join(OUT, 'port.txt'), String(_server.port)); } catch (e) {}
@@ -318,6 +375,14 @@ async function main() {
     }
   } catch (e) { log('⚠ interface locale indisponible :', e.message); }
   isAutostart().then(v => { STATE.autostart = v; }).catch(() => {});
+  checkUpdate().then(latest => {
+    if (!latest) return;
+    STATE.latestVersion = latest;
+    if (cmpVer(latest, VERSION) > 0) {
+      STATE.updateAvailable = true;
+      log('⬆ Mise à jour disponible : v' + latest + ' (installée : v' + VERSION + '). Télécharge la dernière version.');
+    }
+  }).catch(() => {});
   watchReplays();
   cycle();
   setInterval(cycle, Math.max(1, +CFG.pollMinutes || 5) * 60 * 1000);

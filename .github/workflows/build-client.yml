@@ -1,12 +1,17 @@
 name: Build client Windows (.exe)
 
 # Construit client/dist/archi-client.exe à chaque modif du client, et sur demande.
-# L'exe est masqué (sous-système GUI : pas de fenêtre de terminal) et téléchargeable
-# dans l'onglet Actions (run → « Artifacts »).
+# L'exe est masqué (sous-système GUI : pas de fenêtre de terminal). Il est
+# téléchargeable dans l'onglet Actions (run → « Artifacts ») et, sur la branche
+# main, publié dans une Release publique (lien direct, sans compte GitHub) :
+#   https://github.com/HaitoDann/PlaZma/releases/latest/download/archi-client.exe
 on:
   push:
     paths: ['client/**', 'scripts/pe-gui.js', '.github/workflows/build-client.yml']
   workflow_dispatch:
+
+permissions:
+  contents: write            # nécessaire pour publier la Release
 
 jobs:
   build:
@@ -23,8 +28,28 @@ jobs:
       - run: npm run build
       - name: Masquer la console (console -> GUI)
         run: node ../scripts/pe-gui.js dist/archi-client.exe
+      - name: Lire la version du client
+        id: ver
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
         with:
           name: archi-client-windows
           path: client/dist/archi-client.exe
           if-no-files-found: error
+      # Release publique (uniquement depuis main) : lien de téléchargement stable.
+      - name: Publier la Release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: archi-link-v${{ steps.ver.outputs.version }}
+          name: ARCHI Link v${{ steps.ver.outputs.version }}
+          body: |
+            Client local ARCHI Link pour Windows (rang & suivi SoloQ, sans clé Riot).
+
+            **Téléchargement :** `archi-client.exe` ci-dessous, ou le lien direct
+            toujours à jour : https://github.com/HaitoDann/PlaZma/releases/latest/download/archi-client.exe
+
+            Windows peut afficher « Éditeur inconnu » (exe non signé) :
+            *Informations complémentaires → Exécuter quand même.*
+          make_latest: true
+          files: client/dist/archi-client.exe

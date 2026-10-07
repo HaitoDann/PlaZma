@@ -58,6 +58,8 @@ code{background:var(--surface2);padding:1px 5px;border-radius:4px;font-size:12px
   <div class="pane on" id="pane-etat">
     <div class="card">
       <h2>État</h2>
+      <div id="upd" style="display:none;margin:-4px 0 12px;padding:9px 12px;border-radius:8px;
+        background:rgba(76,184,204,.14);border:1px solid rgba(76,184,204,.5);font-size:13px"></div>
       <div class="stat"><span class="k">Client League</span><span class="v" id="s-league">—</span></div>
       <div class="stat"><span class="k">Compte</span><span class="v" id="s-riot">—</span></div>
       <div class="stat"><span class="k">Rang SoloQ</span><span class="v" id="s-rank">—</span></div>
@@ -65,7 +67,7 @@ code{background:var(--surface2);padding:1px 5px;border-radius:4px;font-size:12px
       <div class="stat"><span class="k">Partage actif</span><span class="v" id="s-feat">—</span></div>
       <label class="sw"><input type="checkbox" id="auto"> Démarrer automatiquement avec Windows</label>
       <div class="loglines" id="log">…</div>
-      <div class="saverow" style="margin-top:14px"><span class="whoami">Journal des dernières actions.</span>
+      <div class="saverow" style="margin-top:14px"><span class="whoami" id="s-ver">Journal des dernières actions.</span>
         <button id="quit">Quitter ${appName}</button></div>
     </div>
   </div>
@@ -118,6 +120,12 @@ async function poll(){ try{ const s=await api('/api/status');
   $('s-feat').textContent = (s.features&&s.features.length)? s.features.join(', ') : 'rien';
   if(s.autostart!==null && document.activeElement!==$('auto')) $('auto').checked=!!s.autostart;
   if(Array.isArray(s.log)) $('log').textContent = s.log.join('\\n');
+  if(s.version) $('s-ver').textContent = '${appName} v'+s.version;
+  const up=$('upd');
+  if(s.updateAvailable){ up.style.display='block';
+    up.innerHTML='⬆ Mise à jour disponible (v'+(s.latestVersion||'?')+'). '+
+      '<a href="https://github.com/HaitoDann/PlaZma/releases/latest" target="_blank" rel="noopener" style="color:inherit;font-weight:600">Télécharger la dernière version</a>.'; }
+  else up.style.display='none';
 }catch(e){} }
 poll(); setInterval(poll, 3000);
 
