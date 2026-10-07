@@ -78,28 +78,38 @@ Pour rouvrir la fenêtre plus tard : relance avec `--setup`.
 Pré-requis côté ARCHI : ton compte doit être **lié à ton joueur** (page Comptes,
 côté admin) ou être **admin**, sinon l'envoi est refusé par les règles.
 
-## Version `.exe` (sans installer Node)
-Pour les joueurs qui ne veulent pas installer Node, une version `.exe` est générée
-automatiquement :
-1. Sur GitHub, onglet **Actions** → dernier run **« Build client Windows (.exe) »**
-   → section **Artifacts** → télécharge **archi-client-windows** (contient
-   `archi-client.exe`).
-2. Mets `archi-client.exe` dans un dossier, place le **`config.json`** (voir plus
-   haut) **à côté de l'exe**, puis double-clique sur l'exe.
-   - Le dossier `archi-data/` et le `config.json` sont lus/écrits **à côté de l'exe**.
-   - Windows SmartScreen peut afficher un avertissement (exe non signé) :
-     « Informations complémentaires » → « Exécuter quand même ».
+## Version `.exe` (sans installer Node) — pour les joueurs
+Lien de téléchargement **direct et toujours à jour** (aucun compte GitHub requis) :
+
+> **https://github.com/HaitoDann/PlaZma/releases/latest/download/archi-client.exe**
+
+1. Télécharge `archi-client.exe` et mets-le dans un dossier (ex. `Documents\ARCHI Link`).
+2. Double-clique dessus. Au **premier lancement**, une fenêtre s'ouvre pour saisir
+   ta connexion ARCHI et choisir ce que tu partages (voir « Configuration (fenêtre) »).
+   - Le `config.json` et le dossier `archi-data/` sont créés **à côté de l'exe**.
+   - Windows peut afficher « Éditeur inconnu » (exe non signé) :
+     **Informations complémentaires → Exécuter quand même**.
+3. Après la configuration, ARCHI Link **démarre automatiquement avec Windows**
+   (modifiable depuis la page d'état) et tourne en fond, discrètement.
+
+Une **mise à jour** disponible est signalée dans la page d'état (bandeau +
+lien de téléchargement). Il suffit de retélécharger l'exe par le lien ci-dessus.
 
 Construire l'exe soi-même (optionnel) : `npm install` puis `npm run build`
-(génère `dist/archi-client.exe`).
+(génère `dist/archi-client.exe`). Les Releases publiques sont générées
+automatiquement par l'Action à chaque build sur `main`.
 
 ## Icône discrète (barre des tâches) & démarrage auto
 - L'`.exe` tourne **sans fenêtre** (console masquée). Il apparaît comme une **icône
   dans la barre des tâches** (près de l'horloge).
 - **Clic gauche** sur l'icône : ouvre la page d'**état** (ce que fait ARCHI Link,
   journal, partage actif). **Clic droit** : Ouvrir / Configuration / Quitter.
-- Dans la page d'état, une case **« Démarrer automatiquement avec Windows »**
-  ajoute/retire ARCHI Link du démarrage (clé de registre HKCU\…\Run).
+- Le **démarrage automatique avec Windows** est **activé dès la première
+  configuration**. La case **« Démarrer automatiquement avec Windows »** de la
+  page d'état permet de le retirer (clé de registre HKCU\…\Run).
+- Le **chemin du client League est détecté automatiquement** (toutes lettres de
+  lecteur, `Program Files`…), donc pas besoin de configurer `lockfile` même si
+  League n'est pas sur `C:`.
 - Logs dans `archi-data/log.txt`.
 
 > En mode `node` (développement), l'icône tray et le masquage de console ne
@@ -107,4 +117,3 @@ Construire l'exe soi-même (optionnel) : `npm install` puis `npm run build`
 
 ## Reste à faire ensuite
 - Historique SoloQ enrichi (courbe de LP sur la durée) et import auto des `.rofl` vers les CR.
-- Lancement automatique au démarrage de Windows.
