@@ -70,8 +70,7 @@ une fenêtre s'ouvre dans ton navigateur pour :
 - saisir ta **connexion ARCHI** (avec un bouton **« Tester la connexion »**) ;
 - choisir **ce que tu partages**, chaque option indiquant son **impact** sur ton PC :
   - **Rang & winrate SoloQ** — impact quasi nul ;
-  - **Historique & suivi SoloQ (+ replays .rofl)** — impact léger ;
-  - **Participer au wiki ARCHI** — impact ponctuel (extraction au lancement).
+  - **Historique & suivi SoloQ (+ replays .rofl)** — impact léger.
 
 Tes choix sont écrits dans `config.json` (ton mot de passe reste **sur ton PC**).
 Pour rouvrir la fenêtre plus tard : relance avec `--setup`.
@@ -93,25 +92,6 @@ automatiquement :
 
 Construire l'exe soi-même (optionnel) : `npm install` puis `npm run build`
 (génère `dist/archi-client.exe`).
-
-## Données de jeu (wiki champions)
-Quand le client League est ouvert **et l'option « wiki » activée**, le client
-extrait les données de champions/sorts **directement depuis le client installé**
-(API locale, sans intermédiaire ni clé) dans `archi-data/gamedata/` :
-- `champion-summary.json` (liste brute complète) ;
-- `champion-<id>.json` (détail brut de chaque champion) ;
-- **`champions-wiki.json`** — fichier **consolidé et nettoyé** (nom, titre, rôles,
-  lore, passif, 4 sorts avec description, coût, cooldown et portée par niveau).
-
-### Alimenter la page « Champions » d'ARCHI
-1. Lance ARCHI Link avec l'option **wiki** cochée, le client League ouvert.
-2. Attends la ligne `📘 wiki généré : … champions` dans le journal.
-3. Copie `archi-data/gamedata/champions-wiki.json` dans **`assets/champions-wiki.json`**
-   du dépôt ARCHI, commit/push : la page **Champions** se met à jour (icônes et
-   sorts servis via CommunityDragon, alignés sur le patch installé).
-
-> Les dégâts chiffrés ne sont pas exposés par l'API locale (on affiche la
-> description du sort + coût/cooldown/portée exacts, qui eux le sont).
 
 ## Icône discrète (barre des tâches) & démarrage auto
 - L'`.exe` tourne **sans fenêtre** (console masquée). Il apparaît comme une **icône

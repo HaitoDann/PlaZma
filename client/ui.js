@@ -41,7 +41,7 @@ function startServer(opts) {
           appName: opts.appName || 'ARCHI Link',
           username: (c.auth && c.auth.username) || '',
           playerId: c.playerId || '',
-          features: { rank: f.rank !== false, soloq: f.soloq !== false, wiki: !!f.wiki },
+          features: { rank: f.rank !== false, soloq: f.soloq !== false },
         });
       }
       if (req.method === 'GET' && url === '/api/status') {
@@ -60,7 +60,7 @@ function startServer(opts) {
         const next = Object.assign({}, cur, {
           auth: { username: b.username, password: b.password },
           playerId: b.playerId,
-          features: { rank: !!b.features.rank, soloq: !!b.features.soloq, wiki: !!b.features.wiki },
+          features: { rank: !!b.features.rank, soloq: !!b.features.soloq },
         });
         delete next.push;
         try { fs.writeFileSync(opts.configPath, JSON.stringify(stripInternal(next), null, 2)); }

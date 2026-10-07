@@ -5,5 +5,5 @@
   "pollMinutes": 5,
   "auth": { "username": "", "password": "" },
   "playerId": "",
-  "features": { "rank": true, "soloq": true, "wiki": false }
+  "features": { "rank": true, "soloq": true }
 }
