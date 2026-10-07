@@ -90,9 +90,6 @@ code{background:var(--surface2);padding:1px 5px;border-radius:4px;font-size:12px
       <label class="feat"><input type="checkbox" id="f-soloq" checked>
         <div><div class="ft">Historique & suivi SoloQ (+ replays .rofl)</div><div class="fd">Historique du rang, dernières parties, lecture des replays .rofl.</div>
           <div class="fi"><b>Impact :</b> léger — surveillance du dossier des replays ; l'analyse d'un replay est brève.</div></div></label>
-      <label class="feat"><input type="checkbox" id="f-wiki">
-        <div><div class="ft">Participer au wiki ARCHI</div><div class="fd">Partage les données de champions/sorts lues dans ton client installé.</div>
-          <div class="fi"><b>Impact :</b> ponctuel — une extraction au lancement, puis plus rien.</div></div></label>
     </div>
     <div class="card"><div class="saverow">
       <div class="whoami" id="who">Teste d'abord ta connexion.</div>
@@ -111,7 +108,7 @@ if(location.search.indexOf('setup')>=0) document.querySelector('.tab[data-tab=co
 
 let detected={playerId:''};
 (async()=>{ try{ const c=await api('/api/config'); $('u').value=c.username||''; detected.playerId=c.playerId||'';
-  $('f-rank').checked=c.features.rank; $('f-soloq').checked=c.features.soloq; $('f-wiki').checked=c.features.wiki; }catch(e){} })();
+  $('f-rank').checked=c.features.rank; $('f-soloq').checked=c.features.soloq; }catch(e){} })();
 
 async function poll(){ try{ const s=await api('/api/status');
   $('s-league').innerHTML = s.leagueOpen ? '<span class="dot on"></span>ouvert' : '<span class="dot off"></span>fermé';
@@ -146,7 +143,7 @@ $('test').addEventListener('click', async ()=>{
 });
 $('save').addEventListener('click', async ()=>{
   const body={ username:$('u').value.trim(), password:$('p').value, playerId:detected.playerId,
-    features:{ rank:$('f-rank').checked, soloq:$('f-soloq').checked, wiki:$('f-wiki').checked } };
+    features:{ rank:$('f-rank').checked, soloq:$('f-soloq').checked } };
   setSave('wait','Enregistrement…'); $('save').disabled=true;
   const r=await api('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   $('save').disabled=false;

@@ -5,7 +5,6 @@
  * En local, sans aucune clé Riot :
  *   1) lit le rang SoloQ (API locale du client League, « LCU ») ;
  *   2) parse les replays .rofl ; 3) tient l'historique SoloQ ;
- *   4) extrait les données de champions pour le wiki.
  *
  * Le joueur choisit ce qu'il partage via la fenêtre de configuration
  * (lancer avec --setup). Chaque option est optionnelle.
@@ -22,7 +21,6 @@ const { parseRofl } = require('./rofl');
 const { pushStats } = require('./push');
 const { startServer } = require('./ui');
 const tray = require('./tray');
-const { buildWiki } = require('./gamedata');
 const { exec, execFile } = require('child_process');
 const APP_NAME = 'ARCHI Link';
 
@@ -44,7 +42,7 @@ function loadConfig() {
     pollMinutes: 5,
     auth: { username: '', password: '' },
     playerId: '',
-    features: { rank: true, soloq: true, wiki: false },
+    features: { rank: true, soloq: true },
   };
   const expand = s => typeof s === 'string'
     ? s.replace(/%([^%]+)%/g, (_, v) => process.env[v] || _)
@@ -61,10 +59,10 @@ function loadConfig() {
   if (c.push && !c.auth) {
     merged.auth = { username: c.push.username || '', password: c.push.password || '' };
     merged.playerId = c.push.playerId || '';
-    merged.features = { rank: !!c.push.enabled, soloq: !!c.push.enabled, wiki: false };
+    merged.features = { rank: !!c.push.enabled, soloq: !!c.push.enabled };
   }
   merged.auth = Object.assign({ username: '', password: '' }, merged.auth);
-  merged.features = Object.assign({ rank: true, soloq: true, wiki: false }, merged.features);
+  merged.features = Object.assign({ rank: true, soloq: true }, merged.features);
   delete merged.push;
   merged._configFound = true;
   merged.lockfile = expand(merged.lockfile);
@@ -86,7 +84,7 @@ function log(...a) {
 const STATE = { leagueOpen: false, riotId: '', rankLabel: '', lastPush: '', lastPushOk: false, autostart: null };
 function getStatus() {
   const f = CFG.features || {}; const on = [];
-  if (f.rank) on.push('rang'); if (f.soloq) on.push('SoloQ/.rofl'); if (f.wiki) on.push('wiki');
+  if (f.rank) on.push('rang'); if (f.soloq) on.push('SoloQ/.rofl');
   return { appName: APP_NAME, leagueOpen: STATE.leagueOpen, riotId: STATE.riotId, rankLabel: STATE.rankLabel,
     lastPush: STATE.lastPush, lastPushOk: STATE.lastPushOk, features: on, playerId: CFG.playerId || '',
     autostart: STATE.autostart, log: LOG.slice(-40) };
@@ -243,7 +241,7 @@ async function cycle() {
   STATE.leagueOpen = true;
   warnedClosed = false;
   // Chaque étape est isolée : si l'une échoue, les autres continuent
-  // (p. ex. l'historique de parties peut manquer sans bloquer l'envoi ou le wiki).
+  // (p. ex. l'historique de parties peut manquer sans bloquer l'envoi).
   let rank = null, recent = null;
   try {
     rank = await fetchRank(lock);
@@ -257,42 +255,9 @@ async function cycle() {
     if (recent) writeJson(path.join(OUT, 'recent-ranked.json'), recent);
   } catch (e) { log('⚠ parties récentes indisponibles :', e.message); }
   if (rank) { try { await maybePush(rank, recent); } catch (e) { log('⚠ envoi ARCHI :', e.message); } }
-  try { await dumpGameData(lock); } catch (e) { log('⚠ extraction wiki :', e.message); }
   scanReplays();
 }
 
-let _gameDataDone = false;
-// Extrait les données de champions/sorts depuis le client League (LCU, local).
-// Source brute, sans intermédiaire ni clé, alignée sur le patch installé.
-async function dumpGameData(lock) {
-  if (_gameDataDone) return;
-  if (!(CFG.features && CFG.features.wiki)) return;   // option "wiki" désactivée
-  const dir = path.join(OUT, 'gamedata');
-  try { fs.mkdirSync(dir, { recursive: true }); } catch (e) {}
-  log('📘 extraction des données de jeu (wiki) en cours…');
-  let summary;
-  try { summary = await lcuGet(lock, '/lol-game-data/assets/v1/champion-summary.json'); }
-  catch (e) { log('⚠ données de jeu indisponibles :', e.message, '— réessai au prochain cycle.'); return; }
-  writeJson(path.join(dir, 'champion-summary.json'), summary);
-  const ids = (summary || []).map(c => c.id).filter(id => id && id > 0);
-  // Détail de chaque champion (un à un pour ménager le client, ~170 requêtes locales).
-  const detailsById = {};
-  let ok = 0, patch = '';
-  for (const id of ids) {
-    try {
-      const c = await lcuGet(lock, '/lol-game-data/assets/v1/champions/' + id + '.json');
-      detailsById[id] = c; ok++;
-    } catch (e) { /* un champion manquant n'empêche pas le reste */ }
-  }
-  // Fichier consolidé compact prêt pour le wiki d'ARCHI.
-  try {
-    const wiki = buildWiki(summary, detailsById, patch);
-    writeJson(path.join(dir, 'champions-wiki.json'), wiki);
-    _gameDataDone = true;
-    log('📘 wiki généré : ' + wiki.count + ' champions (' + ok + ' détaillés) → archi-data/gamedata/champions-wiki.json');
-    log('   Copie ce fichier dans assets/ du dépôt ARCHI (assets/champions-wiki.json) pour alimenter la page Wiki.');
-  } catch (e) { log('⚠ consolidation wiki impossible :', e.message); }
-}
 
 async function maybePush(rank, recent) {
   const f = CFG.features || {}, a = CFG.auth || {};
@@ -312,7 +277,7 @@ async function maybePush(rank, recent) {
 function logFeatures() {
   if (CFG._configError) { log('❌ config.json illisible :', CFG._configError, '— lance avec --setup pour le régénérer.'); return; }
   const f = CFG.features || {}, a = CFG.auth || {};
-  const on = []; if (f.rank) on.push('rang & winrate'); if (f.soloq) on.push('SoloQ & replays'); if (f.wiki) on.push('wiki');
+  const on = []; if (f.rank) on.push('rang & winrate'); if (f.soloq) on.push('SoloQ & replays');
   if (a.username && CFG.playerId && on.length) log('☁ Partage ARCHI : ' + on.join(', ') + ' (joueur ' + CFG.playerId + ').');
   else log('☁ Partage ARCHI : rien de configuré — lance avec --setup pour choisir.');
 }
@@ -338,7 +303,7 @@ async function main() {
     _server = await startServer({
       configPath: path.join(HERE, 'config.json'), appName: APP_NAME,
       getConfig: () => CFG, getStatus,
-      onSaved: () => { reloadConfig(); _gameDataDone = false; cycle(); },   // relance immédiate (envoi + wiki)
+      onSaved: () => { reloadConfig(); cycle(); },   // relance immédiate après enregistrement
       isAutostart, setAutostart, onQuit: quit,
     });
     try { fs.writeFileSync(path.join(OUT, 'port.txt'), String(_server.port)); } catch (e) {}

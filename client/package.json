@@ -1,6 +1,6 @@
 {
   "name": "archi-client",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "private": true,
   "description": "Client local ARCHI (Windows) : rang SoloQ, import .rofl, historique SoloQ — sans clé Riot.",
   "bin": "archi-client.js",
@@ -15,8 +15,7 @@
       "push.js",
       "ui.js",
       "ui-page.js",
-      "tray.js",
-      "gamedata.js"
+      "tray.js"
     ],
     "targets": [
       "node20-win-x64"
