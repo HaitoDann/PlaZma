@@ -55,7 +55,7 @@
   // ---- Version de l'application (SemVer) ----
   // MAJEUR.MINEUR.CORRECTIF — MINEUR à chaque lot de fonctionnalités,
   // CORRECTIF pour les corrections. Affichée discrètement dans Paramètres.
-  const VERSION = '3.19.0';
+  const VERSION = '3.20.0';
 
   // ---- Niveau de performance : adapte la densité des effets ----
   // Full sur machine puissante (rendu identique), réduit sur mobile/appareil
@@ -371,7 +371,18 @@
   const ladder = { value: ladderValue, fromSolo: ladderFromSolo, label: ladderLabel, TIER_ORDER, DIV_ORDER, TIER_FR };
   const getSubs = () => SUB_SLOTS.map(slot => Object.assign(resolveSlot(slot), { sub: true }));
   /** Effectif complet : 5 postes + coach + remplaçants + joueurs additionnels. */
-  const getPlayers = () => getRoster().concat([getCoach()]).concat(getSubs()).concat(getExtras());
+  // Effectif complet, dédoublonné : évite qu'un même joueur (ex. un remplaçant
+  // présent à la fois en poste structurel et ajouté à la main) apparaisse 2 fois.
+  const getPlayers = () => {
+    const all = getRoster().concat([getCoach()]).concat(getSubs()).concat(getExtras());
+    const seenId = new Set(), seenName = new Set(), out = [];
+    for (const p of all) {
+      const nm = (p.name || '').trim().toLowerCase();
+      if (seenId.has(p.id) || (nm && seenName.has(nm))) continue;
+      seenId.add(p.id); if (nm) seenName.add(nm); out.push(p);
+    }
+    return out;
+  };
   const player = id => getPlayers().find(p => p.id === id) || null;
 
   function notifyRoster() {
