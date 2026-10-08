@@ -140,9 +140,10 @@ $('test').addEventListener('click', async ()=>{
   $('test').disabled=false;
   if(!r.ok){ setLogin('err','✕ '+(r.error||'Échec.')); $('save').disabled=true; return; }
   detected.playerId=r.playerId||detected.playerId;
+  detected.playerName=r.playerName||r.playerId||'';
   setLogin('ok','✓ Connecté'+(r.name?' en tant que '+r.name:'')+'.');
   const pid=detected.playerId;
-  $('who').innerHTML = pid ? 'Compte lié au joueur <b>'+pid+'</b>.' :
+  $('who').innerHTML = pid ? 'Compte lié au joueur <b>'+(detected.playerName||pid)+'</b>.' :
     'Aucun joueur lié. <b>Un admin</b> doit le lier (page Comptes), sinon l\\'envoi sera refusé.';
   $('save').disabled = !pid && !(r.role==='admin');
   if(!pid && r.role==='admin'){ $('who').innerHTML='Compte admin — précise le joueur à alimenter :'+
