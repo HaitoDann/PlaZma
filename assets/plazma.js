@@ -55,7 +55,7 @@
   // ---- Version de l'application (SemVer) ----
   // MAJEUR.MINEUR.CORRECTIF — MINEUR à chaque lot de fonctionnalités,
   // CORRECTIF pour les corrections. Affichée discrètement dans Paramètres.
-  const VERSION = '3.13.0';
+  const VERSION = '3.14.0';
 
   // ---- Niveau de performance : adapte la densité des effets ----
   // Full sur machine puissante (rendu identique), réduit sur mobile/appareil
@@ -302,6 +302,7 @@
       authResolved = true; _resolveReady({ user: authUser, profile });
       handleAccess();
       notifyAuth();
+      if (typeof ensureRosterNames === 'function') ensureRosterNames();   // admin : complète les noms du roster
     });
   }
 
@@ -342,7 +343,8 @@
   // Icônes de rôles et d'elo (fichiers dans assets/). '' si pas d'icône dispo.
   const ROLE_ICONS = { top:'assets/Top_icon.webp', jungle:'assets/Jungle_icon.webp', mid:'assets/Middle_icon.webp', adc:'assets/Bottom_icon.webp', support:'assets/Support_icon.png' };
   const roleIconUrl = rk => ROLE_ICONS[rk] || '';
-  const TIER_ICONS = { PLATINUM:'assets/icone_platine.png', DIAMOND:'assets/icone_diamant.png' };
+  const TIER_ICONS = { GOLD:'assets/icone_gold.png', PLATINUM:'assets/icone_platine.png', EMERALD:'assets/icone_emeraude.png',
+    DIAMOND:'assets/icone_diamant.png', MASTER:'assets/icone_master.png', CHALLENGER:'assets/icone_challenger.png' };
   const tierIconUrl = t => TIER_ICONS[String(t||'').toUpperCase()] || '';
   const getSubs = () => SUB_SLOTS.map(slot => Object.assign(resolveSlot(slot), { sub: true }));
   /** Effectif complet : 5 postes + coach + remplaçants + joueurs additionnels. */
@@ -373,6 +375,19 @@
     _bumpUsage('writes', 1);
     return db.collection(COLLECTION).doc('roster').set(Object.assign({}, rosterOverrides, { _extras: rosterExtras }));
   }
+  // Inscrit le nom d'affichage effectif de chaque poste dans le doc `roster`,
+  // afin que des outils externes (ARCHI Link) puissent résoudre un slot → nom
+  // sans connaître les valeurs par défaut du code. Idempotent, réservé aux admins.
+  function ensureRosterNames() {
+    if (!db || !isAdmin()) return;
+    const slots = ROSTER_SLOTS.concat([COACH_SLOT]).concat(SUB_SLOTS);
+    const missing = slots.some(s => !(rosterOverrides[s.id] && rosterOverrides[s.id].name));
+    if (!missing) return;
+    const patch = {};
+    slots.forEach(s => { const r = resolveSlot(s); patch[s.id] = { name: r.name, emoji: r.emoji }; });
+    _bumpUsage('writes', 1);
+    db.collection(COLLECTION).doc('roster').set(patch, { merge: true }).catch(() => {});
+  }
 
   if (db) {
     db.collection(COLLECTION).doc('roster').onSnapshot(
@@ -382,6 +397,7 @@
         rosterExtras = Array.isArray(data._extras) ? data._extras : [];
         rosterOverrides = Object.assign({}, data); delete rosterOverrides._extras;
         notifyRoster();
+        ensureRosterNames();            // complète les noms manquants (admin), pour ARCHI Link
       },
       e => console.error('roster', e)
     );

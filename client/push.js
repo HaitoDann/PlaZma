@@ -86,15 +86,28 @@ function getDoc(docPath, idToken) {
 }
 
 // Teste les identifiants ARCHI et lit le profil (nom, playerId lié, rôle).
+// Résout aussi le nom d'affichage actuel du poste lié (roster) pour ne jamais
+// montrer l'identifiant interne du slot (ex. « sayro ») : en cas de mercato,
+// il suffit de renommer le poste côté site, sans rien recoder.
 async function checkAccount(username, password) {
   const { idToken, localId } = await login(username, password);
   let profile = null;
   try { profile = await getDoc('users/' + localId, idToken); } catch (e) {}
+  const playerId = (profile && profile.playerId) || '';
+  let playerName = '';
+  if (playerId) {
+    try {
+      const roster = await getDoc('plazma/roster', idToken);   // { <slotId>: { name, emoji }, … }
+      const slot = roster && roster[playerId];
+      if (slot && slot.name) playerName = String(slot.name).trim();
+    } catch (e) {}
+  }
   return {
     ok: true, localId,
-    name: profile && profile.name || '',
-    playerId: profile && profile.playerId || '',
-    role: profile && profile.role || '',
+    name: (profile && profile.name) || '',
+    playerId,
+    playerName: playerName || playerId,     // nom d'affichage du poste (défaut : l'id si non résolu)
+    role: (profile && profile.role) || '',
   };
 }
 
