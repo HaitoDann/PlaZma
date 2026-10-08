@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.19.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.20.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -142,22 +142,32 @@
     z-index:181;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
   .drawer.open{transform:none}
   .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)}
-  .drawer-list{flex:1;min-height:0;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
-  .sess{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:border-color .15s}
-  .sess:hover{border-color:var(--border-2)}
-  .sess.active{border-color:var(--accent)}
-  .sess-main{display:flex;gap:11px;padding:12px 13px}
-  .sess-date{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 10px;text-align:center;min-width:46px}
-  .sess-date .d{font-family:var(--font-display);font-size:1.3rem;font-weight:700;line-height:1}
-  .sess-date .m{font-size:9px;color:var(--muted)}
-  .sess-adv{font-family:var(--font-display);font-weight:600}
-  .sess-meta{font-size:11px;color:var(--muted);margin-top:2px}
-  .sess-score{margin-top:5px;font-family:var(--font-display);font-weight:700}
-  .sess-score .w{color:var(--ok)}.sess-score .l{color:var(--err)}
-  .sess-actions{display:flex;border-top:1px solid var(--border)}
-  .sess-actions button{flex:1;background:none;border:none;padding:8px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:var(--font)}
-  .sess-actions button+button{border-left:1px solid var(--border)}
-  .sess-actions button:hover{color:var(--text)}
+  .drawer-search{position:relative;margin:12px 14px 0}
+  .drawer-search input{width:100%;padding:9px 12px 9px 34px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;
+    color:var(--text);font-family:var(--font);font-size:13px}
+  .drawer-search input:focus{outline:none;border-color:var(--accent)}
+  .drawer-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;stroke:var(--muted);fill:none;stroke-width:2}
+  .drawer-list{flex:1;min-height:0;overflow-y:auto;padding:8px 10px 14px}
+  .hist-month{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;
+    padding:12px 6px 5px;position:sticky;top:0;background:var(--surface);z-index:1}
+  .sess{display:flex;align-items:center;gap:11px;padding:10px 10px;border-radius:10px;cursor:pointer;border:1px solid transparent}
+  .sess:hover{background:var(--surface-2)}
+  .sess.active{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
+  .sess-d{width:40px;flex-shrink:0;text-align:center;line-height:1.1}
+  .sess-d b{display:block;font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--text)}
+  .sess-d span{font-size:9.5px;color:var(--muted);text-transform:uppercase}
+  .sess-body{flex:1;min-width:0}
+  .sess-adv{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sess-meta{font-size:11px;color:var(--muted);margin-top:1px}
+  .sess-res{font-family:var(--font-display);font-weight:700;font-size:12.5px;padding:3px 9px;border-radius:999px;flex-shrink:0}
+  .sess-res.w{color:var(--ok);background:color-mix(in srgb,var(--ok) 15%,transparent)}
+  .sess-res.l{color:var(--err);background:color-mix(in srgb,var(--err) 15%,transparent)}
+  .sess-res.d{color:var(--dim);background:var(--surface-2)}
+  .sess-res.n{color:var(--muted);background:var(--surface-2);font-family:var(--font);font-size:11px;font-weight:600}
+  .sess-del{opacity:0;border:none;background:none;color:var(--muted);cursor:pointer;flex-shrink:0;padding:5px;border-radius:6px;line-height:0}
+  .sess-del svg{width:15px;height:15px}
+  .sess:hover .sess-del{opacity:.6}
+  .sess-del:hover{opacity:1;color:var(--err);background:color-mix(in srgb,var(--err) 12%,transparent)}
   .drawer-empty{text-align:center;color:var(--muted);font-size:13px;padding:40px 20px}
 
   @media(max-width:760px){.meta{grid-template-columns:1fr}.ana-grid{grid-template-columns:1fr}.players{grid-template-columns:repeat(2,1fr)}}
@@ -282,10 +292,12 @@
 <div class="drawer" id="drawer">
   <div class="drawer-head"><h2 style="font-size:1.1rem">Historique</h2><button class="btn btn-icon btn-ghost" onclick="closeHistory()">✕</button></div>
   <div style="padding:14px 14px 0"><button class="btn btn-primary" style="width:100%" onclick="newSession();closeHistory()"><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-pen"><path class="pl-pen-body" d="M14.5 4.5l5 5L9 20l-5.5 1L5 15.5z"/><path class="pl-pen-nib" d="M12.5 6.5l5 5"/></g><path class="pl-pen-line" d="M4 21.5h15"/></svg> Nouveau compte rendu</button></div>
+  <div class="drawer-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input type="text" id="histSearch" placeholder="Rechercher un adversaire…" autocomplete="off" oninput="renderHistoryList()"></div>
   <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
 </div>
 
-<script src="assets/plazma.js?v=3.19.0" data-section="scrim"></script>
+<script src="assets/plazma.js?v=3.20.0" data-section="scrim"></script>
 <script>
 'use strict';
 PZ.mountNav('scrim', '#nav');
@@ -585,27 +597,38 @@ async function loadHistoryList(){
     catch{ const snap=await db.collection(SCRIMS_COL).get(); snap.forEach(d=>docs.push({id:d.id,...d.data()})); docs.sort((a,b)=>(b._savedAt?.toMillis?.()||0)-(a._savedAt?.toMillis?.()||0)); }
   }catch(e){ console.error(e); list.innerHTML='<div class="drawer-empty">Lecture impossible : '+(e.message||e.code||'')+'</div>'; return; }
   document.getElementById('histCount').textContent = docs.length?'('+docs.length+')':'';
-  if(!docs.length){ list.innerHTML='<div class="drawer-empty">Aucun scrim sauvegardé.</div>'; return; }
+  HIST_DOCS = docs;
+  renderHistoryList();
+}
+let HIST_DOCS = [];
+function renderHistoryList(){
+  const list=document.getElementById('drawerList');
+  const q=(document.getElementById('histSearch')?.value||'').toLowerCase().trim();
+  const docs = q ? HIST_DOCS.filter(d=>(d.m_adv||'sans adversaire').toLowerCase().includes(q)) : HIST_DOCS;
+  if(!HIST_DOCS.length){ list.innerHTML='<div class="drawer-empty">Aucun scrim sauvegardé.</div>'; return; }
+  if(!docs.length){ list.innerHTML='<div class="drawer-empty">Aucun scrim pour « '+esc(q)+' ».</div>'; return; }
+  const TRASH='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><polyline points="3 6 5 6 21 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
   list.innerHTML='';
+  let lastMonth='';
   docs.forEach(doc=>{
     const active=doc.id===currentDocId;
     const date=doc.m_date?new Date(doc.m_date+'T12:00'):null;
     const day=date?date.toLocaleDateString('fr-FR',{day:'2-digit'}):'--';
-    const month=date?date.toLocaleDateString('fr-FR',{month:'short'}):'---';
+    const mon=date?date.toLocaleDateString('fr-FR',{month:'short'}):'—';
+    const monthKey=date?date.toLocaleDateString('fr-FR',{month:'long',year:'numeric'}):'Sans date';
+    if(monthKey!==lastMonth){ lastMonth=monthKey; const h=document.createElement('div'); h.className='hist-month'; h.textContent=monthKey; list.appendChild(h); }
     let played=0,wins=0; for(let g=1;g<=5;g++){ if(doc[`g${g}_result`]){ played++; if(doc[`g${g}_result`]==='V')wins++; } }
-    const gs=played?`${wins}V ${played-wins}D`:'—';
+    const a=+doc.s_plazma, b=+doc.s_adv; const hasScore=isFinite(a)&&isFinite(b)&&(a+b)>0;
+    let resCls='n', resTxt=played?`${wins}–${played-wins}`:'brouillon';
+    if(hasScore){ resCls=a>b?'w':a<b?'l':'d'; resTxt=`${a}–${b}`; }
+    else if(played){ resCls=wins>played-wins?'w':wins<played-wins?'l':'d'; }
     const c=document.createElement('div'); c.className='sess'+(active?' active':'');
-    c.innerHTML=`<div class="sess-main">
-        <div class="sess-date"><div class="d">${day}</div><div class="m">${month}</div></div>
-        <div style="flex:1;min-width:0">
-          <div class="sess-adv">${esc(doc.m_adv||'Sans adversaire')}</div>
-          <div class="sess-meta">${played?played+' game'+(played>1?'s':''):'Aucune game'}${active?' · en cours':''}</div>
-          <div class="sess-score"><span class="w">${esc(doc.s_plazma||'0')}</span> – <span class="l">${esc(doc.s_adv||'0')}</span> <span class="muted" style="font-size:12px">${gs}</span></div>
-        </div></div>
-      <div class="sess-actions"><button onclick="loadSession('${doc.id}')">${active?'Modifier':'Ouvrir'}</button>
-        <button onclick="deleteSession('${doc.id}',event)"><svg class="ib ib-trash" viewBox="0 0 24 24"><g class="tr-can"><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></g><g class="tr-lid"><polyline points="3 6 5 6 21 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></g><circle class="tr-item" cx="12" cy="2" r="1.7" fill="currentColor" stroke="none"/></svg> Supprimer</button></div>`;
-    // Toute la carte est cliquable (et pas seulement le bouton « Ouvrir »).
-    c.querySelector('.sess-main').addEventListener('click', () => loadSession(doc.id));
+    c.innerHTML=`<div class="sess-d"><b>${day}</b><span>${mon}</span></div>
+      <div class="sess-body"><div class="sess-adv">${esc(doc.m_adv||'Sans adversaire')}</div>
+        <div class="sess-meta">${played?played+' game'+(played>1?'s':''):'Aucune game'}${active?' · en cours':''}</div></div>
+      <span class="sess-res ${resCls}">${resTxt}</span>
+      <button class="sess-del" title="Supprimer" onclick="deleteSession('${doc.id}',event)">${TRASH}</button>`;
+    c.addEventListener('click', e => { if(e.target.closest('.sess-del')) return; loadSession(doc.id); });
     list.appendChild(c);
   });
 }
