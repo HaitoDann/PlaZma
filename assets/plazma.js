@@ -55,7 +55,7 @@
   // ---- Version de l'application (SemVer) ----
   // MAJEUR.MINEUR.CORRECTIF — MINEUR à chaque lot de fonctionnalités,
   // CORRECTIF pour les corrections. Affichée discrètement dans Paramètres.
-  const VERSION = '3.14.0';
+  const VERSION = '3.15.0';
 
   // ---- Niveau de performance : adapte la densité des effets ----
   // Full sur machine puissante (rendu identique), réduit sur mobile/appareil
@@ -346,6 +346,29 @@
   const TIER_ICONS = { GOLD:'assets/icone_gold.png', PLATINUM:'assets/icone_platine.png', EMERALD:'assets/icone_emeraude.png',
     DIAMOND:'assets/icone_diamant.png', MASTER:'assets/icone_master.png', CHALLENGER:'assets/icone_challenger.png' };
   const tierIconUrl = t => TIER_ICONS[String(t||'').toUpperCase()] || '';
+
+  // ---- Échelle de points unifiée (SoloQ ↔ scrim) : tier×400 + division×100 + LP ----
+  // Permet de comparer niveau individuel et niveau d'équipe sur une même échelle,
+  // et sert de base au calcul d'Elo de scrim (400 pts = 1 tier = 10× les chances).
+  const TIER_ORDER = ['IRON','BRONZE','SILVER','GOLD','PLATINUM','EMERALD','DIAMOND','MASTER','GRANDMASTER','CHALLENGER'];
+  const DIV_ORDER = ['IV','III','II','I'];
+  const TIER_FR = { IRON:'Fer', BRONZE:'Bronze', SILVER:'Argent', GOLD:'Or', PLATINUM:'Platine', EMERALD:'Émeraude', DIAMOND:'Diamant', MASTER:'Master', GRANDMASTER:'Grand Maître', CHALLENGER:'Challenger' };
+  function ladderValue(tier, division, lp) {
+    const t = TIER_ORDER.indexOf(String(tier||'').toUpperCase());
+    if (t < 0) return null;
+    if (t >= 7) return t*400 + (+lp||0);                       // Master+ : pas de division
+    const d = DIV_ORDER.indexOf(String(division||'').toUpperCase());
+    return t*400 + (d<0?0:d)*100 + (+lp||0);
+  }
+  const ladderFromSolo = s => (s && s.tier) ? ladderValue(s.tier, s.division, s.lp) : null;
+  function ladderLabel(v) {
+    if (v == null || isNaN(v)) return '—';
+    const t = Math.min(9, Math.max(0, Math.floor(v/400))), rem = v - t*400;
+    if (t >= 7) return TIER_FR[TIER_ORDER[t]] + ' ' + Math.round(rem) + ' LP';
+    const d = Math.min(3, Math.max(0, Math.floor(rem/100)));
+    return TIER_FR[TIER_ORDER[t]] + ' ' + DIV_ORDER[d];
+  }
+  const ladder = { value: ladderValue, fromSolo: ladderFromSolo, label: ladderLabel, TIER_ORDER, DIV_ORDER, TIER_FR };
   const getSubs = () => SUB_SLOTS.map(slot => Object.assign(resolveSlot(slot), { sub: true }));
   /** Effectif complet : 5 postes + coach + remplaçants + joueurs additionnels. */
   const getPlayers = () => getRoster().concat([getCoach()]).concat(getSubs()).concat(getExtras());
@@ -414,6 +437,7 @@
     { key: 'wikiperf',     href: 'plazma-wiki-perf.html',   label: 'Encyclopédie' },
     { key: 'team',         href: 'plazma-team.html',        label: 'Équipe',       section: 'team' },
     { key: 'dashboard',    href: 'plazma-dashboard.html',   label: 'Dashboard',    section: 'dashboard' },
+    { key: 'analyse',      href: 'plazma-analyse.html',     label: 'Analyse' },
     { key: 'coach',        href: 'plazma-coach.html',       label: 'Coach',        section: 'coach' },
     { key: 'satisfaction', href: 'plazma-satisfaction.html',label: 'Satisfaction', section: 'satisfaction' }
   ];
@@ -1222,7 +1246,7 @@
     USER_DOMAIN, discord, stats,
     // Roster central
     getRoster, getCoach, getSubs, getExtras, getPlayers, player, onRoster, setPlayer, addPlayer, removePlayer, saveRoster,
-    roleIconUrl, tierIconUrl,
+    roleIconUrl, tierIconUrl, ladder,
     ROSTER_SLOTS, COACH_SLOT, SUB_SLOTS,
     // Authentification & accès
     auth: {

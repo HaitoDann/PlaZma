@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="assets/logo-plazma.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARCHI — Analyse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css?v=3.15.0">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+  .content{max-width:var(--page-max);margin:0 auto;padding:24px var(--gut) 80px}
+  .page-head{margin-bottom:18px}
+  .page-head .eyebrow{margin-bottom:4px}
+
+  .an-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px}
+  .an-tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px}
+  .an-tile .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .an-tile .val{font-family:var(--font-display);font-size:1.5rem;font-weight:700;margin-top:4px;line-height:1.05}
+  .an-tile .sub{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .an-tile .val.pos{color:var(--ok)} .an-tile .val.neg{color:var(--err)}
+  .an-tile.hero{border-color:color-mix(in srgb,var(--accent) 45%,var(--border))}
+
+  .an-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;margin-bottom:20px}
+  .an-card h2{font-family:var(--font-display);font-size:15px;margin:0 0 4px}
+  .an-card .hint{font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:14px}
+  .an-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--dim);margin:2px 0 10px}
+  .an-legend .k{display:inline-flex;align-items:center;gap:7px}
+  .an-legend .sw{width:16px;height:3px;border-radius:2px;display:inline-block}
+  .an-chart{width:100%;overflow:visible}
+  .an-chart .grid{stroke:var(--border);stroke-width:1}
+  .an-chart .axlbl{fill:var(--muted);font-size:10px;font-family:var(--font-mono)}
+  .an-chart .solo{fill:none;stroke:var(--c-solo);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .an-chart .scrim{fill:none;stroke:var(--c-scrim);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+  .an-chart .sdot{fill:var(--c-scrim)} .an-chart .sdotw{fill:var(--ok)} .an-chart .sdotl{fill:var(--err)}
+  .an-empty{color:var(--muted);font-size:13px;padding:20px 0;text-align:center;line-height:1.6}
+  :root{--c-solo:#c98b3a;--c-scrim:var(--accent)}
+
+  .an-read{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px}
+  .an-read .b{background:var(--surface-2);border-radius:var(--r);padding:12px 14px;font-size:12.5px;color:var(--dim);line-height:1.55}
+  .an-read .b b{color:var(--text)}
+  @media(max-width:700px){.an-read{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="loader"><div class="loader-inner"><div class="loader-ring-wrap"><div class="loader-arc1"></div><div class="loader-arc2"></div><img class="loader-logo" src="assets/logo-plazma.png" alt=""></div><div class="loader-mark">ARCHI</div></div></div>
+<div id="nav"></div>
+
+<div class="content">
+  <div class="page-head">
+    <div class="eyebrow">PlaZma Esport</div>
+    <h1>Analyse — niveau d'équipe</h1>
+  </div>
+
+  <div class="an-tiles" id="tiles"></div>
+
+  <div class="an-card">
+    <h2>SoloQ individuel vs niveau en équipe</h2>
+    <div class="hint">La courbe <b>SoloQ</b> est la moyenne du rang des 5 titulaires (niveau individuel brut). La courbe <b>Elo de scrim</b> part de ce niveau puis évolue à chaque game selon le résultat <em>et la force de l'adversaire</em> : battre plus fort fait monter, perdre contre plus faible fait descendre. L'écart entre les deux dit si vous jouez au-dessus ou en-dessous de votre niveau individuel, en équipe.</div>
+    <div class="an-legend">
+      <span class="k"><span class="sw" style="background:var(--c-solo)"></span>Moyenne SoloQ de l'équipe</span>
+      <span class="k"><span class="sw" style="background:var(--c-scrim)"></span>Elo de scrim (niveau en équipe)</span>
+    </div>
+    <div id="chartWrap"></div>
+  </div>
+
+  <div class="an-card" id="readCard" style="display:none">
+    <h2>Lecture</h2>
+    <div class="an-read" id="read"></div>
+  </div>
+</div>
+
+<script src="assets/plazma.js?v=3.15.0" data-section="analyse"></script>
+<script>
+PZ.mountNav('analyse', '#nav');
+PZ.loadingDone();
+
+(function(){
+  const db = PZ.db;
+  const L = PZ.ladder;
+  const K = 32;                         // facteur Elo par game
+  const starters = () => PZ.getRoster(); // 5 titulaires
+  const ms = d => { const t = Date.parse(/^\d{4}-\d{2}-\d{2}$/.test(d||'') ? d+'T12:00:00' : d); return isNaN(t)?null:t; };
+
+  // Rang moyen adverse d'un scrim -> points d'échelle (milieu de division), sinon null.
+  function oppLadder(cr){
+    if(!cr.m_advTier) return null;
+    const lp = (L.TIER_ORDER.indexOf(cr.m_advTier) >= 7) ? 50 : 50; // milieu
+    return L.value(cr.m_advTier, cr.m_advDiv || 'III', lp);
+  }
+  // Résultats de game d'un scrim, en ordre : [{win:bool}] (via g*_result, sinon g*_stats).
+  function scrimGames(cr){
+    const out = [];
+    for(let g=1;g<=5;g++){
+      const r = cr['g'+g+'_result'];
+      if(r==='V') out.push({win:true});
+      else if(r==='D') out.push({win:false});
+      else { const st = cr['g'+g+'_stats']; if(st && typeof st.win==='boolean') out.push({win:!!st.win}); }
+    }
+    return out;
+  }
+
+  // Série moyenne SoloQ dans le temps (report de la dernière valeur connue par joueur).
+  function soloTimeline(STATS){
+    const events = [];
+    starters().forEach(p => {
+      const d = STATS[p.id]; if(!d) return;
+      (d.history||[]).forEach(h => { const t = ms(h.ts); const v = L.value(h.tier, h.division, h.lp); if(t!=null && v!=null) events.push({pid:p.id, t, v}); });
+      if(d.solo){ const v = L.fromSolo(d.solo); const t = ms(d.updatedAt) || Date.now(); if(v!=null) events.push({pid:p.id, t, v}); }
+    });
+    events.sort((a,b)=>a.t-b.t);
+    const last = {}; const serie = [];
+    events.forEach(e => { last[e.pid] = e.v; const vals = Object.values(last); if(vals.length) serie.push({ t:e.t, v: vals.reduce((m,x)=>m+x,0)/vals.length }); });
+    return serie;
+  }
+  // Moyenne SoloQ actuelle (titulaires avec donnée).
+  function soloNow(STATS){
+    const vals = starters().map(p => STATS[p.id] && L.fromSolo(STATS[p.id].solo)).filter(v=>v!=null);
+    return vals.length ? vals.reduce((m,x)=>m+x,0)/vals.length : null;
+  }
+  // Valeur d'une série (report) à l'instant t.
+  function at(serie, t){ let v=null; for(const p of serie){ if(p.t<=t) v=p.v; else break; } return v==null && serie.length ? serie[0].v : v; }
+
+  // Série Elo de scrim, game par game, chronologique.
+  function scrimTimeline(CRS, solo){
+    const crs = (CRS||[]).filter(c => scrimGames(c).length).sort((a,b)=> (ms(a.m_date)||0)-(ms(b.m_date)||0) || String(a._savedAt||'').localeCompare(String(b._savedAt||'')));
+    if(!crs.length) return { serie:[], elo:null, n:0, wins:0 };
+    let elo = at(solo, ms(crs[0].m_date)||Date.now()); if(elo==null) elo = soloNowFallback;
+    if(elo==null) elo = 1600;                       // dernier recours (~Plat IV)
+    const serie = []; let n=0, wins=0;
+    crs.forEach((cr, ci) => {
+      const t0 = ms(cr.m_date) || Date.now();
+      const games = scrimGames(cr);
+      const opp = oppLadder(cr);
+      games.forEach((g, gi) => {
+        const o = (opp!=null) ? opp : elo;          // adversaire inconnu -> attendu 0.5 (momentum)
+        const E = 1/(1+Math.pow(10, (o-elo)/400));
+        elo += K*((g.win?1:0) - E);
+        n++; if(g.win) wins++;
+        serie.push({ t: t0 + gi*3600*1000, v: elo, win: g.win });   // léger décalage par game
+      });
+    });
+    return { serie, elo, n, wins };
+  }
+  let soloNowFallback = null;
+
+  function fmt(n){ return Math.round(n).toLocaleString('fr-FR'); }
+
+  // ---- Graphe : deux séries sur une échelle de points commune, axe temps ----
+  function chart(solo, scrim){
+    const all = solo.concat(scrim);
+    if(all.length < 2) return '<div class="an-empty">Pas encore assez de données pour tracer les courbes.<br>Il faut au moins quelques relevés SoloQ et un scrim avec résultats.</div>';
+    const W=720, H=300, padL=52, padR=14, padT=14, padB=28;
+    const ts = all.map(p=>p.t), vs = all.map(p=>p.v);
+    let t0=Math.min(...ts), t1=Math.max(...ts); if(t1===t0) t1=t0+86400000;
+    let vMin=Math.min(...vs), vMax=Math.max(...vs); const pad=(vMax-vMin)*0.12||200; vMin-=pad; vMax+=pad;
+    const x = t => padL + (t-t0)/(t1-t0)*(W-padL-padR);
+    const y = v => padT + (1-(v-vMin)/(vMax-vMin))*(H-padT-padB);
+    // Lignes de tier (tous les 400 pts) comme repères.
+    let grid='';
+    const startTier = Math.ceil(vMin/400), endTier = Math.floor(vMax/400);
+    for(let tv=startTier; tv<=endTier; tv++){ const v=tv*400, yy=y(v); grid += `<line class="grid" x1="${padL}" y1="${yy.toFixed(1)}" x2="${W-padR}" y2="${yy.toFixed(1)}"/><text class="axlbl" x="6" y="${(yy+3).toFixed(1)}">${L.label(v).replace(/ (IV|III|II|I| \d+ LP)$/,'')}</text>`; }
+    // Étiquettes de dates (début, milieu, fin).
+    const dlab = t => new Date(t).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});
+    let xlab=''; [0,0.5,1].forEach(f=>{ const t=t0+(t1-t0)*f, xx=x(t); xlab += `<text class="axlbl" x="${xx.toFixed(1)}" y="${H-8}" text-anchor="${f===0?'start':f===1?'end':'middle'}">${dlab(t)}</text>`; });
+    const line = (serie, cls) => { if(serie.length<2) return serie.length? `<circle class="${cls==='scrim'?'sdot':''}" cx="${x(serie[0].t).toFixed(1)}" cy="${y(serie[0].v).toFixed(1)}" r="2.5"/>`:'';
+      return `<path class="${cls}" d="${serie.map((p,i)=>(i?'L':'M')+x(p.t).toFixed(1)+' '+y(p.v).toFixed(1)).join(' ')}"/>`; };
+    // Points de game (victoire/défaite) sur la courbe de scrim.
+    const dots = scrim.map(p=>`<circle class="${p.win?'sdotw':'sdotl'}" cx="${x(p.t).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="2.6"><title>${p.win?'Victoire':'Défaite'} · ${L.label(p.v)}</title></circle>`).join('');
+    return `<svg class="an-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img">
+      ${grid}${xlab}${line(solo,'solo')}${line(scrim,'scrim')}${dots}</svg>`;
+  }
+
+  function tile(lbl, val, sub, cls, hero){ return `<div class="an-tile${hero?' hero':''}"><div class="lbl">${lbl}</div><div class="val ${cls||''}">${val}</div>${sub?`<div class="sub">${sub}</div>`:''}</div>`; }
+
+  function render(STATS, CRS){
+    const solo = soloTimeline(STATS);
+    soloNowFallback = soloNow(STATS);
+    const { serie:scrim, elo:eloNow, n, wins } = scrimTimeline(CRS, solo);
+    const sNow = soloNowFallback;
+    const delta = (eloNow!=null && sNow!=null) ? (eloNow - sNow) : null;
+
+    document.getElementById('tiles').innerHTML =
+      tile('Moyenne SoloQ', sNow!=null?L.label(sNow):'—', sNow!=null?fmt(sNow)+' pts':'aucune donnée') +
+      tile('Elo de scrim', eloNow!=null?L.label(eloNow):'—', eloNow!=null?fmt(eloNow)+' pts':'aucun scrim') +
+      tile('Écart (équipe − solo)', delta!=null?((delta>=0?'+':'')+fmt(delta)+' pts'):'—',
+        delta!=null?(delta>=0?'vous surperformez en équipe':'vous sous-performez en équipe'):'', delta!=null?(delta>=0?'pos':'neg'):'', true) +
+      tile('Scrims analysés', n?(n+' games'):'0', n?(wins+'V '+(n-wins)+'D · '+Math.round(wins/n*100)+'%'):'');
+
+    document.getElementById('chartWrap').innerHTML = chart(solo, scrim);
+
+    // Lecture
+    const read = document.getElementById('read'), card = document.getElementById('readCard');
+    if(delta!=null && n>=3){
+      card.style.display='';
+      const divs = Math.abs(delta)/100;
+      const sens = delta>=0
+        ? `Votre niveau en scrim est <b>supérieur d'environ ${divs.toFixed(1)} division(s)</b> à votre SoloQ moyen. Votre jeu collectif (macro, coordination, drafts) tire l'équipe vers le haut — c'est un vrai point fort à entretenir.`
+        : `Votre niveau en scrim est <b>inférieur d'environ ${divs.toFixed(1)} division(s)</b> à votre SoloQ moyen. Individuellement vous avez le niveau ; le delta se joue sur le collectif : drafts, coordination, gestion des objectifs et du tempo.`;
+      read.innerHTML = `<div class="b">${sens}</div>` +
+        `<div class="b">Sur <b>${n} games</b> de scrim analysées : <b>${Math.round(wins/n*100)}% de victoires</b>. L'Elo de scrim tient compte de la force adverse quand elle est renseignée dans le CR (champ « niveau moyen adverse ») — plus tu la renseignes, plus la courbe est juste.</div>`;
+    } else { card.style.display='none'; }
+  }
+
+  async function load(){
+    if(!db){ render({}, []); return; }
+    const STATS = {};
+    await Promise.all(starters().map(async p => { try{ const d=await db.collection('plazma-stats').doc(p.id).get(); if(d.exists) STATS[p.id]=d.data(); }catch(e){} }));
+    let CRS = [];
+    try{ CRS = (PZ.stats && PZ.stats.loadScrimCRs) ? await PZ.stats.loadScrimCRs() : []; }catch(e){ CRS=[]; }
+    render(STATS, CRS);
+  }
+
+  if(PZ.onRoster) PZ.onRoster(()=>{ /* re-render léger si le roster change après chargement */ });
+  if(PZ.auth && PZ.auth.ready) PZ.auth.ready.then(load); else load();
+})();
+</script>
+</body>
+</html>

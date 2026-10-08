@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.14.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.15.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -196,6 +196,12 @@
     <div class="meta">
       <div><label>Date</label><input id="m_date" type="date"></div>
       <div><label>Équipe adverse</label><input id="m_adv" type="text" placeholder="Nom de l'équipe"></div>
+      <div><label>Niveau moyen adverse <span style="color:var(--muted);font-weight:400">(pour l'Elo d'équipe)</span></label>
+        <div style="display:flex;gap:8px">
+          <select id="m_advTier" style="flex:1"></select>
+          <select id="m_advDiv" style="width:84px"></select>
+        </div>
+      </div>
     </div>
 
     <div class="score">
@@ -279,12 +285,26 @@
   <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
 </div>
 
-<script src="assets/plazma.js?v=3.14.0" data-section="scrim"></script>
+<script src="assets/plazma.js?v=3.15.0" data-section="scrim"></script>
 <script>
 'use strict';
 PZ.mountNav('scrim', '#nav');
 const db = PZ.db;
 const SCRIMS_COL = 'plazma-scrims';
+
+// Sélecteur « niveau moyen adverse » (échelle commune SoloQ ↔ scrim).
+(function initAdvRank(){
+  const tiers = ['','IRON','BRONZE','SILVER','GOLD','PLATINUM','EMERALD','DIAMOND','MASTER','GRANDMASTER','CHALLENGER'];
+  const FR = (PZ.ladder && PZ.ladder.TIER_FR) || {};
+  const tSel = document.getElementById('m_advTier'), dSel = document.getElementById('m_advDiv');
+  if(!tSel||!dSel) return;
+  tSel.innerHTML = tiers.map(t => `<option value="${t}">${t?(FR[t]||t):'— inconnu —'}</option>`).join('');
+  const divs = ['IV','III','II','I'];
+  const fillDivs = () => { const hasDiv = tSel.value && ['IRON','BRONZE','SILVER','GOLD','PLATINUM','EMERALD','DIAMOND'].includes(tSel.value);
+    dSel.disabled = !hasDiv; dSel.innerHTML = hasDiv ? divs.map(d=>`<option value="${d}">${d}</option>`).join('') : '<option value="">—</option>'; };
+  tSel.addEventListener('change', ()=>{ fillDivs(); });
+  fillDivs();
+})();
 
 let ROSTER = PZ.getRoster();   // roster central (mercato)
 const ERR_CATS = ['Positionnement','Objectif manqué','Rotation','Communication','Mécanique','Teamfight','Vision','Autre'];
@@ -460,6 +480,7 @@ PZ.onRoster(r => {
 // ── State ──
 function getState(){
   const s={ m_date:val('m_date'), m_adv:val('m_adv'), s_plazma:val('s_plazma'), s_adv:val('s_adv'),
+    m_advTier:val('m_advTier'), m_advDiv:val('m_advDiv'),
     t_bien:val('t_bien'), t_corriger:val('t_corriger'), f_note:val('f_note'), f_comment:val('f_comment'),
     errors:JSON.parse(JSON.stringify(errors)), strengths:JSON.parse(JSON.stringify(strengths)) };
   for(let g=1;g<=5;g++){ s[`g${g}_result`]=val(`g${g}_result`); s[`g${g}_debrief`]=val(`g${g}_debrief`); s[`g${g}_stats`]=gstats['g'+g]; }
@@ -470,7 +491,8 @@ function getState(){
 function applyState(s){
   if(!s) return;
   crLink = s.slotId ? { slotId:s.slotId, slotWeek:s.slotWeek||'' } : null;
-  ['m_date','m_adv','s_plazma','s_adv','t_bien','t_corriger','f_note','f_comment'].forEach(k=>set(k,s[k]));
+  ['m_date','m_adv','s_plazma','s_adv','m_advTier','t_bien','t_corriger','f_note','f_comment'].forEach(k=>set(k,s[k]));
+  const _tSel=document.getElementById('m_advTier'); if(_tSel){ _tSel.dispatchEvent(new Event('change')); set('m_advDiv', s.m_advDiv); }
   for(let g=1;g<=5;g++){ set(`g${g}_result`,s[`g${g}_result`]); set(`g${g}_debrief`,s[`g${g}_debrief`]); const sel=document.getElementById(`g${g}_result`); if(sel)styleResult(sel); }
   ROSTER.forEach(p=>set('rem_'+p.id,s['rem_'+p.id]));
   document.getElementById('advLabel').textContent = s.m_adv || 'Adversaire';
