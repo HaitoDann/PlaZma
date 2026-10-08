@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.17.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.18.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -48,20 +48,12 @@
   .an-read .b b{color:var(--text)}
   @media(max-width:700px){.an-read{grid-template-columns:1fr}}
 
-  /* Radars par joueur */
-  .radar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
-  .radar{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 12px 10px;text-align:center}
-  .radar .rh{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px}
-  .radar .rh .av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;
-    background:var(--surface);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--role,var(--accent)) 60%,transparent)}
-  .radar .rh .nm{font-weight:600;font-size:13px}
-  .radar .rsub{font-size:11px;color:var(--muted);margin-bottom:8px}
-  .radar svg{width:100%;height:auto;display:block}
-  .radar .grid{fill:none;stroke:var(--border);stroke-width:1}
-  .radar .axis{stroke:var(--border);stroke-width:1}
-  .radar .area{fill:color-mix(in srgb,var(--accent) 22%,transparent);stroke:var(--accent);stroke-width:1.8;stroke-linejoin:round}
-  .radar .albl{fill:var(--muted);font-size:8.5px;font-family:var(--font-mono)}
-  .radar .rempty{color:var(--muted);font-size:11.5px;padding:28px 6px;line-height:1.5}
+  /* Filtre joueur (champions) */
+  .ch-filter{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+  .ch-fbtn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;cursor:pointer;
+    background:var(--surface-2);border:1px solid var(--border);color:var(--dim);font-family:var(--font);font-size:12.5px;font-weight:600}
+  .ch-fbtn:hover{border-color:var(--border-2);color:var(--text)}
+  .ch-fbtn.active{color:var(--text);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
 
   /* Table champions */
   .ch-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
@@ -109,15 +101,10 @@
     <div class="an-read" id="read"></div>
   </div>
 
-  <div class="an-card" id="radarCard">
-    <h2>Radars de performance par joueur</h2>
-    <div class="hint">Profil de chaque titulaire en scrim (données ARCHI Link). Chaque axe est noté <b>par rapport à l'équipe</b> (0 = le plus faible des 5, 100 = le meilleur) : le radar montre les forces relatives de chacun, pas une note absolue.</div>
-    <div class="radar-grid" id="radars"></div>
-  </div>
-
   <div class="an-card" id="champCard">
     <h2>Champions en scrim</h2>
-    <div class="hint">Vos picks en scrim et leur <b>winrate réel</b> (toutes games avec replay .rofl importé). Les picks « confort gagnant » ont beaucoup de games et un bon winrate ; méfie-toi des picks fréquents à faible winrate.</div>
+    <div class="hint">Vos picks en scrim et leur <b>winrate réel</b> (toutes games avec replay .rofl importé). Filtre par joueur pour voir son pool. Les picks « confort gagnant » ont beaucoup de games et un bon winrate ; méfie-toi des picks fréquents à faible winrate.</div>
+    <div class="ch-filter" id="champFilter"></div>
     <div id="champTable"></div>
   </div>
 
@@ -128,8 +115,8 @@
   </div>
 </div>
 
-<script src="assets/plazma.js?v=3.17.0" data-section="analyse"></script>
-<script src="assets/champions.js?v=3.17.0"></script>
+<script src="assets/plazma.js?v=3.18.0" data-section="analyse"></script>
+<script src="assets/champions.js?v=3.18.0"></script>
 <script>
 PZ.mountNav('analyse', '#nav');
 PZ.loadingDone();
@@ -137,7 +124,7 @@ PZ.loadingDone();
 (function(){
   const db = PZ.db;
   const L = PZ.ladder;
-  const K = 32;                         // facteur Elo par game
+  const K = 56;                         // facteur Elo par game (variance assez forte pour bouger vite)
   const starters = () => PZ.getRoster(); // 5 titulaires
   const ms = d => { const t = Date.parse(/^\d{4}-\d{2}-\d{2}$/.test(d||'') ? d+'T12:00:00' : d); return isNaN(t)?null:t; };
 
@@ -256,63 +243,42 @@ PZ.loadingDone();
     (CRS||[]).forEach(cr => { for(let i=1;i<=5;i++){ const st=cr['g'+i+'_stats']; if(!st||!Array.isArray(st.players))continue;
       const side=st.side||'blue'; const me=st.players.find(pl=>pl.team===side && normName(pl.name)===gn); if(!me)continue;
       const min=(+st.durationSec||0)/60;
-      out.push({ k:+me.k||0, d:+me.d||0, a:+me.a||0, csmin:min?(+me.cs||0)/min:0, gold:+me.gold||0, dmg:+me.dmg||0, vision:+me.vision||0, win:!!st.win }); } });
+      out.push({ champ:me.champ||'—', k:+me.k||0, d:+me.d||0, a:+me.a||0, csmin:min?(+me.cs||0)/min:0, gold:+me.gold||0, dmg:+me.dmg||0, vision:+me.vision||0, win:!!st.win }); } });
     return out;
   }
-  const avg = (arr,f)=> arr.length ? arr.reduce((m,x)=>m+(+x[f]||0),0)/arr.length : 0;
-  function playerMetrics(p, STATS, CRS){
-    const g = playerScrimGames(p, STATS, CRS);
-    if(!g.length) return null;
-    const d = g.reduce((m,x)=>m+x.d,0);
-    return { n:g.length, wr: g.filter(x=>x.win).length/g.length*100,
-      kda: (g.reduce((m,x)=>m+x.k+x.a,0))/Math.max(1,d),
-      csmin: avg(g,'csmin'), gold: avg(g,'gold'), dmg: avg(g,'dmg'), vision: avg(g,'vision') };
-  }
 
-  // ===== Radars (axes notés 0-100 par rapport à l'équipe) =====
-  const RADAR_AXES = [ ['kda','KDA'], ['dmg','Dégâts'], ['gold','Gold'], ['csmin','CS/min'], ['vision','Vision'], ['wr','Winrate'] ];
-  function renderRadars(STATS, CRS){
-    const box = document.getElementById('radars');
-    const metrics = starters().map(p => ({ p, m: playerMetrics(p, STATS, CRS) }));
-    const withData = metrics.filter(x=>x.m);
-    if(withData.length < 2){ box.innerHTML = '<div class="rempty" style="grid-column:1/-1;text-align:center">Pas encore assez de games de scrim attribuées (il faut des replays .rofl importés et les joueurs passés par ARCHI Link).</div>'; return; }
-    // Bornes min/max par axe (sur les joueurs ayant des données).
-    const bounds = {}; RADAR_AXES.forEach(([k])=>{ const vals = withData.map(x=>x.m[k]); bounds[k] = [Math.min(...vals), Math.max(...vals)]; });
-    const norm = (k,v)=>{ const [mn,mx]=bounds[k]; return mx===mn ? 60 : 15 + (v-mn)/(mx-mn)*85; };  // 15..100 pour éviter les points au centre
-    box.innerHTML = metrics.map(({p,m}) => {
-      const av = (n=>{n=(n||'').trim();const w=n.split(/\s+/);return (w.length>1?w[0][0]+w[1][0]:n.slice(0,2)).toUpperCase();})(p.name);
-      const head = `<div class="rh"><div class="av" style="--role:${p.color}">${av}</div><div class="nm">${esc(p.name)}</div></div>`;
-      if(!m) return `<div class="radar">${head}<div class="rsub">${esc(p.role)}</div><div class="rempty">Aucune game de scrim attribuée.</div></div>`;
-      const pts = RADAR_AXES.map(([k])=>norm(k, m[k]));
-      return `<div class="radar">${head}<div class="rsub">${esc(p.role)} · ${m.n} games · ${Math.round(m.wr)}% WR</div>${radarSvg(pts)}</div>`;
-    }).join('');
-  }
-  function radarSvg(values){
-    const N = RADAR_AXES.length, R = 46, cx = 70, cy = 66;
-    const ang = i => -Math.PI/2 + i*2*Math.PI/N;
-    const pt = (i, r) => [cx + Math.cos(ang(i))*r, cy + Math.sin(ang(i))*r];
-    let rings=''; [0.33,0.66,1].forEach(f=>{ rings += `<polygon class="grid" points="${RADAR_AXES.map((_,i)=>pt(i,R*f).map(n=>n.toFixed(1)).join(',')).join(' ')}"/>`; });
-    let axes='', labels='';
-    RADAR_AXES.forEach(([k,lbl],i)=>{ const o=pt(i,R); axes+=`<line class="axis" x1="${cx}" y1="${cy}" x2="${o[0].toFixed(1)}" y2="${o[1].toFixed(1)}"/>`;
-      const lp=pt(i,R+11); labels+=`<text class="albl" x="${lp[0].toFixed(1)}" y="${(lp[1]+3).toFixed(1)}" text-anchor="middle">${lbl}</text>`; });
-    const poly = values.map((v,i)=>pt(i, R*v/100).map(n=>n.toFixed(1)).join(',')).join(' ');
-    return `<svg viewBox="0 0 140 132" role="img">${rings}${axes}<polygon class="area" points="${poly}"/>${labels}</svg>`;
-  }
-
-  // ===== Champions en scrim (équipe, côté PlaZma) =====
+  // ===== Champions en scrim (équipe ou joueur filtré) =====
+  let champFilter = 'team';     // 'team' ou un id de joueur
   function champMeta(champ){
     if(window.Champions && Champions.list){ const m = Champions.list.find(c=>c.id===champ || c.name===champ); if(m) return { name:m.name, icon:Champions.iconUrl(m.id) }; }
     return { name:champ, icon:'' };
   }
-  function renderChampions(CRS){
+  // Agrège par champion : soit tous nos joueurs (team), soit un joueur via Riot ID.
+  function champAgg(STATS, CRS){
     const agg = {};
-    (CRS||[]).forEach(cr=>{ for(let i=1;i<=5;i++){ const st=cr['g'+i+'_stats']; if(!st||!Array.isArray(st.players))continue;
-      const side=st.side||'blue';
-      st.players.filter(pl=>pl.team===side).forEach(pl=>{ const c=pl.champ||'—'; if(c==='—')return; (agg[c]=agg[c]||{g:0,w:0}); agg[c].g++; if(st.win)agg[c].w++; }); } });
-    const rows = Object.keys(agg).map(c=>({ champ:c, g:agg[c].g, w:agg[c].w, wr:agg[c].w/agg[c].g*100 }))
+    const add = (c, win) => { if(!c || c==='—') return; (agg[c]=agg[c]||{g:0,w:0}); agg[c].g++; if(win)agg[c].w++; };
+    if(champFilter === 'team'){
+      (CRS||[]).forEach(cr=>{ for(let i=1;i<=5;i++){ const st=cr['g'+i+'_stats']; if(!st||!Array.isArray(st.players))continue;
+        const side=st.side||'blue'; st.players.filter(pl=>pl.team===side).forEach(pl=>add(pl.champ, st.win)); } });
+    } else {
+      const p = starters().find(x=>x.id===champFilter);
+      if(p) playerScrimGames(p, STATS, CRS).forEach(g=>add(g.champ, g.win));
+    }
+    return Object.keys(agg).map(c=>({ champ:c, g:agg[c].g, w:agg[c].w, wr:agg[c].w/agg[c].g*100 }))
       .sort((a,b)=> b.g-a.g || b.wr-a.wr);
+  }
+  function renderChampFilter(STATS, CRS){
+    const fb = document.getElementById('champFilter');
+    const who = starters().filter(p => STATS[p.id] && STATS[p.id].riotId);   // joueurs attribuables
+    const btn = (id,label)=>`<button class="ch-fbtn${champFilter===id?' active':''}" data-f="${id}">${esc(label)}</button>`;
+    fb.innerHTML = btn('team','Équipe') + who.map(p=>btn(p.id, p.name)).join('');
+    fb.onclick = e => { const b=e.target.closest('.ch-fbtn'); if(!b) return; champFilter=b.dataset.f;
+      fb.querySelectorAll('.ch-fbtn').forEach(x=>x.classList.toggle('active', x===b)); renderChampions(STATS, CRS); };
+  }
+  function renderChampions(STATS, CRS){
+    const rows = champAgg(STATS, CRS);
     const el = document.getElementById('champTable');
-    if(!rows.length){ el.innerHTML = '<div class="an-empty">Aucun champion : importe des replays .rofl dans les comptes rendus de scrim.</div>'; return; }
+    if(!rows.length){ el.innerHTML = '<div class="an-empty">Aucun champion'+(champFilter!=='team'?' pour ce joueur':'')+' : importe des replays .rofl dans les comptes rendus de scrim.</div>'; return; }
     const body = rows.slice(0,25).map(r=>{ const m=champMeta(r.champ);
       const col = r.wr>=55?'var(--ok)':r.wr<45?'var(--err)':'var(--dim)';
       const tag = (r.g>=3 && r.wr>=60)?'<span class="ch-tag good">confort</span>' : (r.g>=3 && r.wr<=35)?'<span class="ch-tag bad">piège ?</span>' : '';
@@ -378,10 +344,10 @@ PZ.loadingDone();
         `<div class="b">Sur <b>${n} games</b> de scrim analysées : <b>${Math.round(wins/n*100)}% de victoires</b>. L'Elo de scrim tient compte de la force adverse quand elle est renseignée dans le CR (champ « niveau moyen adverse ») — plus tu la renseignes, plus la courbe est juste.</div>`;
     } else { card.style.display='none'; }
 
-    // Nouvelles analyses
-    const renderChampsWhenReady = () => { renderChampions(CRS); };
-    renderRadars(STATS, CRS);
+    // Champions (avec filtre par joueur) + profil de jeu
+    renderChampFilter(STATS, CRS);
     renderProfil(CRS);
+    const renderChampsWhenReady = () => renderChampions(STATS, CRS);
     if(window.Champions && Champions.ready) Champions.ready.then(renderChampsWhenReady).catch(renderChampsWhenReady);
     else renderChampsWhenReady();
   }
