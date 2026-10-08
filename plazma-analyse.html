@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.18.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.19.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -69,6 +69,36 @@
   .ch-tag.good{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
   .ch-tag.bad{background:color-mix(in srgb,var(--err) 16%,transparent);color:var(--err)}
   .ch-mono{font-family:var(--font-mono)}
+
+  /* Bascule de vue */
+  .an-switch{display:inline-flex;gap:4px;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:3px;margin-bottom:20px}
+  .an-sw{padding:7px 18px;border-radius:999px;border:none;cursor:pointer;background:none;color:var(--dim);font-family:var(--font);font-size:13px;font-weight:600}
+  .an-sw.active{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+
+  /* Vue par joueur */
+  .pv-pick{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
+  .pv-tab{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;cursor:pointer;
+    background:var(--surface);border:1px solid var(--border);color:var(--dim);font-family:var(--font);font-size:13px;font-weight:600}
+  .pv-tab:hover{border-color:var(--border-2);color:var(--text)}
+  .pv-tab.active{color:var(--text);border-color:var(--pc,var(--accent));background:color-mix(in srgb,var(--pc,var(--accent)) 13%,transparent)}
+  .pv-tab .av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;
+    background:var(--surface-2);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--pc,var(--accent)) 60%,transparent)}
+  .pv-sec-h{display:flex;align-items:baseline;gap:10px;margin:0 0 12px}
+  .pv-sec-h h2{font-family:var(--font-display);font-size:15px;margin:0}
+  .pv-sec-h .ln{flex:1;height:1px;background:var(--border)} .pv-sec-h .n{font-size:11px;color:var(--muted)}
+  .pv-trends{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+  .pv-trend{background:var(--surface-2);border-radius:var(--r);padding:10px 12px}
+  .pv-trend .t{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px}
+  .pv-trend svg{width:100%;height:46px;display:block;overflow:visible}
+  .pv-trend .ln2{fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .pv-trend .ar{fill:var(--accent);opacity:.08} .pv-trend .dot{fill:var(--accent)}
+  .pv-recent{display:flex;gap:6px;flex-wrap:wrap}
+  .pv-g{position:relative;width:38px;height:38px;border-radius:8px;overflow:hidden;border:2px solid var(--border)}
+  .pv-g.win{border-color:color-mix(in srgb,var(--ok) 70%,transparent)} .pv-g.loss{border-color:color-mix(in srgb,var(--err) 70%,transparent)}
+  .pv-g img{width:100%;height:100%;object-fit:cover;display:block}
+  .pv-g .kda{position:absolute;left:0;right:0;bottom:0;font-size:8px;text-align:center;background:rgba(0,0,0,.6);color:#fff;font-family:var(--font-mono);line-height:1.3}
+  .pv-exp{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);align-items:center}
+  .pv-note{font-size:12px;color:var(--muted);line-height:1.5}
 </style>
 </head>
 <body>
@@ -79,9 +109,15 @@
 <div class="content">
   <div class="page-head">
     <div class="eyebrow">PlaZma Esport</div>
-    <h1>Analyse — niveau d'équipe</h1>
+    <h1>Analyse</h1>
   </div>
 
+  <div class="an-switch">
+    <button class="an-sw active" data-view="equipe">Équipe</button>
+    <button class="an-sw" data-view="joueur">Par joueur</button>
+  </div>
+
+  <div id="viewEquipe">
   <div class="an-tiles" id="tiles"></div>
 
   <div class="an-card">
@@ -113,10 +149,16 @@
     <div class="hint">Tendances issues des replays : côté de carte, et durée moyenne des parties gagnées vs perdues (êtes-vous une équipe early ou late game ?).</div>
     <div class="an-tiles" id="profilTiles"></div>
   </div>
+  </div><!-- /viewEquipe -->
+
+  <div id="viewJoueur" style="display:none">
+    <div class="pv-pick" id="pvPick"></div>
+    <div id="pvBody"></div>
+  </div>
 </div>
 
-<script src="assets/plazma.js?v=3.18.0" data-section="analyse"></script>
-<script src="assets/champions.js?v=3.18.0"></script>
+<script src="assets/plazma.js?v=3.19.0" data-section="analyse"></script>
+<script src="assets/champions.js?v=3.19.0"></script>
 <script>
 PZ.mountNav('analyse', '#nav');
 PZ.loadingDone();
@@ -242,8 +284,10 @@ PZ.loadingDone();
     const out = [];
     (CRS||[]).forEach(cr => { for(let i=1;i<=5;i++){ const st=cr['g'+i+'_stats']; if(!st||!Array.isArray(st.players))continue;
       const side=st.side||'blue'; const me=st.players.find(pl=>pl.team===side && normName(pl.name)===gn); if(!me)continue;
-      const min=(+st.durationSec||0)/60;
-      out.push({ champ:me.champ||'—', k:+me.k||0, d:+me.d||0, a:+me.a||0, csmin:min?(+me.cs||0)/min:0, gold:+me.gold||0, dmg:+me.dmg||0, vision:+me.vision||0, win:!!st.win }); } });
+      const dur=+st.durationSec||0, min=dur/60;
+      out.push({ date:cr.m_date||'', adv:cr.m_adv||'', game:i, champ:me.champ||'—', k:+me.k||0, d:+me.d||0, a:+me.a||0,
+        cs:+me.cs||0, csmin:min?(+me.cs||0)/min:0, gold:+me.gold||0, dmg:+me.dmg||0, vision:+me.vision||0, durationSec:dur, win:!!st.win }); } });
+    out.sort((x,y)=> (x.date||'').localeCompare(y.date||'') || x.game-y.game);
     return out;
   }
 
@@ -316,6 +360,105 @@ PZ.loadingDone();
 
   function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
 
+  // ===== Vue par joueur (fiche complète : SoloQ + scrims + champions + export) =====
+  let pvSel = null;                 // id du joueur sélectionné
+  const fmt1 = n => (Math.round(n*10)/10).toLocaleString('fr-FR');
+  const dateFR = iso => { if(!iso) return '—'; const d=new Date(iso+'T12:00'); return isNaN(d)?iso:d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'2-digit'}); };
+  const mmss = s => { s=Math.round(s); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
+  const initials = n => { n=(n||'').trim(); const w=n.split(/\s+/); return (w.length>1?w[0][0]+w[1][0]:n.slice(0,2)).toUpperCase(); };
+  function spark(vals){
+    vals=(vals||[]).filter(v=>isFinite(v)); if(vals.length<2) return '<div class="an-empty" style="padding:10px">Pas assez de games.</div>';
+    const w=100,h=46,mx=Math.max(...vals),mn=Math.min(...vals),rg=(mx-mn)||1;
+    const pts=vals.map((v,i)=>[(i/(vals.length-1))*w,h-((v-mn)/rg)*h]);
+    const ln=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+    const ar=`M0 ${h} `+pts.map(p=>'L'+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')+` L${w} ${h} Z`;
+    const last=pts[pts.length-1];
+    return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><path class="ar" d="${ar}"/><path class="ln2" d="${ln}"/><circle class="dot" cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="1.9"/></svg>`;
+  }
+  // Courbe de progression SoloQ (historique).
+  function soloCurve(hist){
+    const vals=(hist||[]).map(h=>L.value(h.tier,h.division,h.lp)).filter(v=>v!=null);
+    return spark(vals);
+  }
+  function renderPicker(STATS){
+    const box=document.getElementById('pvPick');
+    const ps=starters();
+    if(!pvSel) pvSel=ps[0] && ps[0].id;
+    box.innerHTML=ps.map(p=>`<button class="pv-tab${p.id===pvSel?' active':''}" data-p="${p.id}" style="--pc:${p.color}">
+      <span class="av">${initials(p.name)}</span>${esc(p.name)}</button>`).join('');
+    box.onclick=e=>{ const b=e.target.closest('.pv-tab'); if(!b)return; pvSel=b.dataset.p;
+      box.querySelectorAll('.pv-tab').forEach(x=>x.classList.toggle('active',x===b)); renderPlayerBody(STATS, CURRENT_CRS); };
+  }
+  let CURRENT_CRS=[];
+  function renderPlayerBody(STATS, CRS){
+    const p=starters().find(x=>x.id===pvSel); const body=document.getElementById('pvBody');
+    if(!p){ body.innerHTML=''; return; }
+    const d=STATS[p.id], s=d&&d.solo;
+    const games=playerScrimGames(p, STATS, CRS);
+    // --- SoloQ ---
+    let soloHtml;
+    if(s){ const tot=(s.wins||0)+(s.losses||0);
+      soloHtml=`<div class="an-tiles">
+        ${tile('Rang', (L.TIER_FR[s.tier]||s.tier)+(s.division?' '+s.division:''), 'maj '+(d.updatedAt?new Date(d.updatedAt).toLocaleDateString('fr-FR'):'—'), '', false, PZ.tierIconUrl(s.tier)?`<img src="${PZ.tierIconUrl(s.tier)}" alt="" onerror="this.remove()">`:'')}
+        ${tile('LP', (s.lp||0)+'', '')}
+        ${tile('Winrate', s.wr!=null?s.wr+'%':'—', tot+' games', s.wr>=50?'pos':'neg')}
+        ${tile('Bilan', (s.wins||0)+'V '+(s.losses||0)+'D', '')}
+      </div>
+      <div class="pv-trends"><div class="pv-trend"><div class="t"><span>Progression (élo)</span><span>${(d.history||[]).length} relevés</span></div>${soloCurve(d.history)}</div></div>`;
+      const recent=(d.recent||[]).slice(0,10);
+      if(recent.length){ const cdr=id=>'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/'+id+'.png';
+        soloHtml+=`<div style="margin-top:14px"><div class="hint" style="margin-bottom:8px">Dernières parties classées</div><div class="pv-recent">${recent.map(g=>`<div class="pv-g ${g.win?'win':'loss'}" title="${g.k}/${g.d}/${g.a}${g.win?' · Victoire':' · Défaite'}"><img src="${cdr(g.champ)}" alt="" onerror="this.style.visibility='hidden'"><span class="kda">${g.k}/${g.d}/${g.a}</span></div>`).join('')}</div></div>`; }
+    } else soloHtml=`<div class="pv-note">Aucune donnée SoloQ — ce joueur n'a pas encore lancé ARCHI Link.</div>`;
+    // --- Scrims ---
+    let scrimHtml;
+    if(!(STATS[p.id]&&STATS[p.id].riotId)) scrimHtml=`<div class="pv-note">Riot ID inconnu : impossible d'attribuer les scrims. Le joueur doit lancer ARCHI Link une fois.</div>`;
+    else if(!games.length) scrimHtml=`<div class="pv-note">Aucune game de scrim trouvée (il faut des CR avec replay .rofl importé).</div>`;
+    else {
+      const nn=games.length, d2=games.reduce((m,x)=>m+x.d,0), sum=f=>games.reduce((m,x)=>m+(+x[f]||0),0);
+      const kda=(sum('k')+sum('a'))/Math.max(1,d2), wr=Math.round(games.filter(x=>x.win).length/nn*100);
+      const kv=games.map(g=>(g.k+g.a)/Math.max(1,g.d)), cv=games.map(g=>g.csmin);
+      const rows=games.slice().reverse().slice(0,25).map(g=>{ let ic='',nm=g.champ;
+        if(window.Champions&&Champions.list){const m=Champions.list.find(c=>c.id===g.champ||c.name===g.champ);if(m){ic=Champions.iconUrl(m.id);nm=m.name;}}
+        return `<tr><td><div class="cn">${ic?`<img class="ci" src="${ic}" alt="" onerror="this.style.display='none'">`:''}<span>${esc(nm)}</span></div></td>
+          <td class="ch-mono">${g.k}/${g.d}/${g.a}</td><td class="ch-mono">${fmt1(g.csmin)}</td><td class="ch-mono">${fmt(g.gold)}</td>
+          <td class="ch-mono">${fmt(g.dmg)}</td><td class="ch-mono">${g.vision}</td><td>${g.win?'V':'D'}</td><td>${dateFR(g.date)}</td></tr>`;}).join('');
+      scrimHtml=`<div class="an-tiles">
+        ${tile('Games', nn+'', wr+'% de victoires')}
+        ${tile('KDA moy.', fmt1(kda), '')}
+        ${tile('CS/min', fmt1(sum('csmin')/nn), '')}
+        ${tile('Gold moy.', fmt(sum('gold')/nn), '')}
+        ${tile('Dégâts moy.', fmt(sum('dmg')/nn), '')}
+        ${tile('Vision moy.', fmt1(sum('vision')/nn), '')}
+      </div>
+      <div class="pv-trends"><div class="pv-trend"><div class="t"><span>KDA par game</span><span>${nn} games</span></div>${spark(kv)}</div>
+        <div class="pv-trend"><div class="t"><span>CS/min par game</span><span>${nn} games</span></div>${spark(cv)}</div></div>
+      <div style="overflow-x:auto;margin-top:12px"><table class="ch-tbl"><thead><tr><th>Champion</th><th>K/D/A</th><th>CS/m</th><th>Gold</th><th>Dégâts</th><th>Vision</th><th>Rés.</th><th>Date</th></tr></thead><tbody>${rows}</tbody></table></div>
+      ${nn>25?`<div class="hint" style="margin-top:10px">25 dernières games affichées (${nn} au total, toutes dans l'export).</div>`:''}`;
+    }
+    body.innerHTML=`
+      <div class="an-card">
+        <div class="pv-sec-h"><h2>SoloQ</h2><span class="ln"></span></div>${soloHtml}
+      </div>
+      <div class="an-card">
+        <div class="pv-sec-h"><h2>Scrims</h2><span class="ln"></span><span class="n">${games.length?games.length+' games':''}</span></div>${scrimHtml}
+        <div class="pv-exp"><button class="btn btn-sm" id="pvJson">Exporter JSON</button>
+          <button class="btn btn-sm" id="pvCsv" ${games.length?'':'disabled'}>Exporter CSV</button>
+          <span class="pv-note">Données brutes ordonnées, prêtes pour analyse.</span></div>
+      </div>`;
+    document.getElementById('pvJson').onclick=()=>exportJSON(p, games);
+    const cb=document.getElementById('pvCsv'); if(cb&&games.length) cb.onclick=()=>exportCSV(p, games);
+  }
+  function dl(name,text,type){ const b=new Blob([text],{type:type||'text/plain;charset=utf-8'}); const a=document.createElement('a');
+    a.href=URL.createObjectURL(b); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},0); }
+  function exportJSON(p, games){ const d=CURRENT_STATS[p.id]||{};
+    dl('archi-'+p.id+'-donnees.json', JSON.stringify({ player:{id:p.id,name:p.name,role:p.role,riotId:d.riotId||''}, generatedAt:new Date().toISOString(),
+      soloq:{solo:d.solo||null,history:d.history||[],recent:d.recent||[]}, scrims:{games} }, null, 2), 'application/json'); }
+  function exportCSV(p, games){ const head=['date','adversaire','champion','kills','deaths','assists','cs','cs_min','gold','degats','vision','duree_s','resultat'];
+    const e=v=>{v=String(v==null?'':v);return /[",;\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+    const lines=[head.join(';')].concat(games.map(g=>[g.date,g.adv,g.champ,g.k,g.d,g.a,g.cs,fmt1(g.csmin),g.gold,g.dmg,g.vision,g.durationSec,g.win?'V':'D'].map(e).join(';')));
+    dl('archi-'+p.id+'-scrims.csv','﻿'+lines.join('\n'),'text/csv;charset=utf-8'); }
+  let CURRENT_STATS={};
+
   function render(STATS, CRS){
     const solo = soloTimeline(STATS);
     soloNowFallback = soloNow(STATS);
@@ -350,7 +493,28 @@ PZ.loadingDone();
     const renderChampsWhenReady = () => renderChampions(STATS, CRS);
     if(window.Champions && Champions.ready) Champions.ready.then(renderChampsWhenReady).catch(renderChampsWhenReady);
     else renderChampsWhenReady();
+
+    // Vue par joueur
+    CURRENT_STATS = STATS; CURRENT_CRS = CRS;
+    renderPicker(STATS);
+    const renderPlayerWhenReady = () => renderPlayerBody(STATS, CRS);
+    if(window.Champions && Champions.ready) Champions.ready.then(renderPlayerWhenReady).catch(renderPlayerWhenReady);
+    else renderPlayerWhenReady();
   }
+
+  // Bascule Équipe / Par joueur
+  document.querySelector('.an-switch').addEventListener('click', e => {
+    const b = e.target.closest('.an-sw'); if(!b) return;
+    document.querySelectorAll('.an-sw').forEach(x=>x.classList.toggle('active', x===b));
+    const joueur = b.dataset.view==='joueur';
+    document.getElementById('viewEquipe').style.display = joueur?'none':'';
+    document.getElementById('viewJoueur').style.display = joueur?'':'none';
+    document.querySelector('.page-head h1').textContent = joueur ? 'Analyse — par joueur' : 'Analyse';
+  });
+
+  // Ouverture directe sur la vue joueur via #joueur (lien depuis la page Équipe).
+  function applyHash(){ if(location.hash==='#joueur'){ const b=document.querySelector('.an-sw[data-view="joueur"]'); if(b) b.click(); } }
+  window.addEventListener('hashchange', applyHash);
 
   async function load(){
     if(!db){ render({}, []); return; }
@@ -359,9 +523,9 @@ PZ.loadingDone();
     let CRS = [];
     try{ CRS = (PZ.stats && PZ.stats.loadScrimCRs) ? await PZ.stats.loadScrimCRs() : []; }catch(e){ CRS=[]; }
     render(STATS, CRS);
+    applyHash();
   }
 
-  if(PZ.onRoster) PZ.onRoster(()=>{ /* re-render léger si le roster change après chargement */ });
   if(PZ.auth && PZ.auth.ready) PZ.auth.ready.then(load); else load();
 })();
 </script>

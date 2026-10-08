@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.18.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.19.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -188,16 +188,10 @@
   <div class="panel">
     <div class="panel-h">
       <div class="card-title">Performance <span class="panel-sub">calculée depuis les CR et le Planning</span></div>
-      <a class="plink" href="plazma-scrim.html">CR de scrim →</a>
+      <a class="plink" href="plazma-analyse.html">Analyse complète →</a>
     </div>
     <div id="perfBox"></div>
   </div>
-
-  <!-- ANALYSE .rofl : par joueur, champions, lane -->
-  <details class="panel" id="roflPanel" style="display:none">
-    <summary style="cursor:pointer;font-weight:600;display:flex;align-items:center;gap:8px">Analyse des games <span class="panel-sub" id="roflPanelSub">depuis les .rofl importés</span></summary>
-    <div id="roflBody" style="margin-top:14px"></div>
-  </details>
 
   <div class="grid2">
     <div class="panel">
@@ -282,7 +276,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="assets/plazma.js?v=3.18.0" data-section="dashboard"></script>
+<script src="assets/plazma.js?v=3.19.0" data-section="dashboard"></script>
 <script>
 'use strict';
 PZ.mountNav('dashboard', '#nav');
@@ -335,7 +329,7 @@ function weekSessions(){
 function nextSession(){ return weekSessions().find(x=>!x.past) || null; }
 
 // ── RENDER ──
-function render(){ renderHeader(); renderToday(); renderWeek(); renderPerf(); renderRoflAnalysis(); renderResults(); renderObjectives(); renderRoster(); renderSettingsForm(); }
+function render(){ renderHeader(); renderToday(); renderWeek(); renderPerf(); renderResults(); renderObjectives(); renderRoster(); renderSettingsForm(); }
 
 function renderHeader(){
   const el=document.getElementById('evtLine');
@@ -460,78 +454,6 @@ function renderPerf(){
   el.innerHTML=html;
 }
 
-// ── Analyse .rofl : par joueur, champions, lane (depuis tous les CR) ──
-function normHandle(x){ return String(x||'').toLowerCase().replace(/\s/g,''); }
-// Map pseudo normalisé -> joueur du roster (id, nom, rôle, couleur)
-function rosterMatchMap(){
-  const map={}; const players=rosterPlayers();
-  players.forEach(p=>{
-    map[normHandle(p.name)]={id:p.id,name:p.name,role:p.role,roleKey:p.roleKey,color:p.color};
-    const r=(state.roster||[]).find(x=>x.id===p.id);
-    if(r && r.opgg){ const h=normHandle(r.opgg); map[h]=map[normHandle(p.name)]; map[h.split('-')[0]]=map[normHandle(p.name)]; }
-  });
-  return map;
-}
-function matchRosterPlayer(pl, map){
-  return map[normHandle(pl.name+'-'+pl.tag)] || map[normHandle(pl.name)] || null;
-}
-// Agrège les stats .rofl par joueur du roster + classement champions.
-function roflByPlayer(){
-  const map=rosterMatchMap();
-  const perP={};   // id -> accum
-  const champs={}; // champ -> {games,wins}
-  (crs()||[]).forEach(cr=>{
-    for(let g=1;g<=5;g++){ const st=cr['g'+g+'_stats']; if(!st||!Array.isArray(st.players)) continue;
-      const us=st.players.filter(p=>p.team===st.side), them=st.players.filter(p=>p.team!==st.side);
-      const byPos={}; them.forEach(e=>{ if(e.pos && !byPos[e.pos]) byPos[e.pos]=e; });
-      us.forEach(pl=>{
-        const rp=matchRosterPlayer(pl, map); if(!rp) return;
-        const A=perP[rp.id]||(perP[rp.id]={p:rp,games:0,wins:0,k:0,d:0,a:0,cs:0,gold:0,dmg:0,vision:0,lane:0,laneN:0,sec:0});
-        A.games++; if(pl.win) A.wins++;
-        A.k+=pl.k; A.d+=pl.d; A.a+=pl.a; A.cs+=pl.cs; A.gold+=pl.gold; A.dmg+=pl.dmg; A.vision+=pl.vision; A.sec+=st.durationSec||0;
-        const e=pl.pos&&byPos[pl.pos]; if(e){ A.lane+=pl.gold-e.gold; A.laneN++; }
-        const c=champs[pl.champ]||(champs[pl.champ]={games:0,wins:0}); c.games++; if(pl.win) c.wins++;
-      });
-    }
-  });
-  return { perP, champs };
-}
-function renderRoflAnalysis(){
-  const panel=document.getElementById('roflPanel'); const body=document.getElementById('roflBody');
-  if(!panel||!body) return;
-  if(!agg || !agg.stats || !(agg.stats.rofl&&agg.stats.rofl.n)){ panel.style.display='none'; return; }
-  const {perP,champs}=roflByPlayer();
-  const ids=Object.keys(perP);
-  if(!ids.length){ panel.style.display='none'; return; }
-  panel.style.display='';
-  document.getElementById('roflPanelSub').textContent='par joueur · champions · lane — '+agg.stats.rofl.n+' game'+(agg.stats.rofl.n>1?'s':'');
-  // Ordonner par rôle du roster
-  const order=rosterPlayers().map(p=>p.id);
-  const rows=ids.sort((a,b)=>order.indexOf(a)-order.indexOf(b)).map(id=>{
-    const A=perP[id], n=A.games, min=A.sec/60||1;
-    const wr=Math.round(A.wins/n*100);
-    const kda=((A.k+A.a)/Math.max(1,A.d)).toFixed(2);
-    const lane=A.laneN? Math.round(A.lane/A.laneN) : null;
-    return `<tr>
-      <td class="rk-name"><span class="rk-dot" style="background:${A.p.color||'var(--accent)'}"></span>${esc(A.p.name)}<span style="color:var(--muted);font-weight:400"> · ${esc(A.p.role||'')}</span></td>
-      <td class="mono">${n}</td>
-      <td class="mono ${wr>=50?'ok-t':'err-t'}">${wr}%</td>
-      <td class="mono">${kda}</td>
-      <td class="mono">${(A.cs/min).toFixed(1)}</td>
-      <td class="mono ${lane==null?'':lane>=0?'ok-t':'err-t'}">${lane==null?'—':(lane>=0?'+':'')+fmtK(lane)}</td>
-      <td class="mono">${fmtK(A.dmg/n)}</td>
-      <td class="mono">${Math.round(A.vision/n)}</td>
-    </tr>`;
-  }).join('');
-  const champList=Object.entries(champs).sort((a,b)=>b[1].games-a[1].games||b[1].wins-a[1].wins).slice(0,12)
-    .map(([c,v])=>{ const wr=Math.round(v.wins/v.games*100);
-      return `<div class="champ-row"><img class="champ-ic" src="assets/champions/${encodeURIComponent(c)}.png" alt="" title="${esc(c)}" onerror="this.style.display='none'"><span class="cn">${esc(c)}</span><span class="cg">${v.games}g</span><span class="cw ${wr>=50?'ok-t':'err-t'}">${wr}%</span></div>`; }).join('');
-  body.innerHTML=`
-    <div class="rofl-sub-h">Par joueur <span style="color:var(--muted)">· ±Gold = différentiel de gold sur la lane (fin de game)</span></div>
-    <div style="overflow-x:auto"><table class="rk-tbl"><thead><tr><th>Joueur</th><th class="mono">Games</th><th class="mono">WR</th><th class="mono">KDA</th><th class="mono">CS/min</th><th class="mono">±Gold lane</th><th class="mono">Dmg</th><th class="mono">Vision</th></tr></thead><tbody>${rows}</tbody></table></div>
-    <div class="rofl-sub-h">Champions les plus joués</div>
-    ${champList?`<div class="champ-grid">${champList}</div>`:'<div class="empty" style="text-align:left;padding:8px 0">Aucun champion.</div>'}`;
-}
 
 function renderResults(){
   const el=document.getElementById('resultsBox');
