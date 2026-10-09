@@ -69,6 +69,10 @@ function startServer(opts) {
         if (opts.onSaved) try { opts.onSaved(next); } catch (e) {}
         return json(res, 200, { ok: true });
       }
+      if (req.method === 'POST' && url === '/api/run') {
+        try { const r = opts.onRun ? await opts.onRun() : {}; return json(res, 200, r || {}); }
+        catch (e) { return json(res, 200, { error: String(e.message || e) }); }
+      }
       if (req.method === 'POST' && url === '/api/autostart') {
         const b = await readBody(req);
         try { if (opts.setAutostart) await opts.setAutostart(!!b.on); return json(res, 200, { ok: true, on: !!b.on }); }

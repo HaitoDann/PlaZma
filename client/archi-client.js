@@ -84,13 +84,13 @@ function log(...a) {
 }
 
 // État courant (exposé à la page d'état).
-const STATE = { leagueOpen: false, riotId: '', rankLabel: '', lastPush: '', lastPushOk: false, autostart: null,
+const STATE = { leagueOpen: false, riotId: '', rankLabel: '', lastPush: '', lastPushOk: false, lastPushMsg: '', autostart: null,
   updateAvailable: false, latestVersion: '' };
 function getStatus() {
   const f = CFG.features || {}; const on = [];
   if (f.rank) on.push('rang'); if (f.soloq) on.push('SoloQ/.rofl');
   return { appName: APP_NAME, version: VERSION, leagueOpen: STATE.leagueOpen, riotId: STATE.riotId, rankLabel: STATE.rankLabel,
-    lastPush: STATE.lastPush, lastPushOk: STATE.lastPushOk, features: on, playerId: CFG.playerId || '',
+    lastPush: STATE.lastPush, lastPushOk: STATE.lastPushOk, lastPushMsg: STATE.lastPushMsg, features: on, playerId: CFG.playerId || '',
     autostart: STATE.autostart, updateAvailable: STATE.updateAvailable, latestVersion: STATE.latestVersion,
     log: LOG.slice(-40) };
 }
@@ -278,11 +278,11 @@ function watchReplays() {
 
 // ---- Boucle principale ----
 let warnedClosed = false;
-async function cycle() {
+async function cycle(forced) {
   const lock = readLockfile();
   if (!lock) {
     STATE.leagueOpen = false;
-    if (!warnedClosed) { log('⏳ client League fermé — en attente (ouvre le client pour lire le rang).'); warnedClosed = true; }
+    if (!warnedClosed || forced) { log('⏳ client League fermé — ouvre le client League (pas besoin de lancer une partie) pour lire ton rang.'); warnedClosed = true; }
     scanReplays();                                // les .rofl se lisent même client fermé
     return;
   }
@@ -311,15 +311,19 @@ async function maybePush(rank, recent) {
   const f = CFG.features || {}, a = CFG.auth || {};
   if (!(f.rank || f.soloq)) return;                  // aucune option d'envoi SoloQ cochée
   if (!a.username || !a.password || !CFG.playerId) { log('⚠ envoi activé mais connexion non configurée — lance avec --setup.'); return; }
-  if (!rank || !rank.solo) return;
+  if (!rank || !rank.solo) { log('⚠ rang SoloQ indisponible (non classé, ou le client n\'a pas encore chargé le rang) — rien à envoyer pour l\'instant.'); return; }
   const doc = { riotId: rank.riotId, puuid: rank.puuid, updatedAt: rank.updatedAt };
   if (f.rank) doc.solo = rank.solo;                                   // elo + winrate
   if (f.soloq) { doc.history = readJson(HISTORY_FILE, []).slice(-60); doc.recent = (recent || []).slice(0, 10); }  // historique + parties
   try {
     await pushStats({ username: a.username, password: a.password, playerId: CFG.playerId }, doc);
-    STATE.lastPush = new Date().toLocaleTimeString('fr-FR'); STATE.lastPushOk = true;
+    STATE.lastPush = new Date().toLocaleTimeString('fr-FR'); STATE.lastPushOk = true; STATE.lastPushMsg = 'Envoyé (' + rankLabel(rank.solo) + ')';
     log('☁ envoyé à ARCHI (plazma-stats/' + CFG.playerId + ') · ' + [f.rank && 'rang', f.soloq && 'SoloQ'].filter(Boolean).join('+'));
-  } catch (e) { STATE.lastPush = new Date().toLocaleTimeString('fr-FR'); STATE.lastPushOk = false; log('⚠ envoi ARCHI impossible :', e.message); }
+  } catch (e) {
+    STATE.lastPush = new Date().toLocaleTimeString('fr-FR'); STATE.lastPushOk = false;
+    STATE.lastPushMsg = /403|permission|PERMISSION/.test(String(e.message)) ? 'Refusé par ARCHI : ton compte n\'est pas lié à ce joueur (demande à un admin).' : e.message;
+    log('⚠ envoi ARCHI impossible :', e.message);
+  }
 }
 
 function logFeatures() {
@@ -361,6 +365,7 @@ async function main() {
         }
         cycle();
       },
+      onRun: async () => { log('🔄 synchro forcée…'); await cycle(true); return getStatus(); },
       isAutostart, setAutostart, onQuit: quit,
     });
     try { fs.writeFileSync(path.join(OUT, 'port.txt'), String(_server.port)); } catch (e) {}

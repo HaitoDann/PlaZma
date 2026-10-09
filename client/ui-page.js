@@ -65,7 +65,10 @@ code{background:var(--surface2);padding:1px 5px;border-radius:4px;font-size:12px
       <div class="stat"><span class="k">Rang SoloQ</span><span class="v" id="s-rank">—</span></div>
       <div class="stat"><span class="k">Dernier envoi à ARCHI</span><span class="v" id="s-push">—</span></div>
       <div class="stat"><span class="k">Partage actif</span><span class="v" id="s-feat">—</span></div>
+      <div id="s-pushmsg" style="display:none;font-size:12px;margin:2px 0 8px"></div>
       <label class="sw"><input type="checkbox" id="auto"> Démarrer automatiquement avec Windows</label>
+      <div class="saverow" style="margin:10px 0 4px"><span class="whoami">Besoin d'ouvrir le client League pour lire le rang.</span>
+        <button id="run" class="primary">Forcer la synchro</button></div>
       <div class="loglines" id="log">…</div>
       <div class="saverow" style="margin-top:14px"><span class="whoami" id="s-ver">Journal des dernières actions.</span>
         <button id="quit">Quitter ${appName}</button></div>
@@ -118,6 +121,10 @@ async function poll(){ try{ const s=await api('/api/status');
   $('s-rank').textContent = s.rankLabel||'—';
   $('s-push').innerHTML = s.lastPush ? ((s.lastPushOk?'<span class="dot on"></span>':'<span class="dot err"></span>')+s.lastPush) : '—';
   $('s-feat').textContent = (s.features&&s.features.length)? s.features.join(', ') : 'rien';
+  const pm=$('s-pushmsg');
+  if(s.lastPushMsg && !s.lastPushOk){ pm.style.display='block'; pm.style.color='var(--err,#ef4444)'; pm.textContent='⚠ '+s.lastPushMsg; }
+  else if(s.lastPushMsg && s.lastPushOk){ pm.style.display='block'; pm.style.color='var(--ok,#22c55e)'; pm.textContent='✓ '+s.lastPushMsg; }
+  else pm.style.display='none';
   if(s.autostart!==null && document.activeElement!==$('auto')) $('auto').checked=!!s.autostart;
   if(Array.isArray(s.log)) $('log').textContent = s.log.join('\\n');
   if(s.version) $('s-ver').textContent = '${appName} v'+s.version;
@@ -130,6 +137,7 @@ async function poll(){ try{ const s=await api('/api/status');
 poll(); setInterval(poll, 3000);
 
 $('auto').addEventListener('change', async()=>{ await api('/api/autostart',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({on:$('auto').checked})}); });
+$('run').addEventListener('click', async()=>{ const b=$('run'); b.disabled=true; b.textContent='Synchro…'; try{ await api('/api/run',{method:'POST'}); }catch(e){} await poll(); b.disabled=false; b.textContent='Forcer la synchro'; });
 $('quit').addEventListener('click', async()=>{ if(confirm('Quitter ${appName} ? Il ne tournera plus en fond.')){ await api('/api/quit',{method:'POST'}); document.body.innerHTML='<div style="padding:40px;color:#a4abb4">ARCHI Link s\\'est arrêté. Tu peux fermer cette fenêtre.</div>'; } });
 
 $('test').addEventListener('click', async ()=>{
