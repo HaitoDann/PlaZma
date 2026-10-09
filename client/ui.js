@@ -41,6 +41,7 @@ function startServer(opts) {
           appName: opts.appName || 'ARCHI Link',
           username: (c.auth && c.auth.username) || '',
           playerId: c.playerId || '',
+          leaguePath: c.lockfile || '',
           features: { rank: f.rank !== false, soloq: f.soloq !== false },
         });
       }
@@ -62,6 +63,11 @@ function startServer(opts) {
           playerId: b.playerId,
           features: { rank: !!b.features.rank, soloq: !!b.features.soloq },
         });
+        // Chemin League manuel : accepte le dossier ou le lockfile direct.
+        if (typeof b.leaguePath === 'string' && b.leaguePath.trim()) {
+          const lp = b.leaguePath.trim().replace(/[\\/]+$/, '');
+          next.lockfile = /lockfile$/i.test(lp) ? lp : lp + '\\lockfile';
+        }
         delete next.push;
         try { fs.writeFileSync(opts.configPath, JSON.stringify(stripInternal(next), null, 2)); }
         catch (e) { return json(res, 200, { ok: false, error: 'Écriture impossible : ' + e.message }); }
