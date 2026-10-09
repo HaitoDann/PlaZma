@@ -96,6 +96,11 @@ code{background:var(--surface2);padding:1px 5px;border-radius:4px;font-size:12px
         <div><div class="ft">Historique & suivi SoloQ (+ replays .rofl)</div><div class="fd">Historique du rang, dernières parties, lecture des replays .rofl.</div>
           <div class="fi"><b>Impact :</b> léger — surveillance du dossier des replays ; l'analyse d'un replay est brève.</div></div></label>
     </div>
+    <div class="card">
+      <h2>Dossier de League <span style="color:#7c8591;font-weight:400;font-size:13px">(optionnel)</span></h2>
+      <div class="hint">Laisse vide si League est sur <code>C:</code> : la détection est automatique (même quand il est ouvert). Si ton League est sur un autre disque et n'est pas détecté, colle ici son dossier, par ex. <code>D:\\Riot Games\\League of Legends</code>.</div>
+      <input id="leaguePath" type="text" placeholder="D:\\...\\Riot Games\\League of Legends" style="width:100%">
+    </div>
     <div class="card"><div class="saverow">
       <div class="whoami" id="who">Teste d'abord ta connexion.</div>
       <button class="primary" id="save" disabled>Enregistrer</button></div>
@@ -113,7 +118,8 @@ if(location.search.indexOf('setup')>=0) document.querySelector('.tab[data-tab=co
 
 let detected={playerId:''};
 (async()=>{ try{ const c=await api('/api/config'); $('u').value=c.username||''; detected.playerId=c.playerId||'';
-  $('f-rank').checked=c.features.rank; $('f-soloq').checked=c.features.soloq; }catch(e){} })();
+  $('f-rank').checked=c.features.rank; $('f-soloq').checked=c.features.soloq;
+  if($('leaguePath')) $('leaguePath').value=c.leaguePath||''; }catch(e){} })();
 
 async function poll(){ try{ const s=await api('/api/status');
   $('s-league').innerHTML = s.leagueOpen ? '<span class="dot on"></span>ouvert' : '<span class="dot off"></span>fermé';
@@ -160,6 +166,7 @@ $('test').addEventListener('click', async ()=>{
 });
 $('save').addEventListener('click', async ()=>{
   const body={ username:$('u').value.trim(), password:$('p').value, playerId:detected.playerId,
+    leaguePath: ($('leaguePath')&&$('leaguePath').value.trim())||'',
     features:{ rank:$('f-rank').checked, soloq:$('f-soloq').checked } };
   setSave('wait','Enregistrement…'); $('save').disabled=true;
   const r=await api('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});

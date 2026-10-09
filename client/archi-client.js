@@ -157,6 +157,22 @@ function findLockfile() {
   }
   return null;
 }
+// Détection automatique via le processus League en cours (marche quel que soit
+// le disque / dossier d'installation). Lit la ligne de commande de LeagueClientUx.
+function detectLockViaProcess() {
+  if (process.platform !== 'win32') return Promise.resolve(null);
+  return new Promise(resolve => {
+    execFile('powershell', ['-NoProfile', '-Command',
+      "(Get-CimInstance Win32_Process -Filter \"Name='LeagueClientUx.exe'\").CommandLine"],
+      { windowsHide: true, timeout: 8000 }, (err, out) => {
+        if (err || !out) return resolve(null);
+        let dir = (String(out).match(/--install-directory=([^"]+?)(?:"|\s--|\s*$)/i) || [])[1];
+        if (!dir) { const e = String(out).match(/"?([A-Za-z]:\\[^"]+?)\\LeagueClientUx\.exe/i); if (e) dir = e[1]; }
+        if (!dir) return resolve(null);
+        resolve(path.join(dir.trim(), 'lockfile'));
+      });
+  });
+}
 function readLockfile() {
   const file = findLockfile();
   if (!file) return null;                          // client League fermé
@@ -279,10 +295,14 @@ function watchReplays() {
 // ---- Boucle principale ----
 let warnedClosed = false;
 async function cycle(forced) {
-  const lock = readLockfile();
+  let lock = readLockfile();
+  if (!lock) {
+    // Scan par chemins échoué : tente de localiser League via son processus.
+    try { const p = await detectLockViaProcess(); if (p) { fs.accessSync(p); _lockPath = p; log('📁 client League détecté (via processus) :', p); lock = readLockfile(); } } catch (e) {}
+  }
   if (!lock) {
     STATE.leagueOpen = false;
-    if (!warnedClosed || forced) { log('⏳ client League fermé — ouvre le client League (pas besoin de lancer une partie) pour lire ton rang.'); warnedClosed = true; }
+    if (!warnedClosed || forced) { log('⏳ client League fermé (ou introuvable) — ouvre le client League ; s\'il est déjà ouvert, indique son dossier dans Configuration.'); warnedClosed = true; }
     scanReplays();                                // les .rofl se lisent même client fermé
     return;
   }
