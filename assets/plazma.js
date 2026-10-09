@@ -55,7 +55,7 @@
   // ---- Version de l'application (SemVer) ----
   // MAJEUR.MINEUR.CORRECTIF — MINEUR à chaque lot de fonctionnalités,
   // CORRECTIF pour les corrections. Affichée discrètement dans Paramètres.
-  const VERSION = '3.21.1';
+  const VERSION = '3.22.0';
 
   // ---- Niveau de performance : adapte la densité des effets ----
   // Full sur machine puissante (rendu identique), réduit sur mobile/appareil
@@ -440,13 +440,18 @@
   // ---- Navigation partagée ----
   const NAV = [
     { key: 'home',         href: 'index.html',              label: 'Accueil' },
-    { key: 'schedule',     href: 'plazma-schedule.html',    label: 'Planning',     section: 'planning',     group: 'prep' },
-    { key: 'scrim',        href: 'plazma-scrim.html',       label: 'CR Match',     section: 'scrim',        group: 'prep' },
-    { key: 'review',       href: 'plazma-review-individuelle.html', label: 'Review', section: 'scrim',      group: 'prep' },
+    { key: 'schedule',     href: 'plazma-schedule.html',    label: 'Planning',     section: 'planning' },
     { key: 'scouting',     href: 'plazma-scouting.html',    label: 'Scouting',     section: 'scouting',     group: 'prep' },
     { key: 'draft',        href: 'plazma-draft.html',       label: 'Draft',        section: 'scouting',     group: 'prep' },
+    { key: 'scrim',        href: 'plazma-scrim.html',       label: 'Compte rendu', section: 'scrim',        group: 'post' },
+    { key: 'review',       href: 'plazma-review-individuelle.html', label: 'Review', section: 'scrim',      group: 'post' },
+    { key: 'perf_top',     href: 'plazma-perf-top.html',    label: 'Fiche Top',                             group: 'perf' },
+    { key: 'perf_jungle',  href: 'plazma-perf-jungler.html',label: 'Fiche Jungle',                          group: 'perf' },
+    { key: 'perf_mid',     href: 'plazma-perf-mid.html',    label: 'Fiche Mid',                             group: 'perf' },
+    { key: 'perf_adc',     href: 'plazma-perf-adc.html',    label: 'Fiche ADC',                             group: 'perf' },
+    { key: 'perf_support', href: 'plazma-perf-supp.html',   label: 'Fiche Support',                         group: 'perf' },
+    { key: 'coach',        href: 'plazma-coach.html',       label: 'Fiche Coach',  section: 'coach',        group: 'perf' },
     { key: 'team',         href: 'plazma-team.html',        label: 'Équipe',       section: 'team',         group: 'equipe' },
-    { key: 'coach',        href: 'plazma-coach.html',       label: 'Coach',        section: 'coach',        group: 'equipe' },
     { key: 'satisfaction', href: 'plazma-satisfaction.html',label: 'Satisfaction', section: 'satisfaction', group: 'equipe' },
     { key: 'dashboard',    href: 'plazma-dashboard.html',   label: 'Dashboard',    section: 'dashboard',    group: 'analyse' },
     { key: 'analyse',      href: 'plazma-analyse.html',     label: 'Analyse',                               group: 'analyse' },
@@ -455,6 +460,8 @@
   // Regroupement de la barre de navigation (menus déroulants) pour éviter la surcharge.
   const NAV_GROUPS = [
     { key: 'prep',    label: 'Préparation' },
+    { key: 'post',    label: 'Post-match' },
+    { key: 'perf',    label: 'Performance' },
     { key: 'equipe',  label: 'Équipe' },
     { key: 'analyse', label: 'Analyse' },
   ];

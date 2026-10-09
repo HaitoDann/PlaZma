@@ -119,7 +119,7 @@ h3{font-size:1.02rem}
   padding:1.5px 6px;vertical-align:middle;position:relative;top:-1px}
 @media(max-width:560px){.pz-ver{display:none}}
 .pz-brand-sub{font-size:10px;color:var(--muted);letter-spacing:.01em;font-family:var(--font)}
-.pz-nav{display:flex;align-items:center;gap:2px;flex-wrap:wrap}
+.pz-nav{display:flex;align-items:center;justify-content:center;gap:2px;flex-wrap:wrap;flex:1}
 .pz-nav a{
   font-size:13px;font-weight:500;color:var(--dim);
   padding:7px 11px;border-radius:8px;transition:color .15s,background .15s;
