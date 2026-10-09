@@ -138,7 +138,6 @@ h3{font-size:1.02rem}
 .pz-nav-menu{position:absolute;top:calc(100% + 6px);left:0;min-width:168px;background:var(--surface);border:1px solid var(--border-2);
   border-radius:10px;padding:6px;box-shadow:0 8px 28px rgba(0,0,0,.28);display:none;flex-direction:column;gap:2px;z-index:50}
 .pz-nav-grp.open>.pz-nav-menu{display:flex}
-@media(hover:hover){.pz-nav-grp:hover>.pz-nav-menu{display:flex}}
 .pz-nav-menu a{display:block}
 .pz-nav-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0}
 .pz-nav-user{
