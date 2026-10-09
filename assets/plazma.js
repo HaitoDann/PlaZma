@@ -55,7 +55,7 @@
   // ---- Version de l'application (SemVer) ----
   // MAJEUR.MINEUR.CORRECTIF — MINEUR à chaque lot de fonctionnalités,
   // CORRECTIF pour les corrections. Affichée discrètement dans Paramètres.
-  const VERSION = '3.20.0';
+  const VERSION = '3.21.0';
 
   // ---- Niveau de performance : adapte la densité des effets ----
   // Full sur machine puissante (rendu identique), réduit sur mobile/appareil
@@ -440,17 +440,23 @@
   // ---- Navigation partagée ----
   const NAV = [
     { key: 'home',         href: 'index.html',              label: 'Accueil' },
-    { key: 'schedule',     href: 'plazma-schedule.html',    label: 'Planning',     section: 'planning' },
-    { key: 'scrim',        href: 'plazma-scrim.html',       label: 'CR Match',     section: 'scrim' },
-    { key: 'review',       href: 'plazma-review-individuelle.html', label: 'Review', section: 'scrim' },
-    { key: 'scouting',     href: 'plazma-scouting.html',    label: 'Scouting',     section: 'scouting' },
-    { key: 'draft',        href: 'plazma-draft.html',       label: 'Draft',        section: 'scouting' },
-    { key: 'wikiperf',     href: 'plazma-wiki-perf.html',   label: 'Encyclopédie' },
-    { key: 'team',         href: 'plazma-team.html',        label: 'Équipe',       section: 'team' },
-    { key: 'dashboard',    href: 'plazma-dashboard.html',   label: 'Dashboard',    section: 'dashboard' },
-    { key: 'analyse',      href: 'plazma-analyse.html',     label: 'Analyse' },
-    { key: 'coach',        href: 'plazma-coach.html',       label: 'Coach',        section: 'coach' },
-    { key: 'satisfaction', href: 'plazma-satisfaction.html',label: 'Satisfaction', section: 'satisfaction' }
+    { key: 'schedule',     href: 'plazma-schedule.html',    label: 'Planning',     section: 'planning',     group: 'prep' },
+    { key: 'scrim',        href: 'plazma-scrim.html',       label: 'CR Match',     section: 'scrim',        group: 'prep' },
+    { key: 'review',       href: 'plazma-review-individuelle.html', label: 'Review', section: 'scrim',      group: 'prep' },
+    { key: 'scouting',     href: 'plazma-scouting.html',    label: 'Scouting',     section: 'scouting',     group: 'prep' },
+    { key: 'draft',        href: 'plazma-draft.html',       label: 'Draft',        section: 'scouting',     group: 'prep' },
+    { key: 'team',         href: 'plazma-team.html',        label: 'Équipe',       section: 'team',         group: 'equipe' },
+    { key: 'coach',        href: 'plazma-coach.html',       label: 'Coach',        section: 'coach',        group: 'equipe' },
+    { key: 'satisfaction', href: 'plazma-satisfaction.html',label: 'Satisfaction', section: 'satisfaction', group: 'equipe' },
+    { key: 'dashboard',    href: 'plazma-dashboard.html',   label: 'Dashboard',    section: 'dashboard',    group: 'analyse' },
+    { key: 'analyse',      href: 'plazma-analyse.html',     label: 'Analyse',                               group: 'analyse' },
+    { key: 'wikiperf',     href: 'plazma-wiki-perf.html',   label: 'Encyclopédie',                          group: 'analyse' }
+  ];
+  // Regroupement de la barre de navigation (menus déroulants) pour éviter la surcharge.
+  const NAV_GROUPS = [
+    { key: 'prep',    label: 'Préparation' },
+    { key: 'equipe',  label: 'Équipe' },
+    { key: 'analyse', label: 'Analyse' },
   ];
 
   let _navActive = null, _navMount;
@@ -508,12 +514,24 @@
   function renderNav() {
     const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     const disabled = (siteGet().disabled) || [];
-    let links = NAV.filter(n => (!n.section || can(n.section)) && (isAdmin() || disabled.indexOf(n.key) === -1))
-      .map(n => {
-        const off = disabled.indexOf(n.key) !== -1;
-        const cls = [n.key === _navActive ? 'active' : '', off ? 'pz-nav-off' : ''].filter(Boolean).join(' ');
-        return `<a href="${n.href}"${cls ? ` class="${cls}"` : ''}${off ? ' title="Section désactivée"' : ''}>${n.label}</a>`;
-      }).join('');
+    const visible = NAV.filter(n => (!n.section || can(n.section)) && (isAdmin() || disabled.indexOf(n.key) === -1));
+    const chevron = '<svg class="pz-nav-chev" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+    const linkFor = n => {
+      const off = disabled.indexOf(n.key) !== -1;
+      const cls = [n.key === _navActive ? 'active' : '', off ? 'pz-nav-off' : ''].filter(Boolean).join(' ');
+      return `<a href="${n.href}"${cls ? ` class="${cls}"` : ''}${off ? ' title="Section désactivée"' : ''}>${n.label}</a>`;
+    };
+    // Entrées sans groupe (accès direct), dans l'ordre.
+    let links = visible.filter(n => !n.group).map(linkFor).join('');
+    // Groupes -> menus déroulants (masqués si vides).
+    links += NAV_GROUPS.map(g => {
+      const items = visible.filter(n => n.group === g.key);
+      if (!items.length) return '';
+      const activeIn = items.some(n => n.key === _navActive);
+      return `<div class="pz-nav-grp${activeIn ? ' active' : ''}">` +
+        `<button type="button" class="pz-nav-gbtn">${g.label}${chevron}</button>` +
+        `<div class="pz-nav-menu">${items.map(linkFor).join('')}</div></div>`;
+    }).join('');
     if (isAdmin()) links += `<a href="plazma-admin.html"${_navActive === 'admin' ? ' class="active"' : ''}>Comptes</a>`;
     if (isAdmin()) links += `<a href="plazma-site-admin.html"${_navActive === 'site' ? ' class="active"' : ''} style="position:relative">Système${_ideaUnread > 0 ? `<span class="pz-idea-badge">${_ideaUnread > 9 ? '9+' : _ideaUnread}</span>` : ''}</a>`;
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
@@ -540,6 +558,12 @@
     if (existing) existing.outerHTML = html;
     else document.body.insertAdjacentHTML('afterbegin', html);
   }
+  // Ouverture/fermeture des menus déroulants de la nav (clic, compatible tactile).
+  document.addEventListener('click', e => {
+    const grp = e.target.closest('.pz-nav-grp');
+    document.querySelectorAll('.pz-nav-grp.open').forEach(g => { if (g !== grp) g.classList.remove('open'); });
+    if (e.target.closest('.pz-nav-gbtn') && grp) { e.preventDefault(); grp.classList.toggle('open'); }
+  });
 
   // ---- Pastille de synchro ----
   // Attend des éléments #syncDot / #syncText / #syncTime si présents.
