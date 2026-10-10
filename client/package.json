@@ -1,6 +1,6 @@
 {
   "name": "archi-client",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "private": true,
   "description": "Client local ARCHI (Windows) : rang SoloQ, import .rofl, historique SoloQ — sans clé Riot.",
   "bin": "archi-client.js",
