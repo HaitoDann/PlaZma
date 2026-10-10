@@ -35,6 +35,7 @@ const REPLAYS_OUT = path.join(OUT, 'replays');
 const HISTORY_FILE = path.join(OUT, 'soloq-history.json');
 const RANK_FILE = path.join(OUT, 'rank.json');
 const INDEX_FILE = path.join(OUT, 'replays-index.json');
+const MATCHES_FILE = path.join(OUT, 'soloq-matches.json');   // historique SoloQ accumulé
 const LOG_FILE = path.join(OUT, 'log.txt');
 
 // ---- Config (client/config.json, sinon valeurs par défaut Windows) ----
@@ -246,21 +247,41 @@ function rankLabel(s) {
   return `${fr[s.tier] || s.tier}${s.division ? ' ' + s.division : ''} · ${s.lp} LP` + (s.wr != null ? ` · ${s.wr}% WR` : '');
 }
 
-// ---- Historique de parties classées (bonus, best-effort) ----
-async function fetchRecentRanked(lock) {
+// ---- Historique de parties classées (SoloQ) : données brutes riches ----
+// Lit jusqu'à 200 parties classées depuis le client, avec un maximum de stats
+// par partie (CS, gold, vision, dégâts, multi-kills, rôle…) — la matière première.
+async function fetchRankedMatches(lock) {
   try {
-    const mh = await lcuGet(lock, '/lol-match-history/v1/products/lol/current-summoner/matches?begIndex=0&endIndex=20');
+    const mh = await lcuGet(lock, '/lol-match-history/v1/products/lol/current-summoner/matches?begIndex=0&endIndex=199');
     const games = (mh && mh.games && mh.games.games) || [];
-    return games.filter(g => g.queueId === 420).slice(0, 10).map(g => {
+    return games.filter(g => g.queueId === 420).map(g => {
       const me = (g.participants && g.participants[0]) || {};
-      const st = me.stats || {};
+      const st = me.stats || {}, tl = me.timeline || {};
+      const dur = g.gameDuration || 0, min = (dur / 60) || 1;
+      const cs = (st.totalMinionsKilled || 0) + (st.neutralMinionsKilled || 0);
       return {
-        gameId: g.gameId, ts: g.gameCreation, durationSec: g.gameDuration,
+        gameId: g.gameId, ts: g.gameCreation, durationSec: dur,
         champ: me.championId, win: !!st.win,
         k: st.kills || 0, d: st.deaths || 0, a: st.assists || 0,
+        cs, csmin: Math.round(cs / min * 10) / 10,
+        gold: st.goldEarned || 0, vision: st.visionScore || 0,
+        dmg: st.totalDamageDealtToChampions || 0, dmgTaken: st.totalDamageTaken || 0,
+        champLevel: st.champLevel || 0,
+        doubleKills: st.doubleKills || 0, tripleKills: st.tripleKills || 0,
+        quadraKills: st.quadraKills || 0, pentaKills: st.pentaKills || 0,
+        role: tl.role || '', lane: tl.lane || '',
       };
     });
   } catch (e) { return null; }
+}
+// Accumule l'historique SoloQ dans le temps (dédoublonnage par gameId), cap à 500.
+function mergeMatches(fresh) {
+  const byId = {};
+  (readJson(MATCHES_FILE, []) || []).forEach(m => { if (m && m.gameId != null) byId[m.gameId] = m; });
+  (fresh || []).forEach(m => { if (m && m.gameId != null) byId[m.gameId] = m; });
+  const all = Object.values(byId).sort((a, b) => (b.ts || 0) - (a.ts || 0)).slice(0, 500);
+  writeJson(MATCHES_FILE, all);
+  return all;
 }
 
 // ---- Replays .rofl ----
@@ -310,7 +331,7 @@ async function cycle(forced) {
   warnedClosed = false;
   // Chaque étape est isolée : si l'une échoue, les autres continuent
   // (p. ex. l'historique de parties peut manquer sans bloquer l'envoi).
-  let rank = null, recent = null;
+  let rank = null, matches = null;
   try {
     rank = await fetchRank(lock);
     writeJson(RANK_FILE, rank);
@@ -319,22 +340,27 @@ async function cycle(forced) {
     log('👤', rank.riotId, '—', rankLabel(rank.solo));
   } catch (e) { log('⚠ lecture du rang impossible :', e.message); }
   try {
-    recent = await fetchRecentRanked(lock);
-    if (recent) writeJson(path.join(OUT, 'recent-ranked.json'), recent);
-  } catch (e) { log('⚠ parties récentes indisponibles :', e.message); }
-  if (rank) { try { await maybePush(rank, recent); } catch (e) { log('⚠ envoi ARCHI :', e.message); } }
+    const fresh = await fetchRankedMatches(lock);
+    if (fresh) { matches = mergeMatches(fresh); if (matches.length) log('🗂 historique SoloQ : ' + matches.length + ' parties classées (cumul).'); }
+    else matches = readJson(MATCHES_FILE, []);
+  } catch (e) { log('⚠ historique SoloQ indisponible :', e.message); matches = readJson(MATCHES_FILE, []); }
+  if (rank) { try { await maybePush(rank, matches); } catch (e) { log('⚠ envoi ARCHI :', e.message); } }
   scanReplays();
 }
 
 
-async function maybePush(rank, recent) {
+async function maybePush(rank, matches) {
   const f = CFG.features || {}, a = CFG.auth || {};
   if (!(f.rank || f.soloq)) return;                  // aucune option d'envoi SoloQ cochée
   if (!a.username || !a.password || !CFG.playerId) { log('⚠ envoi activé mais connexion non configurée — lance avec --setup.'); return; }
   if (!rank || !rank.solo) { log('⚠ rang SoloQ indisponible (non classé, ou le client n\'a pas encore chargé le rang) — rien à envoyer pour l\'instant.'); return; }
   const doc = { riotId: rank.riotId, puuid: rank.puuid, updatedAt: rank.updatedAt };
   if (f.rank) doc.solo = rank.solo;                                   // elo + winrate
-  if (f.soloq) { doc.history = readJson(HISTORY_FILE, []).slice(-60); doc.recent = (recent || []).slice(0, 10); }  // historique + parties
+  if (f.soloq) {
+    doc.history = readJson(HISTORY_FILE, []).slice(-120);           // points de rang (courbe LP)
+    doc.matches = (matches || []).slice(0, 300);                    // historique SoloQ accumulé (riche)
+    doc.recent = (matches || []).slice(0, 10);                      // compat ancienne page
+  }
   try {
     await pushStats({ username: a.username, password: a.password, playerId: CFG.playerId }, doc);
     STATE.lastPush = new Date().toLocaleTimeString('fr-FR'); STATE.lastPushOk = true; STATE.lastPushMsg = 'Envoyé (' + rankLabel(rank.solo) + ')';
