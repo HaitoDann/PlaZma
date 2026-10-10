@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.22.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.23.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -70,6 +70,21 @@
   .ch-tag.bad{background:color-mix(in srgb,var(--err) 16%,transparent);color:var(--err)}
   .ch-mono{font-family:var(--font-mono)}
 
+  /* Historique des scrims */
+  .sh-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;border:1px solid transparent;text-decoration:none;color:inherit}
+  .sh-row:hover{background:var(--surface-2)}
+  .sh-d{width:42px;flex-shrink:0;text-align:center;line-height:1.1}
+  .sh-d b{display:block;font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--text)}
+  .sh-d span{font-size:9.5px;color:var(--muted);text-transform:uppercase}
+  .sh-b{flex:1;min-width:0}
+  .sh-adv{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sh-m{font-size:11px;color:var(--muted);margin-top:1px}
+  .sh-res{font-family:var(--font-display);font-weight:700;font-size:12.5px;padding:3px 10px;border-radius:999px;flex-shrink:0}
+  .sh-res.w{color:var(--ok);background:color-mix(in srgb,var(--ok) 15%,transparent)}
+  .sh-res.l{color:var(--err);background:color-mix(in srgb,var(--err) 15%,transparent)}
+  .sh-res.d{color:var(--dim);background:var(--surface-2)}
+  .sh-res.n{color:var(--muted);background:var(--surface-2)}
+
   /* Bascule de vue */
   .an-switch{display:inline-flex;gap:4px;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:3px;margin-bottom:20px}
   .an-sw{padding:7px 18px;border-radius:999px;border:none;cursor:pointer;background:none;color:var(--dim);font-family:var(--font);font-size:13px;font-weight:600}
@@ -99,6 +114,18 @@
   .pv-g .kda{position:absolute;left:0;right:0;bottom:0;font-size:8px;text-align:center;background:rgba(0,0,0,.6);color:#fff;font-family:var(--font-mono);line-height:1.3}
   .pv-exp{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);align-items:center}
   .pv-note{font-size:12px;color:var(--muted);line-height:1.5}
+  .pv-sub{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600;margin:18px 0 8px}
+  .pool{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+  .pool-c{display:flex;align-items:center;gap:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:8px 11px}
+  .pool-c img{width:34px;height:34px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--surface)}
+  .pool-i{min-width:0}
+  .pool-n{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pool-m{font-size:11px;color:var(--muted);font-family:var(--font-mono);margin-top:1px}
+  .pv-scroll{max-height:440px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r)}
+  .pv-scroll table{margin:0}
+  .pv-scroll thead th{position:sticky;top:0;background:var(--surface);z-index:1}
+  .ch-tbl tr.w td:first-child{box-shadow:inset 3px 0 0 color-mix(in srgb,var(--ok) 70%,transparent)}
+  .ch-tbl tr.l td:first-child{box-shadow:inset 3px 0 0 color-mix(in srgb,var(--err) 70%,transparent)}
 </style>
 </head>
 <body>
@@ -149,6 +176,12 @@
     <div class="hint">Tendances issues des replays : côté de carte, et durée moyenne des parties gagnées vs perdues (êtes-vous une équipe early ou late game ?).</div>
     <div class="an-tiles" id="profilTiles"></div>
   </div>
+
+  <div class="an-card" id="scrimHistCard">
+    <h2>Historique des scrims</h2>
+    <div class="hint">Tous les scrims avec un compte rendu. Clique pour ouvrir le CR.</div>
+    <div id="scrimHist"></div>
+  </div>
   </div><!-- /viewEquipe -->
 
   <div id="viewJoueur" style="display:none">
@@ -157,8 +190,8 @@
   </div>
 </div>
 
-<script src="assets/plazma.js?v=3.22.0" data-section="analyse"></script>
-<script src="assets/champions.js?v=3.22.0"></script>
+<script src="assets/plazma.js?v=3.23.0" data-section="analyse"></script>
+<script src="assets/champions.js?v=3.23.0"></script>
 <script>
 PZ.mountNav('analyse', '#nav');
 PZ.loadingDone();
@@ -360,6 +393,25 @@ PZ.loadingDone();
 
   function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
 
+  // Historique des scrims (liste cliquable → ouvre le CR).
+  function renderScrimHistory(CRS){
+    const el=document.getElementById('scrimHist');
+    const crs=(CRS||[]).slice().sort((a,b)=>(b.m_date||'').localeCompare(a.m_date||''));
+    if(!crs.length){ el.innerHTML='<div class="an-empty">Aucun scrim enregistré.</div>'; return; }
+    el.innerHTML=crs.map(cr=>{
+      const a=+cr.s_plazma, b=+cr.s_adv; const hasScore=isFinite(a)&&isFinite(b)&&(a+b)>0;
+      let gp=0,gw=0; for(let i=1;i<=5;i++){ const r=cr['g'+i+'_result']; if(r){gp++; if(r==='V')gw++;} }
+      let cls='n', txt=gp?(gw+'–'+(gp-gw)):'—';
+      if(hasScore){ cls=a>b?'w':a<b?'l':'d'; txt=a+'–'+b; }
+      else if(gp){ cls=gw>gp-gw?'w':gw<gp-gw?'l':'d'; }
+      const dd=cr.m_date?new Date(cr.m_date+'T12:00'):null;
+      return `<a class="sh-row" href="plazma-scrim.html#${encodeURIComponent(cr.id)}">
+        <div class="sh-d"><b>${dd?dd.toLocaleDateString('fr-FR',{day:'2-digit'}):'--'}</b><span>${dd?dd.toLocaleDateString('fr-FR',{month:'short'}):'—'}</span></div>
+        <div class="sh-b"><div class="sh-adv">${esc(cr.m_adv||'Sans adversaire')}</div><div class="sh-m">${gp?gp+' game'+(gp>1?'s':''):'Aucune game'}</div></div>
+        <span class="sh-res ${cls}">${txt}</span></a>`;
+    }).join('');
+  }
+
   // ===== Vue par joueur (fiche complète : SoloQ + scrims + champions + export) =====
   let pvSel = null;                 // id du joueur sélectionné
   const fmt1 = n => (Math.round(n*10)/10).toLocaleString('fr-FR');
@@ -380,6 +432,24 @@ PZ.loadingDone();
     const vals=(hist||[]).map(h=>L.value(h.tier,h.division,h.lp)).filter(v=>v!=null);
     return spark(vals);
   }
+  // Historique SoloQ accumulé (matches riches) ; repli sur recent si ancien client.
+  function soloMatches(d){ return (d && Array.isArray(d.matches) && d.matches.length) ? d.matches : ((d && d.recent) || []); }
+  function soloAgg(ms){
+    const n=ms.length; if(!n) return null; const s=f=>ms.reduce((m,x)=>m+(+x[f]||0),0);
+    const dd=s('d')||0, wins=ms.filter(x=>x.win).length, hasCs=ms.some(x=>x.csmin!=null);
+    return { n, wins, wr:Math.round(wins/n*100), kda:(s('k')+s('a'))/Math.max(1,dd),
+      k:s('k')/n, d:s('d')/n, a:s('a')/n, csmin:hasCs?s('csmin')/n:null,
+      gold:s('gold')/n, vision:s('vision')/n, dmg:s('dmg')/n };
+  }
+  function soloChampPool(ms){
+    const by={}; ms.forEach(m=>{ if(m.champ==null)return; const a=by[m.champ]||(by[m.champ]={champ:m.champ,g:0,w:0,k:0,d:0,as:0});
+      a.g++; if(m.win)a.w++; a.k+=m.k||0; a.d+=m.d||0; a.as+=m.a||0; });
+    return Object.values(by).map(a=>({champ:a.champ,g:a.g,w:a.w,wr:Math.round(a.w/a.g*100),kda:(a.k+a.as)/Math.max(1,a.d)}))
+      .sort((x,y)=>y.g-x.g||y.wr-x.wr);
+  }
+  const CDR=id=>'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/'+id+'.png';
+  function champNum(id){ if(window.Champions&&Champions.list){ const m=Champions.list.find(c=>String(c.key)===String(id)); if(m) return {name:m.name, icon:Champions.iconUrl(m.id)}; } return {name:'#'+id, icon:CDR(id)}; }
+  function timeAgo(ts){ if(!ts)return''; const d=(Date.now()-ts)/1000; if(d<5400)return 'il y a '+Math.round(d/60)+' min'; if(d<172800)return 'il y a '+Math.round(d/3600)+' h'; return 'il y a '+Math.round(d/86400)+' j'; }
   function renderPicker(STATS){
     const box=document.getElementById('pvPick');
     const ps=starters();
@@ -398,6 +468,7 @@ PZ.loadingDone();
     // --- SoloQ ---
     let soloHtml;
     if(s){ const tot=(s.wins||0)+(s.losses||0);
+      const ms=soloMatches(d), ag=soloAgg(ms);
       soloHtml=`<div class="an-tiles">
         ${tile('Rang', (L.TIER_FR[s.tier]||s.tier)+(s.division?' '+s.division:''), 'maj '+(d.updatedAt?new Date(d.updatedAt).toLocaleDateString('fr-FR'):'—'), '', false, PZ.tierIconUrl(s.tier)?`<img src="${PZ.tierIconUrl(s.tier)}" alt="" onerror="this.remove()">`:'')}
         ${tile('LP', (s.lp||0)+'', '')}
@@ -405,9 +476,31 @@ PZ.loadingDone();
         ${tile('Bilan', (s.wins||0)+'V '+(s.losses||0)+'D', '')}
       </div>
       <div class="pv-trends"><div class="pv-trend"><div class="t"><span>Progression (élo)</span><span>${(d.history||[]).length} relevés</span></div>${soloCurve(d.history)}</div></div>`;
-      const recent=(d.recent||[]).slice(0,10);
-      if(recent.length){ const cdr=id=>'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/'+id+'.png';
-        soloHtml+=`<div style="margin-top:14px"><div class="hint" style="margin-bottom:8px">Dernières parties classées</div><div class="pv-recent">${recent.map(g=>`<div class="pv-g ${g.win?'win':'loss'}" title="${g.k}/${g.d}/${g.a}${g.win?' · Victoire':' · Défaite'}"><img src="${cdr(g.champ)}" alt="" onerror="this.style.visibility='hidden'"><span class="kda">${g.k}/${g.d}/${g.a}</span></div>`).join('')}</div></div>`; }
+      if(ag){
+        // Moyennes brutes sur les parties récupérées (matière première).
+        soloHtml+=`<div class="pv-sub">Moyennes · ${ag.n} parties classées</div><div class="an-tiles">
+          ${tile('KDA moy.', fmt1(ag.kda), fmt1(ag.k)+' / '+fmt1(ag.d)+' / '+fmt1(ag.a))}
+          ${tile('Winrate', ag.wr+'%', ag.wins+'V '+(ag.n-ag.wins)+'D', ag.wr>=50?'pos':'neg')}
+          ${ag.csmin!=null?tile('CS/min', fmt1(ag.csmin), ''):''}
+          ${ag.vision?tile('Vision moy.', fmt1(ag.vision), ''):''}
+          ${ag.gold?tile('Gold moy.', fmt(ag.gold), ''):''}
+          ${ag.dmg?tile('Dégâts moy.', fmt(ag.dmg), ''):''}
+        </div>`;
+        // Meilleurs champions SoloQ.
+        const pool=soloChampPool(ms).slice(0,6);
+        if(pool.length) soloHtml+=`<div class="pv-sub">Champions les plus joués</div><div class="pool">${pool.map(c=>{ const m=champNum(c.champ);
+          return `<div class="pool-c"><img src="${m.icon}" alt="" onerror="this.style.visibility='hidden'"><div class="pool-i"><div class="pool-n">${esc(m.name)}</div><div class="pool-m">${c.g} games · <b style="color:${c.wr>=50?'var(--ok)':'var(--err)'}">${c.wr}%</b> · ${fmt1(c.kda)} KDA</div></div></div>`;}).join('')}</div>`;
+        // Historique complet (scrollable).
+        const rows=ms.map(g=>{ const m=champNum(g.champ); const min=(g.durationSec||0)/60, csm=g.csmin!=null?g.csmin:(min?(g.cs||0)/min:0);
+          return `<tr class="${g.win?'w':'l'}"><td><div class="cn"><img class="ci" src="${m.icon}" alt="" onerror="this.style.display='none'"><span>${esc(m.name)}</span></div></td>
+            <td class="ch-mono">${g.k}/${g.d}/${g.a}</td><td class="ch-mono">${fmt1((g.k+g.a)/Math.max(1,g.d))}</td>
+            <td class="ch-mono">${g.cs!=null?g.cs:'—'}${csm?` (${fmt1(csm)})`:''}</td>
+            <td>${g.win?'V':'D'}</td><td class="ch-mono">${g.durationSec?mmss(g.durationSec):'—'}</td><td>${timeAgo(g.ts)}</td></tr>`;}).join('');
+        soloHtml+=`<div class="pv-sub">Historique des parties classées <span style="color:var(--muted);font-weight:400">· ${ms.length}</span></div>
+          <div class="pv-scroll"><table class="ch-tbl"><thead><tr><th>Champion</th><th>K/D/A</th><th>KDA</th><th>CS</th><th>Rés.</th><th>Durée</th><th>Quand</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      } else {
+        soloHtml+=`<div class="pv-note" style="margin-top:12px">Historique détaillé pas encore disponible — il se remplit après quelques passages d'ARCHI Link (client League ouvert).</div>`;
+      }
     } else soloHtml=`<div class="pv-note">Aucune donnée SoloQ — ce joueur n'a pas encore lancé ARCHI Link.</div>`;
     // --- Scrims ---
     let scrimHtml;
@@ -452,7 +545,7 @@ PZ.loadingDone();
     a.href=URL.createObjectURL(b); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},0); }
   function exportJSON(p, games){ const d=CURRENT_STATS[p.id]||{};
     dl('archi-'+p.id+'-donnees.json', JSON.stringify({ player:{id:p.id,name:p.name,role:p.role,riotId:d.riotId||''}, generatedAt:new Date().toISOString(),
-      soloq:{solo:d.solo||null,history:d.history||[],recent:d.recent||[]}, scrims:{games} }, null, 2), 'application/json'); }
+      soloq:{solo:d.solo||null,history:d.history||[],matches:d.matches||d.recent||[]}, scrims:{games} }, null, 2), 'application/json'); }
   function exportCSV(p, games){ const head=['date','adversaire','champion','kills','deaths','assists','cs','cs_min','gold','degats','vision','duree_s','resultat'];
     const e=v=>{v=String(v==null?'':v);return /[",;\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
     const lines=[head.join(';')].concat(games.map(g=>[g.date,g.adv,g.champ,g.k,g.d,g.a,g.cs,fmt1(g.csmin),g.gold,g.dmg,g.vision,g.durationSec,g.win?'V':'D'].map(e).join(';')));
@@ -487,9 +580,10 @@ PZ.loadingDone();
         `<div class="b">Sur <b>${n} games</b> de scrim analysées : <b>${Math.round(wins/n*100)}% de victoires</b>. L'Elo de scrim tient compte de la force adverse quand elle est renseignée dans le CR (champ « niveau moyen adverse ») — plus tu la renseignes, plus la courbe est juste.</div>`;
     } else { card.style.display='none'; }
 
-    // Champions (avec filtre par joueur) + profil de jeu
+    // Champions (avec filtre par joueur) + profil de jeu + historique scrims
     renderChampFilter(STATS, CRS);
     renderProfil(CRS);
+    renderScrimHistory(CRS);
     const renderChampsWhenReady = () => renderChampions(STATS, CRS);
     if(window.Champions && Champions.ready) Champions.ready.then(renderChampsWhenReady).catch(renderChampsWhenReady);
     else renderChampsWhenReady();
