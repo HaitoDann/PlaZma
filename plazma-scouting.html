@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.24.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.26.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -205,7 +205,10 @@
 
     <div class="meta">
       <div><label>Équipe adverse</label><input id="m_team" type="text" placeholder="Nom de l'équipe"></div>
-      <div><label>Rang estimé</label><input id="m_rank" type="text" placeholder="ex : Émeraude"></div>
+      <div><label>Rang moyen adverse</label>
+        <div style="display:flex;gap:8px"><select id="m_rankTier" style="flex:1"></select><select id="m_rankDiv" style="width:84px"></select></div>
+      </div>
+      <div><label>Date</label><input id="m_date" type="date"></div>
       <div><label>Prochain match / échéance</label><input id="m_tournoi" type="text" placeholder="ex : Nexus Tour · 12 avril"></div>
     </div>
 
@@ -217,7 +220,16 @@
 
     <!-- TAB ROSTER -->
     <div class="tabpanel active" data-panel="roster">
-      <div data-noexport style="margin-bottom:14px"><button class="btn btn-sm" id="multiOpgg"><svg class="ib ib-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg> Ouvrir les 5 sur OP.GG (multi)</button></div>
+      <div data-noexport style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-sm" id="multiOpgg"><svg class="ib ib-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg> Ouvrir les 5 sur OP.GG (multi)</button>
+        <button class="btn btn-sm" id="importMultiBtn">⬇ Remplir depuis un multi</button>
+      </div>
+      <div id="importBox" data-noexport style="display:none;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px">
+        <div class="muted" style="font-size:12.5px;margin-bottom:8px">Colle un lien <b>multi</b> (op.gg / u.gg) ou les pseudos séparés par des virgules, puis coche qui joue à quel rôle.</div>
+        <input id="importLink" type="text" placeholder="https://op.gg/multisearch/euw?summoners=…  ou  Nom1#EUW, Nom2#EUW, …" style="width:100%">
+        <div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-sm btn-primary" id="importParse">Analyser</button><button class="btn btn-sm" id="importCancel">Annuler</button></div>
+        <div id="importAssign" style="margin-top:12px"></div>
+      </div>
       <div class="players" id="players"></div>
     </div>
 
@@ -273,8 +285,8 @@
   <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
 </div>
 
-<script src="assets/plazma.js?v=3.24.0" data-section="scouting"></script>
-<script src="assets/champions.js?v=3.24.0"></script>
+<script src="assets/plazma.js?v=3.26.0" data-section="scouting"></script>
+<script src="assets/champions.js?v=3.26.0"></script>
 <script>
 'use strict';
 PZ.mountNav('scouting', '#nav');
@@ -303,8 +315,21 @@ function emptyRoster(){ return ROLES.map(()=>({pseudo:'',opgg:'',pool:[],threat:
 function emptyDraft(){ return { prio:{top:[],jungle:[],mid:[],adc:[],support:[]}, bans:[], flex:[], banTargets:[], counters:{top:[],jungle:[],mid:[],adc:[],support:[]} }; }
 function emptyScenario(){ return { id:'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), name:'Scénario', blueTeam:'PlaZma', redTeam:'', blueBans:['','','','',''], redBans:['','','','',''], bluePicks:['','','','',''], redPicks:['','','','',''] }; }
 
-let state = { m_team:'', m_rank:'', m_tournoi:'', threatLevel:'', f_note:'—', f_comment:'',
+let state = { m_team:'', m_rank:'', m_rankTier:'', m_rankDiv:'', m_date:'', m_tournoi:'', threatLevel:'', f_note:'—', f_comment:'',
   roster: emptyRoster(), draft: emptyDraft(), scenarios: [emptyScenario()] };
+
+// Sélecteur de rang moyen adverse (échelle commune).
+(function initRankSel(){
+  const tiers=['','IRON','BRONZE','SILVER','GOLD','PLATINUM','EMERALD','DIAMOND','MASTER','GRANDMASTER','CHALLENGER'];
+  const FR=(window.PZ&&PZ.ladder&&PZ.ladder.TIER_FR)||{};
+  const t=document.getElementById('m_rankTier'), dv=document.getElementById('m_rankDiv'); if(!t||!dv) return;
+  t.innerHTML=tiers.map(x=>`<option value="${x}">${x?(FR[x]||x):'— inconnu —'}</option>`).join('');
+  const fill=()=>{ const hasDiv=['IRON','BRONZE','SILVER','GOLD','PLATINUM','EMERALD','DIAMOND'].includes(t.value);
+    dv.disabled=!hasDiv; dv.innerHTML=hasDiv?['IV','III','II','I'].map(d=>`<option value="${d}">${d}</option>`).join(''):'<option value="">—</option>'; };
+  t.addEventListener('change',()=>{ fill(); readInputs(); queueSave(); });
+  dv.addEventListener('change',()=>{ readInputs(); queueSave(); });
+  fill(); window._fillRankDiv=fill;
+})();
 let currentScn = 0, currentDocId = null, _unsub = null, _saveT = null;
 function queueSave(){ clearTimeout(_saveT); _saveT=setTimeout(save,900); }
 
@@ -505,7 +530,9 @@ function setThreat(l){ state.threatLevel = state.threatLevel===l?'':l; applyThre
 function applyThreat(){ ['low','med','high'].forEach(l=>{ const b=document.getElementById('tb_'+l); if(b){ b.style.opacity=(!state.threatLevel||state.threatLevel===l)?'1':'.4'; b.style.fontWeight=state.threatLevel===l?'800':'700'; } }); }
 
 function renderAll(){
-  set('m_team',state.m_team); set('m_rank',state.m_rank); set('m_tournoi',state.m_tournoi);
+  set('m_team',state.m_team); set('m_tournoi',state.m_tournoi); set('m_date',state.m_date||'');
+  const t=document.getElementById('m_rankTier'), dv=document.getElementById('m_rankDiv');
+  if(t){ t.value=state.m_rankTier||''; if(window._fillRankDiv)window._fillRankDiv(); if(dv)dv.value=state.m_rankDiv||''; }
   set('f_note',state.f_note); set('f_comment',state.f_comment);
   document.getElementById('teamTitle').textContent = state.m_team ? 'Scouting · '+state.m_team : 'Fiche adverse';
   applyThreat(); renderRoster(); renderDraft(); renderScenarios();
@@ -516,6 +543,7 @@ function getState(){ return state; }
 function applyState(d){
   if(!d) return;
   state.m_team=d.m_team||''; state.m_rank=d.m_rank||''; state.m_tournoi=d.m_tournoi||'';
+  state.m_rankTier=d.m_rankTier||''; state.m_rankDiv=d.m_rankDiv||''; state.m_date=d.m_date||'';
   state.threatLevel=d.threatLevel||''; state.f_note=d.f_note||'—'; state.f_comment=d.f_comment||'';
   // roster
   state.roster=emptyRoster();
@@ -538,7 +566,8 @@ function applyState(d){
 }
 
 const newDocId = () => 'scout-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);
-function readInputs(){ state.m_team=val('m_team'); state.m_rank=val('m_rank'); state.m_tournoi=val('m_tournoi'); state.f_note=val('f_note'); state.f_comment=val('f_comment'); }
+function readInputs(){ state.m_team=val('m_team'); state.m_tournoi=val('m_tournoi'); state.m_date=val('m_date');
+  state.m_rankTier=val('m_rankTier'); state.m_rankDiv=val('m_rankDiv'); state.f_note=val('f_note'); state.f_comment=val('f_comment'); }
 function updateChip(){ const t=state.m_team||'Sans nom'; document.getElementById('sheetChip').textContent=t+(state.m_tournoi?' — '+state.m_tournoi:''); }
 // Signature des données (sans _savedAt) pour distinguer un vrai changement distant de nos propres échos.
 function sig(o){ const c=JSON.parse(JSON.stringify(o||{})); delete c._savedAt; return JSON.stringify(c); }
@@ -610,10 +639,44 @@ async function loadDrawer(){
 }
 
 // Divers
-document.querySelectorAll('#m_team,#m_rank,#m_tournoi,#f_note,#f_comment').forEach(inp=>inp.addEventListener('input',()=>{
+document.querySelectorAll('#m_team,#m_tournoi,#m_date,#f_note,#f_comment').forEach(inp=>inp.addEventListener('input',()=>{
   readInputs(); if(inp.id==='m_team') document.getElementById('teamTitle').textContent = inp.value?'Scouting · '+inp.value:'Fiche adverse'; queueSave();
 }));
 document.getElementById('multiOpgg').addEventListener('click',()=>{ const url=multiOpggUrl(); if(url) window.open(url,'_blank','noopener'); else alert('Renseigne au moins un identifiant OP.GG (Pseudo#TAG).'); });
+
+// ── Remplissage depuis un multi (op.gg / u.gg) : parse les pseudos, assigne aux rôles ──
+function parseMultiNames(txt){
+  txt=(txt||'').trim(); if(!txt) return [];
+  let names=[];
+  const m=txt.match(/[?&]summoners=([^&\s]+)/i);
+  if(m){ try{ names=decodeURIComponent(m[1]).split(','); }catch(e){ names=m[1].split(','); } }
+  else { names=txt.split(/[\n,;]+/); }
+  return names.map(s=>s.trim()).filter(Boolean).slice(0,10);
+}
+document.getElementById('importMultiBtn').addEventListener('click',()=>{
+  const box=document.getElementById('importBox'); box.style.display=box.style.display==='none'?'block':'none';
+  if(box.style.display==='block') document.getElementById('importLink').focus();
+});
+document.getElementById('importCancel').addEventListener('click',()=>{ document.getElementById('importBox').style.display='none'; document.getElementById('importAssign').innerHTML=''; });
+document.getElementById('importParse').addEventListener('click',()=>{
+  const names=parseMultiNames(document.getElementById('importLink').value);
+  const box=document.getElementById('importAssign');
+  if(!names.length){ box.innerHTML='<div class="muted" style="font-size:12.5px">Aucun pseudo détecté. Colle un lien multi ou des pseudos séparés par des virgules.</div>'; return; }
+  // Une ligne par rôle, avec un menu des pseudos détectés (pré-assignés dans l'ordre).
+  box.innerHTML = ROLES.map((r,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:5px 0">
+    <span style="min-width:90px;font-size:12.5px;font-weight:600;color:${r.color||'var(--dim)'}">${esc(r.label)}</span>
+    <select class="imp-sel" data-i="${i}" style="flex:1">
+      <option value="">—</option>${names.map((n,j)=>`<option value="${esc(n)}"${j===i?' selected':''}>${esc(n)}</option>`).join('')}
+    </select></div>`).join('')
+    + `<div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="btn btn-sm btn-primary" id="importApply">Remplir les rôles</button></div>`;
+  document.getElementById('importApply').addEventListener('click',()=>{
+    box.parentElement.querySelectorAll('.imp-sel').forEach(sel=>{ const i=+sel.dataset.i, nm=sel.value.trim();
+      if(nm && state.roster[i]){ state.roster[i].opgg=nm; state.roster[i].pseudo=nm.split('#')[0]; } });
+    document.getElementById('importBox').style.display='none'; box.innerHTML='';
+    document.getElementById('importLink').value='';
+    renderRoster(); updateMultiOpgg(); queueSave();
+  });
+});
 
 
 // ── Publication Discord (synthèse adverse) ──

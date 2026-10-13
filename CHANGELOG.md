@@ -17,6 +17,21 @@ bas de la fenêtre **Paramètres**.
 
 ## 3.x — Interface pro
 
+### 3.26.0 — Objectifs en kanban + scrims auto (ARCHI Link)
+- **Objectifs du club** (accueil) transformés en **tableau kanban** à trois
+  colonnes (À faire · En cours · Terminé). Les cartes se déplacent par
+  glisser-déposer : le statut suit la colonne (passage en *Terminé* → 100 %,
+  retour en *À faire* → 0 %). Nouveau champ **Tags** (chips colorées, couleur
+  stable par libellé).
+- **Import automatique des scrims** via **ARCHI Link** (option à activer sur un
+  seul poste) : quand une partie personnalisée est jouée pendant un créneau de
+  scrim du Planning, le replay `.rofl` est reconnu (≥ 4 joueurs du roster d'un
+  même camp), rattaché au bon compte-rendu et ses stats y sont écrites
+  automatiquement (champions, KDA, CS, gold, score). Dédoublonnage par
+  signature de partie ; document de CR déterministe par créneau pour éviter les
+  doublons entre postes. Nécessite l'accès « scrim » (édition) et « planning »
+  (lecture) sur le compte ARCHI ; sinon rien n'est écrit. (ARCHI Link v0.13.0.)
+
 ### 3.11.0 — Fusion SoloQ ↔ Équipe
 - Le **suivi SoloQ** (rang, courbe, parties récentes) est intégré en haut de la
   page **Équipe** ; la page SoloQ autonome est supprimée (redirection) et retirée

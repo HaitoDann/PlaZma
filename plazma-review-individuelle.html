@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.24.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.26.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -252,8 +252,9 @@
   <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
 </div>
 
-<script src="assets/plazma.js?v=3.24.0" data-section="scrim"></script>
-<script src="assets/champions.js?v=3.24.0"></script>
+<script src="assets/plazma.js?v=3.26.0" data-section="scrim"></script>
+<script src="assets/champions.js?v=3.26.0"></script>
+<script src="assets/rofl-browser.js?v=3.26.0"></script>
 <script>
 'use strict';
 PZ.mountNav('review', '#nav');
@@ -297,6 +298,47 @@ function openChampPicker(gk){
 }
 // Rafraîchit les icônes/noms une fois la liste des champions chargée
 if(window.Champions && Champions.ready) Champions.ready.then(()=>{ for(let g=1;g<=5;g++) renderChampSlot('g'+g); });
+
+// ── Import .rofl → remplit auto les stats du joueur reviewé pour la game ──
+const _normName = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim();
+function importRoflForGame(g){
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='.rofl';
+  inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return;
+    let parsed; try{ parsed=window.Rofl.parse(await f.arrayBuffer()); }catch(e){ alert('Replay illisible : '+e.message); return; }
+    await applyRoflToGame(g, parsed); };
+  inp.click();
+}
+async function applyRoflToGame(g, parsed){
+  const gk='g'+g, pid=val('sel_player');
+  let me=null;
+  try{ if(pid && PZ.db){ const doc=await PZ.db.collection('plazma-stats').doc(pid).get();
+    const rid=doc.exists && (doc.data()||{}).riotId;
+    if(rid){ const gn=_normName(String(rid).split('#')[0]); me=parsed.players.find(p=>_normName(p.name)===gn); } } }catch(e){}
+  if(!me) me=await pickParticipant(parsed.players);
+  if(!me) return;
+  set(gk+'_k',String(me.k)); set(gk+'_d',String(me.d)); set(gk+'_a',String(me.a));
+  set(gk+'_cs',String(me.cs)); set(gk+'_vs',String(me.vision));
+  const res=document.getElementById(gk+'_result'); if(res){ res.value=me.win?'V':'D'; styleResult(res); }
+  let cid=me.champ;
+  if(window.Champions && Champions.list){ const m=Champions.list.find(c=>c.id===me.champ||c.name===me.champ); if(m) cid=m.id; }
+  champKeys[gk]=cid; renderChampSlot(gk);
+  queueSave();
+}
+function pickParticipant(players){
+  return new Promise(resolve=>{
+    const ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;z-index:400;background:rgba(6,10,14,.6);display:flex;align-items:center;justify-content:center;padding:20px';
+    const rows=players.map((p,i)=>{ const cn=(window.Champions&&Champions.list&&(Champions.list.find(c=>c.id===p.champ||c.name===p.champ)||{}).name)||p.champ;
+      return `<button class="btn" data-i="${i}" style="justify-content:flex-start">${esc(p.name||'?')} <span style="color:var(--muted);font-weight:400">· ${esc(cn)} · ${p.team==='red'?'rouge':'bleu'}</span></button>`; }).join('');
+    ov.innerHTML=`<div style="background:var(--surface);border:1px solid var(--border-2);border-radius:14px;padding:18px;max-width:440px;width:100%">
+      <div style="font-weight:600;margin-bottom:10px">Quel joueur du replay est le reviewé ?</div>
+      <div style="display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow:auto">${rows}</div>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn btn-sm" id="pp-cancel">Annuler</button></div></div>`;
+    document.body.appendChild(ov);
+    ov.addEventListener('click',e=>{ const b=e.target.closest('[data-i]'); if(b){ resolve(players[+b.dataset.i]); ov.remove(); return; }
+      if(e.target.id==='pp-cancel'||e.target===ov){ resolve(null); ov.remove(); } });
+  });
+}
 let lastSavedSig = null, suppressUntil = 0;
 const uid = () => 'e' + (++_errId);
 const sid = () => 's' + (++_strId);
@@ -361,7 +403,12 @@ function buildGames(){
     champSlot.className='champ-slot empty'; champSlot.id='champslot_'+gk;
     champSlot.innerHTML='<span class="champ-slot-name"><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-pen"><path class="pl-pen-body" d="M14.5 4.5l5 5L9 20l-5.5 1L5 15.5z"/><path class="pl-pen-nib" d="M12.5 6.5l5 5"/></g><path class="pl-pen-line" d="M4 21.5h15"/></svg> Champion</span>';
     champSlot.addEventListener('click',()=>openChampPicker(gk));
-    top.appendChild(numEl); top.appendChild(selRes); top.appendChild(champSlot);
+    const roflBtn = document.createElement('button');
+    roflBtn.className='btn btn-sm'; roflBtn.type='button'; roflBtn.title='Remplir depuis un replay .rofl';
+    roflBtn.setAttribute('data-noexport','');
+    roflBtn.innerHTML='<svg class="ib" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> .rofl';
+    roflBtn.addEventListener('click',()=>importRoflForGame(g));
+    top.appendChild(numEl); top.appendChild(selRes); top.appendChild(champSlot); top.appendChild(roflBtn);
     b.appendChild(top);
 
     const rest = document.createElement('div');

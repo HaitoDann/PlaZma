@@ -19,6 +19,7 @@ const path = require('path');
 const https = require('https');
 const { parseRofl } = require('./rofl');
 const { pushStats } = require('./push');
+const autoScrim = require('./auto-scrim');
 const { startServer } = require('./ui');
 const tray = require('./tray');
 const { execFile } = require('child_process');
@@ -36,6 +37,7 @@ const HISTORY_FILE = path.join(OUT, 'soloq-history.json');
 const RANK_FILE = path.join(OUT, 'rank.json');
 const INDEX_FILE = path.join(OUT, 'replays-index.json');
 const MATCHES_FILE = path.join(OUT, 'soloq-matches.json');   // historique SoloQ accumulé
+const AUTOSCRIM_FILE = path.join(OUT, 'autoscrim-index.json'); // replays déjà traités par l'import auto
 const LOG_FILE = path.join(OUT, 'log.txt');
 
 // ---- Config (client/config.json, sinon valeurs par défaut Windows) ----
@@ -46,7 +48,7 @@ function loadConfig() {
     pollMinutes: 5,
     auth: { username: '', password: '' },
     playerId: '',
-    features: { rank: true, soloq: true },
+    features: { rank: true, soloq: true, autoScrim: false },
   };
   const expand = s => typeof s === 'string'
     ? s.replace(/%([^%]+)%/g, (_, v) => process.env[v] || _)
@@ -66,7 +68,7 @@ function loadConfig() {
     merged.features = { rank: !!c.push.enabled, soloq: !!c.push.enabled };
   }
   merged.auth = Object.assign({ username: '', password: '' }, merged.auth);
-  merged.features = Object.assign({ rank: true, soloq: true }, merged.features);
+  merged.features = Object.assign({ rank: true, soloq: true, autoScrim: false }, merged.features);
   delete merged.push;
   merged._configFound = true;
   merged.lockfile = expand(merged.lockfile);
@@ -89,7 +91,7 @@ const STATE = { leagueOpen: false, riotId: '', rankLabel: '', lastPush: '', last
   updateAvailable: false, latestVersion: '' };
 function getStatus() {
   const f = CFG.features || {}; const on = [];
-  if (f.rank) on.push('rang'); if (f.soloq) on.push('SoloQ/.rofl');
+  if (f.rank) on.push('rang'); if (f.soloq) on.push('SoloQ/.rofl'); if (f.autoScrim) on.push('scrims auto');
   return { appName: APP_NAME, version: VERSION, leagueOpen: STATE.leagueOpen, riotId: STATE.riotId, rankLabel: STATE.rankLabel,
     lastPush: STATE.lastPush, lastPushOk: STATE.lastPushOk, lastPushMsg: STATE.lastPushMsg, features: on, playerId: CFG.playerId || '',
     autostart: STATE.autostart, updateAvailable: STATE.updateAvailable, latestVersion: STATE.latestVersion,
@@ -294,7 +296,8 @@ function processReplay(file) {
   let parsed;
   try { parsed = parseRofl(fs.readFileSync(full)); }
   catch (e) { log('⚠ .rofl illisible', file, '—', e.message); index[file] = { error: e.message, at: Date.now() }; writeJson(INDEX_FILE, index); return; }
-  const out = { file, parsedAt: new Date().toISOString(), durationSec: parsed.durationSec, patch: parsed.patch, players: parsed.players };
+  const out = { file, parsedAt: new Date().toISOString(), mtimeMs: stat.mtimeMs || Date.now(),
+    durationSec: parsed.durationSec, patch: parsed.patch, players: parsed.players };
   writeJson(path.join(REPLAYS_OUT, file.replace(/\.rofl$/i, '') + '.json'), out);
   index[file] = { ok: true, at: Date.now(), players: parsed.players.length };
   writeJson(INDEX_FILE, index);
@@ -313,6 +316,53 @@ function watchReplays() {
   } catch (e) { log('⚠ dossier Replays introuvable (', CFG.replaysDir, ') — réessai au prochain cycle'); }
 }
 
+// ---- Import automatique des scrims ----
+// Candidats : replays parsés récemment (≤ 3 jours) que l'import auto n'a pas
+// encore classés définitivement (rattachés, ou reconnus « pas un scrim »).
+const AUTOSCRIM_MAX_AGE = 3 * 864e5;         // 3 jours
+const AUTOSCRIM_MAX_TRIES = 40;              // on abandonne un replay sans créneau après N tentatives
+function gatherAutoCandidates() {
+  const idx = readJson(AUTOSCRIM_FILE, {}) || {};
+  const out = [];
+  let files; try { files = fs.readdirSync(REPLAYS_OUT).filter(f => /\.json$/i.test(f)); } catch (e) { return out; }
+  const now = Date.now();
+  for (const jf of files) {
+    const parsed = readJson(path.join(REPLAYS_OUT, jf), null);
+    if (!parsed || !parsed.file) continue;
+    const rec = idx[parsed.file];
+    if (rec && rec.done) continue;                                   // déjà classé
+    if (rec && (rec.tries || 0) >= AUTOSCRIM_MAX_TRIES) continue;    // trop de tentatives sans créneau
+    const mtimeMs = parsed.mtimeMs || Date.parse(parsed.parsedAt) || now;
+    if (now - mtimeMs > AUTOSCRIM_MAX_AGE) continue;                 // trop ancien
+    out.push({ file: parsed.file, mtimeMs, parsed });
+  }
+  return out;
+}
+let _autoScrimBusy = false;
+async function runAutoScrim() {
+  if (_autoScrimBusy) return;
+  if (!(CFG.features && CFG.features.autoScrim)) return;
+  if (!(CFG.auth && CFG.auth.username && CFG.auth.password)) return;
+  const replays = gatherAutoCandidates();
+  if (!replays.length) return;
+  _autoScrimBusy = true;
+  try {
+    const results = await autoScrim.run({ cfg: CFG, replays, riotId: STATE.riotId, log });
+    // Suivi : on marque « done » les issues définitives ; on compte les tentatives sinon.
+    const idx = readJson(AUTOSCRIM_FILE, {}) || {};
+    const byFile = {}; (results || []).forEach(r => { if (r && r.file) byFile[r.file] = r.outcome; });
+    replays.forEach(r => {
+      const oc = byFile[r.file];
+      const rec = idx[r.file] || { tries: 0 };
+      if (oc === 'attached' || oc === 'not-scrim' || oc === 'dup' || oc === 'full') { rec.done = true; rec.outcome = oc; }
+      else { rec.tries = (rec.tries || 0) + 1; }      // no-slot ou non traité : on réessaiera
+      rec.at = Date.now(); idx[r.file] = rec;
+    });
+    writeJson(AUTOSCRIM_FILE, idx);
+  } catch (e) { log('⚠ import auto des scrims :', e.message); }
+  finally { _autoScrimBusy = false; }
+}
+
 // ---- Boucle principale ----
 let warnedClosed = false;
 async function cycle(forced) {
@@ -325,6 +375,7 @@ async function cycle(forced) {
     STATE.leagueOpen = false;
     if (!warnedClosed || forced) { log('⏳ client League fermé (ou introuvable) — ouvre le client League ; s\'il est déjà ouvert, indique son dossier dans Configuration.'); warnedClosed = true; }
     scanReplays();                                // les .rofl se lisent même client fermé
+    runAutoScrim();                               // rattachement des scrims (HTTPS, indépendant du client)
     return;
   }
   STATE.leagueOpen = true;
@@ -346,6 +397,7 @@ async function cycle(forced) {
   } catch (e) { log('⚠ historique SoloQ indisponible :', e.message); matches = readJson(MATCHES_FILE, []); }
   if (rank) { try { await maybePush(rank, matches); } catch (e) { log('⚠ envoi ARCHI :', e.message); } }
   scanReplays();
+  await runAutoScrim();
 }
 
 
@@ -375,7 +427,7 @@ async function maybePush(rank, matches) {
 function logFeatures() {
   if (CFG._configError) { log('❌ config.json illisible :', CFG._configError, '— lance avec --setup pour le régénérer.'); return; }
   const f = CFG.features || {}, a = CFG.auth || {};
-  const on = []; if (f.rank) on.push('rang & winrate'); if (f.soloq) on.push('SoloQ & replays');
+  const on = []; if (f.rank) on.push('rang & winrate'); if (f.soloq) on.push('SoloQ & replays'); if (f.autoScrim) on.push('scrims auto');
   if (a.username && CFG.playerId && on.length) log('☁ Partage ARCHI : ' + on.join(', ') + ' (joueur ' + CFG.playerId + ').');
   else log('☁ Partage ARCHI : rien de configuré — lance avec --setup pour choisir.');
 }

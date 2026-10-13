@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.24.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.26.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -98,18 +98,29 @@
   .mres.W{color:var(--ok)}.mres.L{color:var(--err)}.mres.D{color:var(--muted)}
   .mtype{font-size:11px;color:var(--muted)}
 
-  /* Objectifs */
-  .objs{display:flex;flex-direction:column;gap:8px}
-  .obj{background:var(--surface-2);border-radius:var(--r);padding:11px 13px;cursor:pointer}
-  .obj:hover{background:var(--elevated)}
-  .obj-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:8px}
-  .obj-name{font-weight:500;font-size:13.5px}
-  .obj-badges{display:flex;gap:6px;flex-shrink:0}
-  .obj-bar{display:flex;align-items:center;gap:10px}
+  /* Objectifs — kanban */
+  .kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;align-items:start}
+  .kcol{background:var(--surface-2);border-radius:var(--r);padding:10px;min-height:120px;transition:background .15s,box-shadow .15s}
+  .kcol.drop{background:var(--elevated);box-shadow:inset 0 0 0 2px var(--accent)}
+  .kcol-h{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--dim);padding:2px 4px 10px;text-transform:uppercase;letter-spacing:.04em}
+  .kcol-h .kdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .kcol-h .kcount{margin-left:auto;font-family:var(--font-mono);font-weight:500;color:var(--muted);background:var(--border);border-radius:20px;padding:1px 8px;font-size:11px}
+  .kcol-empty{font-size:11.5px;color:var(--muted);text-align:center;padding:14px 4px;border:1px dashed var(--border);border-radius:var(--r)}
+  .kcards{display:flex;flex-direction:column;gap:8px;min-height:10px}
+  .kcard{background:var(--surface);border-radius:var(--r);padding:10px 11px;cursor:grab;border-left:3px solid var(--warn);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+  .kcard:hover{background:var(--elevated)}
+  .kcard.drag{opacity:.45}
+  .kcard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:7px}
+  .kcard-name{font-weight:500;font-size:13px;line-height:1.3}
+  .badge{font-size:10.5px;font-weight:600;flex-shrink:0;white-space:nowrap}
+  .ktags{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}
+  .ktag{font-size:10.5px;font-weight:500;padding:1px 8px;border-radius:20px;line-height:1.5}
+  .obj-bar{display:flex;align-items:center;gap:9px;margin-top:7px}
   .obj-track{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
   .obj-fill{height:100%;border-radius:3px}
-  .obj-pct{font-family:var(--font-mono);font-size:12px;min-width:36px;text-align:right;color:var(--dim)}
-  .obj-dl{font-size:11.5px;color:var(--muted);margin-top:6px}
+  .obj-pct{font-family:var(--font-mono);font-size:11.5px;min-width:34px;text-align:right;color:var(--dim)}
+  .obj-dl{font-size:11px;color:var(--muted);margin-top:6px}
+  @media(max-width:720px){ .kanban{grid-template-columns:1fr} }
 
   /* Roster */
   .rlist{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
@@ -193,18 +204,17 @@
     <div id="perfBox"></div>
   </div>
 
-  <div class="grid2">
-    <div class="panel">
-      <div class="panel-h"><div class="card-title">Résultats récents</div></div>
-      <div id="resultsBox"></div>
+  <div class="panel">
+    <div class="panel-h"><div class="card-title">Résultats récents</div></div>
+    <div id="resultsBox"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-h">
+      <div class="card-title">Objectifs de la saison</div>
+      <button class="btn btn-sm" onclick="openAddObj()" data-edit><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-pen"><path class="pl-pen-body" d="M14.5 4.5l5 5L9 20l-5.5 1L5 15.5z"/><path class="pl-pen-nib" d="M12.5 6.5l5 5"/></g><path class="pl-pen-line" d="M4 21.5h15"/></svg> Ajouter</button>
     </div>
-    <div class="panel">
-      <div class="panel-h">
-        <div class="card-title">Objectifs de la saison</div>
-        <button class="btn btn-sm" onclick="openAddObj()" data-edit><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-pen"><path class="pl-pen-body" d="M14.5 4.5l5 5L9 20l-5.5 1L5 15.5z"/><path class="pl-pen-nib" d="M12.5 6.5l5 5"/></g><path class="pl-pen-line" d="M4 21.5h15"/></svg> Ajouter</button>
-      </div>
-      <div class="objs" id="objList"></div>
-    </div>
+    <div class="kanban" id="objBoard"></div>
   </div>
 
   <div class="panel">
@@ -266,6 +276,7 @@
       <div class="field"><label>Progression (%)</label><input type="number" id="oPct" placeholder="0" min="0" max="100"></div>
       <div class="field"><label>Échéance</label><input type="date" id="oDl"></div>
     </div>
+    <div class="field"><label>Tags (séparés par des virgules)</label><input type="text" id="oTags" placeholder="ex : macro, vision, early"></div>
     <div class="modal-actions">
       <button class="btn btn-danger" id="oDel" style="display:none;flex:0" onclick="deleteObj()"><svg class="ib ib-trash" viewBox="0 0 24 24"><g class="tr-can"><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></g><g class="tr-lid"><polyline points="3 6 5 6 21 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></g><circle class="tr-item" cx="12" cy="2" r="1.7" fill="currentColor" stroke="none"/></svg> Supprimer</button>
       <button class="btn btn-ghost" onclick="closeModals()">Annuler</button>
@@ -276,7 +287,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="assets/plazma.js?v=3.24.0" data-section="dashboard"></script>
+<script src="assets/plazma.js?v=3.26.0" data-section="dashboard"></script>
 <script>
 'use strict';
 PZ.mountNav('dashboard', '#nav');
@@ -473,23 +484,60 @@ function renderResults(){
   el.innerHTML=html;
 }
 
-function renderObjectives(){
-  const list=document.getElementById('objList');
-  if(!state.objectives.length){ list.innerHTML='<div class="empty">Aucun objectif pour l’instant.</div>'; return; }
-  const order={high:0,medium:1,low:2};
-  const sorted=[...state.objectives].sort((a,b)=>(order[a.priority??'medium'])-(order[b.priority??'medium']));
+const KCOLS=[{k:'todo',l:'À faire',c:'var(--muted)'},{k:'progress',l:'En cours',c:'var(--warn)'},{k:'done',l:'Terminé',c:'var(--ok)'}];
+// Couleur stable d'un tag (dérivée de son texte).
+const TAG_HUES=[8,28,45,95,150,175,200,225,260,300,330];
+function tagColor(t){ let h=0; for(let i=0;i<t.length;i++) h=(h*31+t.charCodeAt(i))>>>0; const hue=TAG_HUES[h%TAG_HUES.length];
+  return {bg:`hsla(${hue},70%,55%,.16)`,fg:`hsl(${hue},75%,62%)`}; }
+function objCard(o){
+  const color=o.priority==='high'?'var(--err)':o.priority==='low'?'var(--ok)':'var(--warn)';
+  const prioLbl=o.priority==='high'?'Urgent':o.priority==='low'?'Faible':'Normal';
   const today=todayIso();
-  list.innerHTML=sorted.map(o=>{
-    const color=o.priority==='high'?'var(--err)':o.priority==='low'?'var(--ok)':'var(--warn)';
-    const stLbl=o.status==='done'?'Terminé':o.status==='progress'?'En cours':'À faire';
-    const overdue=o.deadline&&o.deadline<today&&o.status!=='done';
-    return `<div class="obj" onclick="openEditObj('${o.id}')">
-      <div class="obj-top"><div class="obj-name">${esc(o.name)}</div>
-        <div class="obj-badges"><span class="badge" style="color:${color}">${o.priority==='high'?'Urgent':o.priority==='low'?'Faible':'Normal'}</span><span class="badge">${stLbl}</span></div></div>
-      <div class="obj-bar"><div class="obj-track"><div class="obj-fill" style="width:${o.pct||0}%;background:${color}"></div></div><div class="obj-pct">${o.pct||0}%</div></div>
-      ${o.deadline?`<div class="obj-dl" style="color:${overdue?'var(--err)':'var(--muted)'}">${overdue?'En retard · ':''}Échéance ${new Date(o.deadline).toLocaleDateString('fr-FR',{day:'2-digit',month:'long'})}</div>`:''}
+  const overdue=o.deadline&&o.deadline<today&&o.status!=='done';
+  const tags=Array.isArray(o.tags)?o.tags:[];
+  const tagsHtml=tags.length?`<div class="ktags">${tags.map(t=>{const c=tagColor(t);return `<span class="ktag" style="background:${c.bg};color:${c.fg}">${esc(t)}</span>`;}).join('')}</div>`:'';
+  return `<div class="kcard" draggable="true" data-id="${o.id}" style="border-left-color:${color}" onclick="openEditObj('${o.id}')">
+    <div class="kcard-top"><div class="kcard-name">${esc(o.name)}</div><span class="badge" style="color:${color}">${prioLbl}</span></div>
+    ${tagsHtml}
+    <div class="obj-bar"><div class="obj-track"><div class="obj-fill" style="width:${o.pct||0}%;background:${color}"></div></div><div class="obj-pct">${o.pct||0}%</div></div>
+    ${o.deadline?`<div class="obj-dl" style="color:${overdue?'var(--err)':'var(--muted)'}">${overdue?'En retard · ':''}Échéance ${new Date(o.deadline).toLocaleDateString('fr-FR',{day:'2-digit',month:'long'})}</div>`:''}
+  </div>`;
+}
+function renderObjectives(){
+  const board=document.getElementById('objBoard');
+  const order={high:0,medium:1,low:2};
+  board.innerHTML=KCOLS.map(col=>{
+    const items=state.objectives.filter(o=>(o.status||'todo')===col.k)
+      .sort((a,b)=>(order[a.priority??'medium'])-(order[b.priority??'medium']));
+    const cards=items.length?items.map(objCard).join(''):'<div class="kcol-empty">Glissez un objectif ici</div>';
+    return `<div class="kcol" data-col="${col.k}">
+      <div class="kcol-h"><span class="kdot" style="background:${col.c}"></span>${col.l}<span class="kcount">${items.length}</span></div>
+      <div class="kcards">${cards}</div>
     </div>`;
   }).join('');
+  wireKanbanDnD();
+}
+let _dragId=null;
+function wireKanbanDnD(){
+  const board=document.getElementById('objBoard');
+  board.querySelectorAll('.kcard').forEach(card=>{
+    card.addEventListener('dragstart',e=>{ _dragId=card.dataset.id; card.classList.add('drag'); e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',_dragId); });
+    card.addEventListener('dragend',()=>{ _dragId=null; card.classList.remove('drag'); board.querySelectorAll('.kcol').forEach(c=>c.classList.remove('drop')); });
+  });
+  board.querySelectorAll('.kcol').forEach(col=>{
+    col.addEventListener('dragover',e=>{ e.preventDefault(); e.dataTransfer.dropEffect='move'; col.classList.add('drop'); });
+    col.addEventListener('dragleave',e=>{ if(!col.contains(e.relatedTarget)) col.classList.remove('drop'); });
+    col.addEventListener('drop',e=>{
+      e.preventDefault(); col.classList.remove('drop');
+      const id=_dragId||e.dataTransfer.getData('text/plain'); if(!id) return;
+      const o=state.objectives.find(x=>x.id===id); if(!o) return;
+      const ns=col.dataset.col;
+      if(o.status===ns) return;
+      o.status=ns;
+      if(ns==='done') o.pct=100; else if(ns==='todo'&&(o.pct||0)===100) o.pct=0;
+      render(); sync.save();
+    });
+  });
 }
 
 // Roster : joueurs du roster central + lien op.gg (le rang se lit sur op.gg, plus de saisie manuelle).
@@ -617,7 +665,7 @@ function openAddObj(){
   _editId=null;
   document.getElementById('oTitle').textContent='Ajouter un objectif';
   document.getElementById('oName').value=''; document.getElementById('oPrio').value='medium';
-  document.getElementById('oStatus').value='todo'; document.getElementById('oPct').value='0'; document.getElementById('oDl').value='';
+  document.getElementById('oStatus').value='todo'; document.getElementById('oPct').value='0'; document.getElementById('oDl').value=''; document.getElementById('oTags').value='';
   document.getElementById('oDel').style.display='none'; document.getElementById('oConf').textContent='Ajouter';
   document.getElementById('ovObj').classList.add('open'); setTimeout(()=>document.getElementById('oName').focus(),50);
 }
@@ -626,13 +674,15 @@ function openEditObj(id){
   document.getElementById('oTitle').textContent="Modifier l'objectif";
   document.getElementById('oName').value=o.name; document.getElementById('oPrio').value=o.priority;
   document.getElementById('oStatus').value=o.status; document.getElementById('oPct').value=o.pct??0; document.getElementById('oDl').value=o.deadline||'';
+  document.getElementById('oTags').value=(Array.isArray(o.tags)?o.tags:[]).join(', ');
   document.getElementById('oDel').style.display='inline-flex'; document.getElementById('oConf').textContent='Enregistrer';
   document.getElementById('ovObj').classList.add('open');
 }
 document.getElementById('oConf').addEventListener('click',()=>{
   const name=document.getElementById('oName').value.trim(); if(!name){showToast("L'objectif est requis");return;}
+  const tags=document.getElementById('oTags').value.split(',').map(t=>t.trim()).filter(Boolean).slice(0,8);
   const data={name,priority:document.getElementById('oPrio').value,status:document.getElementById('oStatus').value,
-    pct:Math.min(100,Math.max(0,parseInt(document.getElementById('oPct').value)||0)),deadline:document.getElementById('oDl').value};
+    pct:Math.min(100,Math.max(0,parseInt(document.getElementById('oPct').value)||0)),deadline:document.getElementById('oDl').value,tags};
   if(_editId)Object.assign(state.objectives.find(o=>o.id===_editId),data); else state.objectives.push({id:uid(),...data});
   closeModals(); render(); sync.save();
 });
