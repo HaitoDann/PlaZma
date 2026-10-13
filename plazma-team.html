@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.23.1">
+<link rel="stylesheet" href="assets/theme.css?v=3.24.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -81,10 +81,15 @@
 
   .sq-curve{background:var(--surface-2);border-radius:var(--r);padding:10px 12px}
   .sq-curve-top{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px}
-  .sq-curve svg{width:100%;height:52px;display:block;overflow:visible}
+  .sq-curve-wrap{display:flex;gap:7px;align-items:stretch}
+  .sq-yaxis{display:flex;flex-direction:column;justify-content:space-between;text-align:right;min-width:52px;flex-shrink:0;
+    font-family:var(--font-mono);font-size:8.5px;line-height:1.15;color:var(--muted);padding:1px 0}
+  .sq-curve svg{flex:1;width:100%;height:56px;display:block;overflow:visible}
   .sq-curve .ln{fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
   .sq-curve .ar{fill:var(--accent);opacity:.08}
   .sq-curve .dot{fill:var(--accent)}
+  .sq-curve .hv{fill:transparent;cursor:pointer}
+  .sq-curve .hv:hover{fill:var(--accent);opacity:.55}
   .sq-empty{font-size:12px;color:var(--muted);padding:6px 0}
 
   .sq-recent{display:flex;flex-direction:column;gap:3px}
@@ -122,6 +127,15 @@
     </div>
   </div>
 
+  <!-- TIER LIST PAR JOUEUR (remontée en haut) -->
+  <div class="sec-head" style="display:flex;align-items:baseline;gap:12px;margin:4px 0 12px">
+    <h2 style="font-family:var(--font-display);font-size:15px">Tier list champions par joueur</h2>
+    <span style="flex:1;height:1px;background:var(--border)"></span>
+  </div>
+  <div class="tl-tabs" id="tlTabs" data-noexport></div>
+  <div class="tl-hint" data-noexport>« + » ajoute un champion dans le tier · glisse-dépose une icône pour la changer de tier · survole pour retirer.</div>
+  <div class="tierlist" id="tierlist" style="margin-bottom:28px"></div>
+
   <!-- SUIVI SOLOQ -->
   <div class="sec-head" style="display:flex;align-items:baseline;gap:12px;margin:4px 0 12px">
     <h2 style="font-family:var(--font-display);font-size:15px">Niveau SoloQ</h2>
@@ -157,18 +171,10 @@
       <textarea data-style="faiblesses" placeholder="Nos axes de progression…"></textarea></div>
   </div>
 
-  <!-- TIER LIST PAR JOUEUR -->
-  <div class="sec-head" style="display:flex;align-items:baseline;gap:12px;margin:8px 0 12px">
-    <h2 style="font-family:var(--font-display);font-size:15px">Tier list champions par joueur</h2>
-    <span style="flex:1;height:1px;background:var(--border)"></span>
-  </div>
-  <div class="tl-tabs" id="tlTabs" data-noexport></div>
-  <div class="tl-hint" data-noexport>« + » ajoute un champion dans le tier · glisse-dépose une icône pour la changer de tier · survole pour retirer.</div>
-  <div class="tierlist" id="tierlist"></div>
 </div>
 
-<script src="assets/plazma.js?v=3.23.1" data-section="team"></script>
-<script src="assets/champions.js?v=3.23.1"></script>
+<script src="assets/plazma.js?v=3.24.0" data-section="team"></script>
+<script src="assets/champions.js?v=3.24.0"></script>
 <script>
 PZ.mountNav('team', '#nav');
 
@@ -216,14 +222,23 @@ function timeAgo(iso){
 }
 
 function curve(hist){
-  const vals = (hist||[]).map(ladderValue).filter(v => v != null);
-  if (vals.length < 2) return '<div class="sq-empty">Pas encore assez de relevés pour une courbe.</div>';
+  const P0 = (hist||[]).map(h => ({ h, v: ladderValue(h) })).filter(x => x.v != null);
+  if (P0.length < 2) return '<div class="sq-empty">Pas encore assez de relevés pour une courbe.</div>';
+  const vals = P0.map(x => x.v);
   const w = 100, h = 48, mx = Math.max(...vals), mn = Math.min(...vals), rg = (mx-mn) || 1;
-  const pts = vals.map((v,i) => [ (i/(vals.length-1))*w, h - ((v-mn)/rg)*h ]);
-  const ln = pts.map((p,i) => (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
-  const ar = `M0 ${h} ` + pts.map(p=>'L'+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ') + ` L${w} ${h} Z`;
-  const last = pts[pts.length-1];
-  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><path class="ar" d="${ar}"/><path class="ln" d="${ln}"/><circle class="dot" cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="1.9"/></svg>`;
+  const P = P0.map((x,i) => [ (i/(P0.length-1))*w, h - ((x.v-mn)/rg)*h, x.h ]);
+  const ln = P.map((p,i) => (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const ar = `M0 ${h} ` + P.map(p=>'L'+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ') + ` L${w} ${h} Z`;
+  const last = P[P.length-1];
+  // Points survolables (tooltip natif) avec le rang + la date du relevé.
+  const dots = P.map(p => { const o = p[2];
+    const lbl = (TIER_FR[o.tier]||o.tier) + (o.division ? ' '+o.division : '') + ' · ' + (o.lp||0) + ' LP' + (o.ts ? ' · ' + new Date(o.ts).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}) : '');
+    return `<circle class="hv" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.2"><title>${esc(lbl)}</title></circle>`; }).join('');
+  const yTop = PZ.ladder ? PZ.ladder.label(mx) : '', yBot = PZ.ladder ? PZ.ladder.label(mn) : '';
+  return `<div class="sq-curve-wrap">
+    <div class="sq-yaxis"><span>${esc(yTop)}</span><span>${esc(yBot)}</span></div>
+    <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><path class="ar" d="${ar}"/><path class="ln" d="${ln}"/>${dots}<circle class="dot" cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="1.9"/></svg>
+  </div>`;
 }
 
 function render(){
