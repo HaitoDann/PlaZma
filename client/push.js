@@ -35,6 +35,7 @@ function toValue(v) {
   if (typeof v === 'boolean') return { booleanValue: v };
   if (typeof v === 'number') return Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v };
   if (typeof v === 'string') return { stringValue: v };
+  if (v instanceof Date) return { timestampValue: v.toISOString() };
   if (Array.isArray(v)) return { arrayValue: { values: v.map(toValue) } };
   if (typeof v === 'object') return { mapValue: { fields: toFields(v) } };
   return { stringValue: String(v) };
@@ -67,6 +68,7 @@ function fromValue(v) {
   if ('integerValue' in v) return +v.integerValue;
   if ('doubleValue' in v) return v.doubleValue;
   if ('booleanValue' in v) return v.booleanValue;
+  if ('timestampValue' in v) return v.timestampValue;
   if ('nullValue' in v) return null;
   if ('mapValue' in v) return fromFields((v.mapValue && v.mapValue.fields) || {});
   if ('arrayValue' in v) return ((v.arrayValue && v.arrayValue.values) || []).map(fromValue);
@@ -128,4 +130,64 @@ async function pushStats(cfg, doc) {
   });
 }
 
-module.exports = { pushStats, login, checkAccount, resetToken };
+// ---- Helpers Firestore génériques (authentifiés par le compte ARCHI) ----
+// Utilisés par l'import automatique des scrims (lecture du planning, recherche
+// et écriture du CR). Tout passe par les mêmes règles Firestore que le site :
+// aucun privilège supplémentaire, le joueur n'écrit que ce que son compte permet.
+const FS_BASE = 'https://firestore.googleapis.com/v1/projects/' + FIREBASE.projectId + '/databases/(default)/documents';
+
+function httpJson(method, url, token, body) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(url);
+    const data = body != null ? Buffer.from(JSON.stringify(body)) : null;
+    const headers = { Authorization: 'Bearer ' + token };
+    if (data) { headers['Content-Type'] = 'application/json'; headers['Content-Length'] = data.length; }
+    const req = https.request({ hostname: u.hostname, path: u.pathname + u.search, method, headers, timeout: 10000 }, res => {
+      let b = ''; res.on('data', d => b += d);
+      res.on('end', () => {
+        if (res.statusCode >= 300) return reject(new Error('Firestore HTTP ' + res.statusCode + ' ' + b.slice(0, 200)));
+        try { resolve(b ? JSON.parse(b) : null); } catch (e) { reject(e); }
+      });
+    });
+    req.on('error', reject); req.on('timeout', () => req.destroy(new Error('timeout')));
+    if (data) req.write(data); req.end();
+  });
+}
+
+// Lit un document ; renvoie { ...données } ou null s'il n'existe pas (404).
+async function fireGet(cfg, docPath) {
+  const token = await getToken(cfg.username, cfg.password);
+  try {
+    const j = await httpJson('GET', FS_BASE + '/' + docPath, token);
+    return j && j.fields ? fromFields(j.fields) : (j ? {} : null);
+  } catch (e) { if (/HTTP 404/.test(e.message)) return null; throw e; }
+}
+
+// Requête simple « collection where field == value ». Renvoie [{ id, ...data }].
+async function fireQuery(cfg, collectionId, field, value) {
+  const token = await getToken(cfg.username, cfg.password);
+  const body = { structuredQuery: {
+    from: [{ collectionId }],
+    where: { fieldFilter: { field: { fieldPath: field }, op: 'EQUAL', value: toValue(value) } },
+    limit: 20,
+  } };
+  const rows = await httpJson('POST', FS_BASE + ':runQuery', token, body);
+  const out = [];
+  (rows || []).forEach(r => {
+    if (!r.document) return;
+    const id = r.document.name.split('/').pop();
+    out.push(Object.assign({ id }, fromFields(r.document.fields || {})));
+  });
+  return out;
+}
+
+// Écrit (fusionne) des champs dans un document ; les autres champs sont intacts.
+// Crée le document s'il n'existe pas.
+async function firePatch(cfg, docPath, fields) {
+  const token = await getToken(cfg.username, cfg.password);
+  const mask = Object.keys(fields).map(k => 'updateMask.fieldPaths=' + encodeURIComponent(k)).join('&');
+  const url = FS_BASE + '/' + docPath + '?' + mask;
+  await httpJson('PATCH', url, token, { fields: toFields(fields) });
+}
+
+module.exports = { pushStats, login, checkAccount, resetToken, getToken, fireGet, fireQuery, firePatch };

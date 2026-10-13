@@ -70,7 +70,23 @@ une fenêtre s'ouvre dans ton navigateur pour :
 - saisir ta **connexion ARCHI** (avec un bouton **« Tester la connexion »**) ;
 - choisir **ce que tu partages**, chaque option indiquant son **impact** sur ton PC :
   - **Rang & winrate SoloQ** — impact quasi nul ;
-  - **Historique & suivi SoloQ (+ replays .rofl)** — impact léger.
+  - **Historique & suivi SoloQ (+ replays .rofl)** — impact léger ;
+  - **Import automatique des scrims** — voir ci-dessous.
+
+### Import automatique des scrims (optionnel)
+Quand une **partie personnalisée** est jouée pendant un **créneau de scrim du
+Planning**, ARCHI Link reconnaît le replay `.rofl` (au moins 4 joueurs du roster
+dans le même camp), le rattache au **bon compte-rendu de scrim** et y écrit les
+stats automatiquement (champions, KDA, CS, gold, durée, score). Plus besoin de
+déposer le `.rofl` à la main.
+
+- **À n'activer que sur UN seul poste** de l'équipe (sinon plusieurs clients
+  écrivent le même CR ; c'est rendu inoffensif par le dédoublonnage, mais inutile).
+- Nécessite que ton compte ARCHI ait l'accès **« scrim » en édition** et
+  **« planning » en lecture**. Sans ces accès, rien n'est écrit (un message le
+  signale). Idéal : le compte d'un coach / capitaine.
+- Tout passe par les **mêmes règles Firestore** que le site : aucun privilège en
+  plus. Le suivi des replays déjà traités est dans `archi-data/autoscrim-index.json`.
 
 Tes choix sont écrits dans `config.json` (ton mot de passe reste **sur ton PC**).
 Pour rouvrir la fenêtre plus tard : relance avec `--setup`.
