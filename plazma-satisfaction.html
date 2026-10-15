@@ -328,7 +328,7 @@
   <button class="btn-admin-view" id="adminBtn" onclick="toggleAdmin()"><svg class="ib ib-chart" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Voir les résultats</button>
 </div>
 <div class="results-panel" id="resultsPanel">
-  <div class="rp-header"><div class="rp-title"><svg class="ib ib-chart" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Réponses — Staff uniquement</div><button class="rp-close" onclick="closeAdmin()">✕</button></div>
+  <div class="rp-header"><div class="rp-title"><svg class="ib ib-chart" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Réponses — Staff uniquement</div><button class="rp-close" onclick="closeAdmin()" aria-label="Fermer"><svg class="ib" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="rp-body" id="rpBody"></div>
 </div>
 <div class="toast" id="toast"></div>
@@ -347,21 +347,21 @@ let criteria={};  // {id: val 0-5}
 
 // ─── Critères d’évaluation (section dédiée)
 const CRITERIA=[
-  {id:'coaching',   label:'Qualité du coaching',                      color:'#6366f1'},
-  {id:'orga',       label:'Organisation du club',                        color:'#06b6d4'},
-  {id:'esprit',     label:'Esprit d’équipe &amp; cohésion',                 color:'#22c55e'},
-  {id:'comstaff',   label:'Communication du staff',                      color:'#ec4899'},
-  {id:'planning',   label:'Planning &amp; sessions d’entraînement',           color:'#f59e0b'},
-  {id:'progress',   label:'Progression personnelle ressentie',           color:'#a78bfa'},
+  {id:'coaching',   label:'Qualité du coaching',                      color:'var(--accent)'},
+  {id:'orga',       label:'Organisation du club',                        color:'var(--accent)'},
+  {id:'esprit',     label:'Esprit d’équipe &amp; cohésion',                 color:'var(--accent)'},
+  {id:'comstaff',   label:'Communication du staff',                      color:'var(--accent)'},
+  {id:'planning',   label:'Planning &amp; sessions d’entraînement',           color:'var(--accent)'},
+  {id:'progress',   label:'Progression personnelle ressentie',           color:'var(--accent)'},
 ];
 CRITERIA.forEach(c=>{criteria[c.id]=0;});
 
 // ─── Barres simples /5 (Q4, Q5, Q6, Q7)
 const SINGLE_BARS=[
-  {wrap:'q4wrap',  key:'q4',  label:'Ambiance générale', color:'#06b6d4', max:5, labLeft:'Très mauvaise', labRight:'Excellente'},
-  {wrap:'q5wrap',  key:'q5',  label:'Motivation',           color:'#22c55e', max:5, labLeft:'Très faible',    labRight:'Très élevée'},
-  {wrap:'q6wrap',  key:'q6',  label:'Fatigue &amp; stress',      color:'#f97316', max:5, labLeft:'Très stressé',  labRight:'Aucun stress'},
-  {wrap:'q7wrap',  key:'q7',  label:'Utilité entraînements',color:'#8b5cf6', max:5, labLeft:'Pas du tout',   labRight:'Énormément'},
+  {wrap:'q4wrap',  key:'q4',  label:'Ambiance générale', color:'var(--accent)', max:5, labLeft:'Très mauvaise', labRight:'Excellente'},
+  {wrap:'q5wrap',  key:'q5',  label:'Motivation',           color:'var(--accent)', max:5, labLeft:'Très faible',    labRight:'Très élevée'},
+  {wrap:'q6wrap',  key:'q6',  label:'Fatigue &amp; stress',      color:'var(--accent)', max:5, labLeft:'Très stressé',  labRight:'Aucun stress'},
+  {wrap:'q7wrap',  key:'q7',  label:'Utilité entraînements',color:'var(--accent)', max:5, labLeft:'Pas du tout',   labRight:'Énormément'},
 ];
 
 // ─── Note /10 couleurs par valeur
@@ -635,10 +635,10 @@ function rCard(r){
   const mainRows=[
     ['Q2 · Écouté & respecté',r.q2_ecoute||'—'],
     ['Q3 · Tensions / conflits',r.q3_tensions||`<em style="color:var(--text3)">Aucune</em>`],
-    ['Q4 · Ambiance',miniBar(r.q4_ambiance,5,'#06b6d4')],
-    ['Q5 · Motivation',miniBar(r.q5_motivation,5,'#22c55e')],
-    ['Q6 · Fatigue & stress',miniBar(r.q6_fatigue,5,'#f97316')],
-    ['Q7 · Entraînements utiles',miniBar(r.q7_entrainement,5,'#8b5cf6')],
+    ['Q4 · Ambiance',miniBar(r.q4_ambiance,5,'var(--accent)')],
+    ['Q5 · Motivation',miniBar(r.q5_motivation,5,'var(--accent)')],
+    ['Q6 · Fatigue & stress',miniBar(r.q6_fatigue,5,'var(--accent)')],
+    ['Q7 · Entraînements utiles',miniBar(r.q7_entrainement,5,'var(--accent)')],
     ['Q8 · Charge à 5',r.q8_charge||'—'],
     ['Q9 · Domaines',(r.q9_domaines||[]).join(', ')||'—'],
     ['Q10 · Bonne direction',r.q10_direction||'—'],

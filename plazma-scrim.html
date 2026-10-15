@@ -290,7 +290,7 @@
   </div>
 </div>
 <div class="drawer" id="drawer">
-  <div class="drawer-head"><h2 style="font-size:1.1rem">Historique</h2><button class="btn btn-icon btn-ghost" onclick="closeHistory()">✕</button></div>
+  <div class="drawer-head"><h2 style="font-size:1.1rem">Historique</h2><button class="btn btn-icon btn-ghost" onclick="closeHistory()" aria-label="Fermer"><svg class="ib" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div style="padding:14px 14px 0"><button class="btn btn-primary" style="width:100%" onclick="newSession();closeHistory()"><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-pen"><path class="pl-pen-body" d="M14.5 4.5l5 5L9 20l-5.5 1L5 15.5z"/><path class="pl-pen-nib" d="M12.5 6.5l5 5"/></g><path class="pl-pen-line" d="M4 21.5h15"/></svg> Nouveau compte rendu</button></div>
   <div class="drawer-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
     <input type="text" id="histSearch" placeholder="Rechercher un adversaire…" autocomplete="off" oninput="renderHistoryList()"></div>
@@ -404,8 +404,8 @@ function addError(gk, data){
     <select id="errs_${err.id}" class="err-sev" data-sev="${err.sev||'med'}" onchange="this.setAttribute('data-sev',this.value);updErr('${gk}','${err.id}','sev',this.value)" title="Gravité">${sevOptions(err.sev)}</select>
     <select id="errp_${err.id}" onchange="updErr('${gk}','${err.id}','player',this.value)" title="Responsable">${playerOptions(err.player)}</select>
     <input id="errd_${err.id}" type="text" value="${esc(err.desc)}" placeholder="Décris l'erreur…" oninput="updErr('${gk}','${err.id}','desc',this.value)">
-    <button class="err-del" data-noexport onclick="removeError('${gk}','${err.id}')">✕</button>
-    <button class="err-flag${err.main?' active':''}" id="errflag_${err.id}" data-noexport onclick="toggleMain('${gk}','${err.id}')" title="Marquer comme erreur principale">★</button>`;
+    <button class="err-del" data-noexport onclick="removeError('${gk}','${err.id}')" aria-label="Supprimer"><svg class="ib" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="err-flag${err.main?' active':''}" id="errflag_${err.id}" data-noexport onclick="toggleMain('${gk}','${err.id}')" title="Marquer comme erreur principale" aria-label="Marquer comme erreur principale"><svg class="ib" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg></button>`;
   list.appendChild(row); noteEmptyState(gk);
 }
 function updErr(gk,id,f,v){ const e=errors[gk].find(x=>x.id===id); if(e){ e[f]=v; queueSave(); } }
@@ -432,7 +432,7 @@ function addStrength(gk, data){
     <input id="strt_${st.id}" type="text" value="${esc(st.timer)}" placeholder="00:00" oninput="updStr('${gk}','${st.id}','timer',this.value)">
     <select id="strc_${st.id}" onchange="updStr('${gk}','${st.id}','cat',this.value)">${STR_CATS.map(c=>`<option${c===st.cat?' selected':''}>${c}</option>`).join('')}</select>
     <input id="strd_${st.id}" type="text" value="${esc(st.desc)}" placeholder="Décris le point fort…" oninput="updStr('${gk}','${st.id}','desc',this.value)">
-    <button class="err-del" data-noexport onclick="removeStrength('${gk}','${st.id}')">✕</button>
+    <button class="err-del" data-noexport onclick="removeStrength('${gk}','${st.id}')" aria-label="Supprimer"><svg class="ib" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <span></span>`;
   list.appendChild(row); noteEmptyState(gk);
 }

@@ -482,7 +482,7 @@ function renderGrid(){
       const el = document.createElement('div');
       el.className = 'slot';
       el.style.setProperty('--sc', t.color);
-      el.innerHTML = `${editable ? '<button class="slot-del" data-noexport title="Supprimer">✕</button><span class="slot-grip" data-noexport>⠿</span>' : ''}
+      el.innerHTML = `${editable ? '<button class="slot-del" data-noexport title="Supprimer" aria-label="Supprimer"><svg class="ib" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><span class="slot-grip" data-noexport>⠿</span>' : ''}
         <span class="slot-type">${t.label}</span>
         ${time ? `<div class="slot-time">⏱ ${time}</div>` : ''}
         ${slot.note ? `<div class="slot-note">${escHtml(slot.note)}</div>` : ''}

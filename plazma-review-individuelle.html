@@ -247,7 +247,7 @@
 <!-- Drawer historique -->
 <div class="drawer-ov" id="drawerOv" onclick="closeHistory()"></div>
 <div class="drawer" id="drawer">
-  <div class="drawer-head"><h2 style="font-size:1.1rem">Historique</h2><button class="btn btn-icon btn-ghost" onclick="closeHistory()">✕</button></div>
+  <div class="drawer-head"><h2 style="font-size:1.1rem">Historique</h2><button class="btn btn-icon btn-ghost" onclick="closeHistory()" aria-label="Fermer"><svg class="ib" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div style="padding:14px 14px 0"><button class="btn btn-primary" style="width:100%" onclick="newSession();closeHistory()"><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-pen"><path class="pl-pen-body" d="M14.5 4.5l5 5L9 20l-5.5 1L5 15.5z"/><path class="pl-pen-nib" d="M12.5 6.5l5 5"/></g><path class="pl-pen-line" d="M4 21.5h15"/></svg> Nouvelle review</button></div>
   <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
 </div>
@@ -455,8 +455,8 @@ function addError(gk, data){
     <input id="errt_${err.id}" type="text" value="${esc(err.timer)}" placeholder="00:00" oninput="updErr('${gk}','${err.id}','timer',this.value)">
     <select id="errc_${err.id}" onchange="updErr('${gk}','${err.id}','cat',this.value)">${ERR_CATS.map(c=>`<option${c===err.cat?' selected':''}>${c}</option>`).join('')}</select>
     <input id="errd_${err.id}" type="text" value="${esc(err.desc)}" placeholder="Décris l'erreur…" oninput="updErr('${gk}','${err.id}','desc',this.value)">
-    <button class="err-del" data-noexport onclick="removeError('${gk}','${err.id}')">✕</button>
-    <button class="err-flag${err.main?' active':''}" id="errflag_${err.id}" data-noexport onclick="toggleMain('${gk}','${err.id}')" title="Erreur principale">★</button>`;
+    <button class="err-del" data-noexport onclick="removeError('${gk}','${err.id}')" aria-label="Supprimer"><svg class="ib" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="err-flag${err.main?' active':''}" id="errflag_${err.id}" data-noexport onclick="toggleMain('${gk}','${err.id}')" title="Erreur principale" aria-label="Erreur principale"><svg class="ib" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg></button>`;
   list.appendChild(row); noteEmptyState(gk);
 }
 function updErr(gk,id,f,v){ const e=errors[gk].find(x=>x.id===id); if(e){ e[f]=v; queueSave(); } }
@@ -481,7 +481,7 @@ function addStrength(gk, data){
     <input id="strt_${st.id}" type="text" value="${esc(st.timer)}" placeholder="00:00" oninput="updStr('${gk}','${st.id}','timer',this.value)">
     <select id="strc_${st.id}" onchange="updStr('${gk}','${st.id}','cat',this.value)">${STR_CATS.map(c=>`<option${c===st.cat?' selected':''}>${c}</option>`).join('')}</select>
     <input id="strd_${st.id}" type="text" value="${esc(st.desc)}" placeholder="Décris le point fort…" oninput="updStr('${gk}','${st.id}','desc',this.value)">
-    <button class="err-del" data-noexport onclick="removeStrength('${gk}','${st.id}')">✕</button>
+    <button class="err-del" data-noexport onclick="removeStrength('${gk}','${st.id}')" aria-label="Supprimer"><svg class="ib" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <span></span>`;
   list.appendChild(row); noteEmptyState(gk);
 }

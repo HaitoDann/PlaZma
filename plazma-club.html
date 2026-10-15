@@ -357,7 +357,7 @@ function render(){
       <div class="item ${it.s}" data-dom="${d.key}" data-i="${i}">
         <button class="st ${it.s}" title="Changer l'état" aria-label="Changer l'état"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></button>
         <textarea class="it-txt" rows="1" spellcheck="false">${esc(it.t)}</textarea>
-        <button class="it-del" title="Supprimer">✕</button>
+        <button class="it-del" title="Supprimer" aria-label="Supprimer"><svg class="ib" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>`).join('');
     return `
     <div class="dom" style="--dc:${d.color}">

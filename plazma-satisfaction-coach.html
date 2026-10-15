@@ -274,7 +274,7 @@
   <button class="btn-admin-view" id="adminBtn" onclick="toggleAdmin()"><svg class="ib ib-chart" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Voir les résultats</button>
 </div>
 <div class="results-panel" id="resultsPanel">
-  <div class="rp-header"><div class="rp-title"><svg class="ib ib-chart" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Satisfaction Head Coach — Staff uniquement</div><button class="rp-close" onclick="closeAdmin()">✕</button></div>
+  <div class="rp-header"><div class="rp-title"><svg class="ib ib-chart" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Satisfaction Head Coach — Staff uniquement</div><button class="rp-close" onclick="closeAdmin()" aria-label="Fermer"><svg class="ib" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="rp-body" id="rpBody"></div>
 </div>
 <div class="toast" id="toast"></div>
@@ -294,21 +294,21 @@ let crit = {};
 
 // ─── Critères /5 (groupe & moyens)
 const CRITERIA=[
-  {id:'implication', label:'Implication &amp; sérieux des joueurs',        color:'#6366f1'},
-  {id:'receptivite', label:'Réceptivité au coaching (consignes appliquées)', color:'#06b6d4'},
-  {id:'discipline',  label:'Discipline &amp; assiduité (présence, ponctualité)', color:'#22c55e'},
-  {id:'ambiance',    label:'Ambiance de travail en session',              color:'#ec4899'},
-  {id:'moyens',      label:'Moyens &amp; outils à disposition (dont ARCHI)',   color:'#f59e0b'},
-  {id:'soutien',     label:'Soutien du staff / manager',                  color:'#a78bfa'},
+  {id:'implication', label:'Implication &amp; sérieux des joueurs',        color:'var(--accent)'},
+  {id:'receptivite', label:'Réceptivité au coaching (consignes appliquées)', color:'var(--accent)'},
+  {id:'discipline',  label:'Discipline &amp; assiduité (présence, ponctualité)', color:'var(--accent)'},
+  {id:'ambiance',    label:'Ambiance de travail en session',              color:'var(--accent)'},
+  {id:'moyens',      label:'Moyens &amp; outils à disposition (dont ARCHI)',   color:'var(--accent)'},
+  {id:'soutien',     label:'Soutien du staff / manager',                  color:'var(--accent)'},
 ];
 CRITERIA.forEach(c=>{crit[c.id]=0;});
 
 // ─── Barres simples /5
 const SINGLE_BARS=[
-  {wrap:'bMotivWrap',   key:'bMotiv',   color:'#22c55e', max:5, labLeft:'Aucune envie',  labRight:'À fond'},
-  {wrap:'bFatigueWrap', key:'bFatigue', color:'#f97316', max:5, labLeft:'Épuisé',        labRight:'Aucun stress'},
-  {wrap:'bTempsWrap',   key:'bTemps',   color:'#8b5cf6', max:5, labLeft:'Insoutenable',  labRight:'Soutenable'},
-  {wrap:'bProgWrap',    key:'bProg',    color:'#06b6d4', max:5, labLeft:'Stagne',        labRight:'Progresse fort'},
+  {wrap:'bMotivWrap',   key:'bMotiv',   color:'var(--accent)', max:5, labLeft:'Aucune envie',  labRight:'À fond'},
+  {wrap:'bFatigueWrap', key:'bFatigue', color:'var(--accent)', max:5, labLeft:'Épuisé',        labRight:'Aucun stress'},
+  {wrap:'bTempsWrap',   key:'bTemps',   color:'var(--accent)', max:5, labLeft:'Insoutenable',  labRight:'Soutenable'},
+  {wrap:'bProgWrap',    key:'bProg',    color:'var(--accent)', max:5, labLeft:'Stagne',        labRight:'Progresse fort'},
 ];
 
 const BAR10_COLORS=['#ef4444','#ef4444','#f97316','#f97316','#f59e0b','#f59e0b','#84cc16','#22c55e','#22c55e','#06b6d4'];
@@ -531,10 +531,10 @@ function miniBar(val,max,color){ if(!val) return `<span style="color:var(--text3
 function rCard(r){
   const critRows=CRITERIA.map(c=>`<div class="rc-row"><div class="rc-q">${c.label.replace('&amp;','&')}</div><div class="rc-a">${miniBar(r.criteria?.[c.id]||0,5,c.color)}</div></div>`).join('');
   const rows=[
-    ['Motivation à coacher',miniBar(r.bMotiv,5,'#22c55e')],
-    ['Fatigue & stress (sérénité)',miniBar(r.bFatigue,5,'#f97316')],
-    ['Temps investi (soutenabilité)',miniBar(r.bTemps,5,'#8b5cf6')],
-    ['Progression de l\'équipe',miniBar(r.bProg,5,'#06b6d4')],
+    ['Motivation à coacher',miniBar(r.bMotiv,5,'var(--accent)')],
+    ['Fatigue & stress (sérénité)',miniBar(r.bFatigue,5,'var(--accent)')],
+    ['Temps investi (soutenabilité)',miniBar(r.bTemps,5,'var(--accent)')],
+    ['Progression de l\'équipe',miniBar(r.bProg,5,'var(--accent)')],
     ['Équilibre perso / coaching',r.equilibre||'—'],
     ['Charge de coaching',r.charge||'—'],
     ['Bonne direction',r.direction||'—'],

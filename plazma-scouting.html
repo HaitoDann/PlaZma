@@ -280,7 +280,7 @@
 
 <div class="drawer-ov" id="drawerOv" onclick="closeDrawer()"></div>
 <div class="drawer" id="drawer">
-  <div class="drawer-head"><h2 style="font-size:1.1rem">Fiches scouting</h2><button class="btn btn-icon btn-ghost" onclick="closeDrawer()">✕</button></div>
+  <div class="drawer-head"><h2 style="font-size:1.1rem">Fiches scouting</h2><button class="btn btn-icon btn-ghost" onclick="closeDrawer()" aria-label="Fermer"><svg class="ib" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div style="padding:14px 14px 0"><button class="btn btn-primary" style="width:100%" onclick="newSheet();closeDrawer()"><svg class="ib ib-plus" viewBox="0 0 24 24"><g class="pl-pen"><path class="pl-pen-body" d="M14.5 4.5l5 5L9 20l-5.5 1L5 15.5z"/><path class="pl-pen-nib" d="M12.5 6.5l5 5"/></g><path class="pl-pen-line" d="M4 21.5h15"/></svg> Nouvelle fiche</button></div>
   <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
 </div>
@@ -440,7 +440,7 @@ function renderDraft(){
           <span class="champ-ico oppslot" title="${esc(Champ().nameOf(mu.opp))}" style="cursor:pointer">${u?`<img src="${u}" alt="" onerror="Champions.imgFallback(this,'${mu.opp}')">`:`<span class="ph">${mu.opp?esc(Champ().nameOf(mu.opp)):'Leur champ'}</span>`}</span>
           <span class="mu-arrow">→</span>
           <div class="mu-ours"></div>
-          <button class="mu-del" title="Retirer ce match-up">✕</button>
+          <button class="mu-del" title="Retirer ce match-up" aria-label="Retirer ce match-up"><svg class="ib" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
         </div>`;
       // opp : clic pour choisir
       row.querySelector('.oppslot').addEventListener('click',()=>Champ().open(id=>{ if(id){ mu.opp=id; renderDraft(); queueSave(); } }));

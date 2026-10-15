@@ -385,7 +385,7 @@ function tileHtml(id, zone){
   const u = window.Champions.iconUrl(id);
   return `<div class="tl-tile" draggable="true" data-champ="${esc(id)}" data-from="${zone}" title="${esc(window.Champions.nameOf(id))}">
     ${u ? `<img src="${u}" alt="" onerror="Champions.imgFallback(this,'${esc(id)}')">` : `<span class="lbl">${esc(window.Champions.nameOf(id))}</span>`}
-    <button class="tl-x" title="Retirer">✕</button></div>`;
+    <button class="tl-x" title="Retirer" aria-label="Retirer"><svg class="ib" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`;
 }
 function renderTiers(){
   const host = document.getElementById('tierlist');

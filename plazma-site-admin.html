@@ -329,7 +329,7 @@ function renderIdeas(list){
   $('ideas').innerHTML = list.map(it=>`<div class="idea" data-id="${it.id}">
     <div class="idea-body"><div class="idea-text">${esc(it.text)}</div>
       <div class="idea-meta">${esc(it.authorName||'Anonyme')} · ${esc(relTime(it.ts))}</div></div>
-    <button class="idea-del" title="Supprimer" aria-label="Supprimer">✕</button></div>`).join('');
+    <button class="idea-del" title="Supprimer" aria-label="Supprimer"><svg class="ib" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`).join('');
   $('ideas').querySelectorAll('.idea-del').forEach(b=>b.addEventListener('click',()=>{
     const row=b.closest('.idea'); const id=row.dataset.id;
     if(!confirm('Supprimer cette idée ?')) return;

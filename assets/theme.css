@@ -766,7 +766,7 @@ a[href="plazma-wiki-perf.html"]:hover .tool-ico svg{animation:tool-read .8s ease
 [data-theme="light"] #pz-cur-dot.pz-hot{}
 
 body{isolation:isolate}
-body::before,body::after{content:'';position:fixed;border-radius:50%;pointer-events:none;z-index:-1;filter:blur(110px)}
+body::before,body::after{content:none}
 body::before{
   width:700px;height:700px;top:-180px;right:-160px;
   background:radial-gradient(circle,rgba(34,211,238,.038) 0%,transparent 65%);
@@ -806,11 +806,6 @@ body::after{
   --shadow-2: 0 4px 16px rgba(0,0,0,.10);
   --shadow-3: 0 16px 40px rgba(0,0,0,.14);
 }
-[data-theme="light"] body{
-  background-image:
-    radial-gradient(circle at 14% 14%, rgba(0,150,200,.06) 0%, transparent 42%),
-    radial-gradient(circle at 85% 86%, rgba(120,0,220,.04) 0%, transparent 42%);
-}
 [data-theme="light"] .pz-topbar{
   background:rgba(240,244,248,.88);
 }
@@ -848,12 +843,12 @@ body::after{
 .pz-daynight{
   position:relative;flex-shrink:0;width:64px;height:30px;padding:0;border:0;cursor:pointer;
   border-radius:999px;overflow:hidden;-webkit-tap-highlight-color:transparent;
-  background:linear-gradient(160deg,#24384f 0%,#0d1a2e 100%);
+  background:#132339;
   box-shadow:inset 0 1px 3px rgba(0,0,0,.55), 0 1px 2px rgba(0,0,0,.35);
   transition:background .5s ease;
 }
 [data-theme="light"] .pz-daynight{
-  background:linear-gradient(160deg,#9bd6ff 0%,#4a9fe8 100%);
+  background:#6cb8f0;
   box-shadow:inset 0 1px 3px rgba(0,60,120,.22), 0 1px 2px rgba(0,0,0,.15);
 }
 .pz-daynight:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -952,11 +947,11 @@ body::after{
 .pz-announce{
   position:relative;z-index:60;display:flex;align-items:center;gap:10px;
   padding:9px 16px;font-size:13px;font-weight:600;line-height:1.4;
-  color:#04252d;background:linear-gradient(90deg,#7ce9f6,#22d3ee);
+  color:#04252d;background:#22d3ee;
   animation:pz-announce-in .5s cubic-bezier(.16,1,.3,1);
 }
-.pz-announce.warn{background:linear-gradient(90deg,#fde68a,#f59e0b);color:#3a2a05}
-.pz-announce.ok{background:linear-gradient(90deg,#86efac,#22c55e);color:#053a1f}
+.pz-announce.warn{background:#f5b43a;color:#3a2a05}
+.pz-announce.ok{background:#4ade80;color:#053a1f}
 .pz-announce-ico{flex-shrink:0}
 .pz-announce span:nth-child(2){flex:1;min-width:0}
 .pz-announce-x{margin-left:auto;background:rgba(0,0,0,.12);border:0;color:inherit;cursor:pointer;
