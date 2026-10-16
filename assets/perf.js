@@ -16,7 +16,7 @@
   const jV = {};
   P.cats.forEach(c => c.items.forEach(i => { jV[i.id] = 0; }));
 
-  const esc = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
   // ---- Identité joueur depuis le roster central (mercato) ----
   const ROLE_TO_KEY = { Top:'top', Jungle:'jungle', Mid:'mid', ADC:'adc', Support:'support' };

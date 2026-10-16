@@ -2,13 +2,14 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://ddragon.leagueoflegends.com https://raw.communitydragon.org; connect-src 'self' https://*.googleapis.com https://www.gstatic.com https://ddragon.leagueoflegends.com https://raw.communitydragon.org https://discord.com https://discordapp.com; frame-src https://*.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <link rel="icon" type="image/png" href="assets/logo-plazma.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ARCHI — Club</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.26.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.27.0">
 <style>
   .wrap{max-width:1080px;margin:0 auto;padding:26px var(--gut) 70px}
   .pagehead{margin:8px 0 6px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
@@ -270,7 +271,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="assets/plazma.js?v=3.26.0"></script>
+<script src="assets/plazma.js?v=3.27.0"></script>
 <script>
 PZ.mountNav('club');
 
@@ -290,7 +291,7 @@ PZ.mountNav('club');
 /* ── Pilotage (doc club-vision) ── */
 (function(){
 const $ = id => document.getElementById(id);
-const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 /* Les 6 domaines hors-sportif + objectifs de départ (une base crédible que
    l'admin ajuste ensuite). */

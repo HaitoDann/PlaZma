@@ -17,6 +17,29 @@ bas de la fenêtre **Paramètres**.
 
 ## 3.x — Interface pro
 
+### 3.27.0 — Durcissement sécurité + vérifications automatiques
+- **Failles XSS corrigées** dans les résultats des questionnaires de
+  satisfaction (joueurs et Head Coach) : toutes les réponses sont désormais
+  échappées avant affichage. Un document forgé ne peut plus exécuter de script
+  chez le staff. Mêmes corrections ponctuelles sur le Dashboard et la Review
+  individuelle ; toutes les fonctions `esc()` des pages échappent aussi les
+  apostrophes. Nouveau `PZ.esc()` partagé.
+- **Roster assaini à la source** : les caractères HTML sont retirés des noms /
+  emojis / rôles (et la longueur est bornée) au chargement, car ils sont
+  affichés partout, y compris sur les pages publiques.
+- **Règles Firestore** : les questionnaires publics valident chaque champ
+  (liste blanche, type, taille, bornes des notes, horodatage serveur,
+  identifiant auto). `plazma/_usage` : un membre ne peut plus modifier que les
+  compteurs du jour et sa propre entrée de présence.
+- **Content-Security-Policy** sur toutes les pages : scripts, images et
+  connexions limités aux domaines utilisés (Firebase, Data Dragon,
+  CommunityDragon, Google Fonts, Discord).
+- **CI « Vérifications »** : syntaxe de tous les scripts, présence de la CSP,
+  cohérence des `?v=`, et tests automatiques des règles Firestore sur
+  l'émulateur (`tests/`).
+- `scripts/bump-version.js` : met à jour `VERSION` et tous les `?v=` en une
+  commande.
+
 ### 3.26.0 — Objectifs en kanban + scrims auto (ARCHI Link)
 - **Objectifs du club** (accueil) transformés en **tableau kanban** à trois
   colonnes (À faire · En cours · Terminé). Les cartes se déplacent par

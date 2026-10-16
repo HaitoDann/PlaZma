@@ -33,6 +33,51 @@ service cloud.firestore {
     function canRead(section)  { return active() && (profile().role == 'admin' || lvl(section) == true || lvl(section) == 'edit' || lvl(section) == 'view'); }
     function canWrite(section) { return active() && (profile().role == 'admin' || lvl(section) == true || lvl(section) == 'edit'); }
 
+    // ---- Validation des questionnaires publics (création sans compte) ----
+    // Bornent le type et la taille de chaque champ : empêche d'injecter des
+    // documents énormes ou de forme arbitraire.
+    function str(d, k, max)    { return d[k] is string && d[k].size() <= max; }
+    function optStr(d, k, max) { return !(k in d) || d[k] == null || str(d, k, max); }
+    function score(d, k, max)  { return d[k] is int && d[k] >= 0 && d[k] <= max; }
+    function strList(d, k)     { return d[k] is list && d[k].size() <= 12; }
+    function crit(d)           { return d.criteria is map && d.criteria.size() <= 20; }
+    function stamped(d)        { return d.submittedAt == request.time && str(d, 'date', 20); }
+
+    function validPlayerSurvey(d) {
+      return d.keys().hasOnly(['pseudo','playerId','playerEmoji','q2_ecoute','q3_tensions',
+            'q4_ambiance','q5_motivation','q6_fatigue','q7_entrainement','q8_charge','criteria',
+            'q9_domaines','q10_direction','q11_objectif','q12_staff','q13_note','q14_suggestion',
+            'q15_haito','submittedAt','date'])
+        && str(d,'pseudo',60) && optStr(d,'playerId',40) && optStr(d,'playerEmoji',16)
+        && optStr(d,'q2_ecoute',40) && optStr(d,'q3_tensions',2000) && optStr(d,'q8_charge',40)
+        && optStr(d,'q10_direction',40) && optStr(d,'q11_objectif',2000)
+        && str(d,'q14_suggestion',4000) && str(d,'q15_haito',4000)
+        && score(d,'q4_ambiance',5) && score(d,'q5_motivation',5) && score(d,'q6_fatigue',5)
+        && score(d,'q7_entrainement',5) && score(d,'q13_note',10)
+        && strList(d,'q9_domaines') && strList(d,'q12_staff') && crit(d) && stamped(d);
+    }
+    function validCoachSurvey(d) {
+      return d.keys().hasOnly(['coach','coachEmoji','bMotiv','bFatigue','bTemps','bProg',
+            'equilibre','charge','direction','besoins','criteria','note','frein','besoin','libre',
+            'submittedAt','date'])
+        && str(d,'coach',60) && optStr(d,'coachEmoji',16)
+        && score(d,'bMotiv',5) && score(d,'bFatigue',5) && score(d,'bTemps',5) && score(d,'bProg',5)
+        && optStr(d,'equilibre',40) && optStr(d,'charge',40) && str(d,'direction',40)
+        && strList(d,'besoins') && crit(d) && score(d,'note',10)
+        && optStr(d,'frein',4000) && optStr(d,'besoin',4000) && str(d,'libre',4000) && stamped(d);
+    }
+
+    // ---- Compteurs d'usage (plazma/_usage) ----
+    // Un membre peut seulement : toucher au plus UNE clé de jour (+ perUser /
+    // ideasTotal) par écriture, et ne modifier que SA PROPRE entrée perUser.
+    function validUsageWrite() {
+      let od = resource == null ? {} : resource.data;
+      let nd = request.resource.data;
+      let top = nd.diff(od).affectedKeys().difference(['perUser', 'ideasTotal'].toSet());
+      let users = nd.get('perUser', {}).diff(od.get('perUser', {})).affectedKeys();
+      return top.size() <= 1 && users.hasOnly([request.auth.uid]);
+    }
+
     // ---- Comptes utilisateurs ----
     match /users/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
@@ -55,7 +100,7 @@ service cloud.firestore {
         ));
       allow write: if signedIn() && (
               (docId == 'config'           && isAdmin())
-           || (docId == '_usage'           && active())
+           || (docId == '_usage'           && (isAdmin() || (active() && validUsageWrite())))
            || (docId == 'club-vision'      && isAdmin())
            || (docId == 'club-stats'       && isAdmin())
            || (docId == 'roster'           && canWrite('team'))
@@ -82,7 +127,7 @@ service cloud.firestore {
     // ---- Satisfaction (joueurs) ----
     // Soumission publique ; lecture réservée aux « résultats », suppression = 'edit'.
     match /plazma-satisfaction/{id} {
-      allow create: if true;
+      allow create: if id.matches('[A-Za-z0-9]{20}') && validPlayerSurvey(request.resource.data);
       allow read:   if canRead('satisfactionResults');
       allow delete: if canWrite('satisfactionResults');
       allow update: if false;
@@ -117,7 +162,7 @@ service cloud.firestore {
 
     // ---- Satisfaction Head Coach ----
     match /plazma-satisfaction-coach/{id} {
-      allow create: if true;
+      allow create: if id.matches('[A-Za-z0-9]{20}') && validCoachSurvey(request.resource.data);
       allow read:   if canRead('satisfactionResults');
       allow delete: if canWrite('satisfactionResults');
       allow update: if false;

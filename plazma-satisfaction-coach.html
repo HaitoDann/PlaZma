@@ -2,13 +2,14 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://ddragon.leagueoflegends.com https://raw.communitydragon.org; connect-src 'self' https://*.googleapis.com https://www.gstatic.com https://ddragon.leagueoflegends.com https://raw.communitydragon.org https://discord.com https://discordapp.com; frame-src https://*.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <link rel="icon" type="image/png" href="assets/logo-plazma.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ARCHI — Satisfaction Head Coach</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.26.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.27.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -279,7 +280,7 @@
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="assets/plazma.js?v=3.26.0" data-public></script>
+<script src="assets/plazma.js?v=3.27.0" data-public></script>
 <script>
 const db = PZ.db;
 const COACH_COL = 'plazma-satisfaction-coach';
@@ -526,7 +527,7 @@ function renderAdmin(){
     </div>
     ${f.length===0?'<div class="empty-rp">Aucune réponse pour l\'instant.</div>':f.map(r=>rCard(r)).join('')}`;
 }
-function miniBar(val,max,color){ if(!val) return `<span style="color:var(--text3)">—</span>`;
+function miniBar(val,max,color){ val=Math.max(0,Math.min(max,Math.round(Number(val)||0))); if(!val) return `<span style="color:var(--text3)">—</span>`;
   return `<div class="admbar-mini">${Array.from({length:max},(_,i)=>`<div class="${i<val?'ab-seg-lit':'ab-seg-off'}" style="${i<val?'background:'+color:''}"></div>`).join('')}<span style="font-size:12px;color:var(--text2);margin-left:4px;font-family:var(--font-display);font-weight:700">${val}/${max}</span></div>`; }
 function rCard(r){
   const critRows=CRITERIA.map(c=>`<div class="rc-row"><div class="rc-q">${c.label.replace('&amp;','&')}</div><div class="rc-a">${miniBar(r.criteria?.[c.id]||0,5,c.color)}</div></div>`).join('');
@@ -535,21 +536,21 @@ function rCard(r){
     ['Fatigue & stress (sérénité)',miniBar(r.bFatigue,5,'#f97316')],
     ['Temps investi (soutenabilité)',miniBar(r.bTemps,5,'#8b5cf6')],
     ['Progression de l\'équipe',miniBar(r.bProg,5,'#06b6d4')],
-    ['Équilibre perso / coaching',r.equilibre||'—'],
-    ['Charge de coaching',r.charge||'—'],
-    ['Bonne direction',r.direction||'—'],
-    ['Besoins exprimés',(r.besoins||[]).join(', ')||'—'],
+    ['Équilibre perso / coaching',esc(r.equilibre||'—')],
+    ['Charge de coaching',esc(r.charge||'—')],
+    ['Bonne direction',esc(r.direction||'—')],
+    ['Besoins exprimés',esc((r.besoins||[]).join(', '))||'—'],
     ['Ce qui freine',esc(r.frein||'—')],
     ['Besoin du staff / manager',esc(r.besoin||'—')],
     ['Mot libre',esc(r.libre||'—')],
   ];
   return `<div class="resp-card" onclick="this.classList.toggle('open')">
     <div class="rc-head">
-      <div style="font-size:20px">${r.coachEmoji||'♟️'}</div>
+      <div style="font-size:20px">${esc(r.coachEmoji||'♟️')}</div>
       <div class="rc-pseudo" style="color:${COACH_HEX}">${esc(r.coach||'Head Coach')}</div>
-      <div class="rc-note">${r.note||'—'}<span style="font-size:12px;color:var(--muted);font-weight:500">/10</span></div>
-      <div class="rc-date">${r.date||'—'}</div>
-      <button class="btn-del-r" onclick="event.stopPropagation();delResp('${r.id}')"><svg class="ib ib-trash" viewBox="0 0 24 24"><g class="tr-can"><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></g><g class="tr-lid"><polyline points="3 6 5 6 21 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></g><circle class="tr-item" cx="12" cy="2" r="1.7" fill="currentColor" stroke="none"/></svg></button>
+      <div class="rc-note">${esc(r.note||'—')}<span style="font-size:12px;color:var(--muted);font-weight:500">/10</span></div>
+      <div class="rc-date">${esc(r.date||'—')}</div>
+      <button class="btn-del-r" onclick="event.stopPropagation();delResp(${esc(JSON.stringify(String(r.id)))})"><svg class="ib ib-trash" viewBox="0 0 24 24"><g class="tr-can"><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></g><g class="tr-lid"><polyline points="3 6 5 6 21 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></g><circle class="tr-item" cx="12" cy="2" r="1.7" fill="currentColor" stroke="none"/></svg></button>
       <span class="rc-chevron">▸</span>
     </div>
     <div class="rc-body">
@@ -559,7 +560,7 @@ function rCard(r){
   </div>`;
 }
 async function delResp(id){ if(!confirm('Supprimer cette réponse ?'))return; await db.collection(COACH_COL).doc(id).delete(); showToast('Supprimé'); await loadAdmin(); }
-function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2600); }
 
 setIdentity();

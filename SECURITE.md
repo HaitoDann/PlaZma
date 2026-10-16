@@ -29,6 +29,13 @@ onglet **Sign-in method** → activer **E-mail/Mot de passe** → *Enregistrer*.
 Console Firebase → **Firestore Database** → onglet **Règles** → coller
 l'intégralité du fichier [`firestore.rules`](firestore.rules) → **Publier**.
 
+> Alternative en CLI : `npx firebase-tools deploy --only firestore:rules --project plazma-esport`
+> (utilise `firebase.json`). Les règles sont testées automatiquement en CI
+> (`tests/rules.test.mjs`) : ajouter un test à chaque modification.
+> Si un nouveau champ est ajouté aux questionnaires de satisfaction, il faut
+> l'ajouter aussi dans `validPlayerSurvey` / `validCoachSurvey`, sinon les
+> envois seront refusés.
+
 Ces règles font que :
 - chaque collection/module n'est lisible/modifiable que par les comptes qui y ont accès ;
 - le **roster** (noms/emojis) reste lisible publiquement (le questionnaire de satisfaction en a besoin) ;

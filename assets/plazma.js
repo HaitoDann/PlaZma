@@ -55,7 +55,7 @@
   // ---- Version de l'application (SemVer) ----
   // MAJEUR.MINEUR.CORRECTIF — MINEUR à chaque lot de fonctionnalités,
   // CORRECTIF pour les corrections. Affichée discrètement dans Paramètres.
-  const VERSION = '3.26.0';
+  const VERSION = '3.27.0';
 
   // ---- Niveau de performance : adapte la densité des effets ----
   // Full sur machine puissante (rendu identique), réduit sur mobile/appareil
@@ -326,19 +326,27 @@
   let rosterExtras = [];               // [ { id, name, emoji, role } ]  joueurs additionnels (dynamique)
   const rosterListeners = [];
 
+  // Échappement HTML partagé (à utiliser pour toute donnée injectée via innerHTML).
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"'`]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;' }[c]));
+  // Les noms / emojis du roster sont affichés partout (souvent via innerHTML,
+  // y compris sur des pages publiques) : on retire les caractères HTML à la
+  // source et on borne la longueur, pour qu'un nom piégé ne puisse rien injecter.
+  const cleanTxt = (s, max) => (typeof s === 'string' ? s : '').replace(/[<>"'`&\\]/g, '').trim().slice(0, max);
+  const cleanId = s => String(s == null ? '' : s).replace(/[^\w-]/g, '').slice(0, 40);
+
   function resolveSlot(slot) {
     const o = rosterOverrides[slot.id] || {};
     return {
       id: slot.id, roleKey: slot.roleKey, role: slot.role, color: slot.color,
-      name: (o.name && o.name.trim()) || slot.defaultName,
-      emoji: (o.emoji && o.emoji.trim()) || slot.defaultEmoji
+      name: cleanTxt(o.name, 40) || slot.defaultName,
+      emoji: cleanTxt(o.emoji, 16) || slot.defaultEmoji
     };
   }
   const getRoster = () => ROSTER_SLOTS.map(resolveSlot);   // 5 postes de base (structurel, inchangé)
   const getCoach = () => resolveSlot(COACH_SLOT);
   const getExtras = () => rosterExtras.map(e => ({
-    id: e.id, roleKey: 'extra', role: (e.role && e.role.trim()) || 'Joueur', color: 'var(--muted)',
-    name: (e.name && e.name.trim()) || 'Joueur', emoji: (e.emoji && e.emoji.trim()) || '🎮', extra: true
+    id: cleanId(e.id), roleKey: 'extra', role: cleanTxt(e.role, 30) || 'Joueur', color: 'var(--muted)',
+    name: cleanTxt(e.name, 40) || 'Joueur', emoji: cleanTxt(e.emoji, 16) || '🎮', extra: true
   }));
   // Icônes de rôles et d'elo (fichiers dans assets/). '' si pas d'icône dispo.
   const ROLE_ICONS = { top:'assets/Top_icon.webp', jungle:'assets/Jungle_icon.webp', mid:'assets/Middle_icon.webp', adc:'assets/Bottom_icon.webp', support:'assets/Support_icon.png' };
@@ -1285,7 +1293,7 @@
     getUsage, flushUsage, SPARK_LIMITS,
     // Configuration du site
     siteEnsureCfg, siteGet, siteSave,
-    USER_DOMAIN, discord, stats,
+    USER_DOMAIN, discord, stats, esc,
     // Roster central
     getRoster, getCoach, getSubs, getExtras, getPlayers, player, onRoster, setPlayer, addPlayer, removePlayer, saveRoster,
     roleIconUrl, tierIconUrl, ladder,

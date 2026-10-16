@@ -69,7 +69,22 @@ Tout push sur `main` déclenche automatiquement le déploiement via GitHub Pages
 git push origin main   # → en production immédiatement
 ```
 
-Les ressources partagées (`theme.css`, `plazma.js`) sont versionnées via un paramètre `?v=` dans chaque page HTML pour forcer le rechargement du cache navigateur lors des mises à jour.
+Les ressources partagées (`theme.css`, `plazma.js`) sont versionnées via un paramètre `?v=` dans chaque page HTML pour forcer le rechargement du cache navigateur lors des mises à jour. Pour changer de version partout d'un coup :
+
+```bash
+node scripts/bump-version.js 3.28.0   # met à jour VERSION + tous les ?v=
+```
+
+### Vérifications automatiques
+
+Le workflow GitHub Actions **Vérifications** tourne à chaque push : syntaxe des scripts, présence de la Content-Security-Policy, cohérence des `?v=` et tests des règles Firestore sur l'émulateur. En local :
+
+```bash
+node scripts/check-pages.js
+cd tests && npm install && npm run test:rules   # nécessite Java
+```
+
+> Toute nouvelle page doit reprendre la balise `<meta http-equiv="Content-Security-Policy">` des autres pages, et tout nouveau domaine externe (script, image, API) doit y être ajouté.
 
 ---
 

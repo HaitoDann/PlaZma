@@ -2,13 +2,14 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://ddragon.leagueoflegends.com https://raw.communitydragon.org; connect-src 'self' https://*.googleapis.com https://www.gstatic.com https://ddragon.leagueoflegends.com https://raw.communitydragon.org https://discord.com https://discordapp.com; frame-src https://*.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <link rel="icon" type="image/png" href="assets/logo-plazma.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ARCHI — Review individuelle</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/theme.css?v=3.26.0">
+<link rel="stylesheet" href="assets/theme.css?v=3.27.0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -252,9 +253,9 @@
   <div class="drawer-list" id="drawerList"><div class="drawer-empty">Chargement…</div></div>
 </div>
 
-<script src="assets/plazma.js?v=3.26.0" data-section="scrim"></script>
-<script src="assets/champions.js?v=3.26.0"></script>
-<script src="assets/rofl-browser.js?v=3.26.0"></script>
+<script src="assets/plazma.js?v=3.27.0" data-section="scrim"></script>
+<script src="assets/champions.js?v=3.27.0"></script>
+<script src="assets/rofl-browser.js?v=3.27.0"></script>
 <script>
 'use strict';
 PZ.mountNav('review', '#nav');
@@ -351,7 +352,7 @@ function sig(o){
   };
   return JSON.stringify(norm(o));
 }
-const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const val = id => { const e=document.getElementById(id); return e?e.value:''; };
 const set = (id,v) => { const e=document.getElementById(id); if(e) e.value=v||''; };
 
@@ -628,7 +629,7 @@ function renderHistory(){
         <div class="sess-date">${dt?`<div class="d">${String(dt.getUTCDate()).padStart(2,'0')}</div><div class="m">${MONTHS[dt.getUTCMonth()]}</div>`:`<div class="d">—</div>`}</div>
         <div class="sess-info">
           <div class="sess-player" style="color:${p?p.color:'var(--accent)'}">${p?p.emoji+' '+esc(p.name):'—'}</div>
-          <div class="sess-meta">${esc(d.m_type||'Match')}${d.m_adv?' vs '+esc(d.m_adv):''} · ${d.f_note||'—'}/10</div>
+          <div class="sess-meta">${esc(d.m_type||'Match')}${d.m_adv?' vs '+esc(d.m_adv):''} · ${esc(d.f_note||'—')}/10</div>
         </div>
       </div>
       <div class="sess-actions">

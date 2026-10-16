@@ -1,0 +1,44 @@
+name: Vérifications
+
+# Garde-fou avant la mise en production (GitHub Pages déploie `main` tel quel) :
+# syntaxe des scripts, CSP, cohérence des versions ?v= et règles Firestore.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntaxe des scripts + CSP
+        run: node scripts/check-pages.js
+      - name: Versions ?v= alignées
+        run: node scripts/bump-version.js --check
+
+  firestore-rules:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tests/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci
+      - name: Tests des règles (émulateur Firestore)
+        run: npm run test:rules
