@@ -1129,3 +1129,6 @@ html.pz-theme-anim::view-transition-old(root){ z-index:1 }
   .pz-nav-ico:hover .bulb-rays{animation:bulb-rays 1.1s ease-in-out infinite}
 }
 @keyframes bulb-rays{0%,100%{opacity:0}30%{opacity:.95}65%{opacity:.4}}
+
+/* Gros chiffres : police mono à chasse fixe (KDA, CS, LP, scores) */
+input[type="number"],.stat-num,.kpi-value,.big-num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
