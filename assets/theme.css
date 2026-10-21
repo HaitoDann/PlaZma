@@ -290,13 +290,21 @@ h3{font-size:1.02rem}
 .sync-dot.syncing{background:var(--warn)}
 .sync-dot.syncing::before{inset:-3px;border:1.5px solid transparent;border-top-color:var(--warn);border-right-color:rgba(245,158,11,.4)}
 
+/* Pages Review / Compte rendu : « Sauvegarde… » puis « Sauvegardé » avec une coche qui apparaît */
+.sync-dot.saving{background:var(--warn)}
+.sync-dot.saving::before{inset:-3px;border:1.5px solid transparent;border-top-color:var(--warn);border-right-color:rgba(245,158,11,.4)}
+.sync-dot.saved{background:var(--ok)}
+.sync-dot.saved::after{content:"";inset:auto;left:2.5px;top:1px;width:2.5px;height:4.5px;border:solid #fff;border-width:0 1.5px 1.5px 0;border-radius:0;transform:rotate(45deg)}
+
 .sync-time{color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
 
 @media(prefers-reduced-motion:no-preference){
   .sync-dot.connected{animation:sync-beat 2.6s ease-in-out infinite}
   .sync-dot.connected::before{animation:sync-ring 2.6s ease-out infinite}
   .sync-dot.connected::after{animation:sync-ring 2.6s ease-out 1.3s infinite}
-  .sync-dot.syncing::before{animation:sync-spin .8s linear infinite}
+  .sync-dot.syncing::before,.sync-dot.saving::before{animation:sync-spin .8s linear infinite}
+  .sync-dot.saved{animation:sync-pop .45s cubic-bezier(.34,1.56,.64,1)}
+  .sync-dot.saved::after{animation:sync-check .35s ease-out .1s both}
 }
 @keyframes sync-beat{
   0%,100%{transform:scale(1);}
@@ -308,6 +316,8 @@ h3{font-size:1.02rem}
   100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}
 }
 @keyframes sync-spin{to{transform:rotate(360deg)}}
+@keyframes sync-pop{0%{transform:scale(.4)}60%{transform:scale(1.6)}100%{transform:scale(1)}}
+@keyframes sync-check{from{opacity:0;clip-path:inset(100% 0 0 0)}to{opacity:1;clip-path:inset(0)}}
 
 /* ---- Champs de formulaire ---- */
 label{display:block;font-size:11.5px;font-weight:600;color:var(--dim);margin-bottom:5px;letter-spacing:.01em}
@@ -1133,3 +1143,15 @@ html.pz-theme-anim::view-transition-old(root){ z-index:1 }
 
 /* Gros chiffres : police mono à chasse fixe (KDA, CS, LP, scores) */
 input[type="number"],.stat-num,.kpi-value,.big-num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+
+/* Accueil : apparition en cascade des tuiles et des cartes joueur */
+@media(prefers-reduced-motion:no-preference){
+  .tools.revealed .tool,.roster.revealed .pcard,.staff.revealed .pcard{animation:card-rise .5s cubic-bezier(.16,1,.3,1) both}
+  .tools.revealed .tool:nth-child(2),.roster.revealed .pcard:nth-child(2){animation-delay:.05s}
+  .tools.revealed .tool:nth-child(3),.roster.revealed .pcard:nth-child(3){animation-delay:.10s}
+  .tools.revealed .tool:nth-child(4),.roster.revealed .pcard:nth-child(4){animation-delay:.15s}
+  .tools.revealed .tool:nth-child(5),.roster.revealed .pcard:nth-child(5){animation-delay:.20s}
+  .tools.revealed .tool:nth-child(6),.roster.revealed .pcard:nth-child(6){animation-delay:.25s}
+  .tool .tool-ico svg{transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+  .tool:hover .tool-ico svg{transform:scale(1.15) rotate(-6deg)}
+}
