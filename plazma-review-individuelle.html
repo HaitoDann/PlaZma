@@ -22,9 +22,9 @@
   .rev-head{border-top:3px solid var(--accent);padding:20px 22px;border-bottom:1px solid var(--border);
     display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
   .rev-player-block{display:flex;align-items:center;gap:14px}
-  .rev-emo{font-size:32px}
-  .rev-player-name{font-family:var(--font-display);font-size:1.6rem;font-weight:700;line-height:1.1;color:var(--accent)}
-  .rev-role-badge{font-size:10px;letter-spacing:.01em;color:var(--muted);margin-top:2px}
+  .rev-emo{font-size:26px;width:52px;height:52px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:color-mix(in srgb,var(--pc,var(--accent)) 14%,transparent);box-shadow:inset 0 0 0 2px var(--pc,var(--accent))}
+  .rev-player-name{font-family:var(--font-display);font-size:1.6rem;font-weight:700;line-height:1.1;color:var(--text)}
+  .rev-role-badge{display:inline-block;font-size:11px;font-weight:600;margin-top:5px;padding:2px 9px;border-radius:999px;color:var(--pc,var(--accent));background:color-mix(in srgb,var(--pc,var(--accent)) 14%,transparent)}
 
   /* Méta */
   .meta{display:grid;grid-template-columns:180px 1fr 160px 170px;gap:12px;padding:14px 22px;border-bottom:1px solid var(--border)}
@@ -370,7 +370,7 @@ function updatePlayerHeader(){
   if(!p) return;
   document.getElementById('revEmoji').textContent = p.emoji;
   document.getElementById('revPlayerName').textContent = p.name;
-  document.getElementById('revPlayerName').style.color = p.color;
+  document.getElementById('revPlayerBlock').style.setProperty('--pc', p.color);
   document.getElementById('revRoleBadge').textContent = p.role;
 }
 PZ.onRoster(r => { ROSTER = r; buildPlayerSelect(); });
