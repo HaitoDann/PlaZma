@@ -556,6 +556,7 @@
           <span class="pz-brand-mark"><img src="assets/logo-plazma.png" alt="ARCHI"></span>
           <span><span class="pz-brand-name">ARCHI</span><span class="pz-ver" title="Version d'ARCHI">v${VERSION}</span></span>
         </a>
+        <button class="pz-burger" type="button" aria-label="Menu" aria-expanded="false" onclick="var t=this.closest('.pz-topbar'),o=t.classList.toggle('nav-open');this.setAttribute('aria-expanded',o)"><span></span><span></span><span></span></button>
         <nav class="pz-nav">${links}</nav>
         ${who}
       </div></div>`;
