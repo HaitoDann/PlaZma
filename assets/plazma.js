@@ -693,9 +693,17 @@
     return { save, reset, restart: start, stop: () => unsub && unsub(), docId: resolveId };
   }
 
-  // ---- Export PNG (nécessite html2canvas sur la page) ----
+  // ---- Export PNG (html2canvas chargé à la demande) ----
+  function loadHtml2canvas() {
+    if (window.html2canvas) return Promise.resolve();
+    return new Promise((ok, ko) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      s.onload = ok; s.onerror = ko; document.head.appendChild(s);
+    });
+  }
   async function exportPNG(el, filename) {
-    if (!window.html2canvas) { alert('Export indisponible'); return; }
+    try { await loadHtml2canvas(); } catch (e) { alert('Export indisponible'); return; }
     const hidden = [...document.querySelectorAll('[data-noexport]')];
     hidden.forEach(e => (e.style.visibility = 'hidden'));
     // Déplie les zones de texte à la hauteur de leur contenu (sinon html2canvas

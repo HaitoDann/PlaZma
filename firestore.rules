@@ -73,6 +73,12 @@ service cloud.firestore {
       allow write: if canWrite('scrim');
     }
 
+    // ---- Reviews individuelles (rattachées à la section Scrim) ----
+    match /plazma-reviews/{id} {
+      allow read:  if canRead('scrim');
+      allow write: if canWrite('scrim');
+    }
+
     // ---- Scouting ----
     match /plazma-scouting/{id} {
       allow read:  if canRead('scouting');

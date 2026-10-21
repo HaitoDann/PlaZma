@@ -842,69 +842,83 @@ body::after{
 /* ════════════════════════════════════════════════════════
    Bascule jour / nuit (toggle esthétique) — .pz-daynight
    État piloté par [data-theme] sur <html> :
-   sombre = nuit (lune à droite, ciel étoilé) ·
-   clair  = jour (soleil à gauche, ciel nuageux).
+   sombre = nuit (lune à gauche, ciel violet étoilé) ·
+   clair  = jour (soleil à droite, ciel bleu nuageux).
    ════════════════════════════════════════════════════════ */
 .pz-daynight{
-  position:relative;flex-shrink:0;width:64px;height:30px;padding:0;border:0;cursor:pointer;
-  border-radius:999px;overflow:hidden;-webkit-tap-highlight-color:transparent;
-  background:linear-gradient(160deg,#24384f 0%,#0d1a2e 100%);
-  box-shadow:inset 0 1px 3px rgba(0,0,0,.55), 0 1px 2px rgba(0,0,0,.35);
-  transition:background .5s ease;
+  position:relative;flex-shrink:0;width:66px;height:30px;padding:0;border:0;cursor:pointer;
+  border-radius:999px;overflow:hidden;isolation:isolate;-webkit-tap-highlight-color:transparent;
+  background:#2a1d6b;
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.45), 0 1px 2px rgba(0,0,0,.25);
+  transition:box-shadow .5s ease, transform .2s ease;
 }
-[data-theme="light"] .pz-daynight{
-  background:linear-gradient(160deg,#9bd6ff 0%,#4a9fe8 100%);
-  box-shadow:inset 0 1px 3px rgba(0,60,120,.22), 0 1px 2px rgba(0,0,0,.15);
-}
+/* Deux ciels superposés : fondu enchaîné entre nuit et jour */
+.pz-daynight::before,.pz-daynight::after{content:'';position:absolute;inset:0;z-index:-1;transition:opacity .6s ease}
+.pz-daynight::before{background:radial-gradient(120% 140% at 20% 0%,#5b3bc4 0%,#3a2591 45%,#1d1352 100%)}
+.pz-daynight::after{background:radial-gradient(120% 140% at 80% 0%,#d6f1ff 0%,#8fd0f5 50%,#5aaee6 100%);opacity:0}
+[data-theme="light"] .pz-daynight::before{opacity:0}
+[data-theme="light"] .pz-daynight::after{opacity:1}
+[data-theme="light"] .pz-daynight{box-shadow:inset 0 2px 5px rgba(0,70,140,.25), 0 1px 2px rgba(0,0,0,.12)}
 .pz-daynight:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.pz-daynight:hover{filter:brightness(1.06)}
+.pz-daynight:active{transform:scale(.96)}
 
-/* Étoiles (visibles la nuit) */
+/* Étoiles scintillantes (nuit) */
 .pz-daynight .dn-stars{
-  position:absolute;inset:0;transition:opacity .45s ease;
+  position:absolute;inset:0;transition:opacity .5s ease, transform .6s cubic-bezier(.16,1,.3,1);
   background-image:
-    radial-gradient(1px 1px at 13px 8px,#fff,transparent),
-    radial-gradient(1px 1px at 21px 18px,#dbe7ff,transparent),
-    radial-gradient(1.3px 1.3px at 9px 20px,#fff,transparent),
-    radial-gradient(1px 1px at 27px 12px,#fff,transparent),
-    radial-gradient(1px 1px at 17px 23px,#cfe0ff,transparent);
+    radial-gradient(1.2px 1.2px at 36px 8px,#fff,transparent),
+    radial-gradient(1px 1px at 46px 19px,#e6dcff,transparent),
+    radial-gradient(1.4px 1.4px at 56px 10px,#fff,transparent),
+    radial-gradient(1px 1px at 42px 24px,#fff,transparent),
+    radial-gradient(1px 1px at 59px 22px,#d9ccff,transparent),
+    radial-gradient(.8px .8px at 51px 5px,#fff,transparent);
+  animation:dn-twinkle 2.6s ease-in-out infinite alternate;
 }
-[data-theme="light"] .pz-daynight .dn-stars{opacity:0}
+[data-theme="light"] .pz-daynight .dn-stars{opacity:0;transform:translateY(-8px)}
+@keyframes dn-twinkle{0%{filter:brightness(.7)}50%{filter:brightness(1.4)}100%{filter:brightness(.9)}}
 
-/* Nuages (visibles le jour) */
-.pz-daynight .dn-clouds{position:absolute;inset:0;opacity:0;transition:opacity .45s ease}
-[data-theme="light"] .pz-daynight .dn-clouds{opacity:1}
+/* Nuages (jour) : entrent par le bas puis dérivent doucement */
+.pz-daynight .dn-clouds{position:absolute;inset:0;opacity:0;transform:translateY(12px);
+  transition:opacity .5s ease, transform .7s cubic-bezier(.16,1,.3,1)}
+[data-theme="light"] .pz-daynight .dn-clouds{opacity:1;transform:none}
 .pz-daynight .dn-clouds::before,
-.pz-daynight .dn-clouds::after{content:'';position:absolute;background:rgba(255,255,255,.9);border-radius:999px}
-.pz-daynight .dn-clouds::before{width:17px;height:7px;bottom:4px;right:7px;box-shadow:-7px 1px 0 -1px rgba(255,255,255,.7)}
-.pz-daynight .dn-clouds::after{width:11px;height:5px;top:6px;right:15px;background:rgba(255,255,255,.72)}
+.pz-daynight .dn-clouds::after{content:'';position:absolute;border-radius:999px;background:#fff;animation:dn-drift 5s ease-in-out infinite alternate}
+.pz-daynight .dn-clouds::before{width:20px;height:8px;bottom:3px;left:6px;
+  box-shadow:8px -4px 0 1px #fff, 16px 1px 0 -1px rgba(255,255,255,.85)}
+.pz-daynight .dn-clouds::after{width:12px;height:5px;top:7px;left:14px;background:rgba(255,255,255,.75);animation-duration:7s;animation-direction:alternate-reverse}
+@keyframes dn-drift{from{translate:-2px 0}to{translate:3px 0}}
 
-/* Bouton coulissant : lune (nuit) → soleil (jour) */
+/* Astre coulissant : lune (gauche) → soleil (droite), avec étirement pendant la course */
 .pz-daynight .dn-knob{
-  position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;
-  transform:translateX(34px);
-  background:radial-gradient(circle at 38% 34%,#f6f9fc,#c6cfda 68%,#aab5c4);
-  box-shadow:0 2px 4px rgba(0,0,0,.4), inset -2px -2px 4px rgba(0,0,0,.18);
-  transition:transform .55s cubic-bezier(.16,1,.3,1), background .5s ease, box-shadow .5s ease;
+  position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;z-index:1;
+  background:radial-gradient(circle at 35% 30%,#ffffff,#e4e4ea 55%,#b9b9c6);
+  box-shadow:0 2px 5px rgba(0,0,0,.45), inset -2px -3px 5px rgba(0,0,0,.18);
+  transition:transform .6s cubic-bezier(.68,-.35,.27,1.35), background .5s ease, box-shadow .5s ease;
 }
-/* cratères de la lune */
-.pz-daynight .dn-knob::before{
-  content:'';position:absolute;top:5px;left:6px;width:5px;height:5px;border-radius:50%;
-  background:#aab5c4;box-shadow:8px 5px 0 -1px #aab5c4, 3px 12px 0 -1px #aab5c4;
-  opacity:1;transition:opacity .4s ease;
+.pz-daynight .dn-knob::before{ /* cratères */
+  content:'';position:absolute;top:6px;left:7px;width:5px;height:5px;border-radius:50%;
+  background:rgba(150,150,170,.55);box-shadow:7px 6px 0 -1px rgba(150,150,170,.5), 1px 11px 0 -1.5px rgba(150,150,170,.45);
+  transition:opacity .35s ease, transform .5s ease;
 }
+.pz-daynight .dn-knob::after{ /* halo du soleil */
+  content:'';position:absolute;inset:-6px;border-radius:50%;opacity:0;
+  background:radial-gradient(circle,rgba(255,220,90,.55) 40%,transparent 70%);
+  transition:opacity .5s ease;animation:dn-pulse 2.4s ease-in-out infinite;
+}
+@keyframes dn-pulse{0%,100%{transform:scale(.9)}50%{transform:scale(1.12)}}
 [data-theme="light"] .pz-daynight .dn-knob{
-  transform:translateX(0);
-  background:radial-gradient(circle at 40% 36%,#fff2a8,#ffd93b 55%,#f5b52e);
-  
+  transform:translateX(36px) rotate(180deg);
+  background:radial-gradient(circle at 38% 34%,#fff6b8,#ffd43b 55%,#f7a823);
+  box-shadow:0 2px 6px rgba(230,150,0,.45), inset -2px -3px 5px rgba(200,110,0,.25);
 }
-[data-theme="light"] .pz-daynight .dn-knob::before{opacity:0}
+[data-theme="light"] .pz-daynight .dn-knob::before{opacity:0;transform:scale(.3)}
+[data-theme="light"] .pz-daynight .dn-knob::after{opacity:1}
 
 /* Variante bouton flottant (accueil / login) */
 .pz-daynight--fab{position:fixed;top:16px;right:16px;z-index:50}
 
 @media (prefers-reduced-motion:reduce){
-  .pz-daynight,.pz-daynight *{transition:none}
+  .pz-daynight,.pz-daynight *,.pz-daynight::before,.pz-daynight::after{transition:none;animation:none}
 }
 
 /* Éclat utilisé par l'icône du mode maintenance */
@@ -1144,7 +1158,7 @@ h1{font-size:1.45rem} h2{font-size:1.1rem} h3{font-size:.98rem}
 /* Aucune animation décorative : seules les transitions d'état restent */
 .content>*,.content,.tools.revealed .tool,.roster.revealed .pcard,.staff.revealed .pcard{animation:none !important;opacity:1 !important}
 .tool-ico svg *,.pz-emoji-shake,.sync-dot::before,.sync-dot::after,.sync-dot.connected,
-.pz-brand-mark img,.pz-brand-mark,.pz-daynight *,.pz-maint-logo::before,.pz-maint-logo::after{animation:none !important}
+.pz-brand-mark img,.pz-brand-mark,.pz-maint-logo::before,.pz-maint-logo::after{animation:none !important}
 .sync-dot.connected{box-shadow:none !important}
 *{text-shadow:none !important}
 ::view-transition-old(root),::view-transition-new(root){animation:none !important}
@@ -1190,11 +1204,6 @@ input:focus,select:focus,textarea:focus{box-shadow:0 0 0 2px var(--accent-soft) 
 .skel,[class*="skel"]{background:var(--surface-2) !important;animation:none !important}
 
 @media(prefers-reduced-motion:no-preference){.btn,.card,a{transition:background-color .12s,border-color .12s,color .12s}}
-/* Sélecteur de thème : interrupteur neutre */
-.pz-daynight,[data-theme="light"] .pz-daynight{background:var(--surface-2) !important;border:1px solid var(--border-2) !important;box-shadow:none !important}
-.pz-daynight .dn-stars,.pz-daynight .dn-clouds{display:none !important}
-.pz-daynight .dn-knob,[data-theme="light"] .pz-daynight .dn-knob{background:var(--dim) !important;box-shadow:none !important}
-.pz-daynight .dn-knob::before{display:none !important}
 /* Pas d'ombres portées lourdes, liserés d'accent affinés */
 .content [class]{box-shadow:none}
 .content [style*="border-top:3px"],.content [style*="border-left:3px"]{border-top-width:2px !important;border-left-width:2px !important}

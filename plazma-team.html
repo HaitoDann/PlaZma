@@ -131,10 +131,14 @@
   <div class="sec-head" style="display:flex;align-items:baseline;gap:12px;margin:4px 0 12px">
     <h2 style="font-family:var(--font-display);font-size:15px">Tier list champions par joueur</h2>
     <span style="flex:1;height:1px;background:var(--border)"></span>
+    <button class="btn btn-sm" id="tlExportBtn" data-noexport title="Exporter la tier list du joueur en PNG">Exporter PNG</button>
   </div>
   <div class="tl-tabs" id="tlTabs" data-noexport></div>
   <div class="tl-hint" data-noexport>« + » ajoute un champion dans le tier · glisse-dépose une icône pour la changer de tier · survole pour retirer.</div>
-  <div class="tierlist" id="tierlist" style="margin-bottom:28px"></div>
+  <div id="tlExport" style="margin-bottom:28px">
+    <div id="tlExportTitle" style="display:none;font-weight:600;font-size:16px;margin-bottom:10px"></div>
+    <div class="tierlist" id="tierlist"></div>
+  </div>
 
   <!-- SUIVI SOLOQ -->
   <div class="sec-head" style="display:flex;align-items:baseline;gap:12px;margin:4px 0 12px">
@@ -379,6 +383,17 @@ function renderTabs(){
   document.querySelectorAll('#tlTabs .tl-tab').forEach(b =>
     b.addEventListener('click', () => { currentPlayer = b.dataset.player; renderTabs(); renderTiers(); }));
 }
+
+// ---- Export PNG de la tier list du joueur affiché ----
+document.getElementById('tlExportBtn').addEventListener('click', async () => {
+  const p = PZ.getRoster().find(x => x.id === currentPlayer);
+  if (!p) return;
+  const box = document.getElementById('tlExport'), title = document.getElementById('tlExportTitle');
+  title.textContent = 'Tier list · ' + p.name;
+  title.style.display = ''; box.style.padding = '16px';
+  try { await PZ.exportPNG(box, 'tierlist-' + p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')); }
+  finally { title.style.display = 'none'; box.style.padding = ''; }
+});
 
 // ---- Tuiles + tiers ----
 function tileHtml(id, zone){
