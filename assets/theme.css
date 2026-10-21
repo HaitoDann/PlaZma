@@ -416,7 +416,7 @@ select option{background:var(--surface)}
 /* Barre d'en-tête de page : titre + référence à gauche, statut + actions à droite */
 .toolbar.page-bar{justify-content:flex-end;padding:22px 0 18px;margin-bottom:14px;border-bottom:1px solid var(--border)}
 .page-bar-title{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0;flex-wrap:wrap}
-.page-bar-title h1{font-family:var(--font-display);font-size:1.35rem;margin:0}
+.page-bar-title h1{font-family:var(--font-display);font-size:1.35rem;line-height:1.2;margin:0 !important}
 .page-bar .sync-pill{margin-right:4px}
 
 /* ---- Sélecteur de champions (champions.js) ---- */
