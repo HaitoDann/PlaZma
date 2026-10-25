@@ -62,6 +62,14 @@
     background:var(--surface);border:1px solid var(--border-2);border-radius:7px;padding:5px 8px}
   .kda-sep{font-family:var(--font-display);color:var(--muted);font-size:1.1rem}
   .stat-input{width:72px;padding:5px 8px;font-size:13px}
+  .stat-calc{font-size:13px;font-weight:600;padding:5px 2px;color:var(--text);min-width:52px}
+  .sum-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:12px}
+  .sum-card{border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--surface)}
+  .sum-card .v{font-size:18px;font-weight:700}
+  .sum-card .l{font-size:11px;color:var(--muted);margin-top:2px}
+  .prev-obj{border:1px dashed var(--border-2);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:13px}
+  .prev-obj .h{font-size:11px;color:var(--muted);margin-bottom:6px}
+  .prev-obj label{display:flex;gap:8px;align-items:center;padding:3px 0;cursor:pointer}
   .game-stats{display:flex;align-items:center;gap:14px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
   .stat-block{display:flex;flex-direction:column;gap:3px}
   .stat-block label{font-size:10px;letter-spacing:.01em;color:var(--muted);margin:0}
@@ -202,6 +210,12 @@
         <div id="games"></div>
       </div>
 
+      <!-- Bilan chiffré -->
+      <div>
+        <div class="sec-title"><span class="d" style="background:var(--ok)"></span>Bilan de la série</div>
+        <div class="sum-grid" id="summary"></div>
+      </div>
+
       <!-- Analyse qualitative -->
       <div>
         <div class="sec-title"><span class="d" style="background:var(--top)"></span>Analyse qualitative</div>
@@ -218,6 +232,7 @@
       <!-- Objectifs -->
       <div>
         <div class="sec-title"><span class="d" style="background:var(--warn)"></span>Objectifs pour la prochaine session</div>
+        <div class="prev-obj" id="prevObj" style="display:none"></div>
         <div class="obj-row"><span class="obj-n">01</span><input id="o1" type="text" placeholder="Objectif 1"></div>
         <div class="obj-row"><span class="obj-n">02</span><input id="o2" type="text" placeholder="Objectif 2"></div>
         <div class="obj-row"><span class="obj-n">03</span><input id="o3" type="text" placeholder="Objectif 3"></div>
@@ -317,7 +332,8 @@ async function applyRoflToGame(g, parsed){
   if(!me) me=await pickParticipant(parsed.players);
   if(!me) return;
   set(gk+'_k',String(me.k)); set(gk+'_d',String(me.d)); set(gk+'_a',String(me.a));
-  set(gk+'_cs',String(me.cs)); set(gk+'_vs',String(me.vision));
+  set(gk+'_cs',String(me.cs??'')); set(gk+'_vs',String(me.vision??''));
+  if(parsed.durationSec) set(gk+'_dur',(parsed.durationSec/60).toFixed(1));
   const res=document.getElementById(gk+'_result'); if(res){ res.value=me.win?'V':'D'; styleResult(res); }
   let cid=me.champ;
   if(window.Champions && Champions.list){ const m=Champions.list.find(c=>c.id===me.champ||c.name===me.champ); if(m) cid=m.id; }
@@ -423,6 +439,8 @@ function buildGames(){
           </div></div>
         <div class="stat-block"><label>CS total</label><input class="stat-input" id="g${g}_cs" type="text" placeholder="—" oninput="queueSave()"></div>
         <div class="stat-block"><label>Vision Score</label><input class="stat-input" id="g${g}_vs" type="text" placeholder="—" oninput="queueSave()"></div>
+        <div class="stat-block"><label>Durée (min)</label><input class="stat-input" id="g${g}_dur" type="text" placeholder="—" oninput="queueSave()"></div>
+        <div class="stat-block"><label>CS/min</label><div class="stat-calc" id="g${g}_csm">—</div></div>
         <div class="stat-block"><label>Gold diff @15</label><input class="stat-input" id="g${g}_gd" type="text" placeholder="—" oninput="queueSave()"></div>
       </div>
       <div class="errs">
@@ -508,7 +526,7 @@ function renderNotes(){
 }
 
 // ── State ──
-const GAME_STATS = ['result','k','d','a','cs','vs','gd'];
+const GAME_STATS = ['result','k','d','a','cs','vs','gd','dur'];
 function getState(){
   const s={
     sel_player:val('sel_player'), m_date:val('m_date'), m_adv:val('m_adv'),
@@ -518,7 +536,8 @@ function getState(){
     f_note:val('f_note'), f_comment:val('f_comment'),
     errors:JSON.parse(JSON.stringify(errors)),
     strengths:JSON.parse(JSON.stringify(strengths)),
-    champKeys:{...champKeys}
+    champKeys:{...champKeys},
+    prevDone:{..._prevDone}
   };
   for(let g=1;g<=5;g++){
     GAME_STATS.forEach(f=>{ s[`g${g}_${f}`]=val(`g${g}_${f}`); });
@@ -543,9 +562,11 @@ function applyState(s){
   if(s.errors) Object.keys(s.errors).forEach(gk=>{ if(s.errors[gk]) errors[gk]=[...s.errors[gk]]; });
   strengths={g1:[],g2:[],g3:[],g4:[],g5:[]};
   if(s.strengths) Object.keys(s.strengths).forEach(gk=>{ if(s.strengths[gk]) strengths[gk]=[...s.strengths[gk]]; });
+  _prevDone={...(s.prevDone||{})};
   renderNotes();
   updatePlayerHeader();
   updateTitle();
+  renderSummary();
 }
 
 // ── Firestore (multi-doc + historique) ──
@@ -572,16 +593,71 @@ function subscribe(docId){
 
 function save(){
   if(!currentDocId) return;
-  const s = getState(); s._savedAt = firebase.firestore.FieldValue.serverTimestamp();
+  // JSON aller-retour : retire les valeurs `undefined` que Firestore refuse
+  const s = JSON.parse(JSON.stringify(getState())); s._savedAt = firebase.firestore.FieldValue.serverTimestamp();
   lastSavedSig = sig(s); suppressUntil = Date.now() + 6000;
   const syncDot=document.getElementById('syncDot'); const syncText=document.getElementById('syncText');
   syncDot.className='sync-dot saving'; syncText.textContent='Sauvegarde…';
   db.collection(COL).doc(currentDocId).set(s).then(()=>{
     syncDot.className='sync-dot saved'; syncText.textContent='Sauvegardé';
     loadHistory();
-  }).catch(()=>{ syncDot.className='sync-dot offline'; syncText.textContent='Erreur'; });
+  }).catch(e=>{
+    console.error('Sauvegarde review :', e);
+    syncDot.className='sync-dot offline';
+    syncText.textContent = e && e.code==='permission-denied' ? 'Accès refusé' : 'Erreur';
+    syncDot.parentElement && (syncDot.parentElement.title = e && e.code==='permission-denied'
+      ? "Droit d'édition « Scrim » requis pour enregistrer les reviews (Comptes → sections)."
+      : 'Échec de sauvegarde : ' + (e && (e.code||e.message) || 'inconnu'));
+  });
 }
-function queueSave(){ clearTimeout(_saveT); _saveT=setTimeout(save, 800); }
+function queueSave(){ clearTimeout(_saveT); _saveT=setTimeout(save, 800); renderSummary(); }
+
+// ── Bilan chiffré de la série ──
+const _num = id => { const v=parseFloat(String(val(id)).replace(',','.')); return isNaN(v)?null:v; };
+function renderSummary(){
+  let w=0,l=0,n=0,K=0,D=0,A=0,csm=[],vs=[],gd=[],errN=0,strN=0;
+  for(let g=1;g<=5;g++){
+    const gk='g'+g, res=val(gk+'_result'), cs=_num(gk+'_cs'), dur=_num(gk+'_dur');
+    const el=document.getElementById(gk+'_csm');
+    const m = cs!=null && dur ? cs/dur : null;
+    if(el) el.textContent = m!=null ? m.toFixed(1) : '—';
+    errN+=(errors[gk]||[]).length; strN+=(strengths[gk]||[]).length;
+    if(!res && !champKeys[gk]) continue;
+    n++; if(res==='V') w++; if(res==='D') l++;
+    K+=_num(gk+'_k')||0; D+=_num(gk+'_d')||0; A+=_num(gk+'_a')||0;
+    if(m!=null) csm.push(m);
+    const v=_num(gk+'_vs'); if(v!=null) vs.push(v);
+    const d=_num(gk+'_gd'); if(d!=null) gd.push(d);
+  }
+  const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+  const f=(v,dec=1)=>v==null?'—':v.toFixed(dec);
+  const gdA=avg(gd);
+  const cards=[
+    [n?`${w}V – ${l}D`:'—','Bilan'],
+    [n?(D?((K+A)/D).toFixed(2):'Perfect'):'—','KDA'],
+    [n?f(D/n):'—','Morts / game'],
+    [f(avg(csm)),'CS/min moyen'],
+    [f(avg(vs),0),'Vision moyenne'],
+    [gdA==null?'—':(gdA>0?'+':'')+Math.round(gdA),'Gold diff @15 moy.'],
+    [String(errN),'Erreurs notées'],
+    [String(strN),'Points forts notés']
+  ];
+  const host=document.getElementById('summary');
+  if(host) host.innerHTML=cards.map(([v,l])=>`<div class="sum-card"><div class="v">${esc(v)}</div><div class="l">${l}</div></div>`).join('');
+  renderPrevObjectives();
+}
+// Objectifs de la review précédente du même joueur → suivi
+function renderPrevObjectives(){
+  const box=document.getElementById('prevObj'); if(!box) return;
+  const pid=val('sel_player');
+  const prev=_histDocs.find(d=>d.id!==currentDocId && d.data().sel_player===pid && (d.data().o1||d.data().o2||d.data().o3));
+  if(!prev){ box.style.display='none'; return; }
+  const d=prev.data(), done=_prevDone;
+  box.style.display='';
+  box.innerHTML=`<div class="h">Suivi des objectifs de la review précédente${d.m_date?' ('+esc(d.m_date)+')':''}</div>`+
+    ['o1','o2','o3'].filter(k=>d[k]).map(k=>`<label><input type="checkbox" ${done[k]?'checked':''} onchange="_prevDone['${k}']=this.checked;queueSave()"> ${esc(d[k])}</label>`).join('');
+}
+let _prevDone={};
 
 function newSession(){
   const docId = newDocId();
@@ -596,6 +672,7 @@ function newSession(){
   errors={g1:[],g2:[],g3:[],g4:[],g5:[]};
   strengths={g1:[],g2:[],g3:[],g4:[],g5:[]};
   champKeys={g1:'',g2:'',g3:'',g4:'',g5:''};
+  _prevDone={};
   for(let g=1;g<=5;g++) renderChampSlot('g'+g);
   updatePlayerHeader(); updateTitle();
   save();
@@ -612,7 +689,7 @@ function loadHistory(){
   db.collection(COL).orderBy('_savedAt','desc').limit(60).get().then(snap=>{
     _histDocs = snap.docs;
     document.getElementById('histCount').textContent = snap.size ? '(' + snap.size + ')' : '';
-    renderHistory();
+    renderHistory(); renderSummary();
   }).catch(()=>{});
 }
 function renderHistory(){
