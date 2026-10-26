@@ -79,6 +79,27 @@
   .stat-champ{font-weight:600}
   .champ-ic{width:26px;height:26px;border-radius:5px;object-fit:cover;display:block}
   .gold-pos{color:var(--ok)} .gold-neg{color:var(--err)}
+  /* Timeline (ARCHI Link) : écart de gold d'équipe minute par minute + objectifs */
+  .tlc{margin:4px 0 12px;background:var(--surface-2);border-radius:var(--r);padding:10px 12px 8px}
+  .tlc-top{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--muted);margin-bottom:8px;flex-wrap:wrap}
+  .tlc-top b{font-family:var(--font-mono);color:var(--text);font-weight:600}
+  .tlc-plot{position:relative;height:110px;margin-left:44px}
+  .tlc-plot svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+  .tlc-plot .zero{stroke:var(--muted);stroke-width:1;vector-effect:non-scaling-stroke}
+  .tlc-plot .grid{stroke:var(--border-2);stroke-width:1;vector-effect:non-scaling-stroke}
+  .tlc-plot .ln{fill:none;stroke:var(--text);stroke-width:2;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+  .tlc-plot .pos{fill:var(--ok);opacity:.22} .tlc-plot .neg{fill:var(--err);opacity:.22}
+  .tlc-plot .ylab{position:absolute;right:calc(100% + 8px);transform:translateY(-50%);font-family:var(--font-mono);font-size:10px;color:var(--muted)}
+  .tlc-plot .obj{position:absolute;transform:translate(-50%,-50%);font-size:9.5px;font-weight:700;width:15px;height:15px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;background:var(--surface);border:1.5px solid var(--muted);color:var(--dim);cursor:default}
+  .tlc-plot .obj.us{border-color:var(--ok);color:var(--text)} .tlc-plot .obj.them{border-color:var(--err);color:var(--text)}
+  .tlc-plot .xh{position:absolute;top:0;bottom:0;width:1px;background:var(--dim);opacity:.5;display:none;pointer-events:none}
+  .tlc-plot .tip{position:absolute;top:-4px;transform:translate(-50%,-100%);background:var(--elevated);border:1px solid var(--border-2);border-radius:8px;
+    padding:4px 8px;font-size:11.5px;white-space:nowrap;display:none;pointer-events:none;z-index:2}
+  .tlc-plot.hover .xh,.tlc-plot.hover .tip{display:block}
+  .tlc-x{position:relative;height:13px;margin:4px 0 0 44px;font-family:var(--font-mono);font-size:10px;color:var(--muted)}
+  .tlc-x span{position:absolute;transform:translateX(-50%)}
+  .tlc-leg{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;font-size:11px;color:var(--muted)}
 
   .rofl-agg{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:13px 16px;margin-bottom:14px}
   .agg-head{font-size:13px;font-weight:600;margin-bottom:10px}
@@ -298,6 +319,7 @@
 </div>
 
 <script src="assets/plazma.js?v=3.26.0" data-section="scrim"></script>
+<script src="assets/rofl-browser.js?v=3.27.0"></script>
 <script>
 'use strict';
 PZ.mountNav('scrim', '#nav');
@@ -752,63 +774,12 @@ async function openFromSlot(q){
 //  Un .rofl = une game. Le header contient les stats de fin de partie
 //  (champions, KDA, CS, gold, dégâts, vision, durée). Aucune donnée n'est
 //  envoyée : tout est lu dans le navigateur. Les timelines (gold @15, etc.)
-//  ne sont PAS dans le fichier → on expose le gold de FIN de partie.
+//  ne sont PAS dans le fichier → on expose le gold de FIN de partie, sauf si
+//  ARCHI Link a joint la timeline de la partie (st.tl : diffs @10/@15).
 // ════════════════════════════════════════════════════════════
 
-// Normalise la position/lane renvoyée par le .rofl (quand présente).
-function normPos(v){
-  v=String(v||'').toUpperCase();
-  if(v==='TOP') return 'top';
-  if(v==='JUNGLE') return 'jungle';
-  if(v==='MIDDLE'||v==='MID') return 'mid';
-  if(v==='BOTTOM'||v==='BOT'||v==='ADC'||v==='DUO_CARRY') return 'adc';
-  if(v==='UTILITY'||v==='SUPPORT'||v==='DUO_SUPPORT') return 'support';
-  return '';
-}
-// --- Parseur : ArrayBuffer -> { durationSec, patch, players:[...] } ---
-function parseRofl(buf){
-  const bytes = new Uint8Array(buf);
-  // Décodage tolérant : la zone JSON est de l'UTF-8 valide, le reste (binaire)
-  // devient des caractères de remplacement sans gêner l'extraction.
-  const text = new TextDecoder('utf-8', {fatal:false}).decode(bytes);
-  // 1) on localise l'objet de métadonnées via la clé "gameLength"
-  let kw = text.indexOf('"gameLength"');
-  if(kw < 0) kw = text.indexOf('"statsJson"');
-  if(kw < 0) throw new Error('métadonnées introuvables');
-  const open = text.lastIndexOf('{', kw);
-  if(open < 0) throw new Error('métadonnées illisibles');
-  const metaStr = extractBalanced(text, open);
-  if(!metaStr) throw new Error('métadonnées incomplètes');
-  const meta = JSON.parse(metaStr);
-  const rawStats = typeof meta.statsJson === 'string' ? JSON.parse(meta.statsJson) : meta.statsJson;
-  if(!Array.isArray(rawStats) || !rawStats.length) throw new Error('aucune stat joueur');
-  const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
-  const players = rawStats.map(p => ({
-    name: (p.RIOT_ID_GAME_NAME || p.NAME || '').trim(),
-    tag: (p.RIOT_ID_TAG_LINE || '').trim(),
-    champ: p.SKIN || '—',
-    pos: normPos(p.TEAM_POSITION || p.INDIVIDUAL_POSITION || p.POSITION || p.LANE || ''),
-    team: String(p.TEAM) === '200' ? 'red' : 'blue',
-    win: /^win$/i.test(p.WIN || ''),
-    k: num(p.CHAMPIONS_KILLED), d: num(p.NUM_DEATHS), a: num(p.ASSISTS),
-    cs: num(p.MINIONS_KILLED) + num(p.NEUTRAL_MINIONS_KILLED),
-    gold: num(p.GOLD_EARNED),
-    dmg: num(p.TOTAL_DAMAGE_DEALT_TO_CHAMPIONS),
-    vision: num(p.VISION_SCORE),
-  }));
-  return { durationSec: Math.round(num(meta.gameLength)/1000), patch: meta.gameVersion || '', players };
-}
-// Extrait l'objet JSON { ... } à partir de l'accolade ouvrante, en respectant
-// les chaînes (les accolades de statsJson sont dans une chaîne échappée).
-function extractBalanced(str, start){
-  let depth=0, inStr=false, esc=false;
-  for(let i=start;i<str.length;i++){
-    const c=str[i];
-    if(inStr){ if(esc) esc=false; else if(c==='\\') esc=true; else if(c==='"') inStr=false; }
-    else { if(c==='"') inStr=true; else if(c==='{') depth++; else if(c==='}'){ if(--depth===0) return str.slice(start,i+1); } }
-  }
-  return null;
-}
+// Parseur + analyse partagés avec ARCHI Link (assets/rofl-browser.js → window.Rofl).
+const parseRofl = buf => Rofl.parse(buf);
 
 // --- Détection du camp de PlaZma via les comptes op.gg (doc dashboard) ---
 let _handles = null;   // Set de pseudos normalisés
@@ -900,7 +871,7 @@ function renderRoflPreview(){
 }
 function roflApply(){
   const gk=document.getElementById('roflGame').value;
-  const st={...(_pending.parsed), side:_pending.side, win:(sideTeam(_pending.parsed,_pending.side)[0]||{}).win||false, file:_pending.fileName, v:1};
+  const st={...(_pending.parsed), side:_pending.side, win:(sideTeam(_pending.parsed,_pending.side)[0]||{}).win||false, file:_pending.fileName, gameId:Rofl.gameIdFromFile(_pending.fileName), v:2};
   gstats[gk]=st;
   // Résultat V/D déduit du camp
   set(gk+'_result', st.win?'V':'D');
@@ -920,22 +891,87 @@ function recomputeScore(){
 }
 
 // --- Rendu ---
+function fmtSigned(n, k){ if(n==null||!isFinite(n)) return '—'; const v=k?fmtK(Math.abs(n)):String(Math.abs(Math.round(n))); return (n>=0?'+':'−')+v; }
+function sgnCls(n){ return n==null?'':n>=0?'gold-pos':'gold-neg'; }
+const pctTxt = v => v==null ? '—' : Math.round(v)+'%';
+// Diff @15 (ou @10) vs vis-à-vis depuis la timeline jointe par ARCHI Link.
+function tlDiff(st, p){
+  if(!st.tl || !Array.isArray(st.tl.players)) return null;
+  const key = n => String(n||'').toLowerCase().replace(/\s/g,'');
+  const t = st.tl.players.find(x => key(x.name)===key(p.name));
+  return t ? (t.diff15 || t.diff10 || null) : null;
+}
 function statTable(st){
-  const us=sideTeam(st, st.side), them=sideTeam(st, st.side==='blue'?'red':'blue');
-  const byPos={}; them.forEach(e=>{ if(e.pos && !byPos[e.pos]) byPos[e.pos]=e; });
-  const hasLane = us.some(p=>p.pos && byPos[p.pos]);
-  let h='<table class="stat-tbl"><thead><tr><th>Champion</th><th>Joueur</th><th class="mono">KDA</th><th class="mono">CS</th><th class="mono">Gold</th>'+
-    (hasLane?'<th class="mono">±Gold</th>':'')+'<th class="mono">Dmg</th><th class="mono">Vision</th></tr></thead><tbody>';
-  us.forEach(p=>{
-    let lane='';
-    if(hasLane){ const e=p.pos&&byPos[p.pos]; const diff=e?p.gold-e.gold:null;
-      lane=`<td class="mono ${diff==null?'':diff>=0?'gold-pos':'gold-neg'}">${diff==null?'—':(diff>=0?'+':'')+fmtK(diff)}</td>`; }
-    h+=`<tr><td class="stat-champ"><img class="champ-ic" src="assets/champions/${encodeURIComponent(p.champ)}.png" alt="${esc(p.champ)}" title="${esc(p.champ)}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:this.alt}))"></td><td>${esc(p.name||'—')}</td>`+
-    `<td class="mono">${p.k}/${p.d}/${p.a}</td><td class="mono">${p.cs}</td><td class="mono">${fmtK(p.gold)}</td>`+
-    lane+`<td class="mono">${fmtK(p.dmg)}</td><td class="mono">${p.vision}</td></tr>`;
+  const der=Rofl.derive(st, st.side);
+  const hasVs = der.players.some(p=>p.vs);
+  const hasTl = der.players.some(p=>tlDiff(st,p));
+  let h='<table class="stat-tbl"><thead><tr><th>Champion</th><th>Joueur</th><th class="mono">KDA</th><th class="mono" title="Kill participation">KP</th>'+
+    '<th class="mono">CS/min</th><th class="mono" title="Part des dégâts de l\'équipe">DMG%</th><th class="mono" title="Part du gold de l\'équipe">Gold%</th>'+
+    (hasVs?'<th class="mono" title="Gold fin de partie vs vis-à-vis">±Gold</th><th class="mono" title="CS fin de partie vs vis-à-vis">±CS</th>':'')+
+    (hasTl?'<th class="mono" title="Gold à 15 min vs vis-à-vis (timeline)">±Gold@15</th><th class="mono" title="CS à 15 min vs vis-à-vis (timeline)">±CS@15</th>':'')+
+    '<th class="mono" title="Score de vision par minute">Vis/min</th></tr></thead><tbody>';
+  der.players.forEach(p=>{
+    const vs=p.vs, t=tlDiff(st,p);
+    h+=`<tr><td class="stat-champ"><img class="champ-ic" src="assets/champions/${encodeURIComponent(p.champ)}.png" alt="${esc(p.champ)}" title="${esc(p.champ)}${vs?' vs '+esc(vs.champ):''}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:this.alt}))"></td><td>${esc(p.name||'—')}</td>`+
+    `<td class="mono">${p.k}/${p.d}/${p.a}</td><td class="mono">${pctTxt(p.kp)}</td><td class="mono">${p.csmin.toFixed(1)}</td>`+
+    `<td class="mono">${pctTxt(p.dmgShare)}</td><td class="mono">${pctTxt(p.goldShare)}</td>`+
+    (hasVs?`<td class="mono ${sgnCls(vs&&vs.gold)}">${vs?fmtSigned(vs.gold,true):'—'}</td><td class="mono ${sgnCls(vs&&vs.cs)}">${vs?fmtSigned(vs.cs):'—'}</td>`:'')+
+    (hasTl?`<td class="mono ${sgnCls(t&&t.gold)}">${t?fmtSigned(t.gold,true):'—'}</td><td class="mono ${sgnCls(t&&t.cs)}">${t?fmtSigned(t.cs):'—'}</td>`:'')+
+    `<td class="mono">${p.vspm.toFixed(2)}</td></tr>`;
   });
   return h+'</tbody></table>';
 }
+// ---- Timeline : courbe d'écart de gold (point de vue PlaZma) + objectifs ----
+const OBJ_ICON = { DRAGON:'D', BARON_NASHOR:'B', RIFTHERALD:'H', HORDE:'L', TOWER_BUILDING:'T', INHIBITOR_BUILDING:'I', ATAKHAN:'A' };
+const OBJ_FR = { DRAGON:'Dragon', BARON_NASHOR:'Baron', RIFTHERALD:'Héraut', HORDE:'Larves', TOWER_BUILDING:'Tour', INHIBITOR_BUILDING:'Inhibiteur', ATAKHAN:'Atakhan' };
+const TLC = {};
+function goldCurve(st, gk){
+  const tl=st.tl; if(!tl || !Array.isArray(tl.goldDiff) || tl.goldDiff.length<3) return '';
+  const sign = st.side==='red' ? -1 : 1;
+  const g = tl.goldDiff.map(v=>v*sign), n=g.length-1;
+  // Échelle symétrique « ronde » : ±m avec repères à ±m/2 (2k, 4k, 6k…).
+  const mx = Math.max(...g.map(Math.abs)), m = mx<=2000 ? 2000 : Math.ceil(mx/2000)*2000;
+  const X = i => i/n*100, Y = v => (1 - (v+m)/(2*m))*100;
+  const ln = g.map((v,i)=>(i?'L':'M')+X(i).toFixed(2)+' '+Y(v).toFixed(2)).join(' ');
+  // Aires : au-dessus de 0 (avance PlaZma) et en dessous (retard), découpées par clipPath.
+  const ar = `M0 50 `+g.map((v,i)=>'L'+X(i).toFixed(2)+' '+Y(v).toFixed(2)).join(' ')+` L100 50 Z`;
+  const step = m/2;
+  let grid='', labs='';
+  for(let v=-m; v<=m; v+=step){ if(!v) continue; const y=Y(v).toFixed(2);
+    grid+=`<line class="grid" x1="0" x2="100" y1="${y}" y2="${y}"/>`; labs+=`<span class="ylab" style="top:${y}%">${v>0?'+':'−'}${+(Math.abs(v)/1000).toFixed(1)}k</span>`; }
+  labs+=`<span class="ylab" style="top:50%">0</span>`;
+  const ours = t => t===st.side;
+  // Tours : seulement avant 20' (les premières tours racontent la phase de lane).
+  const objs = (tl.objectives||[]).filter(o=>OBJ_ICON[o.type] && (o.type!=='TOWER_BUILDING' || o.t<=20*60));
+  const dur = n*60;
+  const marks = objs.map(o=>{ const x=Math.min(100,o.t/dur*100), us=ours(o.team);
+    return `<span class="obj ${us?'us':'them'}" style="left:${x}%;top:${us?8:92}%" title="${esc((OBJ_FR[o.type]||o.type)+(o.sub?' ('+o.sub.replace(/_DRAGON|_TURRET/,'').toLowerCase()+')':'')+' · '+fmtDur(o.t)+' · '+(us?'PlaZma':'adversaire'))}">${OBJ_ICON[o.type]}</span>`; }).join('');
+  TLC[gk]=g;
+  const at = mn => g[mn]!=null ? g[mn] : null;
+  const f = tl.firsts||{}, fx = k => f[k] ? (ours(f[k].team)?'✓':'✗') : '—';
+  return `<div class="tlc"><div class="tlc-top"><span>Écart de gold · PlaZma ${['@10','@15','@20'].map((l,i)=>{const v=at([10,15,20][i]); return v==null?'':` · ${l} <b class="${v>=0?'gold-pos':'gold-neg'}">${v>=0?'+':'−'}${fmtK(Math.abs(v))}</b>`;}).join('')}</span>
+      <span>First blood ${fx('blood')} · 1re tour ${fx('tower')} · 1er drake ${fx('dragon')}</span></div>
+    <div class="tlc-plot" data-tlc="${gk}" role="img" aria-label="Écart de gold minute par minute">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none"><defs>
+        <clipPath id="up_${gk}"><rect x="0" y="0" width="100" height="50"/></clipPath><clipPath id="dn_${gk}"><rect x="0" y="50" width="100" height="50"/></clipPath></defs>
+        ${grid}<path class="pos" clip-path="url(#up_${gk})" d="${ar}"/><path class="neg" clip-path="url(#dn_${gk})" d="${ar}"/>
+        <line class="zero" x1="0" x2="100" y1="50" y2="50"/><path class="ln" d="${ln}"/></svg>
+      ${labs}${marks}<span class="xh"></span><span class="tip"></span></div>
+    <div class="tlc-x">${[0,10,20,30,40].filter(t=>t<n-3).concat(n).map(t=>`<span style="left:${t/n*100}%">${t}'</span>`).join('')}</div>
+    <div class="tlc-leg"><span>Objectifs : en haut = PlaZma, en bas = adversaire</span><span>D dragon · H héraut · L larves · B baron · T tour (&lt;20') · I inhib</span></div></div>`;
+}
+document.addEventListener('pointermove', e=>{
+  const plot=e.target.closest && e.target.closest('.tlc-plot');
+  document.querySelectorAll('.tlc-plot.hover').forEach(p=>{ if(p!==plot) p.classList.remove('hover'); });
+  if(!plot || e.target.closest('.obj')) { if(plot) plot.classList.remove('hover'); return; }
+  const g=TLC[plot.dataset.tlc]; if(!g) return;
+  const r=plot.getBoundingClientRect(), i=Math.max(0,Math.min(g.length-1,Math.round((e.clientX-r.left)/r.width*(g.length-1))));
+  const x=i/(g.length-1)*100;
+  plot.classList.add('hover'); plot.querySelector('.xh').style.left=x+'%';
+  const tip=plot.querySelector('.tip'); tip.style.left=Math.min(88,Math.max(12,x))+'%';
+  tip.innerHTML=`${i}' · <b class="${g[i]>=0?'gold-pos':'gold-neg'}">${g[i]>=0?'+':'−'}${fmtK(Math.abs(g[i]))}</b> gold`;
+});
+
 function renderStats(gk){
   const host=document.getElementById('gstats_'+gk); if(!host) return;
   const st=gstats[gk];
@@ -949,6 +985,7 @@ function renderStats(gk){
       <span>CS/min ${d.csmin.toFixed(1)}</span>
       <button class="rm" data-noexport onclick="removeStats('${gk}')">Retirer</button>
     </div>
+    ${goldCurve(st, gk)}
     ${statTable(st)}
   </div>`;
 }
@@ -978,7 +1015,25 @@ function renderAggregate(){
       ${chip('Dégâts', fmtK(avg(dmg)))}
       ${chip('Vision', Math.round(avg(vis)))}
     </div>
+    ${playerAggTable(games)}
   </div>`;
+}
+
+// Moyennes par joueur (toutes les games importées de ce scrim).
+function playerAggTable(games){
+  const rows=Rofl.aggregatePlayers(games);
+  if(!rows.length || games.length<2) return '';
+  const POS_ORDER={top:0,jungle:1,mid:2,adc:3,support:4};
+  rows.sort((a,b)=>(POS_ORDER[a.pos]??9)-(POS_ORDER[b.pos]??9));
+  let h='<div class="agg-head" style="margin-top:12px">Par joueur <span class="agg-meta">moyennes sur les games importées</span></div>'+
+    '<div style="overflow-x:auto"><table class="stat-tbl" style="min-width:560px"><thead><tr><th>Joueur</th><th class="mono">Games</th><th class="mono">KDA</th><th class="mono">KP</th>'+
+    '<th class="mono">CS/min</th><th class="mono">DMG%</th><th class="mono">Dmg/gold</th><th class="mono">±Gold</th><th class="mono">±CS</th><th class="mono">Vis/min</th><th class="mono" title="Temps passé mort">Mort%</th></tr></thead><tbody>';
+  rows.forEach(r=>{ const a=r.avg, v=r.vs;
+    h+=`<tr><td>${esc(r.name||'—')} <span style="color:var(--muted)">${esc(r.pos||'')}</span></td><td class="mono">${r.n}</td><td class="mono">${a.kda.toFixed(2)}</td><td class="mono">${pctTxt(a.kp)}</td>`+
+      `<td class="mono">${a.csmin!=null?a.csmin.toFixed(1):'—'}</td><td class="mono">${pctTxt(a.dmgShare)}</td><td class="mono">${a.dmgPerGold!=null?a.dmgPerGold.toFixed(2):'—'}</td>`+
+      `<td class="mono ${sgnCls(v.gold)}">${v.gold!=null?fmtSigned(v.gold,true):'—'}</td><td class="mono ${sgnCls(v.cs)}">${v.cs!=null?fmtSigned(v.cs):'—'}</td>`+
+      `<td class="mono">${a.vspm!=null?a.vspm.toFixed(2):'—'}</td><td class="mono">${pctTxt(a.deadPct)}</td></tr>`; });
+  return h+'</tbody></table></div>';
 }
 
 // --- Branchement des entrées fichier + dropzone ---

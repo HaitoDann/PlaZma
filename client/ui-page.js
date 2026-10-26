@@ -95,9 +95,17 @@ code{background:var(--surface2);padding:1px 5px;border-radius:4px;font-size:12px
       <label class="feat"><input type="checkbox" id="f-soloq" checked>
         <div><div class="ft">Historique & suivi SoloQ (+ replays .rofl)</div><div class="fd">Historique du rang, dernières parties, lecture des replays .rofl.</div>
           <div class="fi"><b>Impact :</b> léger — surveillance du dossier des replays ; l'analyse d'un replay est brève.</div></div></label>
+      <label class="feat"><input type="checkbox" id="f-timeline" checked>
+        <div><div class="ft">Timelines des parties</div><div class="fd">Après chaque partie, récupère la timeline minute par minute (gold/CS/XP à 10 et 15 min vs ton vis-à-vis, objectifs, morts) depuis le client League.</div>
+          <div class="fi"><b>Impact :</b> nul pendant la partie — rien n'est lu en sélection ni en jeu ; quelques requêtes locales une fois revenu au lobby.</div></div></label>
       <label class="feat"><input type="checkbox" id="f-autoscrim">
         <div><div class="ft">Import automatique des scrims</div><div class="fd">Quand une partie personnalisée est jouée pendant un créneau de scrim du Planning, le replay est rattaché automatiquement au bon compte-rendu (champions, KDA, CS, gold, score). Rien à ressaisir.</div>
           <div class="fi"><b>À activer sur un seul poste de l'équipe.</b> Nécessite que ton compte ARCHI ait l'accès « scrim » en édition et « planning » en lecture — sinon rien n'est écrit.</div></div></label>
+    </div>
+    <div class="card">
+      <h2>Compte principal <span style="color:#7c8591;font-weight:400;font-size:13px">(recommandé si tu as un smurf)</span></h2>
+      <div class="hint">L'elo envoyé à ARCHI est toujours celui de ce compte, même quand tu joues sur un autre. Laisse vide pour choisir automatiquement ton compte le mieux classé.</div>
+      <input id="mainRiotId" type="text" placeholder="Pseudo#TAG" style="width:100%">
     </div>
     <div class="card">
       <h2>Dossier de League <span style="color:#7c8591;font-weight:400;font-size:13px">(optionnel)</span></h2>
@@ -121,8 +129,8 @@ if(location.search.indexOf('setup')>=0) document.querySelector('.tab[data-tab=co
 
 let detected={playerId:''};
 (async()=>{ try{ const c=await api('/api/config'); $('u').value=c.username||''; detected.playerId=c.playerId||'';
-  $('f-rank').checked=c.features.rank; $('f-soloq').checked=c.features.soloq; $('f-autoscrim').checked=!!c.features.autoScrim;
-  if($('leaguePath')) $('leaguePath').value=c.leaguePath||''; }catch(e){} })();
+  $('f-rank').checked=c.features.rank; $('f-soloq').checked=c.features.soloq; $('f-autoscrim').checked=!!c.features.autoScrim; $('f-timeline').checked=c.features.timeline!==false;
+  if($('leaguePath')) $('leaguePath').value=c.leaguePath||''; if($('mainRiotId')) $('mainRiotId').value=c.mainRiotId||''; }catch(e){} })();
 
 async function poll(){ try{ const s=await api('/api/status');
   $('s-league').innerHTML = s.leagueOpen ? '<span class="dot on"></span>ouvert' : '<span class="dot off"></span>fermé';
@@ -170,7 +178,8 @@ $('test').addEventListener('click', async ()=>{
 $('save').addEventListener('click', async ()=>{
   const body={ username:$('u').value.trim(), password:$('p').value, playerId:detected.playerId,
     leaguePath: ($('leaguePath')&&$('leaguePath').value.trim())||'',
-    features:{ rank:$('f-rank').checked, soloq:$('f-soloq').checked, autoScrim:$('f-autoscrim').checked } };
+    mainRiotId: ($('mainRiotId')&&$('mainRiotId').value.trim())||'',
+    features:{ rank:$('f-rank').checked, soloq:$('f-soloq').checked, autoScrim:$('f-autoscrim').checked, timeline:$('f-timeline').checked } };
   setSave('wait','Enregistrement…'); $('save').disabled=true;
   const r=await api('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   $('save').disabled=false;

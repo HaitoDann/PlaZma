@@ -5,6 +5,7 @@
  * En local, sans aucune clé Riot :
  *   1) lit le rang SoloQ (API locale du client League, « LCU ») ;
  *   2) parse les replays .rofl ; 3) tient l'historique SoloQ ;
+ *   4) récupère la timeline minute par minute des parties (après la partie).
  *
  * Le joueur choisit ce qu'il partage via la fenêtre de configuration
  * (lancer avec --setup). Chaque option est optionnelle.
@@ -17,8 +18,9 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const https = require('https');
-const { parseRofl } = require('./rofl');
-const { pushStats } = require('./push');
+const Rofl = require('./rofl');
+const Timeline = require('./timeline');
+const { pushStats, fireGet } = require('./push');
 const autoScrim = require('./auto-scrim');
 const { startServer } = require('./ui');
 const tray = require('./tray');
@@ -33,10 +35,12 @@ const REPO = 'HaitoDann/PlaZma';                     // pour la vérif de mise �
 const HERE = process.pkg ? path.dirname(process.execPath) : __dirname;
 const OUT = path.join(HERE, 'archi-data');
 const REPLAYS_OUT = path.join(OUT, 'replays');
-const HISTORY_FILE = path.join(OUT, 'soloq-history.json');
+const TIMELINES_OUT = path.join(OUT, 'timelines');
+const TL_INDEX_FILE = path.join(OUT, 'timelines-index.json');
 const RANK_FILE = path.join(OUT, 'rank.json');
 const INDEX_FILE = path.join(OUT, 'replays-index.json');
 const MATCHES_FILE = path.join(OUT, 'soloq-matches.json');   // historique SoloQ accumulé
+const ACCOUNTS_FILE = path.join(OUT, 'accounts.json');        // comptes Riot vus sur ce PC (principal + smurfs)
 const AUTOSCRIM_FILE = path.join(OUT, 'autoscrim-index.json'); // replays déjà traités par l'import auto
 const LOG_FILE = path.join(OUT, 'log.txt');
 
@@ -48,7 +52,8 @@ function loadConfig() {
     pollMinutes: 5,
     auth: { username: '', password: '' },
     playerId: '',
-    features: { rank: true, soloq: true, autoScrim: false },
+    mainRiotId: '',                                 // compte principal (pseudo#tag) ; vide = auto
+    features: { rank: true, soloq: true, autoScrim: false, timeline: true },
   };
   const expand = s => typeof s === 'string'
     ? s.replace(/%([^%]+)%/g, (_, v) => process.env[v] || _)
@@ -68,7 +73,7 @@ function loadConfig() {
     merged.features = { rank: !!c.push.enabled, soloq: !!c.push.enabled };
   }
   merged.auth = Object.assign({ username: '', password: '' }, merged.auth);
-  merged.features = Object.assign({ rank: true, soloq: true, autoScrim: false }, merged.features);
+  merged.features = Object.assign({ rank: true, soloq: true, autoScrim: false, timeline: true }, merged.features);
   delete merged.push;
   merged._configFound = true;
   merged.lockfile = expand(merged.lockfile);
@@ -91,7 +96,7 @@ const STATE = { leagueOpen: false, riotId: '', rankLabel: '', lastPush: '', last
   updateAvailable: false, latestVersion: '' };
 function getStatus() {
   const f = CFG.features || {}; const on = [];
-  if (f.rank) on.push('rang'); if (f.soloq) on.push('SoloQ/.rofl'); if (f.autoScrim) on.push('scrims auto');
+  if (f.rank) on.push('rang'); if (f.soloq) on.push('SoloQ/.rofl'); if (f.autoScrim) on.push('scrims auto'); if (f.timeline) on.push('timelines');
   return { appName: APP_NAME, version: VERSION, leagueOpen: STATE.leagueOpen, riotId: STATE.riotId, rankLabel: STATE.rankLabel,
     lastPush: STATE.lastPush, lastPushOk: STATE.lastPushOk, lastPushMsg: STATE.lastPushMsg, features: on, playerId: CFG.playerId || '',
     autostart: STATE.autostart, updateAvailable: STATE.updateAvailable, latestVersion: STATE.latestVersion,
@@ -135,7 +140,7 @@ function setAutostart(on) {
   return new Promise((resolve, reject) => execFile('reg', args, { windowsHide: true },
     err => { if (err && !/introuvable|unable to find|cannot find/i.test(String(err))) return reject(err); STATE.autostart = !!on; resolve(); }));
 }
-function ensureDirs() { for (const d of [OUT, REPLAYS_OUT]) fs.mkdirSync(d, { recursive: true }); }
+function ensureDirs() { for (const d of [OUT, REPLAYS_OUT, TIMELINES_OUT]) fs.mkdirSync(d, { recursive: true }); }
 function readJson(f, fallback) { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch (e) { return fallback; } }
 function writeJson(f, v) { fs.writeFileSync(f, JSON.stringify(v, null, 2)); }
 
@@ -230,18 +235,43 @@ async function fetchRank(lock) {
   return { riotId, puuid: me.puuid || '', summonerId: me.summonerId || '', solo, updatedAt: new Date().toISOString() };
 }
 
-// Ajoute un point d'historique seulement si le rang a changé (ou premier point).
-function appendHistory(rank) {
-  if (!rank.solo) return;
-  const hist = readJson(HISTORY_FILE, []);
-  const last = hist[hist.length - 1];
-  const s = rank.solo;
-  const changed = !last || last.tier !== s.tier || last.division !== s.division ||
-    last.lp !== s.lp || last.wins !== s.wins || last.losses !== s.losses;
-  if (!changed) return;
-  hist.push({ ts: rank.updatedAt, tier: s.tier, division: s.division, lp: s.lp, wins: s.wins, losses: s.losses });
-  writeJson(HISTORY_FILE, hist);
-  log('↗ historique SoloQ : nouveau point', rankLabel(s), '(' + hist.length + ' au total)');
+// ---- Comptes Riot (principal / smurfs) ----
+// Chaque compte connecté sur ce PC a son propre rang et son propre historique :
+// un smurf ne doit jamais remplacer l'elo du compte principal dans ARCHI.
+const TIER_IDX = { IRON: 0, BRONZE: 1, SILVER: 2, GOLD: 3, PLATINUM: 4, EMERALD: 5, DIAMOND: 6, MASTER: 7, GRANDMASTER: 8, CHALLENGER: 9 };
+const DIV_IDX = { IV: 0, III: 1, II: 2, I: 3 };
+function ladderValue(s) {
+  const t = s && TIER_IDX[s.tier]; if (t == null) return -1;
+  return t * 400 + (t >= 7 ? 0 : (DIV_IDX[s.division] || 0) * 100) + (+s.lp || 0);
+}
+// « Pseudo#TAG » (ou « Pseudo-TAG » façon op.gg) -> forme comparable.
+const normId = s => { s = String(s || '').toLowerCase().replace(/\s/g, ''); return s.indexOf('#') >= 0 ? s : s.replace(/-([^-]*)$/, '#$1'); };
+function recordAccount(rank) {
+  if (!rank.puuid) return;
+  const accs = readJson(ACCOUNTS_FILE, {}) || {};
+  const a = accs[rank.puuid] || (accs[rank.puuid] = { riotId: rank.riotId, history: [] });
+  a.riotId = rank.riotId; a.updatedAt = rank.updatedAt;
+  if (rank.solo) {
+    a.solo = rank.solo;
+    const last = a.history[a.history.length - 1], s = rank.solo;
+    const changed = !last || last.tier !== s.tier || last.division !== s.division ||
+      last.lp !== s.lp || last.wins !== s.wins || last.losses !== s.losses;
+    if (changed) {
+      a.history.push({ ts: rank.updatedAt, tier: s.tier, division: s.division, lp: s.lp, wins: s.wins, losses: s.losses });
+      if (a.history.length > 400) a.history = a.history.slice(-400);
+      log('↗ historique SoloQ (' + rank.riotId + ') : nouveau point', rankLabel(s));
+    }
+  }
+  writeJson(ACCOUNTS_FILE, accs);
+}
+// Compte principal : 1) celui indiqué dans la configuration ; 2) celui choisi sur
+// ARCHI (mainPuuid) ; 3) sinon le mieux classé des comptes vus sur ce PC.
+function pickMain(accs, remoteMain) {
+  const ids = Object.keys(accs);
+  if (CFG.mainRiotId) { const id = ids.find(k => normId(accs[k].riotId) === normId(CFG.mainRiotId)); if (id) return id; }
+  if (remoteMain && accs[remoteMain]) return remoteMain;
+  return ids.filter(k => accs[k].solo).sort((x, y) => ladderValue(accs[y].solo) - ladderValue(accs[x].solo) ||
+    (((accs[y].solo.wins || 0) + (accs[y].solo.losses || 0)) - ((accs[x].solo.wins || 0) + (accs[x].solo.losses || 0))))[0] || null;
 }
 function rankLabel(s) {
   if (!s || s.tier === 'UNRANKED') return 'Non classé';
@@ -294,10 +324,12 @@ function processReplay(file) {
   let stat; try { stat = fs.statSync(full); } catch (e) { return; }
   if (stat.size < 1024) return;                   // fichier encore en cours d'écriture
   let parsed;
-  try { parsed = parseRofl(fs.readFileSync(full)); }
+  try { parsed = Rofl.parse(fs.readFileSync(full), { raw: true }); }
   catch (e) { log('⚠ .rofl illisible', file, '—', e.message); index[file] = { error: e.message, at: Date.now() }; writeJson(INDEX_FILE, index); return; }
-  const out = { file, parsedAt: new Date().toISOString(), mtimeMs: stat.mtimeMs || Date.now(),
-    durationSec: parsed.durationSec, patch: parsed.patch, players: parsed.players };
+  // `raw` (statsJson complet, ~150 champs/joueur) reste en local pour l'analyse ;
+  // seuls `players` (champs utiles) partent vers ARCHI.
+  const out = { file, gameId: Rofl.gameIdFromFile(file), parsedAt: new Date().toISOString(), mtimeMs: stat.mtimeMs || Date.now(),
+    durationSec: parsed.durationSec, patch: parsed.patch, players: parsed.players, raw: parsed.raw };
   writeJson(path.join(REPLAYS_OUT, file.replace(/\.rofl$/i, '') + '.json'), out);
   index[file] = { ok: true, at: Date.now(), players: parsed.players.length };
   writeJson(INDEX_FILE, index);
@@ -316,6 +348,56 @@ function watchReplays() {
   } catch (e) { log('⚠ dossier Replays introuvable (', CFG.replaysDir, ') — réessai au prochain cycle'); }
 }
 
+// ---- Timelines (LCU, après la partie) ----
+// Jamais pendant la sélection ou la partie : on attend que le joueur soit revenu
+// au lobby / à l'écran de fin. Quelques parties par cycle au maximum.
+const TL_PER_CYCLE = 4;
+const TL_MAX_TRIES = 3;
+const BUSY_PHASES = ['ChampSelect', 'GameStart', 'InProgress', 'Reconnect'];
+function timelineSummary(gameId) { return gameId ? readJson(path.join(TIMELINES_OUT, gameId + '.json'), null) : null; }
+function replayPosByName(gameId) {
+  let files; try { files = fs.readdirSync(REPLAYS_OUT); } catch (e) { return null; }
+  const f = files.find(x => x.indexOf(String(gameId)) >= 0 && /\.json$/i.test(x));
+  const rp = f && readJson(path.join(REPLAYS_OUT, f), null);
+  if (!rp || !rp.players) return null;
+  const m = {}; rp.players.forEach(p => { if (p.pos) m[String(p.name || '').toLowerCase().replace(/\s/g, '')] = p.pos; });
+  return m;
+}
+async function fetchTimelines(lock) {
+  if (!(CFG.features && CFG.features.timeline)) return;
+  let phase = '';
+  try { phase = await lcuGet(lock, '/lol-gameflow/v1/gameflow-phase'); } catch (e) {}
+  if (BUSY_PHASES.indexOf(phase) >= 0) return;                 // partie en cours : on ne fait rien
+  const idx = readJson(TL_INDEX_FILE, {}) || {};
+  const ids = [];
+  // 1) les replays .rofl (scrims / customs compris) ; 2) les dernières parties du compte.
+  let files = []; try { files = fs.readdirSync(REPLAYS_OUT).filter(f => /\.json$/i.test(f)); } catch (e) {}
+  files.forEach(f => { const id = Rofl.gameIdFromFile(f.replace(/\.json$/i, '.rofl')); if (id) ids.push(id); });
+  try {
+    const mh = await lcuGet(lock, '/lol-match-history/v1/products/lol/current-summoner/matches?begIndex=0&endIndex=19');
+    ((mh && mh.games && mh.games.games) || []).forEach(g => { if (g.gameId) ids.push(String(g.gameId)); });
+  } catch (e) {}
+  const todo = [...new Set(ids)].filter(id => { const r = idx[id]; return !r || (!r.ok && (r.tries || 0) < TL_MAX_TRIES); }).slice(0, TL_PER_CYCLE);
+  for (const id of todo) {
+    const rec = idx[id] || { tries: 0 };
+    try {
+      const game = await lcuGet(lock, '/lol-match-history/v1/games/' + id);
+      const tl = await lcuGet(lock, '/lol-match-history/v1/game-timelines/' + id);
+      if (!tl || !Array.isArray(tl.frames) || !tl.frames.length) throw new Error('timeline vide');
+      writeJson(path.join(TIMELINES_OUT, id + '.raw.json'), { game, timeline: tl });   // brut, local uniquement
+      const sum = Timeline.summarize(game, tl, { posByName: replayPosByName(id) });
+      writeJson(path.join(TIMELINES_OUT, id + '.json'), sum);
+      Object.assign(rec, { ok: true, at: Date.now(), queueId: game.queueId, frames: tl.frames.length });
+      log('🕒 timeline récupérée : partie ' + id + ' (file ' + game.queueId + (game.gameType === 'CUSTOM_GAME' ? ', personnalisée' : '') + ', ' + tl.frames.length + ' min).');
+    } catch (e) {
+      rec.tries = (rec.tries || 0) + 1; rec.error = e.message; rec.at = Date.now();
+      log('⚠ timeline indisponible pour ' + id + ' : ' + e.message + (rec.tries >= TL_MAX_TRIES ? ' (abandon)' : ''));
+    }
+    idx[id] = rec;
+  }
+  if (todo.length) writeJson(TL_INDEX_FILE, idx);
+}
+
 // ---- Import automatique des scrims ----
 // Candidats : replays parsés récemment (≤ 3 jours) que l'import auto n'a pas
 // encore classés définitivement (rattachés, ou reconnus « pas un scrim »).
@@ -330,11 +412,13 @@ function gatherAutoCandidates() {
     const parsed = readJson(path.join(REPLAYS_OUT, jf), null);
     if (!parsed || !parsed.file) continue;
     const rec = idx[parsed.file];
-    if (rec && rec.done) continue;                                   // déjà classé
+    const tl = timelineSummary(parsed.gameId || Rofl.gameIdFromFile(parsed.file));
+    if (rec && rec.done && !(rec.needTl && tl)) continue;           // déjà classé (et timeline déjà envoyée)
     if (rec && (rec.tries || 0) >= AUTOSCRIM_MAX_TRIES) continue;    // trop de tentatives sans créneau
     const mtimeMs = parsed.mtimeMs || Date.parse(parsed.parsedAt) || now;
     if (now - mtimeMs > AUTOSCRIM_MAX_AGE) continue;                 // trop ancien
-    out.push({ file: parsed.file, mtimeMs, parsed });
+    delete parsed.raw;                                               // le brut reste en local
+    out.push({ file: parsed.file, mtimeMs, parsed, tl: tl || null });
   }
   return out;
 }
@@ -354,7 +438,10 @@ async function runAutoScrim() {
     replays.forEach(r => {
       const oc = byFile[r.file];
       const rec = idx[r.file] || { tries: 0 };
-      if (oc === 'attached' || oc === 'not-scrim' || oc === 'dup' || oc === 'full') { rec.done = true; rec.outcome = oc; }
+      if (oc === 'attached' || oc === 'not-scrim' || oc === 'dup' || oc === 'full') {
+        rec.done = true; rec.outcome = oc;
+        rec.needTl = (oc === 'attached' || oc === 'dup') && !r.tl;      // à compléter quand la timeline arrivera
+      }
       else { rec.tries = (rec.tries || 0) + 1; }      // no-slot ou non traité : on réessaiera
       rec.at = Date.now(); idx[r.file] = rec;
     });
@@ -386,17 +473,19 @@ async function cycle(forced) {
   try {
     rank = await fetchRank(lock);
     writeJson(RANK_FILE, rank);
-    appendHistory(rank);
+    recordAccount(rank);
     STATE.riotId = rank.riotId; STATE.rankLabel = rankLabel(rank.solo);
     log('👤', rank.riotId, '—', rankLabel(rank.solo));
   } catch (e) { log('⚠ lecture du rang impossible :', e.message); }
   try {
     const fresh = await fetchRankedMatches(lock);
+    if (fresh && rank && rank.puuid) fresh.forEach(m => { m.puuid = rank.puuid; });   // à quel compte appartient la partie
     if (fresh) { matches = mergeMatches(fresh); if (matches.length) log('🗂 historique SoloQ : ' + matches.length + ' parties classées (cumul).'); }
     else matches = readJson(MATCHES_FILE, []);
   } catch (e) { log('⚠ historique SoloQ indisponible :', e.message); matches = readJson(MATCHES_FILE, []); }
-  if (rank) { try { await maybePush(rank, matches); } catch (e) { log('⚠ envoi ARCHI :', e.message); } }
   scanReplays();
+  try { await fetchTimelines(lock); } catch (e) { log('⚠ timelines :', e.message); }
+  if (rank) { try { await maybePush(rank, matches); } catch (e) { log('⚠ envoi ARCHI :', e.message); } }
   await runAutoScrim();
 }
 
@@ -405,18 +494,32 @@ async function maybePush(rank, matches) {
   const f = CFG.features || {}, a = CFG.auth || {};
   if (!(f.rank || f.soloq)) return;                  // aucune option d'envoi SoloQ cochée
   if (!a.username || !a.password || !CFG.playerId) { log('⚠ envoi activé mais connexion non configurée — lance avec --setup.'); return; }
-  if (!rank || !rank.solo) { log('⚠ rang SoloQ indisponible (non classé, ou le client n\'a pas encore chargé le rang) — rien à envoyer pour l\'instant.'); return; }
-  const doc = { riotId: rank.riotId, puuid: rank.puuid, updatedAt: rank.updatedAt };
-  if (f.rank) doc.solo = rank.solo;                                   // elo + winrate
+  const accs = readJson(ACCOUNTS_FILE, {}) || {};
+  let remote = null;
+  try { remote = await fireGet({ username: a.username, password: a.password }, 'plazma-stats/' + CFG.playerId); } catch (e) {}
+  const mainId = pickMain(accs, remote && remote.mainPuuid);
+  const main = mainId && accs[mainId];
+  if (!main || !main.solo) { log('⚠ rang SoloQ indisponible (non classé, ou le client n\'a pas encore chargé le rang) — rien à envoyer pour l\'instant.'); return; }
+  if (rank && rank.puuid && rank.puuid !== mainId) log('🎭 ' + rank.riotId + ' est un compte secondaire : l\'elo affiché reste celui de ' + main.riotId + '.');
+  const doc = { riotId: main.riotId, puuid: mainId, updatedAt: main.updatedAt || rank.updatedAt };
+  if (remote && remote.mainPuuid) doc.mainPuuid = remote.mainPuuid;            // choix fait sur ARCHI : conservé
+  // Tous les comptes vus (pour l'affichage « autres comptes » et le choix du principal).
+  doc.accounts = Object.keys(accs).map(k => ({ puuid: k, riotId: accs[k].riotId, solo: accs[k].solo || null, updatedAt: accs[k].updatedAt || '' }));
+  if (f.rank) doc.solo = main.solo;                                   // elo + winrate du compte principal
   if (f.soloq) {
-    doc.history = readJson(HISTORY_FILE, []).slice(-120);           // points de rang (courbe LP)
-    doc.matches = (matches || []).slice(0, 300);                    // historique SoloQ accumulé (riche)
-    doc.recent = (matches || []).slice(0, 10);                      // compat ancienne page
+    const mine = (matches || []).filter(m => m.puuid === mainId);   // parties non rattachées (anciennes versions) écartées
+    doc.history = (main.history || []).slice(-120);                 // points de rang (courbe LP)
+    doc.matches = mine.slice(0, 300).map(m => {                     // historique SoloQ accumulé (riche)
+      const sum = timelineSummary(String(m.gameId));
+      const tl = sum && Timeline.forPlayer(sum, p => p.puuid === mainId);
+      return tl ? Object.assign({}, m, { tl }) : m;
+    });
+    doc.recent = mine.slice(0, 10);                                 // compat ancienne page
   }
   try {
     await pushStats({ username: a.username, password: a.password, playerId: CFG.playerId }, doc);
-    STATE.lastPush = new Date().toLocaleTimeString('fr-FR'); STATE.lastPushOk = true; STATE.lastPushMsg = 'Envoyé (' + rankLabel(rank.solo) + ')';
-    log('☁ envoyé à ARCHI (plazma-stats/' + CFG.playerId + ') · ' + [f.rank && 'rang', f.soloq && 'SoloQ'].filter(Boolean).join('+'));
+    STATE.lastPush = new Date().toLocaleTimeString('fr-FR'); STATE.lastPushOk = true; STATE.lastPushMsg = 'Envoyé (' + main.riotId + ' · ' + rankLabel(main.solo) + ')';
+    log('☁ envoyé à ARCHI (plazma-stats/' + CFG.playerId + ') · ' + main.riotId + ' · ' + [f.rank && 'rang', f.soloq && 'SoloQ'].filter(Boolean).join('+'));
   } catch (e) {
     STATE.lastPush = new Date().toLocaleTimeString('fr-FR'); STATE.lastPushOk = false;
     STATE.lastPushMsg = /403|permission|PERMISSION/.test(String(e.message)) ? 'Refusé par ARCHI : ton compte n\'est pas lié à ce joueur (demande à un admin).' : e.message;
@@ -427,7 +530,7 @@ async function maybePush(rank, matches) {
 function logFeatures() {
   if (CFG._configError) { log('❌ config.json illisible :', CFG._configError, '— lance avec --setup pour le régénérer.'); return; }
   const f = CFG.features || {}, a = CFG.auth || {};
-  const on = []; if (f.rank) on.push('rang & winrate'); if (f.soloq) on.push('SoloQ & replays'); if (f.autoScrim) on.push('scrims auto');
+  const on = []; if (f.rank) on.push('rang & winrate'); if (f.soloq) on.push('SoloQ & replays'); if (f.autoScrim) on.push('scrims auto'); if (f.timeline) on.push('timelines');
   if (a.username && CFG.playerId && on.length) log('☁ Partage ARCHI : ' + on.join(', ') + ' (joueur ' + CFG.playerId + ').');
   else log('☁ Partage ARCHI : rien de configuré — lance avec --setup pour choisir.');
 }

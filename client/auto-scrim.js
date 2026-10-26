@@ -121,7 +121,7 @@ function gameSig(parsed) {
 }
 
 // ---- Traitement d'un replay : détecte, rattache, remplit ----
-// replay = { file, mtimeMs, parsed }. Renvoie { file, outcome } :
+// replay = { file, mtimeMs, parsed, tl? } (tl : résumé de timeline, cf. timeline.js). Renvoie { file, outcome } :
 //   not-scrim | no-slot | dup | full | attached
 async function processReplay(cfg, replay, ctx) {
   const { handles, slots, log } = ctx;
@@ -138,7 +138,15 @@ async function processReplay(cfg, replay, ctx) {
   // Déjà importée ? (même signature ou même fichier dans une des games)
   for (let g = 1; g <= 5; g++) {
     const st = data['g' + g + '_stats'];
-    if (st && (st.sig === sig || (st.file && st.file === replay.file))) return { file: replay.file, outcome: 'dup' };
+    if (st && (st.sig === sig || (st.file && st.file === replay.file))) {
+      // Game déjà importée sans timeline : on la complète dès qu'elle est disponible.
+      if (!st.tl && replay.tl) {
+        const f = {}; f['g' + g + '_stats'] = Object.assign({}, st, { tl: replay.tl });
+        await firePatch(cfg, SCRIMS_COL + '/' + ref.id, f);
+        log('🕒→☁ scrim auto : timeline ajoutée à la Game ' + g + ' (' + replay.file + ').');
+      }
+      return { file: replay.file, outcome: 'dup' };
+    }
   }
   // Premier emplacement libre.
   let gk = null;
@@ -148,7 +156,8 @@ async function processReplay(cfg, replay, ctx) {
   const side = det.side;
   const win = (parsed.players.find(p => p.team === side) || {}).win || false;
   const st = { durationSec: parsed.durationSec, patch: parsed.patch, players: parsed.players,
-    side, win, file: replay.file, sig, auto: true, v: 1 };
+    side, win, file: replay.file, sig, auto: true, v: 2 };
+  if (replay.tl) st.tl = replay.tl;
 
   // Score recalculé à partir des games remplies (y compris la nouvelle).
   let w = 0, l = 0;
