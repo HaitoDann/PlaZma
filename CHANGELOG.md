@@ -17,6 +17,30 @@ bas de la fenêtre **Paramètres**.
 
 ## 3.x — Interface pro
 
+### Non publié — Data analyse .rofl + timelines (branche `data-analyse`, en test)
+- **Parseur `.rofl` complet**, partagé entre le site et ARCHI Link
+  (`client/rofl.js` = `assets/rofl-browser.js`) : en plus des 11 champs
+  existants, on garde maintenant le niveau et l'XP, le CS lane/jungle (dont la
+  jungle ennemie), les dégâts par type, les dégâts subis et mitigés, les dégâts
+  aux structures et aux objectifs, les soins et boucliers sur les alliés, le CC,
+  les wards posées/détruites et les pinks, les objectifs, le temps mort, les
+  multi-kills, les sorts lancés, les objets, les runes et les sorts d'invocateur.
+- **Analyse** (`Rofl.derive` / `Rofl.aggregatePlayers`) : KP, part des dégâts,
+  du gold et des morts de l'équipe, dégâts par gold, CS/gold/dégâts/vision par
+  minute, wards par minute, % de temps mort… et **diffs vs le vis-à-vis** (gold,
+  CS, dégâts, vision, niveau, XP).
+- **Compte-rendu de scrim** : le tableau par game affiche KP, DMG%, Gold%,
+  ±Gold/±CS vs le vis-à-vis et, quand la timeline est jointe, ±Gold et ±CS
+  **à 15 min**. Nouveau bloc **Par joueur** (moyennes sur les games du scrim).
+- **ARCHI Link 0.14.0 — timelines** (nouvelle option, active par défaut) : après
+  la partie, uniquement hors sélection et hors partie, récupère via l'API locale
+  du client League la timeline minute par minute (`game-timelines`). Le résumé
+  compact (stats et diffs @10/@15/@20 vs vis-à-vis, courbe de gold d'équipe,
+  objectifs datés, premiers objectifs, morts positionnées, wards par phase) est
+  joint aux games de scrim (`gN_stats.tl`) et à l'historique SoloQ
+  (`matches[].tl`). Le brut (`statsJson` complet, timeline complète) reste en
+  local dans `archi-data/`.
+
 ### 3.26.0 — Objectifs en kanban + scrims auto (ARCHI Link)
 - **Objectifs du club** (accueil) transformés en **tableau kanban** à trois
   colonnes (À faire · En cours · Terminé). Les cartes se déplacent par

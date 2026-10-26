@@ -57,7 +57,27 @@ Les variables `%USERPROFILE%` etc. sont développées automatiquement.
 - `rank.json` — dernier rang SoloQ lu (tier, division, LP, V/D, winrate) + pseudo#tag.
 - `soloq-history.json` — un point à chaque changement de rang (pour les courbes).
 - `recent-ranked.json` — dernières parties classées (bonus).
-- `replays/<game>.json` — stats parsées de chaque `.rofl`.
+- `replays/<game>.json` — stats parsées de chaque `.rofl` (`players` : champs utiles envoyés à ARCHI ; `raw` : `statsJson` complet, ~150 champs par joueur, **local uniquement**).
+- `timelines/<gameId>.raw.json` — détail de la partie + timeline minute par minute brute (LCU), **local uniquement**.
+- `timelines/<gameId>.json` — résumé compact de la timeline (diffs @10/@15/@20 vs vis-à-vis, objectifs, premiers objectifs, morts positionnées, wards) ; c'est lui qui est joint aux CR de scrim et à l'historique SoloQ.
+- `timelines-index.json` — suivi des timelines déjà récupérées (3 essais max par partie).
+
+## Timelines (option « Timelines des parties »)
+Après chaque partie, ARCHI Link lit la timeline via l'API locale du client League
+(`/lol-match-history/v1/game-timelines/{gameId}`), pour les replays `.rofl`
+présents et les 20 dernières parties du compte. **Rien n'est lu pendant la
+sélection des champions ni pendant la partie** (vérification de la phase via
+`/lol-gameflow/v1/gameflow-phase`) ; au maximum 4 parties par cycle de 5 min.
+
+**À valider en test :** la timeline est-elle disponible pour les **parties
+personnalisées** (scrims) ? Le journal l'indique : `🕒 timeline récupérée : …
+personnalisée` ou `⚠ timeline indisponible pour …`.
+
+## Tests hors-ligne
+```
+npm test              # parseur étendu + analyse + résumé de timeline (données synthétiques)
+npm run check:rofl    # vérifie que client/rofl.js et assets/rofl-browser.js sont identiques
+```
 
 ## Tester juste le parseur `.rofl`
 ```

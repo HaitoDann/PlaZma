@@ -5,6 +5,7 @@
  * En local, sans aucune clé Riot :
  *   1) lit le rang SoloQ (API locale du client League, « LCU ») ;
  *   2) parse les replays .rofl ; 3) tient l'historique SoloQ ;
+ *   4) récupère la timeline minute par minute des parties (après la partie).
  *
  * Le joueur choisit ce qu'il partage via la fenêtre de configuration
  * (lancer avec --setup). Chaque option est optionnelle.
@@ -17,7 +18,8 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const https = require('https');
-const { parseRofl } = require('./rofl');
+const Rofl = require('./rofl');
+const Timeline = require('./timeline');
 const { pushStats } = require('./push');
 const autoScrim = require('./auto-scrim');
 const { startServer } = require('./ui');
@@ -33,6 +35,8 @@ const REPO = 'HaitoDann/PlaZma';                     // pour la vérif de mise �
 const HERE = process.pkg ? path.dirname(process.execPath) : __dirname;
 const OUT = path.join(HERE, 'archi-data');
 const REPLAYS_OUT = path.join(OUT, 'replays');
+const TIMELINES_OUT = path.join(OUT, 'timelines');
+const TL_INDEX_FILE = path.join(OUT, 'timelines-index.json');
 const HISTORY_FILE = path.join(OUT, 'soloq-history.json');
 const RANK_FILE = path.join(OUT, 'rank.json');
 const INDEX_FILE = path.join(OUT, 'replays-index.json');
@@ -48,7 +52,7 @@ function loadConfig() {
     pollMinutes: 5,
     auth: { username: '', password: '' },
     playerId: '',
-    features: { rank: true, soloq: true, autoScrim: false },
+    features: { rank: true, soloq: true, autoScrim: false, timeline: true },
   };
   const expand = s => typeof s === 'string'
     ? s.replace(/%([^%]+)%/g, (_, v) => process.env[v] || _)
@@ -68,7 +72,7 @@ function loadConfig() {
     merged.features = { rank: !!c.push.enabled, soloq: !!c.push.enabled };
   }
   merged.auth = Object.assign({ username: '', password: '' }, merged.auth);
-  merged.features = Object.assign({ rank: true, soloq: true, autoScrim: false }, merged.features);
+  merged.features = Object.assign({ rank: true, soloq: true, autoScrim: false, timeline: true }, merged.features);
   delete merged.push;
   merged._configFound = true;
   merged.lockfile = expand(merged.lockfile);
@@ -91,7 +95,7 @@ const STATE = { leagueOpen: false, riotId: '', rankLabel: '', lastPush: '', last
   updateAvailable: false, latestVersion: '' };
 function getStatus() {
   const f = CFG.features || {}; const on = [];
-  if (f.rank) on.push('rang'); if (f.soloq) on.push('SoloQ/.rofl'); if (f.autoScrim) on.push('scrims auto');
+  if (f.rank) on.push('rang'); if (f.soloq) on.push('SoloQ/.rofl'); if (f.autoScrim) on.push('scrims auto'); if (f.timeline) on.push('timelines');
   return { appName: APP_NAME, version: VERSION, leagueOpen: STATE.leagueOpen, riotId: STATE.riotId, rankLabel: STATE.rankLabel,
     lastPush: STATE.lastPush, lastPushOk: STATE.lastPushOk, lastPushMsg: STATE.lastPushMsg, features: on, playerId: CFG.playerId || '',
     autostart: STATE.autostart, updateAvailable: STATE.updateAvailable, latestVersion: STATE.latestVersion,
@@ -135,7 +139,7 @@ function setAutostart(on) {
   return new Promise((resolve, reject) => execFile('reg', args, { windowsHide: true },
     err => { if (err && !/introuvable|unable to find|cannot find/i.test(String(err))) return reject(err); STATE.autostart = !!on; resolve(); }));
 }
-function ensureDirs() { for (const d of [OUT, REPLAYS_OUT]) fs.mkdirSync(d, { recursive: true }); }
+function ensureDirs() { for (const d of [OUT, REPLAYS_OUT, TIMELINES_OUT]) fs.mkdirSync(d, { recursive: true }); }
 function readJson(f, fallback) { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch (e) { return fallback; } }
 function writeJson(f, v) { fs.writeFileSync(f, JSON.stringify(v, null, 2)); }
 
@@ -294,10 +298,12 @@ function processReplay(file) {
   let stat; try { stat = fs.statSync(full); } catch (e) { return; }
   if (stat.size < 1024) return;                   // fichier encore en cours d'écriture
   let parsed;
-  try { parsed = parseRofl(fs.readFileSync(full)); }
+  try { parsed = Rofl.parse(fs.readFileSync(full), { raw: true }); }
   catch (e) { log('⚠ .rofl illisible', file, '—', e.message); index[file] = { error: e.message, at: Date.now() }; writeJson(INDEX_FILE, index); return; }
-  const out = { file, parsedAt: new Date().toISOString(), mtimeMs: stat.mtimeMs || Date.now(),
-    durationSec: parsed.durationSec, patch: parsed.patch, players: parsed.players };
+  // `raw` (statsJson complet, ~150 champs/joueur) reste en local pour l'analyse ;
+  // seuls `players` (champs utiles) partent vers ARCHI.
+  const out = { file, gameId: Rofl.gameIdFromFile(file), parsedAt: new Date().toISOString(), mtimeMs: stat.mtimeMs || Date.now(),
+    durationSec: parsed.durationSec, patch: parsed.patch, players: parsed.players, raw: parsed.raw };
   writeJson(path.join(REPLAYS_OUT, file.replace(/\.rofl$/i, '') + '.json'), out);
   index[file] = { ok: true, at: Date.now(), players: parsed.players.length };
   writeJson(INDEX_FILE, index);
@@ -316,6 +322,56 @@ function watchReplays() {
   } catch (e) { log('⚠ dossier Replays introuvable (', CFG.replaysDir, ') — réessai au prochain cycle'); }
 }
 
+// ---- Timelines (LCU, après la partie) ----
+// Jamais pendant la sélection ou la partie : on attend que le joueur soit revenu
+// au lobby / à l'écran de fin. Quelques parties par cycle au maximum.
+const TL_PER_CYCLE = 4;
+const TL_MAX_TRIES = 3;
+const BUSY_PHASES = ['ChampSelect', 'GameStart', 'InProgress', 'Reconnect'];
+function timelineSummary(gameId) { return gameId ? readJson(path.join(TIMELINES_OUT, gameId + '.json'), null) : null; }
+function replayPosByName(gameId) {
+  let files; try { files = fs.readdirSync(REPLAYS_OUT); } catch (e) { return null; }
+  const f = files.find(x => x.indexOf(String(gameId)) >= 0 && /\.json$/i.test(x));
+  const rp = f && readJson(path.join(REPLAYS_OUT, f), null);
+  if (!rp || !rp.players) return null;
+  const m = {}; rp.players.forEach(p => { if (p.pos) m[String(p.name || '').toLowerCase().replace(/\s/g, '')] = p.pos; });
+  return m;
+}
+async function fetchTimelines(lock) {
+  if (!(CFG.features && CFG.features.timeline)) return;
+  let phase = '';
+  try { phase = await lcuGet(lock, '/lol-gameflow/v1/gameflow-phase'); } catch (e) {}
+  if (BUSY_PHASES.indexOf(phase) >= 0) return;                 // partie en cours : on ne fait rien
+  const idx = readJson(TL_INDEX_FILE, {}) || {};
+  const ids = [];
+  // 1) les replays .rofl (scrims / customs compris) ; 2) les dernières parties du compte.
+  let files = []; try { files = fs.readdirSync(REPLAYS_OUT).filter(f => /\.json$/i.test(f)); } catch (e) {}
+  files.forEach(f => { const id = Rofl.gameIdFromFile(f.replace(/\.json$/i, '.rofl')); if (id) ids.push(id); });
+  try {
+    const mh = await lcuGet(lock, '/lol-match-history/v1/products/lol/current-summoner/matches?begIndex=0&endIndex=19');
+    ((mh && mh.games && mh.games.games) || []).forEach(g => { if (g.gameId) ids.push(String(g.gameId)); });
+  } catch (e) {}
+  const todo = [...new Set(ids)].filter(id => { const r = idx[id]; return !r || (!r.ok && (r.tries || 0) < TL_MAX_TRIES); }).slice(0, TL_PER_CYCLE);
+  for (const id of todo) {
+    const rec = idx[id] || { tries: 0 };
+    try {
+      const game = await lcuGet(lock, '/lol-match-history/v1/games/' + id);
+      const tl = await lcuGet(lock, '/lol-match-history/v1/game-timelines/' + id);
+      if (!tl || !Array.isArray(tl.frames) || !tl.frames.length) throw new Error('timeline vide');
+      writeJson(path.join(TIMELINES_OUT, id + '.raw.json'), { game, timeline: tl });   // brut, local uniquement
+      const sum = Timeline.summarize(game, tl, { posByName: replayPosByName(id) });
+      writeJson(path.join(TIMELINES_OUT, id + '.json'), sum);
+      Object.assign(rec, { ok: true, at: Date.now(), queueId: game.queueId, frames: tl.frames.length });
+      log('🕒 timeline récupérée : partie ' + id + ' (file ' + game.queueId + (game.gameType === 'CUSTOM_GAME' ? ', personnalisée' : '') + ', ' + tl.frames.length + ' min).');
+    } catch (e) {
+      rec.tries = (rec.tries || 0) + 1; rec.error = e.message; rec.at = Date.now();
+      log('⚠ timeline indisponible pour ' + id + ' : ' + e.message + (rec.tries >= TL_MAX_TRIES ? ' (abandon)' : ''));
+    }
+    idx[id] = rec;
+  }
+  if (todo.length) writeJson(TL_INDEX_FILE, idx);
+}
+
 // ---- Import automatique des scrims ----
 // Candidats : replays parsés récemment (≤ 3 jours) que l'import auto n'a pas
 // encore classés définitivement (rattachés, ou reconnus « pas un scrim »).
@@ -330,11 +386,13 @@ function gatherAutoCandidates() {
     const parsed = readJson(path.join(REPLAYS_OUT, jf), null);
     if (!parsed || !parsed.file) continue;
     const rec = idx[parsed.file];
-    if (rec && rec.done) continue;                                   // déjà classé
+    const tl = timelineSummary(parsed.gameId || Rofl.gameIdFromFile(parsed.file));
+    if (rec && rec.done && !(rec.needTl && tl)) continue;           // déjà classé (et timeline déjà envoyée)
     if (rec && (rec.tries || 0) >= AUTOSCRIM_MAX_TRIES) continue;    // trop de tentatives sans créneau
     const mtimeMs = parsed.mtimeMs || Date.parse(parsed.parsedAt) || now;
     if (now - mtimeMs > AUTOSCRIM_MAX_AGE) continue;                 // trop ancien
-    out.push({ file: parsed.file, mtimeMs, parsed });
+    delete parsed.raw;                                               // le brut reste en local
+    out.push({ file: parsed.file, mtimeMs, parsed, tl: tl || null });
   }
   return out;
 }
@@ -354,7 +412,10 @@ async function runAutoScrim() {
     replays.forEach(r => {
       const oc = byFile[r.file];
       const rec = idx[r.file] || { tries: 0 };
-      if (oc === 'attached' || oc === 'not-scrim' || oc === 'dup' || oc === 'full') { rec.done = true; rec.outcome = oc; }
+      if (oc === 'attached' || oc === 'not-scrim' || oc === 'dup' || oc === 'full') {
+        rec.done = true; rec.outcome = oc;
+        rec.needTl = (oc === 'attached' || oc === 'dup') && !r.tl;      // à compléter quand la timeline arrivera
+      }
       else { rec.tries = (rec.tries || 0) + 1; }      // no-slot ou non traité : on réessaiera
       rec.at = Date.now(); idx[r.file] = rec;
     });
@@ -395,8 +456,9 @@ async function cycle(forced) {
     if (fresh) { matches = mergeMatches(fresh); if (matches.length) log('🗂 historique SoloQ : ' + matches.length + ' parties classées (cumul).'); }
     else matches = readJson(MATCHES_FILE, []);
   } catch (e) { log('⚠ historique SoloQ indisponible :', e.message); matches = readJson(MATCHES_FILE, []); }
-  if (rank) { try { await maybePush(rank, matches); } catch (e) { log('⚠ envoi ARCHI :', e.message); } }
   scanReplays();
+  try { await fetchTimelines(lock); } catch (e) { log('⚠ timelines :', e.message); }
+  if (rank) { try { await maybePush(rank, matches); } catch (e) { log('⚠ envoi ARCHI :', e.message); } }
   await runAutoScrim();
 }
 
@@ -410,7 +472,11 @@ async function maybePush(rank, matches) {
   if (f.rank) doc.solo = rank.solo;                                   // elo + winrate
   if (f.soloq) {
     doc.history = readJson(HISTORY_FILE, []).slice(-120);           // points de rang (courbe LP)
-    doc.matches = (matches || []).slice(0, 300);                    // historique SoloQ accumulé (riche)
+    doc.matches = (matches || []).slice(0, 300).map(m => {           // historique SoloQ accumulé (riche)
+      const sum = timelineSummary(String(m.gameId));
+      const tl = sum && Timeline.forPlayer(sum, p => (rank.puuid && p.puuid === rank.puuid));
+      return tl ? Object.assign({}, m, { tl }) : m;
+    });
     doc.recent = (matches || []).slice(0, 10);                      // compat ancienne page
   }
   try {
@@ -427,7 +493,7 @@ async function maybePush(rank, matches) {
 function logFeatures() {
   if (CFG._configError) { log('❌ config.json illisible :', CFG._configError, '— lance avec --setup pour le régénérer.'); return; }
   const f = CFG.features || {}, a = CFG.auth || {};
-  const on = []; if (f.rank) on.push('rang & winrate'); if (f.soloq) on.push('SoloQ & replays'); if (f.autoScrim) on.push('scrims auto');
+  const on = []; if (f.rank) on.push('rang & winrate'); if (f.soloq) on.push('SoloQ & replays'); if (f.autoScrim) on.push('scrims auto'); if (f.timeline) on.push('timelines');
   if (a.username && CFG.playerId && on.length) log('☁ Partage ARCHI : ' + on.join(', ') + ' (joueur ' + CFG.playerId + ').');
   else log('☁ Partage ARCHI : rien de configuré — lance avec --setup pour choisir.');
 }
