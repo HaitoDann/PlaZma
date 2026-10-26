@@ -40,6 +40,20 @@ bas de la fenêtre **Paramètres**.
   joint aux games de scrim (`gN_stats.tl`) et à l'historique SoloQ
   (`matches[].tl`). Le brut (`statsJson` complet, timeline complète) reste en
   local dans `archi-data/`.
+- **Smurfs (ARCHI Link)** : chaque compte Riot connecté sur le PC a désormais
+  son propre rang et son propre historique (`archi-data/accounts.json`). Seul le
+  **compte principal** alimente l'elo, la courbe et les dernières parties
+  affichés dans ARCHI. Le compte principal est celui saisi dans la configuration
+  (« Compte principal »), sinon celui choisi sur ARCHI (sélecteur sur la carte
+  SoloQ, joueur concerné ou admin), sinon le mieux classé des comptes vus.
+  Les anciens relevés, impossibles à attribuer à un compte, ne sont plus envoyés.
+- **Courbes de progression SoloQ** refaites : repères à chaque division (et
+  par tier au-delà de 8 divisions), axe temporel avec dates, variation de LP
+  sur la période, bulle au survol (rang, LP, date).
+- **CR de scrim — vue timeline** : courbe d'écart de gold minute par minute
+  (point de vue PlaZma, avance en vert / retard en rouge), objectifs placés
+  dans le temps (dragons, larves, héraut, baron, tours avant 20', inhibiteurs),
+  diffs @10/@15/@20 et premiers objectifs.
 
 ### 3.26.0 — Objectifs en kanban + scrims auto (ARCHI Link)
 - **Objectifs du club** (accueil) transformés en **tableau kanban** à trois

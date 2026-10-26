@@ -103,6 +103,11 @@ code{background:var(--surface2);padding:1px 5px;border-radius:4px;font-size:12px
           <div class="fi"><b>À activer sur un seul poste de l'équipe.</b> Nécessite que ton compte ARCHI ait l'accès « scrim » en édition et « planning » en lecture — sinon rien n'est écrit.</div></div></label>
     </div>
     <div class="card">
+      <h2>Compte principal <span style="color:#7c8591;font-weight:400;font-size:13px">(recommandé si tu as un smurf)</span></h2>
+      <div class="hint">L'elo envoyé à ARCHI est toujours celui de ce compte, même quand tu joues sur un autre. Laisse vide pour choisir automatiquement ton compte le mieux classé.</div>
+      <input id="mainRiotId" type="text" placeholder="Pseudo#TAG" style="width:100%">
+    </div>
+    <div class="card">
       <h2>Dossier de League <span style="color:#7c8591;font-weight:400;font-size:13px">(optionnel)</span></h2>
       <div class="hint">Laisse vide si League est sur <code>C:</code> : la détection est automatique (même quand il est ouvert). Si ton League est sur un autre disque et n'est pas détecté, colle ici son dossier, par ex. <code>D:\\Riot Games\\League of Legends</code>.</div>
       <input id="leaguePath" type="text" placeholder="D:\\...\\Riot Games\\League of Legends" style="width:100%">
@@ -125,7 +130,7 @@ if(location.search.indexOf('setup')>=0) document.querySelector('.tab[data-tab=co
 let detected={playerId:''};
 (async()=>{ try{ const c=await api('/api/config'); $('u').value=c.username||''; detected.playerId=c.playerId||'';
   $('f-rank').checked=c.features.rank; $('f-soloq').checked=c.features.soloq; $('f-autoscrim').checked=!!c.features.autoScrim; $('f-timeline').checked=c.features.timeline!==false;
-  if($('leaguePath')) $('leaguePath').value=c.leaguePath||''; }catch(e){} })();
+  if($('leaguePath')) $('leaguePath').value=c.leaguePath||''; if($('mainRiotId')) $('mainRiotId').value=c.mainRiotId||''; }catch(e){} })();
 
 async function poll(){ try{ const s=await api('/api/status');
   $('s-league').innerHTML = s.leagueOpen ? '<span class="dot on"></span>ouvert' : '<span class="dot off"></span>fermé';
@@ -173,6 +178,7 @@ $('test').addEventListener('click', async ()=>{
 $('save').addEventListener('click', async ()=>{
   const body={ username:$('u').value.trim(), password:$('p').value, playerId:detected.playerId,
     leaguePath: ($('leaguePath')&&$('leaguePath').value.trim())||'',
+    mainRiotId: ($('mainRiotId')&&$('mainRiotId').value.trim())||'',
     features:{ rank:$('f-rank').checked, soloq:$('f-soloq').checked, autoScrim:$('f-autoscrim').checked, timeline:$('f-timeline').checked } };
   setSave('wait','Enregistrement…'); $('save').disabled=true;
   const r=await api('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});

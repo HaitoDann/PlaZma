@@ -20,7 +20,7 @@ const path = require('path');
 const https = require('https');
 const Rofl = require('./rofl');
 const Timeline = require('./timeline');
-const { pushStats } = require('./push');
+const { pushStats, fireGet } = require('./push');
 const autoScrim = require('./auto-scrim');
 const { startServer } = require('./ui');
 const tray = require('./tray');
@@ -37,10 +37,10 @@ const OUT = path.join(HERE, 'archi-data');
 const REPLAYS_OUT = path.join(OUT, 'replays');
 const TIMELINES_OUT = path.join(OUT, 'timelines');
 const TL_INDEX_FILE = path.join(OUT, 'timelines-index.json');
-const HISTORY_FILE = path.join(OUT, 'soloq-history.json');
 const RANK_FILE = path.join(OUT, 'rank.json');
 const INDEX_FILE = path.join(OUT, 'replays-index.json');
 const MATCHES_FILE = path.join(OUT, 'soloq-matches.json');   // historique SoloQ accumulé
+const ACCOUNTS_FILE = path.join(OUT, 'accounts.json');        // comptes Riot vus sur ce PC (principal + smurfs)
 const AUTOSCRIM_FILE = path.join(OUT, 'autoscrim-index.json'); // replays déjà traités par l'import auto
 const LOG_FILE = path.join(OUT, 'log.txt');
 
@@ -52,6 +52,7 @@ function loadConfig() {
     pollMinutes: 5,
     auth: { username: '', password: '' },
     playerId: '',
+    mainRiotId: '',                                 // compte principal (pseudo#tag) ; vide = auto
     features: { rank: true, soloq: true, autoScrim: false, timeline: true },
   };
   const expand = s => typeof s === 'string'
@@ -234,18 +235,43 @@ async function fetchRank(lock) {
   return { riotId, puuid: me.puuid || '', summonerId: me.summonerId || '', solo, updatedAt: new Date().toISOString() };
 }
 
-// Ajoute un point d'historique seulement si le rang a changé (ou premier point).
-function appendHistory(rank) {
-  if (!rank.solo) return;
-  const hist = readJson(HISTORY_FILE, []);
-  const last = hist[hist.length - 1];
-  const s = rank.solo;
-  const changed = !last || last.tier !== s.tier || last.division !== s.division ||
-    last.lp !== s.lp || last.wins !== s.wins || last.losses !== s.losses;
-  if (!changed) return;
-  hist.push({ ts: rank.updatedAt, tier: s.tier, division: s.division, lp: s.lp, wins: s.wins, losses: s.losses });
-  writeJson(HISTORY_FILE, hist);
-  log('↗ historique SoloQ : nouveau point', rankLabel(s), '(' + hist.length + ' au total)');
+// ---- Comptes Riot (principal / smurfs) ----
+// Chaque compte connecté sur ce PC a son propre rang et son propre historique :
+// un smurf ne doit jamais remplacer l'elo du compte principal dans ARCHI.
+const TIER_IDX = { IRON: 0, BRONZE: 1, SILVER: 2, GOLD: 3, PLATINUM: 4, EMERALD: 5, DIAMOND: 6, MASTER: 7, GRANDMASTER: 8, CHALLENGER: 9 };
+const DIV_IDX = { IV: 0, III: 1, II: 2, I: 3 };
+function ladderValue(s) {
+  const t = s && TIER_IDX[s.tier]; if (t == null) return -1;
+  return t * 400 + (t >= 7 ? 0 : (DIV_IDX[s.division] || 0) * 100) + (+s.lp || 0);
+}
+// « Pseudo#TAG » (ou « Pseudo-TAG » façon op.gg) -> forme comparable.
+const normId = s => { s = String(s || '').toLowerCase().replace(/\s/g, ''); return s.indexOf('#') >= 0 ? s : s.replace(/-([^-]*)$/, '#$1'); };
+function recordAccount(rank) {
+  if (!rank.puuid) return;
+  const accs = readJson(ACCOUNTS_FILE, {}) || {};
+  const a = accs[rank.puuid] || (accs[rank.puuid] = { riotId: rank.riotId, history: [] });
+  a.riotId = rank.riotId; a.updatedAt = rank.updatedAt;
+  if (rank.solo) {
+    a.solo = rank.solo;
+    const last = a.history[a.history.length - 1], s = rank.solo;
+    const changed = !last || last.tier !== s.tier || last.division !== s.division ||
+      last.lp !== s.lp || last.wins !== s.wins || last.losses !== s.losses;
+    if (changed) {
+      a.history.push({ ts: rank.updatedAt, tier: s.tier, division: s.division, lp: s.lp, wins: s.wins, losses: s.losses });
+      if (a.history.length > 400) a.history = a.history.slice(-400);
+      log('↗ historique SoloQ (' + rank.riotId + ') : nouveau point', rankLabel(s));
+    }
+  }
+  writeJson(ACCOUNTS_FILE, accs);
+}
+// Compte principal : 1) celui indiqué dans la configuration ; 2) celui choisi sur
+// ARCHI (mainPuuid) ; 3) sinon le mieux classé des comptes vus sur ce PC.
+function pickMain(accs, remoteMain) {
+  const ids = Object.keys(accs);
+  if (CFG.mainRiotId) { const id = ids.find(k => normId(accs[k].riotId) === normId(CFG.mainRiotId)); if (id) return id; }
+  if (remoteMain && accs[remoteMain]) return remoteMain;
+  return ids.filter(k => accs[k].solo).sort((x, y) => ladderValue(accs[y].solo) - ladderValue(accs[x].solo) ||
+    (((accs[y].solo.wins || 0) + (accs[y].solo.losses || 0)) - ((accs[x].solo.wins || 0) + (accs[x].solo.losses || 0))))[0] || null;
 }
 function rankLabel(s) {
   if (!s || s.tier === 'UNRANKED') return 'Non classé';
@@ -447,12 +473,13 @@ async function cycle(forced) {
   try {
     rank = await fetchRank(lock);
     writeJson(RANK_FILE, rank);
-    appendHistory(rank);
+    recordAccount(rank);
     STATE.riotId = rank.riotId; STATE.rankLabel = rankLabel(rank.solo);
     log('👤', rank.riotId, '—', rankLabel(rank.solo));
   } catch (e) { log('⚠ lecture du rang impossible :', e.message); }
   try {
     const fresh = await fetchRankedMatches(lock);
+    if (fresh && rank && rank.puuid) fresh.forEach(m => { m.puuid = rank.puuid; });   // à quel compte appartient la partie
     if (fresh) { matches = mergeMatches(fresh); if (matches.length) log('🗂 historique SoloQ : ' + matches.length + ' parties classées (cumul).'); }
     else matches = readJson(MATCHES_FILE, []);
   } catch (e) { log('⚠ historique SoloQ indisponible :', e.message); matches = readJson(MATCHES_FILE, []); }
@@ -467,22 +494,32 @@ async function maybePush(rank, matches) {
   const f = CFG.features || {}, a = CFG.auth || {};
   if (!(f.rank || f.soloq)) return;                  // aucune option d'envoi SoloQ cochée
   if (!a.username || !a.password || !CFG.playerId) { log('⚠ envoi activé mais connexion non configurée — lance avec --setup.'); return; }
-  if (!rank || !rank.solo) { log('⚠ rang SoloQ indisponible (non classé, ou le client n\'a pas encore chargé le rang) — rien à envoyer pour l\'instant.'); return; }
-  const doc = { riotId: rank.riotId, puuid: rank.puuid, updatedAt: rank.updatedAt };
-  if (f.rank) doc.solo = rank.solo;                                   // elo + winrate
+  const accs = readJson(ACCOUNTS_FILE, {}) || {};
+  let remote = null;
+  try { remote = await fireGet({ username: a.username, password: a.password }, 'plazma-stats/' + CFG.playerId); } catch (e) {}
+  const mainId = pickMain(accs, remote && remote.mainPuuid);
+  const main = mainId && accs[mainId];
+  if (!main || !main.solo) { log('⚠ rang SoloQ indisponible (non classé, ou le client n\'a pas encore chargé le rang) — rien à envoyer pour l\'instant.'); return; }
+  if (rank && rank.puuid && rank.puuid !== mainId) log('🎭 ' + rank.riotId + ' est un compte secondaire : l\'elo affiché reste celui de ' + main.riotId + '.');
+  const doc = { riotId: main.riotId, puuid: mainId, updatedAt: main.updatedAt || rank.updatedAt };
+  if (remote && remote.mainPuuid) doc.mainPuuid = remote.mainPuuid;            // choix fait sur ARCHI : conservé
+  // Tous les comptes vus (pour l'affichage « autres comptes » et le choix du principal).
+  doc.accounts = Object.keys(accs).map(k => ({ puuid: k, riotId: accs[k].riotId, solo: accs[k].solo || null, updatedAt: accs[k].updatedAt || '' }));
+  if (f.rank) doc.solo = main.solo;                                   // elo + winrate du compte principal
   if (f.soloq) {
-    doc.history = readJson(HISTORY_FILE, []).slice(-120);           // points de rang (courbe LP)
-    doc.matches = (matches || []).slice(0, 300).map(m => {           // historique SoloQ accumulé (riche)
+    const mine = (matches || []).filter(m => m.puuid === mainId);   // parties non rattachées (anciennes versions) écartées
+    doc.history = (main.history || []).slice(-120);                 // points de rang (courbe LP)
+    doc.matches = mine.slice(0, 300).map(m => {                     // historique SoloQ accumulé (riche)
       const sum = timelineSummary(String(m.gameId));
-      const tl = sum && Timeline.forPlayer(sum, p => (rank.puuid && p.puuid === rank.puuid));
+      const tl = sum && Timeline.forPlayer(sum, p => p.puuid === mainId);
       return tl ? Object.assign({}, m, { tl }) : m;
     });
-    doc.recent = (matches || []).slice(0, 10);                      // compat ancienne page
+    doc.recent = mine.slice(0, 10);                                 // compat ancienne page
   }
   try {
     await pushStats({ username: a.username, password: a.password, playerId: CFG.playerId }, doc);
-    STATE.lastPush = new Date().toLocaleTimeString('fr-FR'); STATE.lastPushOk = true; STATE.lastPushMsg = 'Envoyé (' + rankLabel(rank.solo) + ')';
-    log('☁ envoyé à ARCHI (plazma-stats/' + CFG.playerId + ') · ' + [f.rank && 'rang', f.soloq && 'SoloQ'].filter(Boolean).join('+'));
+    STATE.lastPush = new Date().toLocaleTimeString('fr-FR'); STATE.lastPushOk = true; STATE.lastPushMsg = 'Envoyé (' + main.riotId + ' · ' + rankLabel(main.solo) + ')';
+    log('☁ envoyé à ARCHI (plazma-stats/' + CFG.playerId + ') · ' + main.riotId + ' · ' + [f.rank && 'rang', f.soloq && 'SoloQ'].filter(Boolean).join('+'));
   } catch (e) {
     STATE.lastPush = new Date().toLocaleTimeString('fr-FR'); STATE.lastPushOk = false;
     STATE.lastPushMsg = /403|permission|PERMISSION/.test(String(e.message)) ? 'Refusé par ARCHI : ton compte n\'est pas lié à ce joueur (demande à un admin).' : e.message;

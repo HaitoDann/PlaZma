@@ -55,7 +55,7 @@ Les variables `%USERPROFILE%` etc. sont développées automatiquement.
 
 ## Ce que ça produit (`archi-data/`)
 - `rank.json` — dernier rang SoloQ lu (tier, division, LP, V/D, winrate) + pseudo#tag.
-- `soloq-history.json` — un point à chaque changement de rang (pour les courbes).
+- `accounts.json` — chaque compte Riot vu sur ce PC (principal + smurfs) avec son rang et son historique ; seul le **compte principal** alimente l'elo affiché dans ARCHI.
 - `recent-ranked.json` — dernières parties classées (bonus).
 - `replays/<game>.json` — stats parsées de chaque `.rofl` (`players` : champs utiles envoyés à ARCHI ; `raw` : `statsJson` complet, ~150 champs par joueur, **local uniquement**).
 - `timelines/<gameId>.raw.json` — détail de la partie + timeline minute par minute brute (LCU), **local uniquement**.

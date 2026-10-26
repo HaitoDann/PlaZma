@@ -79,6 +79,27 @@
   .stat-champ{font-weight:600}
   .champ-ic{width:26px;height:26px;border-radius:5px;object-fit:cover;display:block}
   .gold-pos{color:var(--ok)} .gold-neg{color:var(--err)}
+  /* Timeline (ARCHI Link) : écart de gold d'équipe minute par minute + objectifs */
+  .tlc{margin:4px 0 12px;background:var(--surface-2);border-radius:var(--r);padding:10px 12px 8px}
+  .tlc-top{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--muted);margin-bottom:8px;flex-wrap:wrap}
+  .tlc-top b{font-family:var(--font-mono);color:var(--text);font-weight:600}
+  .tlc-plot{position:relative;height:110px;margin-left:44px}
+  .tlc-plot svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+  .tlc-plot .zero{stroke:var(--muted);stroke-width:1;vector-effect:non-scaling-stroke}
+  .tlc-plot .grid{stroke:var(--border-2);stroke-width:1;vector-effect:non-scaling-stroke}
+  .tlc-plot .ln{fill:none;stroke:var(--text);stroke-width:2;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+  .tlc-plot .pos{fill:var(--ok);opacity:.22} .tlc-plot .neg{fill:var(--err);opacity:.22}
+  .tlc-plot .ylab{position:absolute;right:calc(100% + 8px);transform:translateY(-50%);font-family:var(--font-mono);font-size:10px;color:var(--muted)}
+  .tlc-plot .obj{position:absolute;transform:translate(-50%,-50%);font-size:9.5px;font-weight:700;width:15px;height:15px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;background:var(--surface);border:1.5px solid var(--muted);color:var(--dim);cursor:default}
+  .tlc-plot .obj.us{border-color:var(--ok);color:var(--text)} .tlc-plot .obj.them{border-color:var(--err);color:var(--text)}
+  .tlc-plot .xh{position:absolute;top:0;bottom:0;width:1px;background:var(--dim);opacity:.5;display:none;pointer-events:none}
+  .tlc-plot .tip{position:absolute;top:-4px;transform:translate(-50%,-100%);background:var(--elevated);border:1px solid var(--border-2);border-radius:8px;
+    padding:4px 8px;font-size:11.5px;white-space:nowrap;display:none;pointer-events:none;z-index:2}
+  .tlc-plot.hover .xh,.tlc-plot.hover .tip{display:block}
+  .tlc-x{position:relative;height:13px;margin:4px 0 0 44px;font-family:var(--font-mono);font-size:10px;color:var(--muted)}
+  .tlc-x span{position:absolute;transform:translateX(-50%)}
+  .tlc-leg{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;font-size:11px;color:var(--muted)}
 
   .rofl-agg{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:13px 16px;margin-bottom:14px}
   .agg-head{font-size:13px;font-weight:600;margin-bottom:10px}
@@ -900,6 +921,57 @@ function statTable(st){
   });
   return h+'</tbody></table>';
 }
+// ---- Timeline : courbe d'écart de gold (point de vue PlaZma) + objectifs ----
+const OBJ_ICON = { DRAGON:'D', BARON_NASHOR:'B', RIFTHERALD:'H', HORDE:'L', TOWER_BUILDING:'T', INHIBITOR_BUILDING:'I', ATAKHAN:'A' };
+const OBJ_FR = { DRAGON:'Dragon', BARON_NASHOR:'Baron', RIFTHERALD:'Héraut', HORDE:'Larves', TOWER_BUILDING:'Tour', INHIBITOR_BUILDING:'Inhibiteur', ATAKHAN:'Atakhan' };
+const TLC = {};
+function goldCurve(st, gk){
+  const tl=st.tl; if(!tl || !Array.isArray(tl.goldDiff) || tl.goldDiff.length<3) return '';
+  const sign = st.side==='red' ? -1 : 1;
+  const g = tl.goldDiff.map(v=>v*sign), n=g.length-1;
+  // Échelle symétrique « ronde » : ±m avec repères à ±m/2 (2k, 4k, 6k…).
+  const mx = Math.max(...g.map(Math.abs)), m = mx<=2000 ? 2000 : Math.ceil(mx/2000)*2000;
+  const X = i => i/n*100, Y = v => (1 - (v+m)/(2*m))*100;
+  const ln = g.map((v,i)=>(i?'L':'M')+X(i).toFixed(2)+' '+Y(v).toFixed(2)).join(' ');
+  // Aires : au-dessus de 0 (avance PlaZma) et en dessous (retard), découpées par clipPath.
+  const ar = `M0 50 `+g.map((v,i)=>'L'+X(i).toFixed(2)+' '+Y(v).toFixed(2)).join(' ')+` L100 50 Z`;
+  const step = m/2;
+  let grid='', labs='';
+  for(let v=-m; v<=m; v+=step){ if(!v) continue; const y=Y(v).toFixed(2);
+    grid+=`<line class="grid" x1="0" x2="100" y1="${y}" y2="${y}"/>`; labs+=`<span class="ylab" style="top:${y}%">${v>0?'+':'−'}${+(Math.abs(v)/1000).toFixed(1)}k</span>`; }
+  labs+=`<span class="ylab" style="top:50%">0</span>`;
+  const ours = t => t===st.side;
+  // Tours : seulement avant 20' (les premières tours racontent la phase de lane).
+  const objs = (tl.objectives||[]).filter(o=>OBJ_ICON[o.type] && (o.type!=='TOWER_BUILDING' || o.t<=20*60));
+  const dur = n*60;
+  const marks = objs.map(o=>{ const x=Math.min(100,o.t/dur*100), us=ours(o.team);
+    return `<span class="obj ${us?'us':'them'}" style="left:${x}%;top:${us?8:92}%" title="${esc((OBJ_FR[o.type]||o.type)+(o.sub?' ('+o.sub.replace(/_DRAGON|_TURRET/,'').toLowerCase()+')':'')+' · '+fmtDur(o.t)+' · '+(us?'PlaZma':'adversaire'))}">${OBJ_ICON[o.type]}</span>`; }).join('');
+  TLC[gk]=g;
+  const at = mn => g[mn]!=null ? g[mn] : null;
+  const f = tl.firsts||{}, fx = k => f[k] ? (ours(f[k].team)?'✓':'✗') : '—';
+  return `<div class="tlc"><div class="tlc-top"><span>Écart de gold · PlaZma ${['@10','@15','@20'].map((l,i)=>{const v=at([10,15,20][i]); return v==null?'':` · ${l} <b class="${v>=0?'gold-pos':'gold-neg'}">${v>=0?'+':'−'}${fmtK(Math.abs(v))}</b>`;}).join('')}</span>
+      <span>First blood ${fx('blood')} · 1re tour ${fx('tower')} · 1er drake ${fx('dragon')}</span></div>
+    <div class="tlc-plot" data-tlc="${gk}" role="img" aria-label="Écart de gold minute par minute">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none"><defs>
+        <clipPath id="up_${gk}"><rect x="0" y="0" width="100" height="50"/></clipPath><clipPath id="dn_${gk}"><rect x="0" y="50" width="100" height="50"/></clipPath></defs>
+        ${grid}<path class="pos" clip-path="url(#up_${gk})" d="${ar}"/><path class="neg" clip-path="url(#dn_${gk})" d="${ar}"/>
+        <line class="zero" x1="0" x2="100" y1="50" y2="50"/><path class="ln" d="${ln}"/></svg>
+      ${labs}${marks}<span class="xh"></span><span class="tip"></span></div>
+    <div class="tlc-x">${[0,10,20,30,40].filter(t=>t<n-3).concat(n).map(t=>`<span style="left:${t/n*100}%">${t}'</span>`).join('')}</div>
+    <div class="tlc-leg"><span>Objectifs : en haut = PlaZma, en bas = adversaire</span><span>D dragon · H héraut · L larves · B baron · T tour (&lt;20') · I inhib</span></div></div>`;
+}
+document.addEventListener('pointermove', e=>{
+  const plot=e.target.closest && e.target.closest('.tlc-plot');
+  document.querySelectorAll('.tlc-plot.hover').forEach(p=>{ if(p!==plot) p.classList.remove('hover'); });
+  if(!plot || e.target.closest('.obj')) { if(plot) plot.classList.remove('hover'); return; }
+  const g=TLC[plot.dataset.tlc]; if(!g) return;
+  const r=plot.getBoundingClientRect(), i=Math.max(0,Math.min(g.length-1,Math.round((e.clientX-r.left)/r.width*(g.length-1))));
+  const x=i/(g.length-1)*100;
+  plot.classList.add('hover'); plot.querySelector('.xh').style.left=x+'%';
+  const tip=plot.querySelector('.tip'); tip.style.left=Math.min(88,Math.max(12,x))+'%';
+  tip.innerHTML=`${i}' · <b class="${g[i]>=0?'gold-pos':'gold-neg'}">${g[i]>=0?'+':'−'}${fmtK(Math.abs(g[i]))}</b> gold`;
+});
+
 function renderStats(gk){
   const host=document.getElementById('gstats_'+gk); if(!host) return;
   const st=gstats[gk];
@@ -913,6 +985,7 @@ function renderStats(gk){
       <span>CS/min ${d.csmin.toFixed(1)}</span>
       <button class="rm" data-noexport onclick="removeStats('${gk}')">Retirer</button>
     </div>
+    ${goldCurve(st, gk)}
     ${statTable(st)}
   </div>`;
 }

@@ -42,6 +42,7 @@ function startServer(opts) {
           username: (c.auth && c.auth.username) || '',
           playerId: c.playerId || '',
           leaguePath: c.lockfile || '',
+          mainRiotId: c.mainRiotId || '',
           features: { rank: f.rank !== false, soloq: f.soloq !== false, autoScrim: !!f.autoScrim, timeline: f.timeline !== false },
         });
       }
@@ -61,6 +62,7 @@ function startServer(opts) {
         const next = Object.assign({}, cur, {
           auth: { username: b.username, password: b.password },
           playerId: b.playerId,
+          mainRiotId: typeof b.mainRiotId === 'string' ? b.mainRiotId.trim() : (cur.mainRiotId || ''),
           features: { rank: !!b.features.rank, soloq: !!b.features.soloq, autoScrim: !!(b.features && b.features.autoScrim), timeline: !!(b.features && b.features.timeline) },
         });
         // Chemin League manuel : accepte le dossier ou le lockfile direct.
