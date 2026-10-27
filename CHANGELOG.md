@@ -17,6 +17,16 @@ bas de la fenêtre **Paramètres**.
 
 ## 3.x — Interface pro
 
+### Non publié — Fiche individuelle (coaching)
+
+- **Review individuelle → Fiche individuelle** : renommage (page, menu, accueil)
+  pour le coaching individuel de chaque joueur.
+- **Lien avec la fiche de performance** : bandeau live sous le sélecteur joueur
+  (score moyen, compétences évaluées, objectifs perf), bouton « Reprendre les
+  objectifs » et accès direct à la fiche de perf du rôle.
+- **Depuis chaque fiche de perf** : bouton « Fiche individuelle (coaching) »
+  qui ouvre la dernière fiche du joueur (ou en crée une).
+
 ### Non publié — Data analyse .rofl + timelines (branche `data-analyse`, en test)
 - **Parseur `.rofl` complet**, partagé entre le site et ARCHI Link
   (`client/rofl.js` = `assets/rofl-browser.js`) : en plus des 11 champs

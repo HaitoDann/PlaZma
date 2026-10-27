@@ -49,6 +49,7 @@
     <div class="perf-meta">
       <label>Évaluateur</label>
       <input id="f_eval" type="text" placeholder="Coach / Manager">
+      <a class="btn btn-sm" data-noexport style="margin-left:auto" href="plazma-review-individuelle.html?player=${encodeURIComponent((PZ.getRoster().find(p => p.roleKey === rosterKey) || {}).id || '')}">Fiche individuelle (coaching) →</a>
     </div>
 
     <div class="score-band">

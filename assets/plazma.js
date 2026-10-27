@@ -444,7 +444,7 @@
     { key: 'scouting',     href: 'plazma-scouting.html',    label: 'Scouting',     section: 'scouting',     group: 'prep' },
     { key: 'draft',        href: 'plazma-draft.html',       label: 'Draft',        section: 'scouting',     group: 'prep' },
     { key: 'scrim',        href: 'plazma-scrim.html',       label: 'Compte rendu', section: 'scrim',        group: 'post' },
-    { key: 'review',       href: 'plazma-review-individuelle.html', label: 'Review', section: 'scrim',      group: 'post' },
+    { key: 'review',       href: 'plazma-review-individuelle.html', label: 'Fiche individuelle', section: 'scrim',      group: 'post' },
     { key: 'perf_top',     href: 'plazma-perf-top.html',    label: 'Fiche Top',                             group: 'perf' },
     { key: 'perf_jungle',  href: 'plazma-perf-jungler.html',label: 'Fiche Jungle',                          group: 'perf' },
     { key: 'perf_mid',     href: 'plazma-perf-mid.html',    label: 'Fiche Mid',                             group: 'perf' },
